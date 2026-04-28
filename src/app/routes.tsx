@@ -3,6 +3,7 @@ import { WebLayout } from './components/WebLayout';
 import { LoginScreen } from './screens/LoginScreen';
 import { PatientDashboard } from './screens/PatientDashboard';
 import { PatientProfile } from './screens/PatientProfile';
+import { PatientRecords } from './screens/PatientRecords';
 import { AppointmentBooking } from './screens/AppointmentBooking';
 import { NurseIntakeForm } from './screens/NurseIntakeForm';
 import { NurseDashboard } from './screens/NurseDashboard';
@@ -31,7 +32,7 @@ export const router = createBrowserRouter([
           { path: 'patient', Component: PatientDashboard },
           { path: 'patient/appointment', Component: AppointmentBooking },
           { path: 'patient/exercise', Component: ExercisePrescription },
-          { path: 'patient/records', Component: PatientDashboard },
+          { path: 'patient/records', Component: PatientRecords },
           { path: 'patient/profile', Component: PatientProfile },
 
           // Nurse routes
