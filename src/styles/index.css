@@ -1,0 +1,57 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+:root {
+	--saai-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+	--saai-border: rgba(15, 23, 42, 0.08);
+}
+
+.saai-page {
+	background:
+		radial-gradient(1200px 400px at 10% -10%, rgba(14, 116, 144, 0.12), transparent 60%),
+		radial-gradient(1000px 380px at 90% -5%, rgba(67, 56, 202, 0.12), transparent 60%),
+		linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.saai-panel {
+	background: rgba(255, 255, 255, 0.92);
+	border: 1px solid var(--saai-border);
+	box-shadow: var(--saai-shadow);
+	backdrop-filter: blur(8px);
+}
+
+.saai-kicker {
+	text-transform: uppercase;
+	letter-spacing: 0.22em;
+	font-size: 10px;
+	font-weight: 700;
+	color: #64748b;
+}
+
+.saai-fade-up {
+	animation: saai-fade-up 0.7s ease both;
+}
+
+.saai-stagger {
+	animation: saai-fade-up 0.6s ease both;
+}
+
+@keyframes saai-fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.saai-fade-up,
+	.saai-stagger {
+		animation: none;
+	}
+}

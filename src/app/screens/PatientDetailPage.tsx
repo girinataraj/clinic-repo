@@ -1,0 +1,344 @@
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
+import { BottomNav } from '../components/BottomNav';
+import {
+  ArrowLeft,
+  Edit3,
+  FileText,
+  Heart,
+  Activity,
+  CheckSquare,
+  Stethoscope,
+  StickyNote,
+  Dumbbell,
+  Save,
+} from 'lucide-react';
+
+const patientData: Record<string, any> = {
+  '1': {
+    name: 'Rahul Verma', age: 45, gender: 'Male', phone: '98765 43210',
+    condition: 'Knee Injury (ACL Tear)', token: 'T-01', id: 'SAAI-2025-001',
+    vitals: { bp: '120/80 mmHg', pr: '72 bpm', spo2: '98%', temp: '98.4°F', ef: '60%' },
+    symptoms: ['Knee Pain', 'Swelling', 'Limited Range of Motion', 'Muscle Weakness'],
+    painLevel: 6,
+    functional: { walking: 2, stairs: 3, sitting: 1, standing: 2, dressing: 0, lifting: 3 },
+    complaints: 'Patient reports severe pain in the right knee especially during walking and climbing stairs. Pain has been present for 3 weeks following a sports injury.',
+    associated: 'Mild swelling around the knee joint. Occasional clicking sound during flexion.',
+    diagnosis: 'Right Knee ACL Partial Tear with associated meniscal irritation',
+    notes: 'Patient requires 6-week physiotherapy protocol. RICE therapy for first week. Progressive strengthening exercises from week 2. Consider MRI follow-up.',
+    doctor: 'Dr. Rajesh Kumar',
+    date: 'April 27, 2025',
+  },
+};
+
+const funcLabels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
+const funcColors: Record<number, string> = { 0: '#22c55e', 1: '#84cc16', 2: '#facc15', 3: '#f97316', 4: '#ef4444' };
+const painColors = ['#22c55e', '#84cc16', '#a3e635', '#facc15', '#fb923c', '#f97316', '#ef4444', '#dc2626', '#b91c1c', '#991b1b', '#7f1d1d'];
+
+const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes'];
+
+export function PatientDetailPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const patient = patientData[id || '1'] || patientData['1'];
+  const [activeTab, setActiveTab] = useState('Overview');
+  const [editMode, setEditMode] = useState(false);
+  const [diagnosis, setDiagnosis] = useState(patient.diagnosis);
+  const [notes, setNotes] = useState(patient.notes);
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div
+        className="px-5 pb-5 shrink-0"
+        style={{
+          background: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%)',
+          paddingTop: '20px',
+        }}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => navigate('/doctor')}
+            className="flex items-center justify-center rounded-xl"
+            style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.2)' }}>
+            <ArrowLeft size={18} color="white" />
+          </button>
+          <h1 style={{ fontSize: '17px', fontWeight: 800, color: 'white' }}>Patient Details</h1>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setEditMode(!editMode)}
+              className="flex items-center justify-center rounded-xl"
+              style={{ width: '36px', height: '36px', background: editMode ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.2)' }}>
+              <Edit3 size={16} color={editMode ? '#fbbf24' : 'white'} />
+            </button>
+            <button
+              onClick={() => navigate('/doctor/report')}
+              className="flex items-center justify-center rounded-xl"
+              style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.2)' }}>
+              <FileText size={16} color="white" />
+            </button>
+          </div>
+        </div>
+
+        {/* Patient card */}
+        <div className="flex items-center gap-4 p-3 rounded-2xl"
+          style={{ background: 'rgba(255,255,255,0.12)' }}>
+          <div className="rounded-2xl flex items-center justify-center shrink-0"
+            style={{ width: '54px', height: '54px', background: 'rgba(255,255,255,0.2)', fontSize: '24px' }}>
+            🧑‍🦽
+          </div>
+          <div className="flex-1">
+            <p style={{ fontSize: '16px', fontWeight: 800, color: 'white' }}>{patient.name}</p>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
+              {patient.gender}, {patient.age} yrs · {patient.phone}
+            </p>
+            <div className="flex gap-2 mt-1.5">
+              <span className="px-2 py-0.5 rounded-full"
+                style={{ background: '#eff6ff', color: '#2563eb', fontSize: '10px', fontWeight: 700 }}>
+                {patient.id}
+              </span>
+              <span className="px-2 py-0.5 rounded-full"
+                style={{ background: '#ecfdf5', color: '#059669', fontSize: '10px', fontWeight: 700 }}>
+                Token: {patient.token}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab navigation */}
+      <div className="flex shrink-0 px-4 pt-3 pb-0" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className="flex-1 py-2 text-center"
+            style={{
+              fontSize: '12px', fontWeight: 700,
+              color: activeTab === tab ? '#4338ca' : '#94a3b8',
+              borderBottom: `2px solid ${activeTab === tab ? '#4338ca' : 'transparent'}`,
+              paddingBottom: '10px',
+            }}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-4xl mx-auto w-full" style={{ background: '#f8fafc' }}>
+
+        {/* Overview Tab */}
+        {activeTab === 'Overview' && (
+          <div className="flex flex-col gap-3">
+            {/* Condition */}
+            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <Stethoscope size={16} color="#4338ca" />
+                <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Primary Condition</h3>
+              </div>
+              <p style={{ fontSize: '14px', fontWeight: 700, color: '#4338ca' }}>{patient.condition}</p>
+              <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                Consultation with {patient.doctor} on {patient.date}
+              </p>
+            </div>
+
+            {/* Symptoms */}
+            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <Activity size={16} color="#2563eb" />
+                <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Reported Symptoms</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {patient.symptoms.map((s: string) => (
+                  <span key={s} className="px-3 py-1 rounded-full"
+                    style={{ background: '#eff6ff', color: '#2563eb', fontSize: '12px', fontWeight: 600 }}>
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Pain level */}
+            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span style={{ fontSize: '16px' }}>🔴</span>
+                  <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Pain Level</h3>
+                </div>
+                <span style={{ fontSize: '18px', fontWeight: 900, color: painColors[patient.painLevel] }}>
+                  {patient.painLevel}/10
+                </span>
+              </div>
+              <div className="flex gap-0.5 rounded-xl overflow-hidden">
+                {painColors.map((c, i) => (
+                  <div key={i} className="flex-1 flex items-center justify-center"
+                    style={{ height: '28px', background: c, opacity: i <= patient.painLevel ? 1 : 0.2 }}>
+                    <span style={{ fontSize: '9px', fontWeight: 700, color: 'white' }}>{i}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Functional Activities */}
+            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <CheckSquare size={16} color="#16a34a" />
+                <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Functional Activities</h3>
+              </div>
+              <div className="flex flex-col gap-2">
+                {Object.entries(patient.functional).map(([key, val]: [string, any]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span style={{ fontSize: '13px', color: '#475569', fontWeight: 600, textTransform: 'capitalize' }}>
+                      {key === 'stairs' ? 'Climbing Stairs' : key}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lg"
+                      style={{ background: `${funcColors[val]}20`, color: funcColors[val], fontSize: '11px', fontWeight: 700 }}>
+                      {val} — {funcLabels[val]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Complaints */}
+            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+                Chief Complaints
+              </h3>
+              <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.6 }}>{patient.complaints}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Vitals Tab */}
+        {activeTab === 'Vitals' && (
+          <div className="flex flex-col gap-3">
+            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Heart size={16} color="#e11d48" />
+                <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Vital Signs</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { icon: '💓', label: 'Blood Pressure', value: patient.vitals.bp, color: '#ef4444' },
+                  { icon: '❤️', label: 'Pulse Rate', value: patient.vitals.pr, color: '#f97316' },
+                  { icon: '🫁', label: 'SpO₂', value: patient.vitals.spo2, color: '#2563eb' },
+                  { icon: '🌡️', label: 'Temperature', value: patient.vitals.temp, color: '#7c3aed' },
+                  { icon: '⚡', label: 'Ejection Fraction', value: patient.vitals.ef, color: '#10b981' },
+                ].map((vital) => (
+                  <div key={vital.label} className="p-3 rounded-2xl"
+                    style={{ background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                    <span style={{ fontSize: '20px' }}>{vital.icon}</span>
+                    <p style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginTop: '4px' }}>{vital.label}</p>
+                    <p style={{ fontSize: '15px', fontWeight: 800, color: vital.color }}>{vital.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Diagnosis Tab */}
+        {activeTab === 'Diagnosis' && (
+          <div className="flex flex-col gap-3">
+            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Stethoscope size={16} color="#4338ca" />
+                  <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Diagnosis</h3>
+                </div>
+                {editMode && <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 700 }}>✏️ Edit Mode</span>}
+              </div>
+              {editMode ? (
+                <textarea
+                  value={diagnosis}
+                  onChange={(e) => setDiagnosis(e.target.value)}
+                  className="w-full outline-none resize-none"
+                  style={{ padding: '12px', borderRadius: '12px', border: '1.5px solid #c7d2fe', background: '#f5f3ff', fontSize: '13px', minHeight: '80px' }}
+                />
+              ) : (
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#4338ca', lineHeight: 1.6 }}>{diagnosis}</p>
+              )}
+            </div>
+
+            {/* Treatment Protocol */}
+            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '10px' }}>
+                Treatment Protocol
+              </h3>
+              {['RICE Therapy (Week 1)', 'Ultrasound Therapy (3×/week)', 'Quadriceps Strengthening (Week 2+)', 'Proprioception Training (Week 4+)', 'Sports-specific Rehab (Week 6)'].map((item, i) => (
+                <div key={i} className="flex items-center gap-3 py-2" style={{ borderBottom: i < 4 ? '1px solid #f1f5f9' : 'none' }}>
+                  <div className="rounded-full flex items-center justify-center shrink-0"
+                    style={{ width: '22px', height: '22px', background: '#eff6ff', color: '#2563eb', fontSize: '11px', fontWeight: 800 }}>
+                    {i + 1}
+                  </div>
+                  <span style={{ fontSize: '13px', color: '#475569', fontWeight: 600 }}>{item}</span>
+                </div>
+              ))}
+            </div>
+
+            {editMode && (
+              <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #4338ca, #6366f1)', color: 'white', fontSize: '15px', fontWeight: 700 }}>
+                <Save size={16} />
+                Save Diagnosis
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Notes Tab */}
+        {activeTab === 'Notes' && (
+          <div className="flex flex-col gap-3">
+            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <StickyNote size={16} color="#f59e0b" />
+                  <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Doctor's Notes</h3>
+                </div>
+                {editMode && <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 700 }}>✏️ Edit Mode</span>}
+              </div>
+              {editMode ? (
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full outline-none resize-none"
+                  style={{ padding: '12px', borderRadius: '12px', border: '1.5px solid #fde68a', background: '#fffbeb', fontSize: '13px', minHeight: '120px' }}
+                />
+              ) : (
+                <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.7 }}>{notes}</p>
+              )}
+            </div>
+
+            <div className="p-4 rounded-2xl" style={{ background: '#fffbeb', border: '1.5px solid #fde68a' }}>
+              <div className="flex items-center gap-2 mb-2">
+                <Dumbbell size={15} color="#d97706" />
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>Exercise Recommendation</span>
+              </div>
+              <p style={{ fontSize: '12px', color: '#92400e' }}>Prescribed 6-week Active Recovery Plan. View in Exercise Prescription.</p>
+              <button
+                onClick={() => navigate('/doctor/exercise')}
+                className="mt-2 px-3 py-1.5 rounded-xl"
+                style={{ background: '#f59e0b', color: 'white', fontSize: '12px', fontWeight: 700 }}>
+                View Exercise Plan
+              </button>
+            </div>
+
+            {editMode && (
+              <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #d97706, #f59e0b)', color: 'white', fontSize: '15px', fontWeight: 700 }}>
+                <Save size={16} />
+                Save Notes
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="md:hidden">
+        <BottomNav role="doctor" />
+      </div>
+    </div>
+  );
+}

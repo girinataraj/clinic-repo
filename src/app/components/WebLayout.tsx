@@ -1,0 +1,29 @@
+import { Outlet, useNavigate } from 'react-router';
+import { useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { SideNav } from './SideNav';
+
+export function WebLayout() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
+  if (!user) return null;
+
+  return (
+    <div className="flex h-screen overflow-hidden" style={{ background: '#f8fafc' }}>
+      {/* Sidebar — desktop/tablet only */}
+      <SideNav />
+
+      {/* Main content area */}
+      <div className="flex-1 min-w-0 overflow-hidden flex flex-col">
+        <Outlet />
+      </div>
+    </div>
+  );
+}

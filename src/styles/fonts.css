@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700;800&family=Sora:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --font-body: 'Sora', sans-serif;
+  --font-display: 'Fraunces', 'Sora', serif;
+}
+
+* {
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display,
+.display-font {
+  font-family: var(--font-display);
+}
+
+/* Hide scrollbars on mobile for native app feel */
+@media (max-width: 767px) {
+  .overflow-y-auto::-webkit-scrollbar {
+    display: none;
+  }
+  .overflow-y-auto {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Thin, styled scrollbars on desktop */
+@media (min-width: 768px) {
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 4px;
+  }
+  .overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 4px;
+  }
+  .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+  }
+}
