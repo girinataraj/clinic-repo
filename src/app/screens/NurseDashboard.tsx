@@ -23,10 +23,12 @@ const avatarColors: Record<string, { bg: string; darkBg: string; color: string; 
 };
 
 export function NurseDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
@@ -65,16 +67,57 @@ export function NurseDashboard() {
                 </h1>
                 <p className="text-sm text-teal-100/80 mt-1">Physiotherapy Unit B · Morning Shift</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 relative z-50">
                 {/* Theme toggle */}
                 <ThemeToggle />
-                <button className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20">
-                  <Bell className="w-5 h-5 text-white" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white border border-red-400">2</span>
-                </button>
-                <button onClick={() => navigate('/nurse/profile')} className="p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20">
-                  <User className="w-5 h-5 text-white" />
-                </button>
+                
+                {/* Notification Dropdown */}
+                <div className="relative">
+                  <button 
+                    onClick={() => {
+                      if (window.innerWidth >= 768) {
+                        navigate('/nurse/notifications');
+                      } else {
+                        setShowNotifications(!showNotifications);
+                        setShowProfileMenu(false);
+                      }
+                    }}
+                    className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20">
+                    <Bell className="w-5 h-5 text-white" />
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white border border-red-400 pointer-events-none">2</span>
+                  </button>
+                  
+                  {/* Only show notifications dropdown on mobile */}
+                  {showNotifications && (
+                    <div className="md:hidden absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden text-left">
+                      <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
+                        <h3 className="text-sm font-bold text-slate-800 dark:text-white">Notifications</h3>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        <div className="p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer">
+                          <p className="text-xs font-semibold text-slate-800 dark:text-white">Intake form required</p>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">5 mins ago</p>
+                        </div>
+                        <div className="p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer">
+                          <p className="text-xs font-semibold text-slate-800 dark:text-white">New message from Dr. Smith</p>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">10 mins ago</p>
+                        </div>
+                      </div>
+                      <div className="p-3 text-center border-t border-slate-100 dark:border-slate-700">
+                        <button className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">Mark all as read</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Profile Button */}
+                <div className="relative">
+                  <button 
+                    onClick={() => navigate('/nurse/profile')}
+                    className="p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20">
+                    <User className="w-5 h-5 text-white" />
+                  </button>
+                </div>
               </div>
             </div>
 

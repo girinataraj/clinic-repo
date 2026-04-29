@@ -19,10 +19,12 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
 const getInitials = (name: string) => name.split(' ').map(p => p[0]).join('');
 
 export function DoctorDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
@@ -52,9 +54,9 @@ export function DoctorDashboard() {
             boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)',
           }}
         >
-          <div className="absolute -right-16 -top-16 rounded-full opacity-10"
+          <div className="absolute -right-16 -top-16 rounded-full opacity-10 pointer-events-none"
             style={{ width: '200px', height: '200px', background: '#FEFFFF' }} />
-          <div className="absolute right-10 top-20 rounded-full opacity-20"
+          <div className="absolute right-10 top-20 rounded-full opacity-20 pointer-events-none"
             style={{ width: '80px', height: '80px', background: '#FEFFFF' }} />
 
           <div className="max-w-6xl mx-auto">
@@ -70,23 +72,59 @@ export function DoctorDashboard() {
                   Sports Physiotherapist · SAAI Clinic
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 relative z-50">
+                {/* Notification Dropdown */}
                 <div className="relative">
-                  <button className="flex items-center justify-center rounded-2xl transition-all duration-300"
+                  <button 
+                    onClick={() => {
+                      if (window.innerWidth >= 768) {
+                        navigate('/doctor/notifications');
+                      } else {
+                        setShowNotifications(!showNotifications);
+                        setShowProfileMenu(false);
+                      }
+                    }}
+                    className="flex items-center justify-center rounded-2xl transition-all duration-300 relative z-50"
                     style={{ width: '48px', height: '48px', background: 'rgba(254, 255, 255, 0.15)', border: '1px solid rgba(254, 255, 255, 0.2)' }}>
                     <Bell size={22} color="#FEFFFF" />
                   </button>
-                  <div className="absolute -top-1 -right-1 rounded-full flex items-center justify-center"
+                  <div className="absolute -top-1 -right-1 rounded-full flex items-center justify-center pointer-events-none"
                     style={{ width: '18px', height: '18px', background: '#17252A', fontSize: '10px', color: '#FEFFFF', fontWeight: 700, border: '2px solid #3AAFA9' }}>
                     4
                   </div>
+                  
+                  {/* Only show notifications dropdown on mobile */}
+                  {showNotifications && (
+                    <div className="md:hidden absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden text-left">
+                      <div className="p-4 border-b border-slate-100 bg-slate-50">
+                        <h3 className="text-sm font-bold text-slate-800">Notifications</h3>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        <div className="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer">
+                          <p className="text-xs font-semibold text-slate-800">New patient assigned</p>
+                          <p className="text-[10px] text-slate-500 mt-1">2 mins ago</p>
+                        </div>
+                        <div className="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer">
+                          <p className="text-xs font-semibold text-slate-800">System maintenance at midnight</p>
+                          <p className="text-[10px] text-slate-500 mt-1">1 hour ago</p>
+                        </div>
+                      </div>
+                      <div className="p-3 text-center border-t border-slate-100">
+                        <button className="text-xs font-bold text-teal-600 hover:text-teal-700">Mark all as read</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <button
-                  onClick={() => navigate('/doctor/profile')}
-                  className="flex items-center justify-center rounded-2xl transition-all duration-300"
-                  style={{ width: '48px', height: '48px', background: 'rgba(254, 255, 255, 0.15)', border: '1px solid rgba(254, 255, 255, 0.2)' }}>
-                  <User size={22} color="#FEFFFF" />
-                </button>
+
+                {/* Profile Button */}
+                <div className="relative">
+                  <button
+                    onClick={() => navigate('/doctor/profile')}
+                    className="flex items-center justify-center rounded-2xl transition-all duration-300 relative z-50"
+                    style={{ width: '48px', height: '48px', background: 'rgba(254, 255, 255, 0.15)', border: '1px solid rgba(254, 255, 255, 0.2)' }}>
+                    <User size={22} color="#FEFFFF" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
