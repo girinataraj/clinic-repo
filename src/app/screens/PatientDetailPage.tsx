@@ -32,8 +32,8 @@ const patientData: Record<string, any> = {
 };
 
 const funcLabels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
-const funcColors: Record<number, string> = { 0: '#22c55e', 1: '#84cc16', 2: '#facc15', 3: '#f97316', 4: '#ef4444' };
-const painColors = ['#22c55e', '#84cc16', '#a3e635', '#facc15', '#fb923c', '#f97316', '#ef4444', '#dc2626', '#b91c1c', '#991b1b', '#7f1d1d'];
+const funcColors: Record<number, string> = { 0: '#3AAFA9', 1: '#3AAFA9', 2: '#2B7A78', 3: '#2B7A78', 4: '#17252A' };
+const painColors = ['#3AAFA9', '#3AAFA9', '#3AAFA9', '#2B7A78', '#2B7A78', '#2B7A78', '#17252A', '#17252A', '#17252A', '#17252A', '#17252A'];
 
 const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes'];
 
@@ -47,58 +47,62 @@ export function PatientDetailPage() {
   const [notes, setNotes] = useState(patient.notes);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1' }}>
       {/* Header */}
       <div
-        className="px-5 pb-5 shrink-0"
+        className="px-6 pb-6 shrink-0 rounded-b-3xl relative overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%)',
-          paddingTop: '20px',
+          background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)',
+          paddingTop: '32px',
+          boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)',
         }}
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="absolute -right-16 -top-16 rounded-full opacity-10"
+          style={{ width: '200px', height: '200px', background: '#FEFFFF' }} />
+          
+        <div className="flex items-center justify-between mb-6 relative z-10">
           <button
             onClick={() => navigate('/doctor')}
-            className="flex items-center justify-center rounded-xl"
-            style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.2)' }}>
-            <ArrowLeft size={18} color="white" />
+            className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
+            style={{ width: '40px', height: '40px', background: 'rgba(254,255,255,0.15)' }}>
+            <ArrowLeft size={20} color="#FEFFFF" />
           </button>
-          <h1 style={{ fontSize: '17px', fontWeight: 800, color: 'white' }}>Patient Details</h1>
+          <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#FEFFFF' }}>Patient Details</h1>
           <div className="flex gap-2">
             <button
               onClick={() => setEditMode(!editMode)}
-              className="flex items-center justify-center rounded-xl"
-              style={{ width: '36px', height: '36px', background: editMode ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.2)' }}>
-              <Edit3 size={16} color={editMode ? '#fbbf24' : 'white'} />
+              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
+              style={{ width: '40px', height: '40px', background: editMode ? 'rgba(251,191,36,0.3)' : 'rgba(254,255,255,0.15)' }}>
+              <Edit3 size={18} color={editMode ? '#fbbf24' : '#FEFFFF'} />
             </button>
             <button
               onClick={() => navigate('/doctor/report')}
-              className="flex items-center justify-center rounded-xl"
-              style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.2)' }}>
-              <FileText size={16} color="white" />
+              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
+              style={{ width: '40px', height: '40px', background: 'rgba(254,255,255,0.15)' }}>
+              <FileText size={18} color="#FEFFFF" />
             </button>
           </div>
         </div>
 
         {/* Patient card */}
-        <div className="flex items-center gap-4 p-3 rounded-2xl"
-          style={{ background: 'rgba(255,255,255,0.12)' }}>
+        <div className="flex items-center gap-4 p-4 rounded-2xl relative z-10 backdrop-blur-sm"
+          style={{ background: 'rgba(254,255,255,0.15)', border: '1px solid rgba(254,255,255,0.2)' }}>
           <div className="rounded-2xl flex items-center justify-center shrink-0"
-            style={{ width: '54px', height: '54px', background: 'rgba(255,255,255,0.2)', fontSize: '24px' }}>
+            style={{ width: '56px', height: '56px', background: 'rgba(254,255,255,0.2)', fontSize: '24px' }}>
             🧑‍🦽
           </div>
           <div className="flex-1">
-            <p style={{ fontSize: '16px', fontWeight: 800, color: 'white' }}>{patient.name}</p>
-            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
+            <p style={{ fontSize: '18px', fontWeight: 700, color: '#FEFFFF' }}>{patient.name}</p>
+            <p style={{ fontSize: '13px', color: 'rgba(254,255,255,0.8)', marginTop: '2px' }}>
               {patient.gender}, {patient.age} yrs · {patient.phone}
             </p>
-            <div className="flex gap-2 mt-1.5">
-              <span className="px-2 py-0.5 rounded-full"
-                style={{ background: '#eff6ff', color: '#2563eb', fontSize: '10px', fontWeight: 700 }}>
+            <div className="flex gap-2 mt-2">
+              <span className="px-3 py-1 rounded-full"
+                style={{ background: '#DEF2F1', color: '#3AAFA9', fontSize: '11px', fontWeight: 700 }}>
                 {patient.id}
               </span>
-              <span className="px-2 py-0.5 rounded-full"
-                style={{ background: '#ecfdf5', color: '#059669', fontSize: '10px', fontWeight: 700 }}>
+              <span className="px-3 py-1 rounded-full"
+                style={{ background: '#3AAFA9', color: '#FEFFFF', fontSize: '11px', fontWeight: 700 }}>
                 Token: {patient.token}
               </span>
             </div>
@@ -107,17 +111,16 @@ export function PatientDetailPage() {
       </div>
 
       {/* Tab navigation */}
-      <div className="flex shrink-0 px-4 pt-3 pb-0" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+      <div className="flex shrink-0 px-4 pt-4 pb-0" style={{ background: '#FEFFFF', borderBottom: '1px solid #DEF2F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}>
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="flex-1 py-2 text-center"
+            className="flex-1 py-3 text-center transition-all duration-300"
             style={{
-              fontSize: '12px', fontWeight: 700,
-              color: activeTab === tab ? '#4338ca' : '#94a3b8',
-              borderBottom: `2px solid ${activeTab === tab ? '#4338ca' : 'transparent'}`,
-              paddingBottom: '10px',
+              fontSize: '13px', fontWeight: 600,
+              color: activeTab === tab ? '#3AAFA9' : '#2B7A78',
+              borderBottom: `2px solid ${activeTab === tab ? '#3AAFA9' : 'transparent'}`,
             }}
           >
             {tab}
@@ -126,33 +129,37 @@ export function PatientDetailPage() {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-4xl mx-auto w-full" style={{ background: '#f8fafc' }}>
+      <div className="flex-1 overflow-y-auto px-5 py-6 max-w-4xl mx-auto w-full">
 
         {/* Overview Tab */}
         {activeTab === 'Overview' && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {/* Condition */}
-            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <div className="flex items-center gap-2 mb-3">
-                <Stethoscope size={16} color="#4338ca" />
-                <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Primary Condition</h3>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                  <Stethoscope size={16} color="#3AAFA9" />
+                </div>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Primary Condition</h3>
               </div>
-              <p style={{ fontSize: '14px', fontWeight: 700, color: '#4338ca' }}>{patient.condition}</p>
-              <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+              <p style={{ fontSize: '15px', fontWeight: 600, color: '#3AAFA9' }}>{patient.condition}</p>
+              <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>
                 Consultation with {patient.doctor} on {patient.date}
               </p>
             </div>
 
             {/* Symptoms */}
-            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <div className="flex items-center gap-2 mb-3">
-                <Activity size={16} color="#2563eb" />
-                <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Reported Symptoms</h3>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                  <Activity size={16} color="#3AAFA9" />
+                </div>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Reported Symptoms</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {patient.symptoms.map((s: string) => (
-                  <span key={s} className="px-3 py-1 rounded-full"
-                    style={{ background: '#eff6ff', color: '#2563eb', fontSize: '12px', fontWeight: 600 }}>
+                  <span key={s} className="px-3 py-1.5 rounded-xl"
+                    style={{ background: '#DEF2F1', color: '#3AAFA9', fontSize: '13px', fontWeight: 600, border: '1px solid #DEF2F1' }}>
                     {s}
                   </span>
                 ))}
@@ -160,40 +167,44 @@ export function PatientDetailPage() {
             </div>
 
             {/* Pain level */}
-            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span style={{ fontSize: '16px' }}>🔴</span>
-                  <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Pain Level</h3>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                    <span style={{ fontSize: '16px' }}>🔴</span>
+                  </div>
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Pain Level</h3>
                 </div>
-                <span style={{ fontSize: '18px', fontWeight: 900, color: painColors[patient.painLevel] }}>
+                <span style={{ fontSize: '20px', fontWeight: 800, color: painColors[patient.painLevel] }}>
                   {patient.painLevel}/10
                 </span>
               </div>
-              <div className="flex gap-0.5 rounded-xl overflow-hidden">
+              <div className="flex gap-1 rounded-xl overflow-hidden">
                 {painColors.map((c, i) => (
-                  <div key={i} className="flex-1 flex items-center justify-center"
-                    style={{ height: '28px', background: c, opacity: i <= patient.painLevel ? 1 : 0.2 }}>
-                    <span style={{ fontSize: '9px', fontWeight: 700, color: 'white' }}>{i}</span>
+                  <div key={i} className="flex-1 flex items-center justify-center rounded-sm"
+                    style={{ height: '32px', background: c, opacity: i <= patient.painLevel ? 1 : 0.15 }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#FEFFFF' }}>{i}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Functional Activities */}
-            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <div className="flex items-center gap-2 mb-3">
-                <CheckSquare size={16} color="#16a34a" />
-                <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Functional Activities</h3>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                  <CheckSquare size={16} color="#3AAFA9" />
+                </div>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Functional Activities</h3>
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 {Object.entries(patient.functional).map(([key, val]: [string, any]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span style={{ fontSize: '13px', color: '#475569', fontWeight: 600, textTransform: 'capitalize' }}>
+                  <div key={key} className="flex items-center justify-between py-1 border-b last:border-0" style={{ borderColor: '#DEF2F1' }}>
+                    <span style={{ fontSize: '14px', color: '#2B7A78', fontWeight: 500, textTransform: 'capitalize' }}>
                       {key === 'stairs' ? 'Climbing Stairs' : key}
                     </span>
-                    <span className="px-2 py-0.5 rounded-lg"
-                      style={{ background: `${funcColors[val]}20`, color: funcColors[val], fontSize: '11px', fontWeight: 700 }}>
+                    <span className="px-3 py-1 rounded-xl"
+                      style={{ background: `${funcColors[val]}15`, color: funcColors[val], fontSize: '12px', fontWeight: 600 }}>
                       {val} — {funcLabels[val]}
                     </span>
                   </div>
@@ -202,36 +213,38 @@ export function PatientDetailPage() {
             </div>
 
             {/* Complaints */}
-            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '10px' }}>
                 Chief Complaints
               </h3>
-              <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.6 }}>{patient.complaints}</p>
+              <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6 }}>{patient.complaints}</p>
             </div>
           </div>
         )}
 
         {/* Vitals Tab */}
         {activeTab === 'Vitals' && (
-          <div className="flex flex-col gap-3">
-            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <div className="flex items-center gap-2 mb-4">
-                <Heart size={16} color="#e11d48" />
-                <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Vital Signs</h3>
+          <div className="flex flex-col gap-4">
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                  <Heart size={16} color="#3AAFA9" />
+                </div>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Vital Signs</h3>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 {[
-                  { icon: '💓', label: 'Blood Pressure', value: patient.vitals.bp, color: '#ef4444' },
-                  { icon: '❤️', label: 'Pulse Rate', value: patient.vitals.pr, color: '#f97316' },
-                  { icon: '🫁', label: 'SpO₂', value: patient.vitals.spo2, color: '#2563eb' },
-                  { icon: '🌡️', label: 'Temperature', value: patient.vitals.temp, color: '#7c3aed' },
-                  { icon: '⚡', label: 'Ejection Fraction', value: patient.vitals.ef, color: '#10b981' },
+                  { icon: '💓', label: 'Blood Pressure', value: patient.vitals.bp, color: '#3AAFA9' },
+                  { icon: '❤️', label: 'Pulse Rate', value: patient.vitals.pr, color: '#2B7A78' },
+                  { icon: '🫁', label: 'SpO₂', value: patient.vitals.spo2, color: '#3AAFA9' },
+                  { icon: '🌡️', label: 'Temperature', value: patient.vitals.temp, color: '#2B7A78' },
+                  { icon: '⚡', label: 'Ejection Fraction', value: patient.vitals.ef, color: '#3AAFA9' },
                 ].map((vital) => (
-                  <div key={vital.label} className="p-3 rounded-2xl"
-                    style={{ background: '#f8fafc', border: '1px solid #f1f5f9' }}>
-                    <span style={{ fontSize: '20px' }}>{vital.icon}</span>
-                    <p style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginTop: '4px' }}>{vital.label}</p>
-                    <p style={{ fontSize: '15px', fontWeight: 800, color: vital.color }}>{vital.value}</p>
+                  <div key={vital.label} className="p-4 rounded-2xl transition-transform hover:-translate-y-1"
+                    style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                    <span style={{ fontSize: '24px' }}>{vital.icon}</span>
+                    <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600, marginTop: '8px' }}>{vital.label}</p>
+                    <p style={{ fontSize: '16px', fontWeight: 700, color: vital.color }}>{vital.value}</p>
                   </div>
                 ))}
               </div>
@@ -241,47 +254,49 @@ export function PatientDetailPage() {
 
         {/* Diagnosis Tab */}
         {activeTab === 'Diagnosis' && (
-          <div className="flex flex-col gap-3">
-            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Stethoscope size={16} color="#4338ca" />
-                  <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Diagnosis</h3>
+          <div className="flex flex-col gap-4">
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                    <Stethoscope size={16} color="#3AAFA9" />
+                  </div>
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Diagnosis</h3>
                 </div>
-                {editMode && <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 700 }}>✏️ Edit Mode</span>}
+                {editMode && <span className="px-2 py-1 rounded-md text-amber-600" style={{ background: '#DEF2F1', fontSize: '11px', fontWeight: 700 }}>✏️ Edit Mode</span>}
               </div>
               {editMode ? (
                 <textarea
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
                   className="w-full outline-none resize-none"
-                  style={{ padding: '12px', borderRadius: '12px', border: '1.5px solid #c7d2fe', background: '#f5f3ff', fontSize: '13px', minHeight: '80px' }}
+                  style={{ padding: '16px', borderRadius: '16px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '100px' }}
                 />
               ) : (
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#4338ca', lineHeight: 1.6 }}>{diagnosis}</p>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: '#3AAFA9', lineHeight: 1.6 }}>{diagnosis}</p>
               )}
             </div>
 
             {/* Treatment Protocol */}
-            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '10px' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '16px' }}>
                 Treatment Protocol
               </h3>
               {['RICE Therapy (Week 1)', 'Ultrasound Therapy (3×/week)', 'Quadriceps Strengthening (Week 2+)', 'Proprioception Training (Week 4+)', 'Sports-specific Rehab (Week 6)'].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 py-2" style={{ borderBottom: i < 4 ? '1px solid #f1f5f9' : 'none' }}>
+                <div key={i} className="flex items-center gap-4 py-3" style={{ borderBottom: i < 4 ? '1px solid #DEF2F1' : 'none' }}>
                   <div className="rounded-full flex items-center justify-center shrink-0"
-                    style={{ width: '22px', height: '22px', background: '#eff6ff', color: '#2563eb', fontSize: '11px', fontWeight: 800 }}>
+                    style={{ width: '28px', height: '28px', background: '#DEF2F1', color: '#3AAFA9', fontSize: '12px', fontWeight: 800 }}>
                     {i + 1}
                   </div>
-                  <span style={{ fontSize: '13px', color: '#475569', fontWeight: 600 }}>{item}</span>
+                  <span style={{ fontSize: '14px', color: '#2B7A78', fontWeight: 500 }}>{item}</span>
                 </div>
               ))}
             </div>
 
             {editMode && (
-              <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-2"
-                style={{ background: 'linear-gradient(135deg, #4338ca, #6366f1)', color: 'white', fontSize: '15px', fontWeight: 700 }}>
-                <Save size={16} />
+              <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1"
+                style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(43, 122, 120, 0.3)' }}>
+                <Save size={18} />
                 Save Diagnosis
               </button>
             )}
@@ -290,45 +305,49 @@ export function PatientDetailPage() {
 
         {/* Notes Tab */}
         {activeTab === 'Notes' && (
-          <div className="flex flex-col gap-3">
-            <div className="p-4 rounded-2xl" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <StickyNote size={16} color="#f59e0b" />
-                  <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Doctor's Notes</h3>
+          <div className="flex flex-col gap-4">
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                    <StickyNote size={16} color="#2B7A78" />
+                  </div>
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Doctor's Notes</h3>
                 </div>
-                {editMode && <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 700 }}>✏️ Edit Mode</span>}
+                {editMode && <span className="px-2 py-1 rounded-md text-amber-600" style={{ background: '#DEF2F1', fontSize: '11px', fontWeight: 700 }}>✏️ Edit Mode</span>}
               </div>
               {editMode ? (
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="w-full outline-none resize-none"
-                  style={{ padding: '12px', borderRadius: '12px', border: '1.5px solid #fde68a', background: '#fffbeb', fontSize: '13px', minHeight: '120px' }}
+                  style={{ padding: '16px', borderRadius: '16px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '140px' }}
                 />
               ) : (
-                <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.7 }}>{notes}</p>
+                <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.7 }}>{notes}</p>
               )}
             </div>
 
-            <div className="p-4 rounded-2xl" style={{ background: '#fffbeb', border: '1.5px solid #fde68a' }}>
-              <div className="flex items-center gap-2 mb-2">
-                <Dumbbell size={15} color="#d97706" />
-                <span style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>Exercise Recommendation</span>
+            <div className="p-5 rounded-2xl" style={{ background: '#DEF2F1', border: '1px solid #DEF2F1' }}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#FEFFFF' }}>
+                  <Dumbbell size={16} color="#3AAFA9" />
+                </div>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Exercise Recommendation</span>
               </div>
-              <p style={{ fontSize: '12px', color: '#92400e' }}>Prescribed 6-week Active Recovery Plan. View in Exercise Prescription.</p>
+              <p style={{ fontSize: '14px', color: '#2B7A78', marginBottom: '16px' }}>Prescribed 6-week Active Recovery Plan. View in Exercise Prescription.</p>
               <button
                 onClick={() => navigate('/doctor/exercise')}
-                className="mt-2 px-3 py-1.5 rounded-xl"
-                style={{ background: '#f59e0b', color: 'white', fontSize: '12px', fontWeight: 700 }}>
+                className="px-5 py-2.5 rounded-xl transition-colors"
+                style={{ background: '#3AAFA9', color: '#FEFFFF', fontSize: '13px', fontWeight: 600 }}>
                 View Exercise Plan
               </button>
             </div>
 
             {editMode && (
-              <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-2"
-                style={{ background: 'linear-gradient(135deg, #d97706, #f59e0b)', color: 'white', fontSize: '15px', fontWeight: 700 }}>
-                <Save size={16} />
+              <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1"
+                style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(43, 122, 120, 0.3)' }}>
+                <Save size={18} />
                 Save Notes
               </button>
             )}
@@ -336,7 +355,7 @@ export function PatientDetailPage() {
         )}
       </div>
 
-      <div className="md:hidden">
+      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
         <BottomNav role="doctor" />
       </div>
     </div>

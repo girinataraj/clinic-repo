@@ -32,7 +32,7 @@ const navConfig: Record<UserRole, NavItem[]> = {
 const roleAccentColor: Record<UserRole, { active: string; bg: string; pill: string }> = {
   patient: { active: '#2563eb', bg: '#eff6ff', pill: '#2563eb' },
   nurse: { active: '#0f766e', bg: '#f0fdfa', pill: '#0f766e' },
-  doctor: { active: '#4338ca', bg: '#eef2ff', pill: '#4338ca' },
+  doctor: { active: '#3AAFA9', bg: '#DEF2F1', pill: '#2B7A78' },
 };
 
 interface BottomNavProps {

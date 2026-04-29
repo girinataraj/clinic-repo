@@ -55,11 +55,11 @@ const roleConfig: Record<UserRole, {
     border: '#99f6e4',
   },
   doctor: {
-    gradient: 'linear-gradient(135deg, #1e1b4b, #4338ca)',
-    accent: '#4338ca',
-    accentBg: '#eef2ff',
+    gradient: 'linear-gradient(135deg, #2B7A78, #3AAFA9)',
+    accent: '#3AAFA9',
+    accentBg: '#2B7A78',
     label: 'Doctor Console',
-    border: '#c7d2fe',
+    border: '#2B7A78',
   },
 };
 
@@ -95,15 +95,15 @@ export function SideNav() {
       className="hidden md:flex flex-col h-screen shrink-0"
       style={{
         width: '240px',
-        background: 'white',
-        borderRight: '1px solid #f1f5f9',
+        background: role === 'doctor' ? '#17252A' : 'white',
+        borderRight: role === 'doctor' ? 'none' : '1px solid #f1f5f9',
         boxShadow: '2px 0 16px rgba(0,0,0,0.04)',
       }}
     >
       {/* Logo */}
       <div
         className="flex items-center gap-3 px-5 py-5"
-        style={{ borderBottom: '1px solid #f1f5f9' }}
+        style={{ borderBottom: role === 'doctor' ? '1px solid rgba(254, 255, 255, 0.1)' : '1px solid #f1f5f9' }}
       >
         <div
           className="flex items-center justify-center relative shrink-0"
@@ -114,19 +114,19 @@ export function SideNav() {
             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           }}
         >
-          <Activity size={20} color="white" strokeWidth={2.5} />
+          <Activity size={20} color="#FEFFFF" strokeWidth={2.5} />
           <div
             className="absolute -bottom-1 -right-1 flex items-center justify-center rounded-full"
-            style={{ width: '14px', height: '14px', background: '#10b981', border: '2px solid white' }}
+            style={{ width: '14px', height: '14px', background: role === 'doctor' ? '#3AAFA9' : '#10b981', border: `2px solid ${role === 'doctor' ? '#17252A' : 'white'}` }}
           >
-            <Sparkles size={7} color="white" />
+            <Sparkles size={7} color="#FEFFFF" />
           </div>
         </div>
         <div>
-          <p style={{ fontSize: '14px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.3px' }}>
+          <p style={{ fontSize: '14px', fontWeight: 900, color: role === 'doctor' ? '#FEFFFF' : '#0f172a', letterSpacing: '-0.3px' }}>
             SAAI Physio
           </p>
-          <p style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, letterSpacing: '0.3px' }}>
+          <p style={{ fontSize: '10px', color: role === 'doctor' ? '#DEF2F1' : '#94a3b8', fontWeight: 600, letterSpacing: '0.3px' }}>
             {rc.label}
           </p>
         </div>
@@ -134,7 +134,7 @@ export function SideNav() {
 
       {/* Nav Items */}
       <div className="flex-1 px-3 py-4 overflow-y-auto flex flex-col gap-1">
-        <p style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', paddingLeft: '10px', marginBottom: '8px' }}>
+        <p style={{ fontSize: '10px', fontWeight: 800, color: role === 'doctor' ? 'rgba(222, 242, 241, 0.6)' : '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', paddingLeft: '10px', marginBottom: '8px' }}>
           Navigation
         </p>
         {items.map((item) => {
@@ -144,7 +144,7 @@ export function SideNav() {
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
-              className="flex items-center gap-3 w-full text-left transition-all"
+              className="flex items-center gap-3 w-full text-left transition-all hover:bg-black/10"
               style={{
                 padding: '10px 12px',
                 borderRadius: '12px',
@@ -156,43 +156,43 @@ export function SideNav() {
                 className="flex items-center justify-center rounded-xl shrink-0"
                 style={{
                   width: '34px', height: '34px',
-                  background: active ? rc.accent : '#f1f5f9',
+                  background: active ? rc.accent : (role === 'doctor' ? 'rgba(254, 255, 255, 0.05)' : '#f1f5f9'),
                   transition: 'all 0.15s ease',
                 }}
               >
-                <Icon size={17} color={active ? 'white' : '#64748b'} strokeWidth={active ? 2.5 : 1.8} />
+                <Icon size={17} color={active ? '#FEFFFF' : (role === 'doctor' ? '#FEFFFF' : '#64748b')} strokeWidth={active ? 2.5 : 1.8} />
               </div>
               <span style={{
                 fontSize: '13px',
                 fontWeight: active ? 800 : 600,
-                color: active ? rc.accent : '#475569',
+                color: active ? '#FEFFFF' : (role === 'doctor' ? '#FEFFFF' : '#475569'),
                 flex: 1,
               }}>
                 {item.label}
               </span>
-              {active && <ChevronRight size={14} color={rc.accent} />}
+              {active && <ChevronRight size={14} color="#FEFFFF" />}
             </button>
           );
         })}
       </div>
 
       {/* User Profile & Logout */}
-      <div style={{ borderTop: '1px solid #f1f5f9', padding: '12px' }}>
+      <div style={{ borderTop: role === 'doctor' ? '1px solid rgba(254, 255, 255, 0.1)' : '1px solid #f1f5f9', padding: '12px' }}>
         <div
           className="flex items-center gap-3 p-3 rounded-xl mb-2"
-          style={{ background: rc.accentBg, border: `1px solid ${rc.border}` }}
+          style={{ background: role === 'doctor' ? 'rgba(254, 255, 255, 0.05)' : rc.accentBg, border: `1px solid ${role === 'doctor' ? 'rgba(254, 255, 255, 0.1)' : rc.border}` }}
         >
           <div
             className="flex items-center justify-center rounded-xl shrink-0"
             style={{ width: '36px', height: '36px', background: rc.gradient }}
           >
-            <User size={17} color="white" />
+            <User size={17} color="#FEFFFF" />
           </div>
           <div className="flex-1 min-w-0">
-            <p style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <p style={{ fontSize: '12px', fontWeight: 800, color: role === 'doctor' ? '#FEFFFF' : '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {user.name}
             </p>
-            <p style={{ fontSize: '10px', color: '#64748b', fontWeight: 600, textTransform: 'capitalize' }}>
+            <p style={{ fontSize: '10px', color: role === 'doctor' ? '#DEF2F1' : '#64748b', fontWeight: 600, textTransform: 'capitalize' }}>
               {role} · SAAI Clinic
             </p>
           </div>
@@ -201,17 +201,17 @@ export function SideNav() {
           onClick={handleLogout}
           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl"
           style={{
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            color: '#dc2626',
+            background: role === 'doctor' ? 'rgba(254, 255, 255, 0.05)' : '#fef2f2',
+            border: `1px solid ${role === 'doctor' ? 'rgba(254, 255, 255, 0.1)' : '#fecaca'}`,
+            color: role === 'doctor' ? '#FEFFFF' : '#dc2626',
             fontSize: '13px',
             fontWeight: 700,
           }}
         >
-          <LogOut size={15} />
+          <LogOut size={15} color={role === 'doctor' ? '#FEFFFF' : '#dc2626'} />
           Sign Out
         </button>
-        <p style={{ textAlign: 'center', fontSize: '9px', color: '#cbd5e1', marginTop: '10px', fontWeight: 600 }}>
+        <p style={{ textAlign: 'center', fontSize: '9px', color: role === 'doctor' ? 'rgba(222, 242, 241, 0.5)' : '#cbd5e1', marginTop: '10px', fontWeight: 600 }}>
           SAAI Physiotherapy v2.0
         </p>
       </div>
