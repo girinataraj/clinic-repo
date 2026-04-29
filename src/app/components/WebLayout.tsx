@@ -16,7 +16,7 @@ export function WebLayout() {
   if (!user) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#f8fafc' }}>
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* Sidebar — desktop/tablet only */}
       <SideNav />
 

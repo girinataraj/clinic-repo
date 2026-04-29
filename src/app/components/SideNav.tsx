@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import type { UserRole } from '../contexts/AuthContext';
+import { ThemeToggle } from './ThemeToggle';
 import {
   Home, Calendar, FileText, User, Users, ClipboardList, BarChart2,
   Activity, LogOut, Sparkles, ChevronRight,
@@ -8,7 +9,7 @@ import {
 
 interface NavItem {
   label: string;
-  Icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+  Icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number; className?: string }>;
   path: string;
 }
 
@@ -35,31 +36,35 @@ const navConfig: Record<UserRole, NavItem[]> = {
 
 const roleConfig: Record<UserRole, {
   gradient: string;
-  accent: string;
-  accentBg: string;
+  activeBg: string;
+  activeBorder: string;
+  activeText: string;
+  iconColor: string;
   label: string;
-  border: string;
 }> = {
   patient: {
     gradient: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
-    accent: '#2563eb',
-    accentBg: '#eff6ff',
+    activeBg: 'bg-blue-50 dark:bg-blue-900/30',
+    activeBorder: 'border-blue-200 dark:border-blue-800/50',
+    activeText: 'text-blue-600 dark:text-blue-400',
+    iconColor: '#2563eb',
     label: 'Patient Portal',
-    border: '#bfdbfe',
   },
   nurse: {
     gradient: 'linear-gradient(135deg, #134e4a, #0f766e)',
-    accent: '#0f766e',
-    accentBg: '#f0fdfa',
+    activeBg: 'bg-teal-50 dark:bg-teal-900/30',
+    activeBorder: 'border-teal-200 dark:border-teal-800/50',
+    activeText: 'text-teal-700 dark:text-teal-400',
+    iconColor: '#0f766e',
     label: 'Nurse Station',
-    border: '#99f6e4',
   },
   doctor: {
     gradient: 'linear-gradient(135deg, #1e1b4b, #4338ca)',
-    accent: '#4338ca',
-    accentBg: '#eef2ff',
+    activeBg: 'bg-indigo-50 dark:bg-indigo-900/30',
+    activeBorder: 'border-indigo-200 dark:border-indigo-800/50',
+    activeText: 'text-indigo-700 dark:text-indigo-400',
+    iconColor: '#4338ca',
     label: 'Doctor Console',
-    border: '#c7d2fe',
   },
 };
 
@@ -92,19 +97,11 @@ export function SideNav() {
 
   return (
     <div
-      className="hidden md:flex flex-col h-screen shrink-0"
-      style={{
-        width: '240px',
-        background: 'white',
-        borderRight: '1px solid #f1f5f9',
-        boxShadow: '2px 0 16px rgba(0,0,0,0.04)',
-      }}
+      className="hidden md:flex flex-col h-screen shrink-0 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800"
+      style={{ width: '240px', boxShadow: '2px 0 16px rgba(0,0,0,0.04)' }}
     >
       {/* Logo */}
-      <div
-        className="flex items-center gap-3 px-5 py-5"
-        style={{ borderBottom: '1px solid #f1f5f9' }}
-      >
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-100 dark:border-slate-800">
         <div
           className="flex items-center justify-center relative shrink-0"
           style={{
@@ -123,18 +120,14 @@ export function SideNav() {
           </div>
         </div>
         <div>
-          <p style={{ fontSize: '14px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.3px' }}>
-            SAAI Physio
-          </p>
-          <p style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, letterSpacing: '0.3px' }}>
-            {rc.label}
-          </p>
+          <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">SAAI Physio</p>
+          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold tracking-wide">{rc.label}</p>
         </div>
       </div>
 
       {/* Nav Items */}
       <div className="flex-1 px-3 py-4 overflow-y-auto flex flex-col gap-1">
-        <p style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', paddingLeft: '10px', marginBottom: '8px' }}>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 pl-2.5 mb-2">
           Navigation
         </p>
         {items.map((item) => {
@@ -144,43 +137,42 @@ export function SideNav() {
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
-              className="flex items-center gap-3 w-full text-left transition-all"
-              style={{
-                padding: '10px 12px',
-                borderRadius: '12px',
-                background: active ? rc.accentBg : 'transparent',
-                border: `1px solid ${active ? rc.border : 'transparent'}`,
-              }}
+              className={`flex items-center gap-3 w-full text-left transition-all rounded-xl px-3 py-2.5 border ${
+                active
+                  ? `${rc.activeBg} ${rc.activeBorder}`
+                  : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/60'
+              }`}
             >
               <div
-                className="flex items-center justify-center rounded-xl shrink-0"
+                className={`flex items-center justify-center rounded-xl shrink-0 transition-all ${
+                  !active ? 'bg-slate-100 dark:bg-slate-800' : ''
+                }`}
                 style={{
                   width: '34px', height: '34px',
-                  background: active ? rc.accent : '#f1f5f9',
-                  transition: 'all 0.15s ease',
+                  background: active ? rc.iconColor : undefined,
                 }}
               >
                 <Icon size={17} color={active ? 'white' : '#64748b'} strokeWidth={active ? 2.5 : 1.8} />
               </div>
-              <span style={{
-                fontSize: '13px',
-                fontWeight: active ? 800 : 600,
-                color: active ? rc.accent : '#475569',
-                flex: 1,
-              }}>
+              <span className={`flex-1 text-sm ${active ? `font-extrabold ${rc.activeText}` : 'font-semibold text-slate-500 dark:text-slate-400'}`}>
                 {item.label}
               </span>
-              {active && <ChevronRight size={14} color={rc.accent} />}
+              {active && <span className={rc.activeText}><ChevronRight size={14} /></span>}
             </button>
           );
         })}
       </div>
 
       {/* User Profile & Logout */}
-      <div style={{ borderTop: '1px solid #f1f5f9', padding: '12px' }}>
+      <div className="border-t border-slate-100 dark:border-slate-800 p-3">
+        {/* Theme toggle */}
+        <div className="flex items-center justify-between px-2 mb-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Theme</p>
+          <ThemeToggle />
+        </div>
+
         <div
-          className="flex items-center gap-3 p-3 rounded-xl mb-2"
-          style={{ background: rc.accentBg, border: `1px solid ${rc.border}` }}
+          className={`flex items-center gap-3 p-3 rounded-xl mb-2 border ${rc.activeBg} ${rc.activeBorder}`}
         >
           <div
             className="flex items-center justify-center rounded-xl shrink-0"
@@ -189,29 +181,18 @@ export function SideNav() {
             <User size={17} color="white" />
           </div>
           <div className="flex-1 min-w-0">
-            <p style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {user.name}
-            </p>
-            <p style={{ fontSize: '10px', color: '#64748b', fontWeight: 600, textTransform: 'capitalize' }}>
-              {role} · SAAI Clinic
-            </p>
+            <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{user.name}</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold capitalize">{role} · SAAI Clinic</p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl"
-          style={{
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            color: '#dc2626',
-            fontSize: '13px',
-            fontWeight: 700,
-          }}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/60 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors"
         >
           <LogOut size={15} />
           Sign Out
         </button>
-        <p style={{ textAlign: 'center', fontSize: '9px', color: '#cbd5e1', marginTop: '10px', fontWeight: 600 }}>
+        <p className="text-center text-[9px] text-slate-300 dark:text-slate-700 mt-2.5 font-semibold">
           SAAI Physiotherapy v2.0
         </p>
       </div>

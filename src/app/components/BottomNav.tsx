@@ -29,10 +29,10 @@ const navConfig: Record<UserRole, NavItem[]> = {
   ],
 };
 
-const roleAccentColor: Record<UserRole, { active: string; bg: string; pill: string }> = {
-  patient: { active: '#2563eb', bg: '#eff6ff', pill: '#2563eb' },
-  nurse: { active: '#0f766e', bg: '#f0fdfa', pill: '#0f766e' },
-  doctor: { active: '#4338ca', bg: '#eef2ff', pill: '#4338ca' },
+const roleAccentColor: Record<UserRole, { active: string; bg: string; darkBg: string; pill: string }> = {
+  patient: { active: '#2563eb', bg: '#eff6ff', darkBg: 'rgba(37,99,235,0.2)', pill: '#2563eb' },
+  nurse: { active: '#0f766e', bg: '#f0fdfa', darkBg: 'rgba(15,118,110,0.2)', pill: '#0f766e' },
+  doctor: { active: '#4338ca', bg: '#eef2ff', darkBg: 'rgba(67,56,202,0.2)', pill: '#4338ca' },
 };
 
 interface BottomNavProps {
@@ -47,12 +47,8 @@ export function BottomNav({ role }: BottomNavProps) {
 
   return (
     <div
-      className="shrink-0 flex items-center bg-white relative"
-      style={{
-        height: '68px',
-        borderTop: '1px solid #f1f5f9',
-        boxShadow: '0 -8px 24px rgba(0,0,0,0.07)',
-      }}
+      className="shrink-0 flex items-center bg-white dark:bg-slate-900 relative border-t border-slate-100 dark:border-slate-800 shadow-[0_-8px_24px_rgba(0,0,0,0.07)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.2)]"
+      style={{ height: '68px' }}
     >
       {items.map((item) => {
         const isDoctorPatientDetail =
@@ -75,37 +71,45 @@ export function BottomNav({ role }: BottomNavProps) {
         return (
           <button
             key={item.label}
-            className="flex-1 flex flex-col items-center justify-center gap-1 h-full relative"
+            className="flex-1 flex flex-col items-center justify-center gap-1 h-full relative pt-1.5 group"
             onClick={() => navigate(item.path)}
-            style={{ paddingTop: '6px' }}
           >
             {/* Active pill indicator at top */}
             {isActive && (
               <div
-                className="absolute top-0 rounded-full"
-                style={{ width: '32px', height: '3px', background: accent.pill, borderRadius: '0 0 4px 4px' }}
+                className="absolute top-0 rounded-b-md"
+                style={{ width: '32px', height: '3px', background: accent.pill }}
               />
             )}
             <div
-              className="flex items-center justify-center rounded-xl transition-all"
+              className={`flex items-center justify-center rounded-xl transition-all duration-150 ${
+                isActive ? 'bg-opacity-100 dark:bg-opacity-100' : 'bg-transparent'
+              }`}
               style={{
                 width: '42px',
                 height: '30px',
                 background: isActive ? accent.bg : 'transparent',
-                transition: 'all 0.15s ease',
               }}
             >
-              <Icon
-                size={20}
-                color={isActive ? accent.active : '#b0bec5'}
-                strokeWidth={isActive ? 2.5 : 1.8}
-              />
+              <div className="dark:hidden flex items-center justify-center w-full h-full rounded-xl" style={{ background: isActive ? accent.bg : 'transparent' }}>
+                <Icon
+                  size={20}
+                  color={isActive ? accent.active : '#b0bec5'}
+                  strokeWidth={isActive ? 2.5 : 1.8}
+                />
+              </div>
+              <div className="hidden dark:flex items-center justify-center w-full h-full rounded-xl" style={{ background: isActive ? accent.darkBg : 'transparent' }}>
+                <Icon
+                  size={20}
+                  color={isActive ? accent.active : '#64748b'}
+                  strokeWidth={isActive ? 2.5 : 1.8}
+                />
+              </div>
             </div>
             <span
+              className={`text-[10px] ${isActive ? 'font-extrabold' : 'font-medium text-slate-400 dark:text-slate-500'}`}
               style={{
-                fontSize: '10px',
-                fontWeight: isActive ? 800 : 500,
-                color: isActive ? accent.active : '#94a3b8',
+                color: isActive ? accent.active : undefined,
                 letterSpacing: isActive ? '0px' : '0.2px',
               }}
             >

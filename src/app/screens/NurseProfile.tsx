@@ -2,24 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
+import { ThemeToggle } from '../components/ThemeToggle';
 import {
-  ChevronRight,
-  LogOut,
-  Bell,
-  Shield,
-  HelpCircle,
-  Settings,
-  Edit3,
-  Award,
-  Clock,
-  Users,
-  ClipboardList,
-  ChevronLeft,
-  MapPin,
-  Phone,
-  CheckCircle,
-  Star,
-  Calendar,
+  ChevronRight, LogOut, Bell, Shield, HelpCircle,
+  Settings, Edit3, Award, Clock, Users,
+  ClipboardList, ChevronLeft, MapPin, Phone, CheckCircle,
+  Star, Calendar,
 } from 'lucide-react';
 
 const NURSE_PHOTO = 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80';
@@ -39,11 +27,11 @@ const shiftInfo = {
 };
 
 const settingsItems = [
-  { icon: Bell, label: 'Shift Notifications', sublabel: 'Alerts & duty reminders', color: '#0f766e', bg: '#f0fdfa' },
-  { icon: Calendar, label: 'Schedule & Roster', sublabel: 'View your monthly roster', color: '#2563eb', bg: '#eff6ff' },
-  { icon: Shield, label: 'Privacy & Security', sublabel: 'Data access controls', color: '#7c3aed', bg: '#f5f3ff' },
-  { icon: HelpCircle, label: 'Help & Support', sublabel: 'Contact hospital IT desk', color: '#f97316', bg: '#fff7ed' },
-  { icon: Settings, label: 'App Settings', sublabel: 'Language & preferences', color: '#64748b', bg: '#f8fafc' },
+  { icon: Bell, label: 'Shift Notifications', sublabel: 'Alerts & duty reminders', iconColor: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/30' },
+  { icon: Calendar, label: 'Schedule & Roster', sublabel: 'View your monthly roster', iconColor: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30' },
+  { icon: Shield, label: 'Privacy & Security', sublabel: 'Data access controls', iconColor: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50 dark:bg-violet-900/30' },
+  { icon: HelpCircle, label: 'Help & Support', sublabel: 'Contact hospital IT desk', iconColor: 'text-orange-500 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/30' },
+  { icon: Settings, label: 'App Settings', sublabel: 'Language & preferences', iconColor: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-100 dark:bg-slate-800' },
 ];
 
 export function NurseProfile() {
@@ -58,48 +46,43 @@ export function NurseProfile() {
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#f0fdf9', position: 'relative' }}>
-      <div className="flex-1 overflow-y-auto">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans relative">
+      <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
         {/* Header */}
         <div
-          className="relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #134e4a 0%, #0f766e 55%, #14b8a6 100%)' }}
+          className="relative overflow-hidden shrink-0"
+          style={{ background: 'linear-gradient(135deg, #0d2b27, #0f766e)' }}
         >
-          <div className="absolute -right-10 -top-10 rounded-full opacity-20"
-            style={{ width: '120px', height: '120px', background: 'white' }} />
-          <div className="absolute right-16 top-12 rounded-full opacity-10"
-            style={{ width: '70px', height: '70px', background: 'white' }} />
+          <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
           {/* Top bar */}
-          <div className="flex items-center justify-between px-5 pb-2" style={{ paddingTop: '20px' }}>
+          <div className="flex items-center justify-between px-6 pt-6 pb-2 max-w-5xl mx-auto">
             <button
               onClick={() => navigate('/nurse')}
-              className="flex items-center justify-center rounded-xl"
-              style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.2)' }}
+              className="flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors w-9 h-9"
             >
-              <ChevronLeft size={20} color="white" />
+              <ChevronLeft className="w-5 h-5 text-white" />
             </button>
-            <span style={{ fontSize: '16px', fontWeight: 800, color: 'white' }}>My Profile</span>
-            <button
-              className="flex items-center justify-center rounded-xl"
-              style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.2)' }}
-            >
-              <Edit3 size={16} color="white" />
-            </button>
+            <span className="text-base font-extrabold text-white">My Profile</span>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <button className="flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors w-9 h-9">
+                <Edit3 className="w-4 h-4 text-white" />
+              </button>
+            </div>
           </div>
 
           {/* Profile hero */}
-          <div className="flex flex-col items-center pb-6 pt-4 px-5">
+          <div className="flex flex-col items-center pb-8 pt-4 px-5">
             <div className="relative mb-3">
               {imgError ? (
                 <div
-                  className="flex items-center justify-center"
+                  className="flex items-center justify-center text-4xl"
                   style={{
                     width: '88px', height: '88px',
                     borderRadius: '28px',
                     background: 'rgba(255,255,255,0.25)',
                     border: '3px solid rgba(255,255,255,0.6)',
-                    fontSize: '36px',
                   }}
                 >
                   👩‍⚕️
@@ -107,35 +90,28 @@ export function NurseProfile() {
               ) : (
                 <img
                   src={NURSE_PHOTO}
-                  alt="Kavya Reddy"
+                  alt={user?.name || 'Kavya Reddy'}
                   onError={() => setImgError(true)}
+                  className="object-cover object-top"
                   style={{
                     width: '88px', height: '88px',
                     borderRadius: '28px',
-                    objectFit: 'cover',
-                    objectPosition: 'top',
                     border: '3px solid rgba(255,255,255,0.6)',
                     boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
                   }}
                 />
               )}
-              <div
-                className="absolute -bottom-1 -right-1 flex items-center justify-center rounded-full"
-                style={{ width: '26px', height: '26px', background: '#14b8a6', border: '2px solid white' }}
-              >
-                <Star size={12} color="white" fill="white" />
+              <div className="absolute -bottom-1 -right-1 flex items-center justify-center rounded-full w-6 h-6 bg-teal-400 border-2 border-white dark:border-slate-800">
+                <Star className="w-3 h-3 text-white fill-white" />
               </div>
             </div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'white' }}>{user?.name || 'Kavya Reddy'}</h2>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', marginTop: '2px' }}>
-              Senior Nurse · EMP-2018-KR04
-            </p>
+            <h2 className="text-xl font-extrabold text-white">{user?.name || 'Kavya Reddy'}</h2>
+            <p className="text-sm text-white/75 mt-0.5">Senior Nurse · EMP-2018-KR04</p>
             <div className="flex items-center gap-2 mt-3">
               {[{ text: '6 yrs Exp' }, { text: 'RN Certified' }, { text: 'Physio Unit' }].map((tag) => (
                 <span
                   key={tag.text}
-                  className="px-3 py-1 rounded-full"
-                  style={{ background: 'rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, color: 'white' }}
+                  className="px-3 py-1 rounded-full bg-white/20 text-[11px] font-bold text-white"
                 >
                   {tag.text}
                 </span>
@@ -144,51 +120,45 @@ export function NurseProfile() {
           </div>
         </div>
 
-        {/* Stats bar */}
-        <div className="mx-4 -mt-4 rounded-2xl p-4 flex"
-          style={{ background: 'white', boxShadow: '0 8px 32px rgba(15,118,110,0.12)', border: '1px solid #ccfbf1' }}>
-          {[
-            { label: "Today's Pts", value: '5', icon: Users, color: '#0f766e' },
-            { label: 'Intakes', value: '3', icon: ClipboardList, color: '#2563eb' },
-            { label: 'Hours', value: '6.5', icon: Clock, color: '#f59e0b' },
-          ].map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div key={s.label} className={`flex-1 flex flex-col items-center ${i !== 0 ? 'border-l border-slate-100' : ''}`}>
-                <Icon size={16} color={s.color} style={{ marginBottom: '4px' }} />
-                <span style={{ fontSize: '20px', fontWeight: 900, color: s.color, lineHeight: 1.2 }}>{s.value}</span>
-                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>{s.label}</span>
-              </div>
-            );
-          })}
-        </div>
+        <div className="px-6 max-w-5xl mx-auto w-full space-y-5 -mt-4 relative z-10 pb-6">
+          {/* Stats bar */}
+          <div className="bg-white dark:bg-slate-800 border border-teal-100 dark:border-slate-700/60 rounded-2xl p-4 flex shadow-[0_8px_32px_rgba(15,118,110,0.1)] dark:shadow-none">
+            {[
+              { label: "Today's Pts", value: '5', icon: Users, color: 'text-teal-600 dark:text-teal-400' },
+              { label: 'Intakes', value: '3', icon: ClipboardList, color: 'text-blue-600 dark:text-blue-400' },
+              { label: 'Hours', value: '6.5', icon: Clock, color: 'text-amber-500 dark:text-amber-400' },
+            ].map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.label} className={`flex-1 flex flex-col items-center ${i !== 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''}`}>
+                  <Icon className={`w-4 h-4 mb-1 ${s.color}`} />
+                  <span className={`text-[22px] font-black ${s.color} leading-none`}>{s.value}</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">{s.label}</span>
+                </div>
+              );
+            })}
+          </div>
 
-        <div className="px-4 pt-4 pb-4 flex flex-col gap-4">
           {/* Today's Shift */}
-          <div
-            className="p-4 rounded-2xl"
-            style={{ background: 'linear-gradient(135deg, #f0fdfa, #ccfbf1)', border: '1px solid #99f6e4' }}
-          >
-            <p style={{ fontSize: '12px', color: '#0f766e', fontWeight: 700, marginBottom: '10px' }}>TODAY'S SHIFT</p>
-            <div className="flex flex-col gap-2">
+          <div className="bg-gradient-to-br from-teal-50 to-emerald-50/50 dark:from-teal-900/20 dark:to-emerald-900/10 rounded-2xl border border-teal-100 dark:border-teal-900/30 p-5">
+            <p className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-3">Today's Shift</p>
+            <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center rounded-xl shrink-0"
-                  style={{ width: '36px', height: '36px', background: '#0f766e' }}>
-                  <Clock size={17} color="white" />
+                <div className="flex items-center justify-center rounded-xl w-9 h-9 bg-teal-700 dark:bg-teal-600 shrink-0">
+                  <Clock className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p style={{ fontSize: '13px', fontWeight: 800, color: '#064e3b' }}>{shiftInfo.shift}</p>
-                  <p style={{ fontSize: '12px', color: '#0f766e' }}>{shiftInfo.time}</p>
+                  <p className="text-sm font-extrabold text-slate-900 dark:text-white">{shiftInfo.shift}</p>
+                  <p className="text-xs text-teal-700 dark:text-teal-400">{shiftInfo.time}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center rounded-xl shrink-0"
-                  style={{ width: '36px', height: '36px', background: '#ecfdf5' }}>
-                  <MapPin size={17} color="#059669" />
+                <div className="flex items-center justify-center rounded-xl w-9 h-9 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800/30 shrink-0">
+                  <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p style={{ fontSize: '13px', fontWeight: 800, color: '#064e3b' }}>{shiftInfo.ward}</p>
-                  <p style={{ fontSize: '12px', color: '#0f766e' }}>Supervisor: {shiftInfo.supervisor}</p>
+                  <p className="text-sm font-extrabold text-slate-900 dark:text-white">{shiftInfo.ward}</p>
+                  <p className="text-xs text-teal-700 dark:text-teal-400">Supervisor: {shiftInfo.supervisor}</p>
                 </div>
               </div>
             </div>
@@ -196,30 +166,27 @@ export function NurseProfile() {
 
           {/* Certifications */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <p style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Certifications</p>
-              <button style={{ fontSize: '12px', fontWeight: 600, color: '#0f766e' }}>View All</button>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <p className="text-sm font-extrabold text-slate-900 dark:text-white">Certifications</p>
+              <button className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">View All</button>
             </div>
-            <div className="flex flex-col gap-2 rounded-2xl overflow-hidden"
-              style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}>
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
               {certifications.map((cert, i) => (
                 <div
                   key={cert.name}
-                  className="flex items-center gap-3 px-4 py-3"
-                  style={{ borderBottom: i < certifications.length - 1 ? '1px solid #f8fafc' : 'none' }}
+                  className={`flex items-center gap-3 px-4 py-3 ${i < certifications.length - 1 ? 'border-b border-slate-50 dark:border-slate-700/50' : ''}`}
                 >
-                  <div className="flex items-center justify-center rounded-xl shrink-0"
-                    style={{ width: '38px', height: '38px', background: cert.verified ? '#ecfdf5' : '#fef3c7' }}>
-                    <Award size={17} color={cert.verified ? '#10b981' : '#f59e0b'} />
+                  <div className={`flex items-center justify-center rounded-xl shrink-0 w-10 h-10 ${cert.verified ? 'bg-emerald-50 dark:bg-emerald-900/30' : 'bg-amber-50 dark:bg-amber-900/30'}`}>
+                    <Award className={`w-4 h-4 ${cert.verified ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}`} />
                   </div>
                   <div className="flex-1">
-                    <p style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{cert.name}</p>
-                    <p style={{ fontSize: '11px', color: '#94a3b8' }}>Since {cert.year}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{cert.name}</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">Since {cert.year}</p>
                   </div>
                   {cert.verified ? (
-                    <CheckCircle size={16} color="#10b981" />
+                    <CheckCircle className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                   ) : (
-                    <span className="px-2 py-0.5 rounded-full" style={{ background: '#fef3c7', color: '#d97706', fontSize: '10px', fontWeight: 700 }}>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
                       Pending
                     </span>
                   )}
@@ -229,43 +196,36 @@ export function NurseProfile() {
           </div>
 
           {/* Contact */}
-          <div
-            className="flex items-center gap-3 p-4 rounded-2xl"
-            style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}
-          >
-            <div className="flex items-center justify-center rounded-2xl shrink-0"
-              style={{ width: '44px', height: '44px', background: '#eff6ff' }}>
-              <Phone size={20} color="#2563eb" />
+          <div className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-center rounded-2xl w-11 h-11 bg-blue-50 dark:bg-blue-900/30 shrink-0">
+              <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
-              <p style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>HOSPITAL EXTENSION</p>
-              <p style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a' }}>+91 044-4567 8901</p>
-              <p style={{ fontSize: '12px', color: '#94a3b8' }}>Extn: 204 · Ward B Station</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Hospital Extension</p>
+              <p className="text-base font-extrabold text-slate-900 dark:text-white">+91 044-4567 8901</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">Extn: 204 · Ward B Station</p>
             </div>
           </div>
 
           {/* Settings */}
           <div>
-            <p style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>Settings</p>
-            <div className="flex flex-col gap-0 rounded-2xl overflow-hidden"
-              style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}>
+            <p className="text-sm font-extrabold text-slate-900 dark:text-white mb-3 px-1">Settings</p>
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
               {settingsItems.map((item, i) => {
                 const Icon = item.icon;
                 return (
                   <button
                     key={item.label}
-                    className="flex items-center gap-3 px-4 py-3 text-left"
-                    style={{ borderBottom: i < settingsItems.length - 1 ? '1px solid #f8fafc' : 'none' }}
+                    className={`flex items-center gap-3 px-4 py-3 text-left w-full hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${i < settingsItems.length - 1 ? 'border-b border-slate-50 dark:border-slate-700/50' : ''}`}
                   >
-                    <div className="flex items-center justify-center rounded-xl shrink-0"
-                      style={{ width: '38px', height: '38px', background: item.bg }}>
-                      <Icon size={17} color={item.color} />
+                    <div className={`flex items-center justify-center rounded-xl shrink-0 w-10 h-10 ${item.bg}`}>
+                      <Icon className={`w-4 h-4 ${item.iconColor}`} />
                     </div>
                     <div className="flex-1">
-                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{item.label}</p>
-                      <p style={{ fontSize: '11px', color: '#94a3b8' }}>{item.sublabel}</p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">{item.label}</p>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500">{item.sublabel}</p>
                     </div>
-                    <ChevronRight size={16} color="#cbd5e1" />
+                    <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600" />
                   </button>
                 );
               })}
@@ -275,58 +235,45 @@ export function NurseProfile() {
           {/* Logout */}
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl"
-            style={{
-              background: '#fef2f2',
-              border: '1.5px solid #fecaca',
-              color: '#dc2626',
-              fontSize: '14px',
-              fontWeight: 700,
-            }}
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
           >
-            <LogOut size={18} />
+            <LogOut className="w-4 h-4" />
             Sign Out
           </button>
-
-          <p style={{ textAlign: 'center', fontSize: '11px', color: '#cbd5e1' }}>
-            SAAI Physiotherapy v2.0 · Secure Health Platform
-          </p>
         </div>
       </div>
 
+      {/* Logout confirm modal */}
       {showLogoutConfirm && (
         <div
-          className="absolute inset-0 flex items-end justify-center"
-          style={{ background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 50 }}
+          className="absolute inset-0 flex items-end justify-center z-50 transition-opacity"
+          style={{ background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)' }}
           onClick={() => setShowLogoutConfirm(false)}
         >
           <div
-            className="w-full px-5 pt-6 pb-8"
-            style={{ background: 'white', borderRadius: '28px 28px 0 0' }}
+            className="w-full px-5 pt-6 pb-8 bg-white dark:bg-slate-900"
+            style={{ borderRadius: '28px 28px 0 0' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-center mb-4">
-              <div className="flex items-center justify-center rounded-2xl"
-                style={{ width: '56px', height: '56px', background: '#fef2f2' }}>
-                <LogOut size={24} color="#dc2626" />
+              <div className="flex items-center justify-center rounded-2xl w-14 h-14 bg-red-50 dark:bg-red-900/20">
+                <LogOut className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
             </div>
-            <p style={{ textAlign: 'center', fontSize: '18px', fontWeight: 800, color: '#0f172a', marginBottom: '6px' }}>Sign Out?</p>
-            <p style={{ textAlign: 'center', fontSize: '13px', color: '#64748b', marginBottom: '24px' }}>
+            <p className="text-center text-lg font-extrabold text-slate-900 dark:text-white mb-1.5">Sign Out?</p>
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-6">
               Your session will end and you'll need to log in again.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="flex-1 py-4 rounded-2xl"
-                style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', color: '#64748b', fontSize: '14px', fontWeight: 700 }}
+                className="flex-1 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleLogout}
-                className="flex-1 py-4 rounded-2xl"
-                style={{ background: '#dc2626', color: 'white', fontSize: '14px', fontWeight: 700 }}
+                className="flex-1 py-4 rounded-2xl bg-red-600 dark:bg-red-600 text-white text-sm font-bold hover:bg-red-700 dark:hover:bg-red-500 transition-colors"
               >
                 Sign Out
               </button>
@@ -335,7 +282,7 @@ export function NurseProfile() {
         </div>
       )}
 
-      <div className="md:hidden">
+      <div className="md:hidden shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
         <BottomNav role="nurse" />
       </div>
     </div>
