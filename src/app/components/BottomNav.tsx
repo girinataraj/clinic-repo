@@ -29,10 +29,17 @@ const navConfig: Record<UserRole, NavItem[]> = {
   ],
 };
 
+<<<<<<< HEAD
 const roleAccentColor: Record<UserRole, { active: string; bg: string; darkBg: string; pill: string }> = {
   patient: { active: '#2563eb', bg: '#eff6ff', darkBg: 'rgba(37,99,235,0.2)', pill: '#2563eb' },
   nurse: { active: '#0f766e', bg: '#f0fdfa', darkBg: 'rgba(15,118,110,0.2)', pill: '#0f766e' },
   doctor: { active: '#4338ca', bg: '#eef2ff', darkBg: 'rgba(67,56,202,0.2)', pill: '#4338ca' },
+=======
+const roleAccentColor: Record<UserRole, { active: string; bg: string; pill: string }> = {
+  patient: { active: '#2563eb', bg: '#eff6ff', pill: '#2563eb' },
+  nurse: { active: '#0f766e', bg: '#f0fdfa', pill: '#0f766e' },
+  doctor: { active: '#3AAFA9', bg: '#DEF2F1', pill: '#2B7A78' },
+>>>>>>> e0b4024f29a552ab11e9644763e40f2acdd085a5
 };
 
 interface BottomNavProps {

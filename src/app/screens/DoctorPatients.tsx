@@ -122,23 +122,23 @@ const patients: Patient[] = [
 
 const statusConfig: Record<PatientStatus, { label: string; color: string; bg: string; dot: string }>
   = {
-    waiting: { label: 'Waiting', color: '#b45309', bg: '#fef3c7', dot: '#f59e0b' },
-    'in-session': { label: 'In Session', color: '#2563eb', bg: '#eff6ff', dot: '#2563eb' },
-    completed: { label: 'Completed', color: '#059669', bg: '#ecfdf5', dot: '#10b981' },
+    waiting: { label: 'Waiting', color: '#2B7A78', bg: '#DEF2F1', dot: '#2B7A78' },
+    'in-session': { label: 'In Session', color: '#17252A', bg: '#DEF2F1', dot: '#3AAFA9' },
+    completed: { label: 'Completed', color: '#FEFFFF', bg: '#3AAFA9', dot: '#FEFFFF' },
   };
 
 const priorityConfig: Record<PatientPriority, { label: string; color: string; bg: string }>
   = {
-    high: { label: 'High', color: '#b91c1c', bg: '#fee2e2' },
-    medium: { label: 'Medium', color: '#92400e', bg: '#fef3c7' },
-    low: { label: 'Low', color: '#0f766e', bg: '#ccfbf1' },
+    high: { label: 'High', color: '#FEFFFF', bg: '#17252A' },
+    medium: { label: 'Medium', color: '#17252A', bg: '#3AAFA9' },
+    low: { label: 'Low', color: '#2B7A78', bg: '#DEF2F1' },
   };
 
 const avatarPalette = [
-  { bg: '#eef2ff', color: '#4338ca' },
-  { bg: '#f5f3ff', color: '#7c3aed' },
-  { bg: '#fdf2f8', color: '#be185d' },
-  { bg: '#ecfeff', color: '#0e7490' },
+  { bg: '#DEF2F1', color: '#2B7A78' },
+  { bg: '#DEF2F1', color: '#2B7A78' },
+  { bg: '#DEF2F1', color: '#2B7A78' },
+  { bg: '#DEF2F1', color: '#2B7A78' },
 ];
 
 const getInitials = (name: string) =>
@@ -148,9 +148,9 @@ const getInitials = (name: string) =>
     .join('');
 
 const getPainColor = (pain: number) => {
-  if (pain <= 3) return '#16a34a';
-  if (pain <= 6) return '#f97316';
-  return '#dc2626';
+  if (pain <= 3) return '#3AAFA9';
+  if (pain <= 6) return '#2B7A78';
+  return '#17252A';
 };
 
 export function DoctorPatients() {
@@ -199,23 +199,16 @@ export function DoctorPatients() {
   }, [search, statusFilter, priorityFilter]);
 
   return (
-    <div className="flex flex-col h-full saai-page">
+    <div className="flex flex-col h-full saai-page" style={{ backgroundColor: '#DEF2F1' }}>
       <div className="flex-1 overflow-y-auto">
         <div
-          className="relative overflow-hidden"
+          className="relative overflow-hidden rounded-b-3xl"
           style={{
-            background: 'linear-gradient(150deg, #0f172a 0%, #312e81 50%, #4338ca 100%)',
+            background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)',
             color: 'white',
+            boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)',
           }}
         >
-          <div
-            className="absolute -right-16 -top-10 rounded-full opacity-20"
-            style={{ width: '180px', height: '180px', background: '#6366f1' }}
-          />
-          <div
-            className="absolute left-10 bottom-6 rounded-full opacity-20"
-            style={{ width: '120px', height: '120px', background: '#38bdf8' }}
-          />
 
           <div className="max-w-6xl mx-auto px-5 pt-6 pb-10 saai-fade-up">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -237,15 +230,15 @@ export function DoctorPatients() {
                 onClick={() => navigate('/doctor/exercise')}
                 className="flex items-center gap-3 rounded-2xl px-4 py-3"
                 style={{
-                  background: 'rgba(255,255,255,0.12)',
-                  color: 'white',
+                  background: 'rgba(254,255,255,0.12)',
+                  color: '#FEFFFF',
                   fontWeight: 700,
-                  border: '1px solid rgba(255,255,255,0.2)',
+                  border: '1px solid rgba(254,255,255,0.2)',
                 }}
               >
                 <div
                   className="flex items-center justify-center rounded-xl"
-                  style={{ width: '34px', height: '34px', background: 'rgba(255,255,255,0.2)' }}
+                  style={{ width: '34px', height: '34px', background: 'rgba(254,255,255,0.2)' }}
                 >
                   <Stethoscope size={18} />
                 </div>
@@ -265,13 +258,13 @@ export function DoctorPatients() {
                   <div
                     key={card.label}
                     className="rounded-2xl px-4 py-3"
-                    style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.12)' }}
+                    style={{ background: 'rgba(254,255,255,0.12)', border: '1px solid rgba(254,255,255,0.12)' }}
                   >
                     <div className="flex items-center gap-2">
-                      <Icon size={16} color="#c7d2fe" />
-                      <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{card.label}</p>
+                      <Icon size={16} color="#DEF2F1" />
+                      <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(254,255,255,0.7)' }}>{card.label}</p>
                     </div>
-                    <p className="display-font" style={{ fontSize: '24px', fontWeight: 700, color: 'white', marginTop: '6px' }}>
+                    <p className="display-font" style={{ fontSize: '24px', fontWeight: 700, color: '#FEFFFF', marginTop: '6px' }}>
                       {card.value}
                     </p>
                   </div>
@@ -284,19 +277,19 @@ export function DoctorPatients() {
         <div className="max-w-6xl mx-auto px-4 pb-8" style={{ marginTop: '-18px' }}>
           <div className="grid grid-cols-1 xl:grid-cols-[2fr,1fr] gap-4">
             <div className="flex flex-col gap-4">
-              <div className="saai-panel rounded-2xl p-4">
+              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center">
                   <div
                     className="flex items-center gap-2 flex-1 rounded-2xl px-3"
-                    style={{ background: 'white', border: '1px solid #e2e8f0' }}
+                    style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}
                   >
-                    <Search size={16} color="#94a3b8" />
+                    <Search size={16} color="#2B7A78" />
                     <input
                       value={search}
                       onChange={(event) => setSearch(event.target.value)}
                       placeholder="Search patients or conditions"
                       className="flex-1 outline-none bg-transparent"
-                      style={{ padding: '10px 0', fontSize: '13px', color: '#0f172a' }}
+                      style={{ padding: '10px 0', fontSize: '13px', color: '#17252A' }}
                     />
                   </div>
                   <div className="flex gap-2">
@@ -309,13 +302,13 @@ export function DoctorPatients() {
                       <button
                         key={item.key}
                         onClick={() => setStatusFilter(item.key)}
-                        className="rounded-xl px-3 py-2"
+                        className="rounded-xl px-3 py-2 transition-all duration-200"
                         style={{
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          background: statusFilter === item.key ? '#4338ca' : '#f8fafc',
-                          color: statusFilter === item.key ? 'white' : '#64748b',
-                          border: `1px solid ${statusFilter === item.key ? '#4338ca' : '#e2e8f0'}`,
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          background: statusFilter === item.key ? '#3AAFA9' : '#FEFFFF',
+                          color: statusFilter === item.key ? '#FEFFFF' : '#2B7A78',
+                          border: `1px solid ${statusFilter === item.key ? '#3AAFA9' : '#DEF2F1'}`,
                         }}
                       >
                         {item.label}
@@ -338,9 +331,9 @@ export function DoctorPatients() {
                       style={{
                         fontSize: '11px',
                         fontWeight: 700,
-                        background: priorityFilter === item.key ? '#0f172a' : 'white',
-                        color: priorityFilter === item.key ? 'white' : '#64748b',
-                        border: `1px solid ${priorityFilter === item.key ? '#0f172a' : '#e2e8f0'}`,
+                        background: priorityFilter === item.key ? '#2B7A78' : '#FEFFFF',
+                        color: priorityFilter === item.key ? '#FEFFFF' : '#2B7A78',
+                        border: `1px solid ${priorityFilter === item.key ? '#2B7A78' : '#DEF2F1'}`,
                       }}
                     >
                       {item.label}
@@ -350,10 +343,10 @@ export function DoctorPatients() {
               </div>
 
               <div className="flex items-center justify-between">
-                <h2 className="display-font" style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>
+                <h2 className="display-font" style={{ fontSize: '18px', fontWeight: 700, color: '#17252A' }}>
                   Patient list
                 </h2>
-                <p style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>
+                <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600 }}>
                   {filtered.length} results
                 </p>
               </div>
@@ -368,8 +361,8 @@ export function DoctorPatients() {
                   return (
                     <div
                       key={patient.id}
-                      className="saai-panel rounded-2xl p-4 saai-stagger cursor-pointer hover:ring-2 hover:ring-indigo-400/40 transition-all"
-                      style={{ animationDelay: `${index * 70}ms` }}
+                      className="saai-panel rounded-2xl p-4 saai-stagger cursor-pointer hover:ring-2 hover:ring-teal-400/40 transition-all"
+                      style={{ animationDelay: `${index * 70}ms`, background: '#FEFFFF', border: '1px solid #DEF2F1' }}
                       onClick={() => handlePatientClick(patient.id)}
                       role="button"
                       tabIndex={0}
@@ -385,10 +378,10 @@ export function DoctorPatients() {
                         <div className="flex-1">
                           <div className="flex items-center justify-between gap-2">
                             <div>
-                              <p className="display-font" style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
+                              <p className="display-font" style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>
                                 {patient.name}
                               </p>
-                              <p style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                              <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>
                                 {patient.condition} · {patient.age} yrs
                               </p>
                             </div>
@@ -403,7 +396,7 @@ export function DoctorPatients() {
                           <div className="flex flex-wrap gap-2 mt-3">
                             <span
                               className="rounded-lg px-2 py-1"
-                              style={{ background: '#f8fafc', color: '#0f172a', fontSize: '11px', fontWeight: 700 }}
+                              style={{ background: '#DEF2F1', color: '#17252A', fontSize: '11px', fontWeight: 700 }}
                             >
                               Slot {patient.slot}
                             </span>
@@ -415,7 +408,7 @@ export function DoctorPatients() {
                             </span>
                             <span
                               className="rounded-lg px-2 py-1"
-                              style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 600 }}
+                              style={{ background: '#DEF2F1', color: '#2B7A78', fontSize: '11px', fontWeight: 600 }}
                             >
                               BP {patient.bp}
                             </span>
@@ -425,27 +418,27 @@ export function DoctorPatients() {
 
                       <div className="mt-3">
                         <div className="flex items-center justify-between">
-                          <p style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700 }}>Recovery progress</p>
-                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#0f172a' }}>
+                          <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 700 }}>Recovery progress</p>
+                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#17252A' }}>
                             {patient.progress}%
                           </span>
                         </div>
                         <div
                           className="mt-2 h-2 rounded-full"
-                          style={{ background: '#e2e8f0' }}
+                          style={{ background: '#DEF2F1' }}
                         >
                           <div
                             className="h-2 rounded-full"
-                            style={{ width: `${patient.progress}%`, background: '#4338ca' }}
+                            style={{ width: `${patient.progress}%`, background: '#3AAFA9' }}
                           />
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between mt-3">
                         <div>
-                          <p style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700 }}>Plan focus</p>
-                          <p style={{ fontSize: '12px', color: '#0f172a', fontWeight: 700 }}>{patient.plan}</p>
-                          <p style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>{patient.lastNote}</p>
+                          <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 700 }}>Plan focus</p>
+                          <p style={{ fontSize: '12px', color: '#17252A', fontWeight: 700 }}>{patient.plan}</p>
+                          <p style={{ fontSize: '11px', color: '#2B7A78', marginTop: '4px' }}>{patient.lastNote}</p>
                         </div>
                         <div className="flex items-center gap-2" style={{ color: painColor }}>
                           <Flame size={16} />
@@ -456,28 +449,28 @@ export function DoctorPatients() {
                       <div className="flex gap-2 mt-4">
                         <button
                           onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2"
+                          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-colors"
                           style={{
-                            background: '#eef2ff',
-                            color: '#4338ca',
-                            fontSize: '12px',
-                            fontWeight: 700,
+                            background: '#DEF2F1',
+                            color: '#2B7A78',
+                            fontSize: '13px',
+                            fontWeight: 600,
                           }}
                         >
-                          <FileText size={14} />
+                          <FileText size={16} />
                           View chart
                         </button>
                         <button
                           onClick={() => navigate('/doctor/exercise')}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2"
+                          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-shadow hover:shadow-md"
                           style={{
-                            background: 'linear-gradient(135deg, #4338ca, #6366f1)',
-                            color: 'white',
-                            fontSize: '12px',
-                            fontWeight: 700,
+                            background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)',
+                            color: '#FEFFFF',
+                            fontSize: '13px',
+                            fontWeight: 600,
                           }}
                         >
-                          <ChevronRight size={14} />
+                          <ChevronRight size={16} />
                           Write Rx
                         </button>
                       </div>
@@ -487,11 +480,11 @@ export function DoctorPatients() {
               </div>
 
               {filtered.length === 0 && (
-                <div className="saai-panel rounded-2xl p-6 text-center">
-                  <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+                <div className="saai-panel rounded-2xl p-6 text-center" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                  <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>
                     No patients found
                   </p>
-                  <p style={{ fontSize: '12px', color: '#64748b', marginTop: '6px' }}>
+                  <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '6px' }}>
                     Try adjusting your search, status, or priority filters.
                   </p>
                 </div>
@@ -499,9 +492,9 @@ export function DoctorPatients() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="saai-panel rounded-2xl p-4">
-                <p className="saai-kicker">Care insights</p>
-                <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginTop: '6px' }}>
+              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                <p className="saai-kicker" style={{ color: '#2B7A78' }}>Care insights</p>
+                <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A', marginTop: '6px' }}>
                   Focus today
                 </p>
                 <div className="mt-4 flex flex-col gap-3">
@@ -513,7 +506,7 @@ export function DoctorPatients() {
                     <div
                       key={item}
                       className="rounded-xl px-3 py-2"
-                      style={{ background: '#f8fafc', border: '1px solid #e2e8f0', fontSize: '12px', fontWeight: 600, color: '#0f172a' }}
+                      style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', fontSize: '12px', fontWeight: 600, color: '#17252A' }}
                     >
                       {item}
                     </div>
@@ -521,23 +514,23 @@ export function DoctorPatients() {
                 </div>
               </div>
 
-              <div className="saai-panel rounded-2xl p-4">
-                <p className="saai-kicker">Vitals overview</p>
-                <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginTop: '6px' }}>
+              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                <p className="saai-kicker" style={{ color: '#2B7A78' }}>Vitals overview</p>
+                <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A', marginTop: '6px' }}>
                   Session readiness
                 </p>
                 <div className="mt-4 flex flex-col gap-3">
                   {[
-                    { label: 'Stable vitals', value: '5 patients', color: '#0f766e' },
-                    { label: 'Needs review', value: '1 patient', color: '#b45309' },
-                    { label: 'Pending notes', value: '2 patients', color: '#4338ca' },
+                    { label: 'Stable vitals', value: '5 patients', color: '#3AAFA9' },
+                    { label: 'Needs review', value: '1 patient', color: '#2B7A78' },
+                    { label: 'Pending notes', value: '2 patients', color: '#17252A' },
                   ].map((item) => (
                     <div
                       key={item.label}
                       className="flex items-center justify-between rounded-xl px-3 py-2"
-                      style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
+                      style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}
                     >
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>{item.label}</span>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{item.label}</span>
                       <span style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.value}</span>
                     </div>
                   ))}
@@ -548,7 +541,7 @@ export function DoctorPatients() {
         </div>
       </div>
 
-      <div className="md:hidden">
+      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
         <BottomNav role="doctor" />
       </div>
 
