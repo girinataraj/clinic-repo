@@ -15,6 +15,7 @@ import { DoctorProfile } from './screens/DoctorProfile';
 import { PatientDetailPage } from './screens/PatientDetailPage';
 import { ExercisePrescription } from './screens/ExercisePrescription';
 import { ReportGeneration } from './screens/ReportGeneration';
+import { TreatmentDetailPage } from '../features/patients/pages/TreatmentDetailPage';
 
 export const router = createBrowserRouter([
   {
@@ -45,9 +46,13 @@ export const router = createBrowserRouter([
           { path: 'doctor', Component: DoctorDashboard },
           { path: 'doctor/patients', Component: DoctorPatients },
           { path: 'doctor/patient/:id', Component: PatientDetailPage },
+          { path: 'doctor/patient/:patientId/treatment', Component: TreatmentDetailPage },
           { path: 'doctor/exercise', Component: ExercisePrescription },
           { path: 'doctor/report', Component: ReportGeneration },
           { path: 'doctor/profile', Component: DoctorProfile },
+
+          // Nurse routes (treatment detail)
+          { path: 'nurse/patient/:patientId/treatment', Component: TreatmentDetailPage },
         ],
       },
 

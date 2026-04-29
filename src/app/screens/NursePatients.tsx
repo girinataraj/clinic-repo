@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { useAuth } from '../contexts/AuthContext';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { TreatmentDetailModal } from '../../features/patients/components/TreatmentDetailModal';
 import {
   AlertTriangle,
   CalendarClock,
@@ -209,9 +211,20 @@ const getInitials = (name: string) =>
 export function NursePatients() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isDesktop = useMediaQuery('(min-width: 768px)');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | PatientStatus>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | PatientPriority>('all');
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+
+  const handlePatientClick = (patientId: string | number) => {
+    const id = String(patientId);
+    if (isDesktop) {
+      setSelectedPatientId(id);
+    } else {
+      navigate(`/nurse/patient/${id}/treatment`);
+    }
+  };
 
   const firstName = user?.name?.split(' ')[0] || 'Nurse';
   const today = new Date().toLocaleDateString('en-IN', {
@@ -402,8 +415,12 @@ export function NursePatients() {
                   return (
                     <div
                       key={patient.id}
-                      className="saai-panel rounded-2xl p-4 saai-stagger"
+                      className="saai-panel rounded-2xl p-4 saai-stagger cursor-pointer hover:ring-2 hover:ring-teal-400/40 transition-all"
                       style={{ animationDelay: `${index * 70}ms` }}
+                      onClick={() => handlePatientClick(patient.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && handlePatientClick(patient.id)}
                     >
                       <div className="flex items-start gap-3">
                         <div
@@ -594,6 +611,15 @@ export function NursePatients() {
       <div className="md:hidden">
         <BottomNav role="nurse" />
       </div>
+
+      {/* Desktop Treatment Detail Modal */}
+      {selectedPatientId && (
+        <TreatmentDetailModal
+          patientId={selectedPatientId}
+          viewerRole={user?.role ?? 'nurse'}
+          onClose={() => setSelectedPatientId(null)}
+        />
+      )}
     </div>
   );
 }
