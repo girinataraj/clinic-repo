@@ -73,14 +73,25 @@ export function NurseIntakeForm() {
 
   const handleSave = async () => {
     setSubmitError(null);
+
+    // Guard: patientId is required by the backend
+    if (!patientId) {
+      setSubmitError('No patient selected. Please open this form from a patient record.');
+      return;
+    }
+
+    // Build the vitals nested object (only include fields with values)
+    const vitalsPayload: Record<string, unknown> = {};
+    if (vitals.bp_sys && vitals.bp_dia) vitalsPayload.bp = `${vitals.bp_sys}/${vitals.bp_dia}`;
+    if (vitals.pr) vitalsPayload.pr = Number(vitals.pr);
+    if (vitals.spo2) vitalsPayload.spo2 = Number(vitals.spo2);
+    if (vitals.temp) vitalsPayload.temperature = Number(vitals.temp);
+    if (vitals.ef) vitalsPayload.ef = Number(vitals.ef);
+
     try {
       await createEvaluation.mutateAsync({
         patientId,
-        bp: vitals.bp_sys && vitals.bp_dia ? `${vitals.bp_sys}/${vitals.bp_dia}` : undefined,
-        pr: vitals.pr ? Number(vitals.pr) : undefined,
-        spo2: vitals.spo2 ? Number(vitals.spo2) : undefined,
-        temperature: vitals.temp ? Number(vitals.temp) : undefined,
-        ef: vitals.ef ? Number(vitals.ef) : undefined,
+        vitals: Object.keys(vitalsPayload).length > 0 ? vitalsPayload : undefined,
         painLevel,
         chiefComplaints: complaints || undefined,
         associatedSymptoms: checkedSymptoms.length > 0 ? checkedSymptoms : undefined,

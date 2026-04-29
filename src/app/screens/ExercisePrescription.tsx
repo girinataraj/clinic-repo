@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router';
+import { useNavigate, useLocation, useParams, useSearchParams } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { useExercisePlans, useCreateExercisePlan } from '../../hooks/useExercisePlans';
@@ -55,10 +55,16 @@ export function ExercisePrescription() {
   const isPatientView = location.pathname.startsWith('/patient');
   const navRole = isPatientView ? 'patient' : 'doctor';
 
-  // ── Backend data ────────────────────────────────────────────────────────────
-  const effectivePatientId = isPatientView ? user?.id : patientId;
+  // ── Resolve patientId from route param OR query string ─────────────────────
+  // Route: /doctor/patient/:patientId/exercise  → useParams
+  // Route: /doctor/exercise?patientId=xxx       → useSearchParams
+  const [searchParams] = useSearchParams();
+  const queryPatientId = searchParams.get('patientId') ?? undefined;
+  const effectivePatientId = isPatientView ? user?.id : (patientId ?? queryPatientId);
+
   const { data: plansData, isLoading } = useExercisePlans(effectivePatientId ?? null);
   const createMutation = useCreateExercisePlan(effectivePatientId ?? '');
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const plans = plansData?.data ?? [];
   const activePlan = plans[0]; // Most recent
@@ -98,7 +104,15 @@ export function ExercisePrescription() {
   };
 
   const handleSave = async () => {
-    if (!effectivePatientId) return;
+    setSaveError(null);
+    if (!effectivePatientId) {
+      setSaveError('No patient selected. Open this page from a patient record or add ?patientId= to the URL.');
+      return;
+    }
+    if (localExercises.length === 0) {
+      setSaveError('Add at least one exercise before saving.');
+      return;
+    }
     try {
       await createMutation.mutateAsync({
         title: `Exercise Plan – ${new Date().toLocaleDateString('en-IN')}`,
@@ -117,8 +131,8 @@ export function ExercisePrescription() {
       setSaved(true);
       setLocalExercises([]);
       setTimeout(() => setSaved(false), 2000);
-    } catch {
-      // Error handled by React Query
+    } catch (err: any) {
+      setSaveError(err?.response?.data?.message ?? 'Failed to save plan. Please try again.');
     }
   };
 
@@ -355,12 +369,33 @@ export function ExercisePrescription() {
           </div>
         )}
 
+        {/* No patient warning for doctor */}
+        {!isPatientView && !effectivePatientId && (
+          <div className="mt-4 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3">
+            <Info size={18} color="#d97706" style={{ flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>No patient selected</p>
+              <p style={{ fontSize: '12px', color: '#b45309', marginTop: '2px' }}>
+                Open this page from a patient record to prescribe exercises.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Save error */}
+        {saveError && (
+          <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2">
+            <p style={{ fontSize: '13px', fontWeight: 600, color: '#b91c1c', flex: 1 }}>{saveError}</p>
+            <button onClick={() => setSaveError(null)} style={{ fontSize: '11px', color: '#dc2626', fontWeight: 700 }}>✕</button>
+          </div>
+        )}
+
         {/* Save button (doctor only, when there are new local exercises) */}
         {!isPatientView && localExercises.length > 0 && (
           <button
             onClick={handleSave}
             disabled={createMutation.isPending}
-            className="mt-6 w-full py-4 rounded-2xl flex items-center justify-center gap-2 transition-transform hover:-translate-y-1 disabled:opacity-60"
+            className="mt-4 w-full py-4 rounded-2xl flex items-center justify-center gap-2 transition-transform hover:-translate-y-1 disabled:opacity-60"
             style={{
               background: saved
                 ? 'linear-gradient(135deg, #10B981, #059669)'
