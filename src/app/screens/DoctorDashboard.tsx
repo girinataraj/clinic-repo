@@ -2,33 +2,21 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
+import { usePatients } from '../../hooks/usePatients';
+import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
   Search, Bell, Eye, Edit3, FileText, CheckCircle,
   Users, ChevronRight, Dumbbell, Calendar, User,
   TrendingUp, Zap, Activity
 } from 'lucide-react';
 
-const patients = [
-  { id: 1, name: 'Rahul Verma', age: 45, condition: 'Knee Injury (ACL)', time: '09:00 AM', status: 'in-session', bp: '120/80', pain: 6, initials: 'RV' },
-  { id: 2, name: 'Anita Patel', age: 28, condition: 'Rotator Cuff Tear', time: '09:30 AM', status: 'waiting', bp: '118/75', pain: 4, initials: 'AP' },
-  { id: 3, name: 'Suresh Kumar', age: 55, condition: 'Post-Stroke Rehab', time: '10:00 AM', status: 'completed', bp: '130/88', pain: 3, initials: 'SK' },
-  { id: 4, name: 'Meera Joshi', age: 38, condition: 'L4-L5 Disc Herniation', time: '10:30 AM', status: 'waiting', bp: '122/82', pain: 7, initials: 'MJ' },
-  { id: 5, name: 'Vikram Rao', age: 62, condition: 'Hip Replacement Rehab', time: '11:00 AM', status: 'completed', bp: '135/90', pain: 2, initials: 'VR' },
-];
-
-const statusConfig = {
-  waiting: { label: 'Waiting', color: '#2B7A78', bg: '#DEF2F1', dot: '#2B7A78', border: '#DEF2F1' },
-  'in-session': { label: 'In Session', color: '#17252A', bg: '#DEF2F1', dot: '#3AAFA9', border: '#DEF2F1' },
-  completed: { label: 'Completed', color: '#FEFFFF', bg: '#3AAFA9', dot: '#FEFFFF', border: '#3AAFA9' },
+const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string; border: string }> = {
+  waiting:      { label: 'Waiting',     color: '#2B7A78', bg: '#DEF2F1', dot: '#2B7A78', border: '#DEF2F1' },
+  'in-session': { label: 'In Session',  color: '#17252A', bg: '#DEF2F1', dot: '#3AAFA9', border: '#DEF2F1' },
+  completed:    { label: 'Completed',   color: '#FEFFFF', bg: '#3AAFA9', dot: '#FEFFFF', border: '#3AAFA9' },
 };
 
-const painColors: Record<number, string> = {
-  1: '#3AAFA9', 2: '#3AAFA9', 3: '#3AAFA9', 4: '#2B7A78',
-  5: '#2B7A78', 6: '#2B7A78', 7: '#17252A', 8: '#17252A', 9: '#17252A', 10: '#17252A',
-};
-
-const avatarBgs = ['#DEF2F1', '#DEF2F1', '#DEF2F1', '#DEF2F1', '#DEF2F1'];
-const avatarColorsList = ['#2B7A78', '#2B7A78', '#2B7A78', '#2B7A78', '#2B7A78'];
+const getInitials = (name: string) => name.split(' ').map(p => p[0]).join('');
 
 export function DoctorDashboard() {
   const { user } = useAuth();
@@ -36,16 +24,17 @@ export function DoctorDashboard() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const firstName = (user?.name || 'Dr. Rajesh Kumar').replace('Dr. ', '');
-  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+  // ── Live data from backend ─────────────────────────────────────────────────
+  const { data: patientsData, isLoading, isError } = usePatients({
+    search: search.trim() || undefined,
+    status: activeTab !== 'all' ? activeTab : undefined,
+    limit: 20,
+  }, true); // ← 10s polling for live patient queue
 
-  const filtered = patients.filter((p) => {
-    const matchSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.condition.toLowerCase().includes(search.toLowerCase());
-    const matchTab = activeTab === 'all' || p.status === activeTab;
-    return matchSearch && matchTab;
-  });
+  const patients = patientsData?.data ?? [];
+
+  const firstName = (user?.name || 'Doctor').replace('Dr. ', '');
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
 
   const waiting = patients.filter((p) => p.status === 'waiting').length;
   const inSession = patients.filter((p) => p.status === 'in-session').length;
@@ -107,7 +96,7 @@ export function DoctorDashboard() {
           {/* Stats */}
           <div className="flex gap-4 mb-6">
             {[
-              { label: "Today's Patients", value: patients.length, icon: Users },
+              { label: "Today's Patients", value: patientsData?.total ?? 0, icon: Users },
               { label: 'In Session', value: inSession, icon: Zap },
               { label: 'Completed', value: completed, icon: CheckCircle },
             ].map((s, i) => {
@@ -210,7 +199,7 @@ export function DoctorDashboard() {
 
             <div className="flex gap-2 p-1 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}>
               {[
-                { key: 'all', label: `All (${patients.length})` },
+                { key: 'all', label: `All (${patientsData?.total ?? 0})` },
                 { key: 'waiting', label: `Wait (${waiting})` },
                 { key: 'in-session', label: 'Active' },
                 { key: 'completed', label: 'Done' },
@@ -235,17 +224,42 @@ export function DoctorDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#17252A' }}>Patient Queue</h3>
             <span className="px-3 py-1 rounded-full" style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600, background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-              {filtered.length} patients
+              {isLoading ? '…' : `${patients.length} patients`}
             </span>
           </div>
 
           {/* Patient Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filtered.map((patient, index) => {
-              const config = statusConfig[patient.status as keyof typeof statusConfig];
-              const painColor = painColors[patient.pain] || '#3AAFA9';
-              const avatarBg = avatarBgs[index % avatarBgs.length];
-              const avatarColor = avatarColorsList[index % avatarColorsList.length];
+            {/* Loading skeleton */}
+            {isLoading && Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-2xl p-5 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                <div className="flex gap-4">
+                  <div className="w-14 h-14 rounded-2xl" style={{ background: '#DEF2F1' }} />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 rounded" style={{ background: '#DEF2F1', width: '60%' }} />
+                    <div className="h-3 rounded" style={{ background: '#DEF2F1', width: '40%' }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Error state */}
+            {!isLoading && isError && (
+              <div className="col-span-full">
+                <ApiErrorBanner error={isError} onRetry={() => window.location.reload()} />
+              </div>
+            )}
+
+            {!isLoading && !isError && patients.length === 0 && (
+              <div className="col-span-full text-center py-10 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                <Users className="w-10 h-10 mx-auto mb-3" style={{ color: '#DEF2F1' }} />
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>No patients found</p>
+                <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '4px' }}>Try adjusting your search or filters</p>
+              </div>
+            )}
+
+            {!isLoading && !isError && patients.map((patient, index) => {
+              const config = statusConfig[patient.status] ?? statusConfig['waiting'];
               return (
                 <div
                   key={patient.id}
@@ -259,8 +273,8 @@ export function DoctorDashboard() {
                   {/* Patient header */}
                   <div className="flex items-center gap-4 p-5 pb-4">
                     <div className="rounded-2xl flex items-center justify-center shrink-0 relative"
-                      style={{ width: '56px', height: '56px', background: avatarBg }}>
-                      <span style={{ fontSize: '18px', fontWeight: 700, color: avatarColor }}>{patient.initials}</span>
+                      style={{ width: '56px', height: '56px', background: '#DEF2F1' }}>
+                      <span style={{ fontSize: '18px', fontWeight: 700, color: '#2B7A78' }}>{getInitials(patient.name)}</span>
                       {patient.status === 'in-session' && (
                         <div className="absolute -top-1 -right-1 rounded-full"
                           style={{ width: '14px', height: '14px', background: '#3AAFA9', border: '2px solid #FEFFFF' }} />
@@ -270,7 +284,7 @@ export function DoctorDashboard() {
                       <div className="flex items-start justify-between">
                         <div>
                           <p style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>{patient.name}</p>
-                          <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '2px' }}>{patient.condition} · {patient.age} yrs</p>
+                          <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '2px' }}>{patient.condition ?? '—'} · {patient.age} yrs</p>
                         </div>
                         <span className="px-3 py-1 rounded-full flex items-center gap-1.5"
                           style={{ background: config.bg, color: config.color, fontSize: '12px', fontWeight: 600 }}>
@@ -281,34 +295,33 @@ export function DoctorDashboard() {
                     </div>
                   </div>
 
-                  {/* Vitals row */}
+                  {/* Info row */}
                   <div className="flex gap-3 px-5 pb-5">
                     <div className="flex-1 flex items-center gap-3 p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
                       <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                        <span style={{ fontSize: '14px' }}>💓</span>
+                        <span style={{ fontSize: '14px' }}>🆔</span>
                       </div>
                       <div>
-                        <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600, marginBottom: '2px' }}>BP</p>
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{patient.bp}</p>
+                        <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600, marginBottom: '2px' }}>ID</p>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{patient.displayId}</p>
                       </div>
                     </div>
                     <div className="flex-1 flex items-center gap-3 p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
                       <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                        <span style={{ fontSize: '14px' }}>⏰</span>
+                        <span style={{ fontSize: '14px' }}>📞</span>
                       </div>
                       <div>
-                        <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600, marginBottom: '2px' }}>Slot</p>
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{patient.time}</p>
+                        <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600, marginBottom: '2px' }}>Phone</p>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{patient.phone}</p>
                       </div>
                     </div>
-                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl"
-                      style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
                       <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                        <span style={{ fontSize: '14px' }}>🔴</span>
+                        <span style={{ fontSize: '14px' }}>⚠️</span>
                       </div>
                       <div>
-                        <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600, marginBottom: '2px' }}>Pain</p>
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: painColor }}>{patient.pain}/10</p>
+                        <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600, marginBottom: '2px' }}>Priority</p>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A', textTransform: 'capitalize' }}>{patient.priority}</p>
                       </div>
                     </div>
                   </div>
@@ -347,7 +360,7 @@ export function DoctorDashboard() {
             })}
           </div>
 
-          {filtered.length === 0 && (
+          {!isLoading && patients.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 rounded-2xl shadow-sm mt-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
               <div className="flex items-center justify-center rounded-full mb-4"
                 style={{ width: '72px', height: '72px', background: '#DEF2F1' }}>

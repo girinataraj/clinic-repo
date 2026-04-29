@@ -1,5 +1,6 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
 import { WebLayout } from './components/WebLayout';
+import { RoleGuard } from './components/RoleGuard';
 import { LoginScreen } from './screens/LoginScreen';
 import { PatientDashboard } from './screens/PatientDashboard';
 import { PatientProfile } from './screens/PatientProfile';
@@ -21,43 +22,56 @@ export const router = createBrowserRouter([
   {
     path: '/',
     children: [
-      // Public routes — no sidebar
+      // ── Public routes ─────────────────────────────────────────────────
       { index: true, Component: LoginScreen },
       { path: 'login', Component: LoginScreen },
 
-      // Authenticated routes — wrapped with WebLayout (sidebar)
+      // ── Authenticated routes — wrapped with WebLayout (sidebar) ──────
       {
         Component: WebLayout,
         children: [
-          // Patient routes
-          { path: 'patient', Component: PatientDashboard },
-          { path: 'patient/appointment', Component: AppointmentBooking },
-          { path: 'patient/exercise', Component: ExercisePrescription },
-          { path: 'patient/records', Component: PatientRecords },
-          { path: 'patient/profile', Component: PatientProfile },
+          // Patient routes — role: patient
+          {
+            element: <RoleGuard allowed={['patient']} />,
+            children: [
+              { path: 'patient', Component: PatientDashboard },
+              { path: 'patient/appointment', Component: AppointmentBooking },
+              { path: 'patient/exercise', Component: ExercisePrescription },
+              { path: 'patient/records', Component: PatientRecords },
+              { path: 'patient/profile', Component: PatientProfile },
+            ],
+          },
 
-          // Nurse routes
-          { path: 'nurse', Component: NurseDashboard },
-          { path: 'nurse/intake', Component: NurseIntakeForm },
-          { path: 'nurse/patients', Component: NursePatients },
-          { path: 'nurse/profile', Component: NurseProfile },
+          // Nurse routes — role: nurse
+          {
+            element: <RoleGuard allowed={['nurse']} />,
+            children: [
+              { path: 'nurse', Component: NurseDashboard },
+              { path: 'nurse/intake', Component: NurseIntakeForm },
+              { path: 'nurse/patients', Component: NursePatients },
+              { path: 'nurse/profile', Component: NurseProfile },
+              { path: 'nurse/patient/:patientId/treatment', Component: TreatmentDetailPage },
+            ],
+          },
 
-          // Doctor routes
-          { path: 'doctor', Component: DoctorDashboard },
-          { path: 'doctor/patients', Component: DoctorPatients },
-          { path: 'doctor/patient/:id', Component: PatientDetailPage },
-          { path: 'doctor/patient/:patientId/treatment', Component: TreatmentDetailPage },
-          { path: 'doctor/exercise', Component: ExercisePrescription },
-          { path: 'doctor/report', Component: ReportGeneration },
-          { path: 'doctor/profile', Component: DoctorProfile },
-
-          // Nurse routes (treatment detail)
-          { path: 'nurse/patient/:patientId/treatment', Component: TreatmentDetailPage },
+          // Doctor routes — role: doctor
+          {
+            element: <RoleGuard allowed={['doctor']} />,
+            children: [
+              { path: 'doctor', Component: DoctorDashboard },
+              { path: 'doctor/patients', Component: DoctorPatients },
+              { path: 'doctor/patient/:id', Component: PatientDetailPage },
+              { path: 'doctor/patient/:patientId/treatment', Component: TreatmentDetailPage },
+              { path: 'doctor/exercise', Component: ExercisePrescription },
+              { path: 'doctor/report', Component: ReportGeneration },
+              { path: 'doctor/profile', Component: DoctorProfile },
+            ],
+          },
         ],
       },
 
-      // Fallback
-      { path: '*', Component: LoginScreen },
+      // ── Fallback → login ──────────────────────────────────────────────
+      { path: '*', element: <Navigate to="/login" replace /> },
     ],
   },
 ]);

@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { usePatients } from '../../hooks/usePatients';
 import { TreatmentDetailModal } from '../../features/patients/components/TreatmentDetailModal';
 import {
   AlertTriangle,
@@ -12,6 +13,7 @@ import {
   ChevronRight,
   ClipboardList,
   Clock,
+  Loader2,
   Phone,
   Plus,
   Search,
@@ -19,106 +21,24 @@ import {
   User,
 } from 'lucide-react';
 
-type PatientStatus = 'waiting' | 'in-progress' | 'done';
-type PatientPriority = 'high' | 'medium' | 'low';
-
-interface Patient {
-  id: number;
-  name: string;
-  age: number;
-  gender: 'M' | 'F';
-  condition: string;
-  slot: string;
-  status: PatientStatus;
-  priority: PatientPriority;
-  token: string;
-  lastVisit: string;
-  phone: string;
-  nextStep: string;
-}
-
-const patients: Patient[] = [
-  {
-    id: 101, name: 'Rahul Verma', age: 45, gender: 'M',
-    condition: 'ACL Knee Rehab', slot: '09:00 AM', status: 'waiting',
-    priority: 'high', token: 'T-01', lastVisit: 'Apr 22',
-    phone: '+91 90000 21034', nextStep: 'Gait training',
-  },
-  {
-    id: 102, name: 'Anita Patel', age: 28, gender: 'F',
-    condition: 'Shoulder Impingement', slot: '09:30 AM', status: 'in-progress',
-    priority: 'medium', token: 'T-02', lastVisit: 'Apr 24',
-    phone: '+91 90000 44218', nextStep: 'ROM assessment',
-  },
-  {
-    id: 103, name: 'Suresh Kumar', age: 55, gender: 'M',
-    condition: 'Post Stroke Rehab', slot: '10:00 AM', status: 'done',
-    priority: 'low', token: 'T-03', lastVisit: 'Apr 26',
-    phone: '+91 90000 11357', nextStep: 'Vitals update',
-  },
-  {
-    id: 104, name: 'Meera Joshi', age: 38, gender: 'F',
-    condition: 'Lower Back Pain', slot: '10:30 AM', status: 'waiting',
-    priority: 'high', token: 'T-04', lastVisit: 'Apr 21',
-    phone: '+91 90000 88429', nextStep: 'Pain intake',
-  },
-  {
-    id: 105, name: 'Vikram Rao', age: 62, gender: 'M',
-    condition: 'Hip Replacement Rehab', slot: '11:00 AM', status: 'waiting',
-    priority: 'medium', token: 'T-05', lastVisit: 'Apr 19',
-    phone: '+91 90000 77204', nextStep: 'Mobility check',
-  },
-  {
-    id: 106, name: 'Fatima Khan', age: 31, gender: 'F',
-    condition: 'Ankle Sprain', slot: '11:30 AM', status: 'in-progress',
-    priority: 'low', token: 'T-06', lastVisit: 'Apr 25',
-    phone: '+91 90000 31948', nextStep: 'Balance review',
-  },
-  {
-    id: 107, name: 'Ajay Nair', age: 50, gender: 'M',
-    condition: 'Frozen Shoulder', slot: '12:00 PM', status: 'waiting',
-    priority: 'medium', token: 'T-07', lastVisit: 'Apr 18',
-    phone: '+91 90000 55133', nextStep: 'Heat prep',
-  },
-  {
-    id: 108, name: 'Neha Iyer', age: 42, gender: 'F',
-    condition: 'Cervical Spondylosis', slot: '12:30 PM', status: 'done',
-    priority: 'low', token: 'T-08', lastVisit: 'Apr 26',
-    phone: '+91 90000 22471', nextStep: 'Discharge notes',
-  },
-];
-
-const statusConfig: Record<PatientStatus, { label: string; color: string; bg: string; dot: string }> = {
-  waiting: { label: 'Waiting', color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/30', dot: 'bg-amber-400' },
-  'in-progress': { label: 'In Progress', color: 'text-blue-700 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30', dot: 'bg-blue-500' },
-  done: { label: 'Completed', color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30', dot: 'bg-emerald-400' },
+const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+  waiting:     { label: 'Waiting',     color: 'text-amber-700 dark:text-amber-400',   bg: 'bg-amber-50 dark:bg-amber-900/30',   dot: 'bg-amber-400' },
+  'in-session':{ label: 'In Session',  color: 'text-blue-700 dark:text-blue-400',     bg: 'bg-blue-50 dark:bg-blue-900/30',     dot: 'bg-blue-500' },
+  completed:   { label: 'Completed',   color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30', dot: 'bg-emerald-400' },
 };
 
-const priorityConfig: Record<PatientPriority, { label: string; color: string; bg: string }> = {
-  high: { label: 'High', color: 'text-red-700 dark:text-red-400', bg: 'bg-red-100 dark:bg-red-900/30' },
+const priorityConfig: Record<string, { label: string; color: string; bg: string }> = {
+  high:   { label: 'High',   color: 'text-red-700 dark:text-red-400',     bg: 'bg-red-100 dark:bg-red-900/30' },
   medium: { label: 'Medium', color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/30' },
-  low: { label: 'Low', color: 'text-teal-700 dark:text-teal-400', bg: 'bg-teal-100 dark:bg-teal-900/30' },
+  low:    { label: 'Low',    color: 'text-teal-700 dark:text-teal-400',   bg: 'bg-teal-100 dark:bg-teal-900/30' },
 };
 
 const avatarPalette = [
-  { bg: 'bg-cyan-100 dark:bg-cyan-900/40', color: 'text-cyan-800 dark:text-cyan-300' },
-  { bg: 'bg-teal-100 dark:bg-teal-900/40', color: 'text-teal-800 dark:text-teal-300' },
-  { bg: 'bg-red-100 dark:bg-red-900/40', color: 'text-red-800 dark:text-red-300' },
-  { bg: 'bg-blue-100 dark:bg-blue-900/40', color: 'text-blue-800 dark:text-blue-300' },
+  { bg: 'bg-cyan-100 dark:bg-cyan-900/40',   color: 'text-cyan-800 dark:text-cyan-300' },
+  { bg: 'bg-teal-100 dark:bg-teal-900/40',   color: 'text-teal-800 dark:text-teal-300' },
+  { bg: 'bg-red-100 dark:bg-red-900/40',     color: 'text-red-800 dark:text-red-300' },
+  { bg: 'bg-blue-100 dark:bg-blue-900/40',   color: 'text-blue-800 dark:text-blue-300' },
   { bg: 'bg-violet-100 dark:bg-violet-900/40', color: 'text-violet-800 dark:text-violet-300' },
-];
-
-const intakeChecklist = [
-  { label: 'Vitals captured', done: true },
-  { label: 'Pain scale noted', done: true },
-  { label: 'Consent verified', done: false },
-  { label: 'Exercise history updated', done: false },
-];
-
-const priorityAlerts = [
-  '2 patients need vitals refresh',
-  '1 high priority intake pending',
-  'Next slot starts in 18 minutes',
 ];
 
 const getInitials = (name: string) =>
@@ -129,16 +49,25 @@ export function NursePatients() {
   const navigate = useNavigate();
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | PatientStatus>('all');
-  const [priorityFilter, setPriorityFilter] = useState<'all' | PatientPriority>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  const handlePatientClick = (patientId: string | number) => {
-    const id = String(patientId);
+  // ── Live data from backend ─────────────────────────────────────────────────
+  const { data: patientsData, isLoading, isError } = usePatients({
+    search: search.trim() || undefined,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    priority: priorityFilter !== 'all' ? priorityFilter : undefined,
+    limit: 50,
+  });
+
+  const patients = patientsData?.data ?? [];
+
+  const handlePatientClick = (patientId: string) => {
     if (isDesktop) {
-      setSelectedPatientId(id);
+      setSelectedPatientId(patientId);
     } else {
-      navigate(`/nurse/patient/${id}/treatment`);
+      navigate(`/nurse/patient/${patientId}/treatment`);
     }
   };
 
@@ -146,24 +75,14 @@ export function NursePatients() {
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
   const stats = {
-    total: patients.length,
+    total: patientsData?.total ?? 0,
     waiting: patients.filter((p) => p.status === 'waiting').length,
-    active: patients.filter((p) => p.status === 'in-progress').length,
+    active: patients.filter((p) => p.status === 'in-session').length,
     highPriority: patients.filter((p) => p.priority === 'high').length,
   };
 
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return patients.filter((p) => {
-      const matchesQuery =
-        !query ||
-        p.name.toLowerCase().includes(query) ||
-        p.condition.toLowerCase().includes(query);
-      const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-      const matchesPriority = priorityFilter === 'all' || p.priority === priorityFilter;
-      return matchesQuery && matchesStatus && matchesPriority;
-    });
-  }, [search, statusFilter, priorityFilter]);
+  const getInitials = (name: string) => name.split(' ').map((p) => p[0]).join('');
+
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
@@ -294,18 +213,42 @@ export function NursePatients() {
               {/* List heading */}
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">Patient list</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">{filtered.length} results</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                  {isLoading ? '…' : `${patients.length} results`}
+                </p>
               </div>
 
               {/* Patient cards */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                {filtered.map((patient, index) => {
-                  const status = statusConfig[patient.status];
-                  const priority = priorityConfig[patient.priority];
+                {/* Loading skeleton */}
+                {isLoading && Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 animate-pulse">
+                    <div className="flex gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-700 shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3.5 bg-slate-200 dark:bg-slate-700 rounded w-2/3" />
+                        <div className="h-3 bg-slate-100 dark:bg-slate-600 rounded w-1/2" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Error state */}
+                {isError && !isLoading && (
+                  <div className="col-span-2 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-200 dark:border-red-800 p-6 text-center">
+                    <p className="text-sm font-bold text-red-700 dark:text-red-400">Failed to load patients</p>
+                    <p className="text-xs text-red-500 dark:text-red-500 mt-1">Check your connection and try again.</p>
+                  </div>
+                )}
+
+                {/* Patient cards */}
+                {!isLoading && patients.map((patient, index) => {
+                  const status = statusConfig[patient.status] ?? statusConfig['waiting'];
+                  const priority = priorityConfig[patient.priority] ?? priorityConfig['medium'];
                   const avatar = avatarPalette[index % avatarPalette.length];
-                  const actionLabel = patient.status === 'done'
+                  const actionLabel = patient.status === 'completed'
                     ? 'Review notes'
-                    : patient.status === 'in-progress'
+                    : patient.status === 'in-session'
                       ? 'Continue intake'
                       : 'Start intake';
 
@@ -329,7 +272,7 @@ export function NursePatients() {
                             <div className="min-w-0 pr-2">
                               <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{patient.name}</p>
                               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                                {patient.condition} · {patient.age} yrs · {patient.gender}
+                                {patient.condition ?? '—'} · {patient.age} yrs · {patient.gender[0]}
                               </p>
                             </div>
                             <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold shrink-0 ${status.bg} ${status.color}`}>
@@ -339,10 +282,10 @@ export function NursePatients() {
                           </div>
                           <div className="flex flex-wrap gap-2 mt-3">
                             <span className="rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-300 text-[11px] font-bold">
-                              Slot {patient.slot}
+                              {patient.displayId}
                             </span>
                             <span className="rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[11px] font-semibold">
-                              Token {patient.token}
+                              {patient.phone}
                             </span>
                             <span className={`rounded-lg px-2 py-1 text-[11px] font-bold ${priority.bg} ${priority.color}`}>
                               {priority.label} priority
@@ -351,26 +294,15 @@ export function NursePatients() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between mt-3">
-                        <div>
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Next step</p>
-                          <p className="text-xs text-slate-900 dark:text-white font-bold">{patient.nextStep}</p>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                          <CalendarClock className="w-3 h-3" />
-                          Last visit {patient.lastVisit}
-                        </div>
-                      </div>
-
                       <div className="flex gap-2 mt-3">
                         <button
                           onClick={(e) => { e.stopPropagation(); navigate('/nurse/intake'); }}
                           className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-colors ${
-                            patient.status === 'done'
+                            patient.status === 'completed'
                               ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-600'
                               : 'text-white hover:opacity-90'
                           }`}
-                          style={patient.status !== 'done' ? { background: 'linear-gradient(135deg, #0f766e, #14b8a6)' } : {}}
+                          style={patient.status !== 'completed' ? { background: 'linear-gradient(135deg, #0f766e, #14b8a6)' } : {}}
                         >
                           <ClipboardList className="w-3.5 h-3.5" />
                           {actionLabel}
@@ -389,7 +321,7 @@ export function NursePatients() {
                 })}
               </div>
 
-              {filtered.length === 0 && (
+              {!isLoading && !isError && patients.length === 0 && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 text-center">
                   <p className="text-sm font-bold text-slate-900 dark:text-white">No patients found</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Try adjusting your search, status, or priority filters.</p>
@@ -409,16 +341,20 @@ export function NursePatients() {
                   <ShieldCheck className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                 </div>
                 <div className="flex flex-col gap-2">
-                  {priorityAlerts.map((alert, index) => (
+                  {[
+                    stats.waiting > 0 ? `${stats.waiting} patient(s) waiting` : 'No patients waiting',
+                    stats.highPriority > 0 ? `${stats.highPriority} high priority intake(s) pending` : 'No high priority alerts',
+                    `${stats.total} total patient(s) today`,
+                  ].map((alert, index) => (
                     <div
                       key={alert}
                       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold ${
-                        index === 1
+                        index === 1 && stats.highPriority > 0
                           ? 'bg-amber-50 dark:bg-amber-900/30 text-slate-800 dark:text-amber-100'
                           : 'bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
                       }`}
                     >
-                      <AlertTriangle className={`w-3.5 h-3.5 shrink-0 ${index === 1 ? 'text-amber-600 dark:text-amber-400' : 'text-teal-600 dark:text-teal-400'}`} />
+                      <AlertTriangle className={`w-3.5 h-3.5 shrink-0 ${index === 1 && stats.highPriority > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-teal-600 dark:text-teal-400'}`} />
                       {alert}
                     </div>
                   ))}
@@ -435,7 +371,12 @@ export function NursePatients() {
                   <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                 </div>
                 <div className="flex flex-col gap-2">
-                  {intakeChecklist.map((item) => (
+                  {[
+                    { label: 'Vitals captured', done: true },
+                    { label: 'Pain scale noted', done: true },
+                    { label: 'Consent verified', done: false },
+                    { label: 'Exercise history updated', done: false },
+                  ].map((item) => (
                     <div
                       key={item.label}
                       className={`flex items-center gap-2 rounded-xl px-3 py-2 border ${

@@ -5,7 +5,7 @@ import type { UserRole } from '../contexts/AuthContext';
 import {
   Eye, EyeOff, Mail, Lock, Activity,
   ChevronRight, UserCheck, HeartPulse, Stethoscope,
-  Sparkles, CheckCircle, Shield, Users, Star,
+  Sparkles, CheckCircle, Shield, Users, Star, AlertCircle,
 } from 'lucide-react';
 
 interface RoleOption {
@@ -64,18 +64,23 @@ export function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isLoading, loginError } = useAuth();
   const navigate = useNavigate();
 
   const selectedRole = roles.find((r) => r.value === role)!;
 
   const handleLogin = async () => {
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    login(email || `${role}@saai.com`, password || '••••••', role);
-    navigate(`/${role}`);
-    setLoading(false);
+    if (!email.trim() || !password.trim()) return;
+    try {
+      await login(email.trim(), password, role);
+      navigate(`/${role}`);
+    } catch {
+      // loginError is set in AuthContext; nothing extra needed here
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleLogin();
   };
 
   return (
@@ -363,24 +368,35 @@ export function LoginScreen() {
             </button>
           </div>
 
+          {/* Error message */}
+          {loginError && (
+            <div
+              className="flex items-center gap-2 px-4 py-3 rounded-xl"
+              style={{ background: '#fef2f2', border: '1px solid #fecaca', marginBottom: '16px' }}
+            >
+              <AlertCircle size={15} color="#ef4444" />
+              <p style={{ fontSize: '13px', color: '#dc2626', fontWeight: 600 }}>{loginError}</p>
+            </div>
+          )}
+
           {/* Login button */}
           <button
             onClick={handleLogin}
-            disabled={loading}
+            disabled={isLoading}
             className="w-full flex items-center justify-center gap-2.5"
             style={{
               padding: '17px',
               borderRadius: '18px',
-              background: loading ? '#93c5fd' : selectedRole.gradient,
+              background: isLoading ? '#93c5fd' : selectedRole.gradient,
               color: 'white',
               fontSize: '16px',
               fontWeight: 800,
               letterSpacing: '-0.2px',
-              boxShadow: loading ? 'none' : `0 8px 28px ${selectedRole.color}40`,
+              boxShadow: isLoading ? 'none' : `0 8px 28px ${selectedRole.color}40`,
               transition: 'all 0.2s',
             }}
           >
-            {loading ? (
+            {isLoading ? (
               <>
                 <div className="animate-spin rounded-full border-2 border-white border-t-transparent"
                   style={{ width: '18px', height: '18px' }} />
@@ -394,12 +410,11 @@ export function LoginScreen() {
             )}
           </button>
 
-          {/* Quick demo */}
           <div style={{ marginTop: '18px', padding: '14px', background: '#f0f9ff', borderRadius: '16px', border: '1px solid #bae6fd' }}>
             <div className="flex items-center gap-1.5 justify-center" style={{ marginBottom: '8px' }}>
               <div className="rounded-full" style={{ width: '6px', height: '6px', background: '#0ea5e9' }} />
               <p style={{ fontSize: '11px', fontWeight: 800, color: '#0369a1', textAlign: 'center' }}>
-                QUICK DEMO ACCESS — TAP ROLE TO AUTOFILL
+                SEED CREDENTIALS — TAP TO AUTOFILL
               </p>
             </div>
             <div className="flex gap-2">
@@ -409,7 +424,7 @@ export function LoginScreen() {
                   onClick={() => {
                     setRole(r.value);
                     setEmail(`${r.value}@saai.com`);
-                    setPassword('demo1234');
+                    setPassword('Password@123');
                   }}
                   style={{
                     flex: 1,

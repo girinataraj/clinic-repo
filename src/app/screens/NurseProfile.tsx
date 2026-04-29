@@ -10,20 +10,18 @@ import {
   Star, Calendar,
 } from 'lucide-react';
 
-const NURSE_PHOTO = 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80';
+const NURSE_PHOTO = ''; // No default photo — use initials fallback
 
-const certifications = [
-  { name: 'Registered Nurse (RN)', year: '2018', verified: true },
-  { name: 'BLS & CPR Certified', year: '2023', verified: true },
-  { name: 'Physiotherapy Asst.', year: '2021', verified: true },
-  { name: 'Wound Care Specialist', year: '2022', verified: false },
-];
+// NOTE: certifications & shiftInfo are kept as UI structure placeholders.
+// These should be fetched from a /api/users/me endpoint when available.
+// Currently there is NO backend API for these — DO NOT hardcode fake values.
+const certifications: { name: string; year: string; verified: boolean }[] = [];
 
 const shiftInfo = {
-  shift: 'Morning Shift',
-  time: '07:00 AM – 03:00 PM',
-  ward: 'Physiotherapy Unit B',
-  supervisor: 'Dr. Rajesh Kumar',
+  shift: '—',
+  time: '—',
+  ward: '—',
+  supervisor: '—',
 };
 
 const settingsItems = [
@@ -105,8 +103,8 @@ export function NurseProfile() {
                 <Star className="w-3 h-3 text-white fill-white" />
               </div>
             </div>
-            <h2 className="text-xl font-extrabold text-white">{user?.name || 'Kavya Reddy'}</h2>
-            <p className="text-sm text-white/75 mt-0.5">Senior Nurse · EMP-2018-KR04</p>
+            <h2 className="text-xl font-extrabold text-white">{user?.name || 'Nurse'}</h2>
+            <p className="text-sm text-white/75 mt-0.5">Nurse · {user?.displayId ?? '—'}</p>
             <div className="flex items-center gap-2 mt-3">
               {[{ text: '6 yrs Exp' }, { text: 'RN Certified' }, { text: 'Physio Unit' }].map((tag) => (
                 <span
@@ -124,9 +122,9 @@ export function NurseProfile() {
           {/* Stats bar */}
           <div className="bg-white dark:bg-slate-800 border border-teal-100 dark:border-slate-700/60 rounded-2xl p-4 flex shadow-[0_8px_32px_rgba(15,118,110,0.1)] dark:shadow-none">
             {[
-              { label: "Today's Pts", value: '5', icon: Users, color: 'text-teal-600 dark:text-teal-400' },
-              { label: 'Intakes', value: '3', icon: ClipboardList, color: 'text-blue-600 dark:text-blue-400' },
-              { label: 'Hours', value: '6.5', icon: Clock, color: 'text-amber-500 dark:text-amber-400' },
+              { label: "Today's Pts", value: '—', icon: Users, color: 'text-teal-600 dark:text-teal-400' },
+              { label: 'Intakes', value: '—', icon: ClipboardList, color: 'text-blue-600 dark:text-blue-400' },
+              { label: 'Hours', value: '—', icon: Clock, color: 'text-amber-500 dark:text-amber-400' },
             ].map((s, i) => {
               const Icon = s.icon;
               return (

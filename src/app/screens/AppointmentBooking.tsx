@@ -11,11 +11,9 @@ import {
   MessageSquare,
 } from 'lucide-react';
 
-const doctors = [
-  { id: 1, name: 'Dr. Rajesh Kumar', spec: 'Sports Physio', rating: 4.8, exp: '12 yrs', avatar: '👨‍⚕️', available: true },
-  { id: 2, name: 'Dr. Priya Nair', spec: 'Ortho Rehab', rating: 4.9, exp: '9 yrs', avatar: '👩‍⚕️', available: true },
-  { id: 3, name: 'Dr. Amit Shah', spec: 'Neuro PT', rating: 4.7, exp: '15 yrs', avatar: '👨‍⚕️', available: false },
-];
+// NOTE: Doctors list should be fetched from GET /api/users?role=doctor
+// Currently NO dedicated endpoint for this — DO NOT hardcode fake values.
+const doctors: { id: number; name: string; spec: string; rating: number; exp: string; avatar: string; available: boolean }[] = [];
 
 const timeSlots = [
   '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',

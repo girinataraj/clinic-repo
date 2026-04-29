@@ -22,20 +22,13 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 
-const PATIENT_PHOTO = 'https://images.unsplash.com/photo-1564460576398-ef55d99548b2?w=400&q=80';
+const PATIENT_PHOTO = ''; // Use initials fallback — no default photo
 
-const healthInfo = [
-  { label: 'Height', value: '162 cm', icon: Ruler, color: '#2563eb', bg: '#eff6ff' },
-  { label: 'Weight', value: '58 kg', icon: Scale, color: '#7c3aed', bg: '#f5f3ff' },
-  { label: 'Blood', value: 'B+', icon: Droplets, color: '#ef4444', bg: '#fef2f2' },
-  { label: 'Heart Rate', value: '72 bpm', icon: Heart, color: '#f97316', bg: '#fff7ed' },
-];
-
-const conditions = [
-  { label: 'Knee Injury (ACL)', severity: 'Active', color: '#f97316', bg: '#fff7ed' },
-  { label: 'Lower Back Pain', severity: 'Moderate', color: '#f59e0b', bg: '#fefce8' },
-  { label: 'Post-Surgery Rehab', severity: 'Recovering', color: '#10b981', bg: '#ecfdf5' },
-];
+// NOTE: healthInfo and conditions should be fetched from /api/users/me
+// or a patient-specific profile endpoint when available.
+// Currently NO backend API for these — DO NOT hardcode fake values.
+const healthInfo: { label: string; value: string; icon: any; color: string; bg: string }[] = [];
+const conditions: { label: string; severity: string; color: string; bg: string }[] = [];
 
 const settingsItems = [
   { icon: Bell, label: 'Notifications', sublabel: 'Appointment reminders & updates', color: '#2563eb', bg: '#eff6ff' },
@@ -107,7 +100,7 @@ export function PatientProfile() {
               ) : (
                 <img
                   src={PATIENT_PHOTO}
-                  alt="Priya Sharma"
+                  alt={user?.name ?? 'Patient'}
                   onError={() => setImgError(true)}
                   style={{
                     width: '88px', height: '88px',
@@ -125,12 +118,12 @@ export function PatientProfile() {
                 <Star size={12} color="white" fill="white" />
               </div>
             </div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'white' }}>{user?.name || 'Priya Sharma'}</h2>
+            <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'white' }}>{user?.name || 'Patient'}</h2>
             <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', marginTop: '2px' }}>
-              Patient · ID: PAT-2024-0042
+              Patient · {user?.displayId ?? '—'}
             </p>
             <div className="flex items-center gap-2 mt-3">
-              {[{ text: 'Age 28' }, { text: 'Female' }, { text: 'Chennai, TN' }].map((tag) => (
+              {[{ text: user?.role ?? 'Patient' }].map((tag) => (
                 <span
                   key={tag.text}
                   className="px-3 py-1 rounded-full"

@@ -1,6 +1,6 @@
-import { Home, Calendar, FileText, User, Users, ClipboardList, BarChart2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import type { UserRole } from '../contexts/AuthContext';
+import { Home, Calendar, FileText, User, Users, ClipboardList, BarChart2 } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -8,10 +8,10 @@ interface NavItem {
   path: string;
 }
 
-const navConfig: Record<UserRole, NavItem[]> = {
+const navConfig: Record<string, NavItem[]> = {
   patient: [
     { label: 'Home', Icon: Home, path: '/patient' },
-    { label: 'Appointments', Icon: Calendar, path: '/patient/appointment' },
+    { label: 'Booking', Icon: Calendar, path: '/patient/appointment' },
     { label: 'Records', Icon: FileText, path: '/patient/records' },
     { label: 'Profile', Icon: User, path: '/patient/profile' },
   ],
@@ -29,17 +29,10 @@ const navConfig: Record<UserRole, NavItem[]> = {
   ],
 };
 
-<<<<<<< HEAD
-const roleAccentColor: Record<UserRole, { active: string; bg: string; darkBg: string; pill: string }> = {
+const roleAccentColor: Record<string, { active: string; bg: string; darkBg: string; pill: string }> = {
   patient: { active: '#2563eb', bg: '#eff6ff', darkBg: 'rgba(37,99,235,0.2)', pill: '#2563eb' },
   nurse: { active: '#0f766e', bg: '#f0fdfa', darkBg: 'rgba(15,118,110,0.2)', pill: '#0f766e' },
   doctor: { active: '#4338ca', bg: '#eef2ff', darkBg: 'rgba(67,56,202,0.2)', pill: '#4338ca' },
-=======
-const roleAccentColor: Record<UserRole, { active: string; bg: string; pill: string }> = {
-  patient: { active: '#2563eb', bg: '#eff6ff', pill: '#2563eb' },
-  nurse: { active: '#0f766e', bg: '#f0fdfa', pill: '#0f766e' },
-  doctor: { active: '#3AAFA9', bg: '#DEF2F1', pill: '#2B7A78' },
->>>>>>> e0b4024f29a552ab11e9644763e40f2acdd085a5
 };
 
 interface BottomNavProps {
@@ -49,8 +42,8 @@ interface BottomNavProps {
 export function BottomNav({ role }: BottomNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const items = navConfig[role];
-  const accent = roleAccentColor[role];
+  const items = navConfig[role] ?? [];
+  const accent = roleAccentColor[role] ?? roleAccentColor.patient;
 
   return (
     <div
@@ -89,36 +82,18 @@ export function BottomNav({ role }: BottomNavProps) {
               />
             )}
             <div
-              className={`flex items-center justify-center rounded-xl transition-all duration-150 ${
-                isActive ? 'bg-opacity-100 dark:bg-opacity-100' : 'bg-transparent'
-              }`}
-              style={{
-                width: '42px',
-                height: '30px',
-                background: isActive ? accent.bg : 'transparent',
-              }}
+              className="flex items-center justify-center rounded-xl transition-all duration-150"
+              style={{ width: '42px', height: '30px', background: isActive ? accent.bg : 'transparent' }}
             >
-              <div className="dark:hidden flex items-center justify-center w-full h-full rounded-xl" style={{ background: isActive ? accent.bg : 'transparent' }}>
-                <Icon
-                  size={20}
-                  color={isActive ? accent.active : '#b0bec5'}
-                  strokeWidth={isActive ? 2.5 : 1.8}
-                />
-              </div>
-              <div className="hidden dark:flex items-center justify-center w-full h-full rounded-xl" style={{ background: isActive ? accent.darkBg : 'transparent' }}>
-                <Icon
-                  size={20}
-                  color={isActive ? accent.active : '#64748b'}
-                  strokeWidth={isActive ? 2.5 : 1.8}
-                />
-              </div>
+              <Icon
+                size={20}
+                color={isActive ? accent.active : '#b0bec5'}
+                strokeWidth={isActive ? 2.5 : 1.8}
+              />
             </div>
             <span
               className={`text-[10px] ${isActive ? 'font-extrabold' : 'font-medium text-slate-400 dark:text-slate-500'}`}
-              style={{
-                color: isActive ? accent.active : undefined,
-                letterSpacing: isActive ? '0px' : '0.2px',
-              }}
+              style={{ color: isActive ? accent.active : undefined, letterSpacing: isActive ? '0px' : '0.2px' }}
             >
               {item.label}
             </span>

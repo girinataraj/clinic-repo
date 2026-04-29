@@ -7,7 +7,7 @@ import axios, {
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // ─── In-memory token store ─────────────────────────────────────────────────────
-let _accessToken: string | null = null;
+let _accessToken: string | null = null; 
 
 export const setAccessToken = (token: string | null): void => {
   _accessToken = token;

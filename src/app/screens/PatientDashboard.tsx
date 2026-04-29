@@ -2,36 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
+import { usePatientAppointments } from '../../hooks/useAppointments';
+import { useEvaluations } from '../../hooks/useEvaluations';
+import { useExercisePlans } from '../../hooks/useExercisePlans';
 import {
   Calendar, FileText, Activity, Bell, ChevronRight,
   Clock, CheckCircle, Dumbbell, TrendingUp, User,
   Zap, Heart, ArrowRight
 } from 'lucide-react';
-
-const upcomingAppointments = [
-  {
-    id: 1, doctor: 'Dr. Rajesh Kumar', specialization: 'Sports Physiotherapy',
-    date: 'Tomorrow', time: '10:00 AM', status: 'confirmed',
-    initials: 'RK', color: 'text-blue-600', bg: 'bg-blue-100', border: 'border-blue-200'
-  },
-  {
-    id: 2, doctor: 'Dr. Priya Nair', specialization: 'Orthopedic Rehab',
-    date: 'May 3', time: '2:30 PM', status: 'pending',
-    initials: 'PN', color: 'text-purple-600', bg: 'bg-purple-100', border: 'border-purple-200'
-  },
-];
-
-const reports = [
-  { id: 1, title: 'Knee Assessment Report', date: 'Jan 20, 2025', type: 'Assessment', color: 'text-blue-600', bg: 'bg-blue-50' },
-  { id: 2, title: 'Back Pain Evaluation', date: 'Dec 15, 2024', type: 'Evaluation', color: 'text-purple-600', bg: 'bg-purple-50' },
-  { id: 3, title: 'Post-op Rehab Plan', date: 'Nov 28, 2024', type: 'Treatment', color: 'text-teal-600', bg: 'bg-teal-50' },
-];
-
-const initialExercises = [
-  { id: 1, name: 'Quad Stretch', reps: '3 × 15', done: true },
-  { id: 2, name: 'Hip Bridges', reps: '3 × 12', done: true },
-  { id: 3, name: 'Calf Raises', reps: '2 × 20', done: false },
-];
 
 const quickActions = [
   { label: 'Exercises', icon: Dumbbell, path: '/patient/exercise', color: 'text-purple-600', bg: 'bg-purple-100', gradient: 'from-purple-50 to-white' },
@@ -39,49 +17,56 @@ const quickActions = [
   { label: 'Profile', icon: User, path: '/patient/profile', color: 'text-orange-600', bg: 'bg-orange-100', gradient: 'from-orange-50 to-white' },
 ];
 
-const stats = [
-  { label: 'Appointments', value: '2', icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50' },
-  { label: 'Reports', value: '5', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-  { label: 'Exercises', value: '3', icon: Activity, color: 'text-amber-500', bg: 'bg-amber-50' },
-];
+// ── Skeleton block ─────────────────────────────────────────────────────────────
+function CardSkeleton() {
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm animate-pulse">
+      <div className="flex gap-3">
+        <div className="w-12 h-12 rounded-xl bg-slate-200 shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="h-3.5 bg-slate-200 rounded w-3/4" />
+          <div className="h-3 bg-slate-100 rounded w-1/2" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function PatientDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
-  const currentDay = 5;
-  const totalDays = 7;
-  const [selectedDay, setSelectedDay] = useState(currentDay);
 
-  const [exercisesByDay, setExercisesByDay] = useState<Record<number, typeof initialExercises>>(() => {
-    const state: Record<number, typeof initialExercises> = {};
-    for (let i = 1; i <= totalDays; i++) {
-      if (i < currentDay) {
-        state[i] = initialExercises.map(ex => ({ ...ex, done: true }));
-      } else if (i === currentDay) {
-        state[i] = initialExercises.map(ex => ({ ...ex }));
-      } else {
-        state[i] = initialExercises.map(ex => ({ ...ex, done: false }));
-      }
-    }
-    return state;
-  });
+  // Patient ID — the logged-in user's ID is also their patient record ID
+  const patientId = user?.id ?? null;
 
-  const exercises = exercisesByDay[selectedDay];
+  // ── Live backend data ─────────────────────────────────────────────────────
+  const { data: apptData, isLoading: apptLoading } = usePatientAppointments(patientId);
+  const { data: evalData, isLoading: evalLoading } = useEvaluations({ patientId: patientId ?? undefined, limit: 10 });
+  const { data: planData, isLoading: planLoading } = useExercisePlans(patientId);
 
-  const toggleExercise = (id: number) => {
-    if (selectedDay !== currentDay) return;
-    setExercisesByDay(prev => ({
-      ...prev,
-      [selectedDay]: prev[selectedDay].map(ex => 
-        ex.id === id ? { ...ex, done: !ex.done } : ex
-      )
-    }));
-  };
+  const appointments = apptData?.data ?? [];
+  const evaluations = evalData?.data ?? [];
+  const exercisePlans = planData?.data ?? [];
 
-  const completedExercises = exercises.filter(ex => ex.done).length;
-  const totalExercises = exercises.length;
-  const exerciseProgress = Math.round((completedExercises / totalExercises) * 100);
+  // ── Derived stats ─────────────────────────────────────────────────────────
+  const upcomingAppointments = appointments.filter(
+    (a) => a.status === 'pending' || a.status === 'confirmed'
+  );
+  const completedAppointments = appointments.filter((a) => a.status === 'completed').length;
+  const totalEvaluations = evaluations.length;
+  const totalPlans = exercisePlans.length;
+
+  // Active plan exercises
+  const activePlan = exercisePlans[0]; // Most recent plan
+  const exerciseItems = activePlan?.items ?? [];
+
+  const stats = [
+    { label: 'Appointments', value: upcomingAppointments.length, icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { label: 'Reports', value: totalEvaluations, icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    { label: 'Exercises', value: exerciseItems.length, icon: Activity, color: 'text-amber-500', bg: 'bg-amber-50' },
+  ];
+
+  const isLoading = apptLoading || evalLoading || planLoading;
 
   const firstName = user?.name?.split(' ')[0] || 'there';
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -111,9 +96,11 @@ export function PatientDashboard() {
               <div className="flex items-center gap-3">
                 <button className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 backdrop-blur-sm">
                   <Bell className="w-5 h-5 text-white" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm border border-red-400">
-                    3
-                  </span>
+                  {upcomingAppointments.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm border border-red-400">
+                      {upcomingAppointments.length}
+                    </span>
+                  )}
                 </button>
                 <button
                   onClick={() => navigate('/patient/profile')}
@@ -127,7 +114,7 @@ export function PatientDashboard() {
         </div>
 
         <div className="px-6 max-w-5xl mx-auto w-full space-y-6 -mt-6 relative z-10">
-          {/* Recovery Progress */}
+          {/* Recovery Progress - dynamic from evaluations */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -136,13 +123,20 @@ export function PatientDashboard() {
               </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 rounded-full border border-slate-100">
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-xs font-bold text-emerald-600">Week 6 of 12</span>
+                <span className="text-xs font-bold text-emerald-600">
+                  {completedAppointments} session{completedAppointments !== 1 ? 's' : ''} completed
+                </span>
               </div>
             </div>
             <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden mb-3">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full w-1/2" />
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-700"
+                style={{ width: `${Math.min((completedAppointments / Math.max(appointments.length, 1)) * 100, 100)}%` }}
+              />
             </div>
-            <p className="text-xs font-medium text-slate-500">50% · Steady improvement noted by Dr. Rajesh</p>
+            <p className="text-xs font-medium text-slate-500">
+              {isLoading ? 'Loading...' : `${completedAppointments} of ${appointments.length} total sessions completed`}
+            </p>
           </div>
 
           {/* Quick Actions & Stats */}
@@ -150,18 +144,26 @@ export function PatientDashboard() {
             
             {/* Stats Row */}
             <div className="flex gap-3">
-              {stats.map((stat) => {
-                const Icon = stat.icon;
-                return (
-                  <div key={stat.label} className="flex-1 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
-                    <div className={`p-2.5 rounded-xl ${stat.bg} mb-2`}>
-                      <Icon className={`w-5 h-5 ${stat.color}`} />
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex-1 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm animate-pulse">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 mb-2 mx-auto" />
+                      <div className="h-5 bg-slate-100 rounded w-1/2 mx-auto mb-1" />
+                      <div className="h-3 bg-slate-50 rounded w-3/4 mx-auto" />
                     </div>
-                    <span className="text-xl font-bold text-slate-900">{stat.value}</span>
-                    <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 mt-1">{stat.label}</span>
-                  </div>
-                );
-              })}
+                  ))
+                : stats.map((stat) => {
+                    const Icon = stat.icon;
+                    return (
+                      <div key={stat.label} className="flex-1 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
+                        <div className={`p-2.5 rounded-xl ${stat.bg} mb-2`}>
+                          <Icon className={`w-5 h-5 ${stat.color}`} />
+                        </div>
+                        <span className="text-xl font-bold text-slate-900">{stat.value}</span>
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 mt-1">{stat.label}</span>
+                      </div>
+                    );
+                  })}
             </div>
 
             {/* Quick Actions */}
@@ -214,25 +216,37 @@ export function PatientDashboard() {
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-bold text-slate-900">Upcoming Appointments</h3>
-                  <button className="text-sm font-semibold text-blue-600 hover:text-blue-700">See All</button>
+                  <button onClick={() => navigate('/patient/appointment')} className="text-sm font-semibold text-blue-600 hover:text-blue-700">See All</button>
                 </div>
                 <div className="space-y-3">
-                  {upcomingAppointments.map((appt) => (
+                  {apptLoading && <CardSkeleton />}
+                  {!apptLoading && upcomingAppointments.length === 0 && (
+                    <div className="text-center py-6">
+                      <Calendar className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-slate-400">No upcoming appointments</p>
+                      <p className="text-xs text-slate-400 mt-1">Book one to get started</p>
+                    </div>
+                  )}
+                  {upcomingAppointments.slice(0, 3).map((appt) => (
                     <div key={appt.id} className={`flex items-start gap-4 p-4 rounded-xl border ${appt.status === 'confirmed' ? 'border-emerald-100 bg-emerald-50/30' : 'border-slate-100 bg-slate-50/50'}`}>
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${appt.bg} ${appt.color}`}>
-                        <span className="text-sm font-bold">{appt.initials}</span>
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-blue-100 text-blue-600">
+                        <Calendar className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-900 truncate">{appt.doctor}</p>
-                        <p className="text-xs font-medium text-slate-500 mt-0.5">{appt.specialization}</p>
+                        <p className="text-sm font-bold text-slate-900 truncate">{appt.doctorName ?? 'Doctor'}</p>
+                        <p className="text-xs font-medium text-slate-500 mt-0.5">{appt.reason ?? 'Appointment'}</p>
                         <div className="flex items-center gap-3 mt-3">
                           <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm">
                             <Calendar className="w-3 h-3 text-slate-400" />
-                            <span className="text-[11px] font-bold text-slate-600">{appt.date}</span>
+                            <span className="text-[11px] font-bold text-slate-600">
+                              {new Date(appt.datetime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                            </span>
                           </div>
                           <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm">
                             <Clock className="w-3 h-3 text-slate-400" />
-                            <span className="text-[11px] font-bold text-slate-600">{appt.time}</span>
+                            <span className="text-[11px] font-bold text-slate-600">
+                              {new Date(appt.datetime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -244,27 +258,46 @@ export function PatientDashboard() {
                 </div>
               </div>
 
-              {/* Recent Reports */}
+              {/* Recent Evaluations (replaces fake "reports") */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-bold text-slate-900">Recent Reports</h3>
-                  <button className="text-sm font-semibold text-blue-600 hover:text-blue-700">See All</button>
+                  <button onClick={() => navigate('/patient/records')} className="text-sm font-semibold text-blue-600 hover:text-blue-700">See All</button>
                 </div>
                 <div className="space-y-3">
-                  {reports.map((report) => (
-                    <div key={report.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 cursor-pointer">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${report.bg}`}>
-                        <FileText className={`w-5 h-5 ${report.color}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-900 truncate">{report.title}</p>
-                        <p className="text-xs font-medium text-slate-500 mt-0.5">{report.date}</p>
-                      </div>
-                      <div className={`px-2.5 py-1 rounded-md text-[10px] font-bold ${report.bg} ${report.color}`}>
-                        {report.type}
-                      </div>
+                  {evalLoading && <CardSkeleton />}
+                  {!evalLoading && evaluations.length === 0 && (
+                    <div className="text-center py-6">
+                      <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-slate-400">No evaluations yet</p>
                     </div>
-                  ))}
+                  )}
+                  {evaluations.slice(0, 3).map((evaluation) => {
+                    const typeColors: Record<string, { bg: string; color: string }> = {
+                      submitted: { bg: 'bg-blue-50', color: 'text-blue-600' },
+                      reviewed: { bg: 'bg-teal-50', color: 'text-teal-600' },
+                      draft: { bg: 'bg-purple-50', color: 'text-purple-600' },
+                    };
+                    const tc = typeColors[evaluation.status] ?? typeColors.draft;
+                    return (
+                      <div key={evaluation.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 cursor-pointer">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tc.bg}`}>
+                          <FileText className={`w-5 h-5 ${tc.color}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-slate-900 truncate">
+                            {evaluation.diagnosis ?? evaluation.chiefComplaints ?? 'Evaluation'}
+                          </p>
+                          <p className="text-xs font-medium text-slate-500 mt-0.5">
+                            {new Date(evaluation.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className={`px-2.5 py-1 rounded-md text-[10px] font-bold ${tc.bg} ${tc.color} capitalize`}>
+                          {evaluation.status}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -273,12 +306,10 @@ export function PatientDashboard() {
             {/* RIGHT COLUMN */}
             <div className="space-y-6">
               
-              {/* Today's Exercises */}
+              {/* Active Exercise Plan */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-slate-900">
-                    {selectedDay === currentDay ? "Today's Exercises" : `Day ${selectedDay} Exercises`}
-                  </h3>
+                  <h3 className="text-base font-bold text-slate-900">Exercise Plan</h3>
                   <button
                     onClick={() => navigate('/patient/exercise')}
                     className="text-sm font-semibold text-blue-600 hover:text-blue-700"
@@ -287,73 +318,61 @@ export function PatientDashboard() {
                   </button>
                 </div>
 
-                {/* Day Selector */}
-                <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-                  {Array.from({ length: totalDays }, (_, i) => i + 1).map(day => (
-                    <button
-                      key={day}
-                      onClick={() => setSelectedDay(day)}
-                      className={`shrink-0 w-11 h-12 flex flex-col items-center justify-center rounded-xl border-2 transition-all ${
-                        selectedDay === day 
-                          ? 'border-blue-600 bg-blue-600 text-white shadow-md'
-                          : day === currentDay 
-                            ? 'border-blue-200 bg-blue-50 text-blue-700'
-                            : 'border-slate-100 bg-slate-50 text-slate-500 hover:bg-slate-100'
-                      }`}
-                    >
-                      <span className="text-[9px] font-bold uppercase tracking-wider opacity-80 mb-0.5">Day</span>
-                      <span className="text-sm font-bold leading-none">{day}</span>
-                    </button>
-                  ))}
-                </div>
-                
-                <div className="mb-5 bg-purple-50/50 rounded-xl p-4 border border-purple-100">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <Dumbbell className="w-4 h-4 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">Active Recovery Plan</p>
-                        <p className="text-xs font-medium text-slate-500 mt-0.5">Knee rehabilitation · Week 6</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-full border border-purple-100 shadow-sm">
-                      <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
-                      <span className="text-[10px] font-bold text-slate-700">{completedExercises}/{totalExercises}</span>
-                    </div>
+                {planLoading && (
+                  <div className="animate-pulse space-y-3">
+                    <div className="h-16 bg-slate-100 rounded-xl" />
+                    <div className="h-8 bg-slate-100 rounded-lg" />
+                    <div className="h-8 bg-slate-100 rounded-lg" />
                   </div>
-                  <div className="h-1.5 w-full bg-purple-200/50 rounded-full overflow-hidden">
-                    <div className="h-full bg-purple-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${exerciseProgress}%` }} />
-                  </div>
-                </div>
+                )}
 
-                <div className="space-y-3">
-                  {exercises.map((ex) => {
-                    const isEditable = selectedDay === currentDay;
-                    return (
-                      <div key={ex.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors">
-                        <button 
-                          onClick={() => toggleExercise(ex.id)}
-                          disabled={!isEditable}
-                          className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 border-2 transition-all ${
-                            ex.done 
-                              ? `bg-emerald-50 border-emerald-500 ${!isEditable ? 'opacity-60' : ''}` 
-                              : `bg-white border-slate-300 ${isEditable ? 'hover:border-emerald-400' : 'opacity-60 cursor-not-allowed'}`
-                          }`}
-                        >
-                          {ex.done && <CheckCircle className="w-4 h-4 text-emerald-500" />}
-                        </button>
-                        <span className={`text-sm flex-1 ${ex.done ? 'text-slate-400 font-medium line-through' : 'text-slate-700 font-semibold'}`}>
-                          {ex.name}
-                        </span>
-                        <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-md">
-                          {ex.reps}
-                        </span>
+                {!planLoading && !activePlan && (
+                  <div className="text-center py-6">
+                    <Dumbbell className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-slate-400">No exercise plan assigned</p>
+                    <p className="text-xs text-slate-400 mt-1">Your doctor will create one for you</p>
+                  </div>
+                )}
+
+                {!planLoading && activePlan && (
+                  <>
+                    <div className="mb-5 bg-purple-50/50 rounded-xl p-4 border border-purple-100">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-purple-100 rounded-lg">
+                            <Dumbbell className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">{activePlan.title}</p>
+                            <p className="text-xs font-medium text-slate-500 mt-0.5">
+                              {activePlan.notes ?? `${exerciseItems.length} exercises`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-full border border-purple-100 shadow-sm">
+                          <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
+                          <span className="text-[10px] font-bold text-slate-700">{exerciseItems.length} items</span>
+                        </div>
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {exerciseItems.map((ex) => (
+                        <div key={ex.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 border-2 bg-white border-slate-300">
+                            <CheckCircle className="w-4 h-4 text-slate-300" />
+                          </div>
+                          <span className="text-sm flex-1 text-slate-700 font-semibold">
+                            {ex.name}
+                          </span>
+                          <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-md">
+                            {ex.sets && ex.reps ? `${ex.sets} × ${ex.reps}` : ex.duration ?? '—'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Health Tip */}

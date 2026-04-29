@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
+import { useCreateEvaluation } from '../../hooks/useEvaluations';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, User, Heart,
-  Activity, Sliders, CheckSquare, ClipboardList, Save, Check,
+  Activity, Sliders, CheckSquare, ClipboardList, Save, Check, Loader2,
 } from 'lucide-react';
 
 const symptoms = [
@@ -48,8 +49,14 @@ const steps = [
 
 export function NurseIntakeForm() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const patientId = searchParams.get('patientId') ?? '';
   const [step, setStep] = useState(0);
   const [saved, setSaved] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // ── Real API mutation ──────────────────────────────────────────────────────
+  const createEvaluation = useCreateEvaluation();
 
   // Form data
   const [patientInfo, setPatientInfo] = useState({ name: '', age: '', phone: '', gender: 'Male', address: '' });
@@ -64,9 +71,27 @@ export function NurseIntakeForm() {
     setCheckedSymptoms((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => navigate('/nurse'), 2000);
+  const handleSave = async () => {
+    setSubmitError(null);
+    try {
+      await createEvaluation.mutateAsync({
+        patientId,
+        bp: vitals.bp_sys && vitals.bp_dia ? `${vitals.bp_sys}/${vitals.bp_dia}` : undefined,
+        pr: vitals.pr ? Number(vitals.pr) : undefined,
+        spo2: vitals.spo2 ? Number(vitals.spo2) : undefined,
+        temperature: vitals.temp ? Number(vitals.temp) : undefined,
+        ef: vitals.ef ? Number(vitals.ef) : undefined,
+        painLevel,
+        chiefComplaints: complaints || undefined,
+        associatedSymptoms: checkedSymptoms.length > 0 ? checkedSymptoms : undefined,
+        functionalScores: Object.keys(funcRatings).length > 0 ? funcRatings : undefined,
+        status: 'submitted',
+      } as Record<string, unknown>);
+      setSaved(true);
+      setTimeout(() => navigate('/nurse'), 2000);
+    } catch (err: any) {
+      setSubmitError(err?.response?.data?.message ?? 'Failed to save evaluation. Please try again.');
+    }
   };
 
   if (saved) {
@@ -466,13 +491,23 @@ export function NurseIntakeForm() {
               </div>
             </div>
 
+            {submitError && (
+              <div className="mb-3 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 font-semibold">
+                {submitError}
+              </div>
+            )}
+
             <button
               onClick={handleSave}
-              className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-white text-base font-extrabold shadow-lg shadow-teal-700/30 group"
+              disabled={createEvaluation.isPending}
+              className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-white text-base font-extrabold shadow-lg shadow-teal-700/30 group disabled:opacity-60"
               style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}
             >
-              <Save size={18} className="group-hover:scale-110 transition-transform" />
-              Save Patient Intake Form
+              {createEvaluation.isPending ? (
+                <><Loader2 size={18} className="animate-spin" /> Submitting…</>
+              ) : (
+                <><Save size={18} className="group-hover:scale-110 transition-transform" /> Save Patient Intake Form</>
+              )}
             </button>
 
             <button

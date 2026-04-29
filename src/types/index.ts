@@ -15,7 +15,7 @@ export type PatientPriority = 'high' | 'medium' | 'low';
 
 export interface Patient {
   id: string;
-  displayId: string; // SAAI-2026-001
+  displayId: string;
   name: string;
   age: number;
   gender: 'Male' | 'Female' | 'Other';
@@ -43,25 +43,35 @@ export interface EvaluationCreatedBy {
 }
 
 export interface EvaluationVitals {
-  bp: string;
-  pr: number;
-  spo2: number;
-  temperature: number;
+  bp?: string;
+  pr?: number;
+  spo2?: number;
+  temperature?: number;
   ef?: number;
+  painLevel?: number;
 }
 
 export interface Evaluation {
   id: string;
-  displayId: string; // EVAL-2026-001
+  displayId: string;
   patientId: string;
   status: 'draft' | 'submitted' | 'reviewed';
-  vitals?: EvaluationVitals;
+  // Vitals (flat on the evaluation record)
+  bp?: string;
+  pr?: number;
+  spo2?: number;
+  temperature?: number;
+  ef?: number;
+  painLevel?: number;
+  functionalScores?: Record<string, unknown>;
+  // Clinical text
   diagnosis?: string;
-  plan?: string;        // maps to "Treatment Detail"
-  management?: string;  // maps to "Remarks"
+  plan?: string;
+  management?: string;
   chiefComplaints?: string;
   associatedSymptoms?: string[];
   referredBy?: string;
+  // Meta
   createdBy: EvaluationCreatedBy;
   updatedBy?: EvaluationCreatedBy;
   createdAt: string;
@@ -77,6 +87,32 @@ export interface UpdateEvaluationPayload {
   diagnosis?: string;
   plan?: string;
   management?: string;
+  bp?: string;
+  pr?: number;
+  spo2?: number;
+  temperature?: number;
+  ef?: number;
+  painLevel?: number;
+  chiefComplaints?: string;
+  associatedSymptoms?: string[];
+  referredBy?: string;
+}
+
+export interface CreateEvaluationPayload {
+  patientId: string;
+  bp?: string;
+  pr?: number;
+  spo2?: number;
+  temperature?: number;
+  ef?: number;
+  painLevel?: number;
+  diagnosis?: string;
+  plan?: string;
+  management?: string;
+  chiefComplaints?: string;
+  associatedSymptoms?: string[];
+  referredBy?: string;
+  status?: 'draft' | 'submitted';
 }
 
 // ─── Appointment ───────────────────────────────────────────────────────────────
@@ -92,10 +128,11 @@ export interface Appointment {
   patientId: string;
   doctorId: string;
   doctorName?: string;
-  datetime: string; // ISO 8601
+  datetime: string;
   status: AppointmentStatus;
   reason?: string;
   notes?: string;
+  createdAt?: string;
 }
 
 export interface AppointmentsListResponse {
@@ -103,7 +140,38 @@ export interface AppointmentsListResponse {
   total: number;
 }
 
-// ─── Payment Visit (future) ────────────────────────────────────────────────────
+// ─── Exercise Plans ────────────────────────────────────────────────────────────
+export interface ExerciseItem {
+  id: string;
+  planId: string;
+  name: string;
+  sets?: number;
+  reps?: number;
+  duration?: string;
+  instructions?: string;
+  category?: string;
+  difficulty?: string;
+  orderIndex: number;
+}
+
+export interface ExercisePlan {
+  id: string;
+  patientId: string;
+  createdBy: string;
+  title: string;
+  notes?: string;
+  status: string;
+  items?: ExerciseItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExercisePlansListResponse {
+  data: ExercisePlan[];
+  total: number;
+}
+
+// ─── Payment Visit (future — schema exists, no API yet) ───────────────────────
 export interface PaymentVisit {
   visitNo: number;
   visitDate: string;
@@ -116,7 +184,7 @@ export interface PaymentVisit {
   paidAt: string;
 }
 
-// ─── Package Details (future) ─────────────────────────────────────────────────
+// ─── Package Details (future — schema exists, no API yet) ─────────────────────
 export interface PackageDetails {
   serviceType: string;
   totalVisits: number | null;
@@ -126,7 +194,7 @@ export interface PackageDetails {
   packageValidUpto: string | null;
 }
 
-// ─── Payment Details (future) ─────────────────────────────────────────────────
+// ─── Payment Details (future — schema exists, no API yet) ─────────────────────
 export interface PaymentDetails {
   totalAmount: number;
   discount: number;

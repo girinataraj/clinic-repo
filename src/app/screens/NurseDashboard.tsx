@@ -2,30 +2,24 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { usePatients } from '../../hooks/usePatients';
+import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
   Bell, ClipboardList, Clock, CheckCircle, ChevronRight,
   UserPlus, User, Zap, Search,
 } from 'lucide-react';
 import { useState } from 'react';
 
-const patients = [
-  { id: 1, name: 'Rahul Verma', age: 45, condition: 'Knee Injury', time: '09:00 AM', status: 'waiting', token: 'T-01', gender: 'M' },
-  { id: 2, name: 'Anita Patel', age: 28, condition: 'Shoulder Pain', time: '09:30 AM', status: 'in-progress', token: 'T-02', gender: 'F' },
-  { id: 3, name: 'Suresh Kumar', age: 55, condition: 'Post-Stroke Rehab', time: '10:00 AM', status: 'done', token: 'T-03', gender: 'M' },
-  { id: 4, name: 'Meera Joshi', age: 38, condition: 'Lower Back Pain', time: '10:30 AM', status: 'waiting', token: 'T-04', gender: 'F' },
-  { id: 5, name: 'Vikram Rao', age: 62, condition: 'Hip Replacement', time: '11:00 AM', status: 'waiting', token: 'T-05', gender: 'M' },
-];
-
-interface StatusCfg { label: string; lightColor: string; lightBg: string; darkColor: string; darkBg: string; dot: string }
-const statusConfig: Record<string, StatusCfg> = {
-  waiting: { label: 'Waiting', lightColor: 'text-amber-700', lightBg: 'bg-amber-50', darkColor: 'dark:text-amber-300', darkBg: 'dark:bg-amber-900/30', dot: 'bg-amber-400' },
-  'in-progress': { label: 'In Progress', lightColor: 'text-blue-700', lightBg: 'bg-blue-50', darkColor: 'dark:text-blue-300', darkBg: 'dark:bg-blue-900/30', dot: 'bg-blue-500' },
-  done: { label: 'Done', lightColor: 'text-emerald-700', lightBg: 'bg-emerald-50', darkColor: 'dark:text-emerald-300', darkBg: 'dark:bg-emerald-900/30', dot: 'bg-emerald-400' },
+const statusConfig: Record<string, { label: string; lightColor: string; lightBg: string; darkColor: string; darkBg: string; dot: string }> = {
+  waiting:      { label: 'Waiting',     lightColor: 'text-amber-700',   lightBg: 'bg-amber-50',   darkColor: 'dark:text-amber-300',   darkBg: 'dark:bg-amber-900/30',   dot: 'bg-amber-400' },
+  'in-session': { label: 'In Session',  lightColor: 'text-blue-700',    lightBg: 'bg-blue-50',    darkColor: 'dark:text-blue-300',    darkBg: 'dark:bg-blue-900/30',    dot: 'bg-blue-500' },
+  completed:    { label: 'Completed',   lightColor: 'text-emerald-700', lightBg: 'bg-emerald-50', darkColor: 'dark:text-emerald-300', darkBg: 'dark:bg-emerald-900/30', dot: 'bg-emerald-400' },
 };
 
 const avatarColors: Record<string, { bg: string; darkBg: string; color: string; darkColor: string }> = {
-  M: { bg: 'bg-blue-100', darkBg: 'dark:bg-blue-900/40', color: 'text-blue-700', darkColor: 'dark:text-blue-300' },
-  F: { bg: 'bg-purple-100', darkBg: 'dark:bg-purple-900/40', color: 'text-purple-700', darkColor: 'dark:text-purple-300' },
+  Male:   { bg: 'bg-blue-100',   darkBg: 'dark:bg-blue-900/40',   color: 'text-blue-700',   darkColor: 'dark:text-blue-300' },
+  Female: { bg: 'bg-purple-100', darkBg: 'dark:bg-purple-900/40', color: 'text-purple-700', darkColor: 'dark:text-purple-300' },
+  Other:  { bg: 'bg-teal-100',   darkBg: 'dark:bg-teal-900/40',   color: 'text-teal-700',   darkColor: 'dark:text-teal-300' },
 };
 
 export function NurseDashboard() {
@@ -34,20 +28,21 @@ export function NurseDashboard() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
 
+  // ── Live data from backend ─────────────────────────────────────────────────
+  const { data: patientsData, isLoading, isError } = usePatients({
+    search: search.trim() || undefined,
+    status: filter !== 'all' ? filter : undefined,
+    limit: 20,
+  }, true); // ← 10s polling for live patient queue
+
+  const patients = patientsData?.data ?? [];
+
   const firstName = user?.name?.split(' ')[0] || 'Nurse';
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  const filtered = patients.filter((p) => {
-    const matchSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.condition.toLowerCase().includes(search.toLowerCase());
-    const matchFilter = filter === 'all' || p.status === filter;
-    return matchSearch && matchFilter;
-  });
-
   const waiting = patients.filter((p) => p.status === 'waiting').length;
-  const inProgress = patients.filter((p) => p.status === 'in-progress').length;
-  const done = patients.filter((p) => p.status === 'done').length;
+  const inProgress = patients.filter((p) => p.status === 'in-session').length;
+  const done = patients.filter((p) => p.status === 'completed').length;
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
@@ -165,10 +160,10 @@ export function NurseDashboard() {
           {/* Filter tabs */}
           <div className="grid grid-cols-4 gap-2">
             {[
-              { key: 'all', label: `All (${patients.length})` },
+              { key: 'all', label: `All (${patientsData?.total ?? 0})` },
               { key: 'waiting', label: 'Waiting' },
-              { key: 'in-progress', label: 'Active' },
-              { key: 'done', label: 'Done' },
+              { key: 'in-session', label: 'Active' },
+              { key: 'completed', label: 'Done' },
             ].map((f) => (
               <button
                 key={f.key}
@@ -189,20 +184,48 @@ export function NurseDashboard() {
             <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
               Patient Queue · {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
             </h3>
-            <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold">{filtered.length} shown</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold">{isLoading ? '…' : `${patients.length} shown`}</span>
           </div>
 
           {/* Patient cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-4">
-            {filtered.map((patient) => {
-              const config = statusConfig[patient.status];
-              const av = avatarColors[patient.gender];
+            {/* Loading skeleton */}
+            {isLoading && Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 animate-pulse">
+                <div className="flex gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-700 shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 bg-slate-200 dark:bg-slate-700 rounded w-2/3" />
+                    <div className="h-3 bg-slate-100 dark:bg-slate-600 rounded w-1/2" />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Error state */}
+            {!isLoading && isError && (
+              <div className="col-span-full">
+                <ApiErrorBanner error={isError} onRetry={() => window.location.reload()} />
+              </div>
+            )}
+
+            {!isLoading && !isError && patients.length === 0 && (
+              <div className="col-span-full text-center py-10 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <User className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">No patients found</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Try adjusting your search or filters</p>
+              </div>
+            )}
+
+            {!isLoading && !isError && patients.map((patient) => {
+              const config = statusConfig[patient.status] ?? statusConfig['waiting'];
+              const av = avatarColors[patient.gender] ?? avatarColors['Other'];
               return (
                 <div key={patient.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                   <div className="flex items-center gap-3 p-4">
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 relative font-extrabold text-sm ${av.bg} ${av.darkBg} ${av.color} ${av.darkColor}`}>
                       {patient.name.split(' ').map(n => n[0]).join('')}
-                      {patient.status === 'in-progress' && (
+                      {patient.status === 'in-session' && (
                         <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border-2 border-white dark:border-slate-800" />
                       )}
                     </div>
@@ -214,30 +237,30 @@ export function NurseDashboard() {
                           {config.label}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{patient.condition} · Age {patient.age}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{patient.condition ?? '—'} · Age {patient.age}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600">
                           <Clock className="w-2.5 h-2.5 text-slate-400" />
-                          <span className="text-[11px] text-slate-600 dark:text-slate-300 font-bold">{patient.time}</span>
+                          <span className="text-[11px] text-slate-600 dark:text-slate-300 font-bold">{patient.displayId}</span>
                         </div>
                         <span className="px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600 text-[11px] text-slate-400 dark:text-slate-500 font-semibold">
-                          {patient.token}
+                          {patient.phone}
                         </span>
                       </div>
                     </div>
                   </div>
-                  {patient.status !== 'done' && (
+                  {patient.status !== 'completed' && (
                     <div className="border-t border-slate-100 dark:border-slate-700">
                       <button
                         onClick={() => navigate('/nurse/intake')}
                         className={`w-full flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors ${
-                          patient.status === 'in-progress'
+                          patient.status === 'in-session'
                             ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30'
                             : 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/30'
                         }`}
                       >
                         <ClipboardList className="w-3.5 h-3.5" />
-                        {patient.status === 'in-progress' ? 'Continue Intake Form' : 'Start Intake Form'}
+                        {patient.status === 'in-session' ? 'Continue Intake Form' : 'Start Intake Form'}
                         <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
                       </button>
                     </div>
@@ -247,7 +270,7 @@ export function NurseDashboard() {
             })}
           </div>
 
-          {filtered.length === 0 && (
+          {!isLoading && patients.length === 0 && (
             <div className="flex flex-col items-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
               <div className="w-14 h-14 flex items-center justify-center rounded-2xl mb-3 bg-teal-50 dark:bg-teal-900/30">
                 <UserPlus className="w-6 h-6 text-teal-500" />

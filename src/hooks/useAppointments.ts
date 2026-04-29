@@ -1,46 +1,96 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { ENDPOINTS } from '../services/endpoints';
-import type { AppointmentsListResponse } from '../types';
+import type { Appointment, AppointmentsListResponse } from '../types';
 
-const MOCK_APPOINTMENTS: Appointment[] = [
-  {
-    id: 'apt-1',
-    patientId: '1',
-    doctorId: 'doc-1',
-    doctorName: 'Dr. Rajesh Kumar',
-    datetime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
-    status: 'completed',
-    reason: 'Initial Consultation',
-  },
-  {
-    id: 'apt-2',
-    patientId: '1',
-    doctorId: 'doc-1',
-    doctorName: 'Dr. Rajesh Kumar',
-    datetime: new Date().toISOString(), // today
-    status: 'completed',
-    reason: 'Follow up',
-  },
-];
+type ApiEnvelope<T> = { success: boolean; data: T; meta?: { total: number; page: number; limit: number } };
 
-/** Fetch all appointments for a patient sorted by datetime ascending. */
+interface AppointmentsFilter {
+  patientId?: string;
+  doctorId?: string;
+  status?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+  sort?: string;
+}
+
+/** Fetch appointments with optional filters. */
+export function useAppointments(params?: AppointmentsFilter) {
+  return useQuery<AppointmentsListResponse>({
+    queryKey: ['appointments', params],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<Appointment[]>>(
+        ENDPOINTS.APPOINTMENTS.LIST,
+        { params }
+      );
+      return {
+        data: data.data,
+        total: data.meta?.total ?? data.data.length,
+      };
+    },
+  });
+}
+
+/** Fetch all appointments for a specific patient, sorted by datetime ascending. */
 export function usePatientAppointments(patientId: string | null | undefined) {
   return useQuery<AppointmentsListResponse>({
     queryKey: ['appointments', 'patient', patientId],
     queryFn: async () => {
-      // MOCK DATA
+      const { data } = await api.get<ApiEnvelope<Appointment[]>>(
+        ENDPOINTS.APPOINTMENTS.BY_PATIENT(patientId!)
+      );
       return {
-        data: MOCK_APPOINTMENTS.map(a => ({ ...a, patientId: patientId! })),
-        total: MOCK_APPOINTMENTS.length,
+        data: data.data,
+        total: data.meta?.total ?? data.data.length,
       };
-
-      // REAL API
-      // const { data } = await api.get<AppointmentsListResponse>(
-      //   ENDPOINTS.APPOINTMENTS.BY_PATIENT(patientId!)
-      // );
-      // return data;
     },
     enabled: Boolean(patientId),
+  });
+}
+
+/** Create a new appointment. */
+export function useCreateAppointment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: {
+      patientId: string;
+      doctorId: string;
+      datetime: string;
+      reason?: string;
+      notes?: string;
+    }) => {
+      const { data } = await api.post<ApiEnvelope<Appointment>>(
+        ENDPOINTS.APPOINTMENTS.CREATE,
+        payload
+      );
+      return data.data;
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['appointments', 'patient', created.patientId] });
+    },
+  });
+}
+
+/** Update an existing appointment (status, datetime, notes). */
+export function useUpdateAppointment(appointmentId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: Partial<Pick<Appointment, 'status' | 'datetime' | 'notes'>>) => {
+      const { data } = await api.patch<ApiEnvelope<Appointment>>(
+        ENDPOINTS.APPOINTMENTS.DETAIL(appointmentId),
+        payload
+      );
+      return data.data;
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['appointment', appointmentId], updated);
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['appointments', 'patient', updated.patientId] });
+    },
   });
 }

@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { useAuth } from '../contexts/AuthContext';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { usePatients } from '../../hooks/usePatients';
 import { TreatmentDetailModal } from '../../features/patients/components/TreatmentDetailModal';
 import {
   Activity,
@@ -15,124 +16,17 @@ import {
   Users,
 } from 'lucide-react';
 
-type PatientStatus = 'waiting' | 'in-session' | 'completed';
-type PatientPriority = 'high' | 'medium' | 'low';
+const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+  waiting:      { label: 'Waiting',     color: '#2B7A78', bg: '#DEF2F1', dot: '#2B7A78' },
+  'in-session': { label: 'In Session',  color: '#17252A', bg: '#DEF2F1', dot: '#3AAFA9' },
+  completed:    { label: 'Completed',   color: '#FEFFFF', bg: '#3AAFA9', dot: '#FEFFFF' },
+};
 
-interface Patient {
-  id: number;
-  name: string;
-  age: number;
-  condition: string;
-  slot: string;
-  status: PatientStatus;
-  priority: PatientPriority;
-  pain: number;
-  progress: number;
-  plan: string;
-  lastNote: string;
-  bp: string;
-}
-
-const patients: Patient[] = [
-  {
-    id: 201,
-    name: 'Anita Patel',
-    age: 28,
-    condition: 'Rotator Cuff Tear',
-    slot: '09:30 AM',
-    status: 'in-session',
-    priority: 'high',
-    pain: 4,
-    progress: 62,
-    plan: 'Isometrics and ROM',
-    lastNote: 'ROM improving, mild swelling',
-    bp: '118/75',
-  },
-  {
-    id: 202,
-    name: 'Rahul Verma',
-    age: 45,
-    condition: 'ACL Rehab',
-    slot: '10:00 AM',
-    status: 'waiting',
-    priority: 'medium',
-    pain: 6,
-    progress: 48,
-    plan: 'Strength and gait work',
-    lastNote: 'Needs quad activation focus',
-    bp: '120/80',
-  },
-  {
-    id: 203,
-    name: 'Suresh Kumar',
-    age: 55,
-    condition: 'Post Stroke Rehab',
-    slot: '10:30 AM',
-    status: 'completed',
-    priority: 'low',
-    pain: 2,
-    progress: 74,
-    plan: 'Balance drills',
-    lastNote: 'Stable, improved confidence',
-    bp: '130/88',
-  },
-  {
-    id: 204,
-    name: 'Meera Joshi',
-    age: 38,
-    condition: 'L4-L5 Disc Herniation',
-    slot: '11:00 AM',
-    status: 'waiting',
-    priority: 'high',
-    pain: 7,
-    progress: 36,
-    plan: 'Core activation',
-    lastNote: 'Pain spikes on flexion',
-    bp: '122/82',
-  },
-  {
-    id: 205,
-    name: 'Vikram Rao',
-    age: 62,
-    condition: 'Hip Replacement Rehab',
-    slot: '11:30 AM',
-    status: 'completed',
-    priority: 'medium',
-    pain: 3,
-    progress: 69,
-    plan: 'Stair training',
-    lastNote: 'Improved gait symmetry',
-    bp: '135/90',
-  },
-  {
-    id: 206,
-    name: 'Neha Iyer',
-    age: 42,
-    condition: 'Cervical Spondylosis',
-    slot: '12:00 PM',
-    status: 'in-session',
-    priority: 'medium',
-    pain: 5,
-    progress: 58,
-    plan: 'Mobility and traction',
-    lastNote: 'Reduced stiffness',
-    bp: '116/72',
-  },
-];
-
-const statusConfig: Record<PatientStatus, { label: string; color: string; bg: string; dot: string }>
-  = {
-    waiting: { label: 'Waiting', color: '#2B7A78', bg: '#DEF2F1', dot: '#2B7A78' },
-    'in-session': { label: 'In Session', color: '#17252A', bg: '#DEF2F1', dot: '#3AAFA9' },
-    completed: { label: 'Completed', color: '#FEFFFF', bg: '#3AAFA9', dot: '#FEFFFF' },
-  };
-
-const priorityConfig: Record<PatientPriority, { label: string; color: string; bg: string }>
-  = {
-    high: { label: 'High', color: '#FEFFFF', bg: '#17252A' },
-    medium: { label: 'Medium', color: '#17252A', bg: '#3AAFA9' },
-    low: { label: 'Low', color: '#2B7A78', bg: '#DEF2F1' },
-  };
+const priorityConfig: Record<string, { label: string; color: string; bg: string }> = {
+  high:   { label: 'High',   color: '#FEFFFF', bg: '#17252A' },
+  medium: { label: 'Medium', color: '#17252A', bg: '#3AAFA9' },
+  low:    { label: 'Low',    color: '#2B7A78', bg: '#DEF2F1' },
+};
 
 const avatarPalette = [
   { bg: '#DEF2F1', color: '#2B7A78' },
@@ -142,36 +36,36 @@ const avatarPalette = [
 ];
 
 const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .map((part) => part[0])
-    .join('');
-
-const getPainColor = (pain: number) => {
-  if (pain <= 3) return '#3AAFA9';
-  if (pain <= 6) return '#2B7A78';
-  return '#17252A';
-};
+  name.split(' ').map((part) => part[0]).join('');
 
 export function DoctorPatients() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | PatientStatus>('all');
-  const [priorityFilter, setPriorityFilter] = useState<'all' | PatientPriority>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  const handlePatientClick = (patientId: string | number) => {
-    const id = String(patientId);
+  // ── Live data from backend ─────────────────────────────────────────────────
+  const { data: patientsData, isLoading, isError } = usePatients({
+    search: search.trim() || undefined,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    priority: priorityFilter !== 'all' ? priorityFilter : undefined,
+    limit: 50,
+  });
+
+  const patients = patientsData?.data ?? [];
+
+  const handlePatientClick = (patientId: string) => {
     if (isDesktop) {
-      setSelectedPatientId(id);
+      setSelectedPatientId(patientId);
     } else {
-      navigate(`/doctor/patient/${id}/treatment`);
+      navigate(`/doctor/patient/${patientId}/treatment`);
     }
   };
 
-  const firstName = (user?.name || 'Dr. Rajesh Kumar').replace('Dr. ', '').split(' ')[0];
+  const firstName = (user?.name || 'Doctor').replace('Dr. ', '').split(' ')[0];
   const today = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
     day: 'numeric',
@@ -179,24 +73,12 @@ export function DoctorPatients() {
   });
 
   const stats = {
-    total: patients.length,
+    total: patientsData?.total ?? 0,
     active: patients.filter((p) => p.status === 'in-session').length,
     waiting: patients.filter((p) => p.status === 'waiting').length,
     highPriority: patients.filter((p) => p.priority === 'high').length,
   };
 
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return patients.filter((p) => {
-      const matchesQuery =
-        !query ||
-        p.name.toLowerCase().includes(query) ||
-        p.condition.toLowerCase().includes(query);
-      const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-      const matchesPriority = priorityFilter === 'all' || p.priority === priorityFilter;
-      return matchesQuery && matchesStatus && matchesPriority;
-    });
-  }, [search, statusFilter, priorityFilter]);
 
   return (
     <div className="flex flex-col h-full saai-page" style={{ backgroundColor: '#DEF2F1' }}>
@@ -347,16 +229,37 @@ export function DoctorPatients() {
                   Patient list
                 </h2>
                 <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600 }}>
-                  {filtered.length} results
+                  {isLoading ? '…' : `${patients.length} results`}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                {filtered.map((patient, index) => {
-                  const status = statusConfig[patient.status];
-                  const priority = priorityConfig[patient.priority];
+                {/* Loading skeleton */}
+                {isLoading && Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="saai-panel rounded-2xl p-4 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                    <div className="flex gap-3">
+                      <div className="w-12 h-12 rounded-2xl shrink-0" style={{ background: '#DEF2F1' }} />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 rounded" style={{ background: '#DEF2F1', width: '60%' }} />
+                        <div className="h-3 rounded" style={{ background: '#DEF2F1', width: '40%' }} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Error state */}
+                {isError && !isLoading && (
+                  <div className="col-span-2 rounded-2xl p-6 text-center" style={{ background: '#fff5f5', border: '1px solid #fed7d7' }}>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#c53030' }}>Failed to load patients</p>
+                    <p style={{ fontSize: '12px', color: '#e53e3e', marginTop: '6px' }}>Check your connection and try again.</p>
+                  </div>
+                )}
+
+                {/* Patient cards */}
+                {!isLoading && patients.map((patient, index) => {
+                  const status = statusConfig[patient.status] ?? statusConfig['waiting'];
+                  const priority = priorityConfig[patient.priority] ?? priorityConfig['medium'];
                   const avatar = avatarPalette[index % avatarPalette.length];
-                  const painColor = getPainColor(patient.pain);
 
                   return (
                     <div
@@ -382,7 +285,7 @@ export function DoctorPatients() {
                                 {patient.name}
                               </p>
                               <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>
-                                {patient.condition} · {patient.age} yrs
+                                {patient.condition ?? '—'} · {patient.age} yrs
                               </p>
                             </div>
                             <span
@@ -398,7 +301,7 @@ export function DoctorPatients() {
                               className="rounded-lg px-2 py-1"
                               style={{ background: '#DEF2F1', color: '#17252A', fontSize: '11px', fontWeight: 700 }}
                             >
-                              Slot {patient.slot}
+                              {patient.displayId}
                             </span>
                             <span
                               className="rounded-lg px-2 py-1"
@@ -406,43 +309,15 @@ export function DoctorPatients() {
                             >
                               {priority.label} priority
                             </span>
-                            <span
-                              className="rounded-lg px-2 py-1"
-                              style={{ background: '#DEF2F1', color: '#2B7A78', fontSize: '11px', fontWeight: 600 }}
-                            >
-                              BP {patient.bp}
-                            </span>
+                            {patient.city && (
+                              <span
+                                className="rounded-lg px-2 py-1"
+                                style={{ background: '#DEF2F1', color: '#2B7A78', fontSize: '11px', fontWeight: 600 }}
+                              >
+                                {patient.city}
+                              </span>
+                            )}
                           </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-3">
-                        <div className="flex items-center justify-between">
-                          <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 700 }}>Recovery progress</p>
-                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#17252A' }}>
-                            {patient.progress}%
-                          </span>
-                        </div>
-                        <div
-                          className="mt-2 h-2 rounded-full"
-                          style={{ background: '#DEF2F1' }}
-                        >
-                          <div
-                            className="h-2 rounded-full"
-                            style={{ width: `${patient.progress}%`, background: '#3AAFA9' }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between mt-3">
-                        <div>
-                          <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 700 }}>Plan focus</p>
-                          <p style={{ fontSize: '12px', color: '#17252A', fontWeight: 700 }}>{patient.plan}</p>
-                          <p style={{ fontSize: '11px', color: '#2B7A78', marginTop: '4px' }}>{patient.lastNote}</p>
-                        </div>
-                        <div className="flex items-center gap-2" style={{ color: painColor }}>
-                          <Flame size={16} />
-                          <span style={{ fontSize: '12px', fontWeight: 700 }}>Pain {patient.pain}/10</span>
                         </div>
                       </div>
 
@@ -479,7 +354,7 @@ export function DoctorPatients() {
                 })}
               </div>
 
-              {filtered.length === 0 && (
+              {!isLoading && !isError && patients.length === 0 && (
                 <div className="saai-panel rounded-2xl p-6 text-center" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
                   <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>
                     No patients found
@@ -521,9 +396,9 @@ export function DoctorPatients() {
                 </p>
                 <div className="mt-4 flex flex-col gap-3">
                   {[
-                    { label: 'Stable vitals', value: '5 patients', color: '#3AAFA9' },
-                    { label: 'Needs review', value: '1 patient', color: '#2B7A78' },
-                    { label: 'Pending notes', value: '2 patients', color: '#17252A' },
+                    { label: 'In session now', value: `${stats.active} patient${stats.active !== 1 ? 's' : ''}`, color: '#3AAFA9' },
+                    { label: 'Waiting', value: `${stats.waiting} patient${stats.waiting !== 1 ? 's' : ''}`, color: '#2B7A78' },
+                    { label: 'High priority', value: `${stats.highPriority} patient${stats.highPriority !== 1 ? 's' : ''}`, color: '#17252A' },
                   ].map((item) => (
                     <div
                       key={item.label}

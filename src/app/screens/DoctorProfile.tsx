@@ -24,27 +24,14 @@ import {
   GraduationCap,
 } from 'lucide-react';
 
-const DOCTOR_PHOTO = 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80';
+const DOCTOR_PHOTO = ''; // Use initials fallback — no default photo
 
-const specializations = [
-  'Sports Physiotherapy',
-  'Orthopedic Rehab',
-  'Post-Surgical Recovery',
-  'Dry Needling',
-  'Manual Therapy',
-];
-
-const education = [
-  { degree: 'BPT (Bachelor of Physiotherapy)', institution: 'Madras Medical College', year: '2008' },
-  { degree: 'MPT – Orthopedics', institution: 'NIMHANS, Bengaluru', year: '2011' },
-  { degree: 'Fellowship in Sports PT', institution: 'IOC Sports Medicine', year: '2013' },
-];
-
-const todaySchedule = [
-  { time: '09:00 AM', patient: 'Rahul Verma', type: 'ACL Rehab', status: 'in-session' },
-  { time: '09:30 AM', patient: 'Anita Patel', type: 'Shoulder Assessment', status: 'waiting' },
-  { time: '10:00 AM', patient: 'Suresh Kumar', type: 'Stroke Follow-up', status: 'waiting' },
-];
+// NOTE: These are UI structure placeholders.
+// Should be fetched from /api/users/me when the backend exposes them.
+// Currently NO backend API for these — DO NOT hardcode fake values.
+const specializations: string[] = [];
+const education: { degree: string; institution: string; year: string }[] = [];
+const todaySchedule: { time: string; patient: string; type: string; status: string }[] = [];
 
 const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
   'in-session': { color: '#3AAFA9', bg: '#DEF2F1', label: 'Active' },
@@ -125,7 +112,7 @@ export function DoctorProfile() {
               ) : (
                 <img
                   src={DOCTOR_PHOTO}
-                  alt="Dr. Rajesh Kumar"
+                  alt={user?.name ?? 'Doctor'}
                   onError={() => setImgError(true)}
                   style={{
                     width: '96px', height: '96px',
@@ -144,9 +131,9 @@ export function DoctorProfile() {
                 <Stethoscope size={16} color="#FEFFFF" />
               </div>
             </div>
-            <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#FEFFFF' }}>{user?.name || 'Dr. Rajesh Kumar'}</h2>
+            <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#FEFFFF' }}>{user?.name || 'Doctor'}</h2>
             <p style={{ fontSize: '14px', color: 'rgba(254,255,255,0.9)', marginTop: '4px' }}>
-              Sports Physiotherapist · MCI: 78945-A
+              Physiotherapist · {user?.displayId ?? '—'}
             </p>
             {/* Star rating */}
             <div className="flex items-center gap-1.5 mt-3">
