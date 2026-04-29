@@ -7,15 +7,34 @@ import type {
   UpdateEvaluationPayload,
 } from '../types';
 
+const MOCK_EVALUATION: Evaluation = {
+  id: 'eval-1',
+  displayId: 'EVAL-2026-001',
+  patientId: '1',
+  status: 'reviewed',
+  diagnosis: 'Lumbar Spondylosis',
+  plan: 'IFC, Core Strengthening',
+  management: 'Weekly follow up',
+  referredBy: 'Dr. John Doe',
+  createdBy: { id: 'nurse-1', name: 'Kavya Reddy', role: 'nurse' },
+  updatedBy: { id: 'doctor-1', name: 'Dr. Rajesh Kumar', role: 'doctor' },
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+
 /** Fetch the most-recent evaluation for a given patient. */
 export function useLatestEvaluation(patientId: string | null | undefined) {
   return useQuery<Evaluation | null>({
     queryKey: ['evaluations', 'latest', patientId],
     queryFn: async () => {
-      const { data } = await api.get<EvaluationsListResponse>(
-        ENDPOINTS.EVALUATIONS.LATEST_BY_PATIENT(patientId!)
-      );
-      return data.data[0] ?? null;
+      // MOCK DATA
+      return { ...MOCK_EVALUATION, patientId: patientId! };
+      
+      // REAL API
+      // const { data } = await api.get<EvaluationsListResponse>(
+      //   ENDPOINTS.EVALUATIONS.LATEST_BY_PATIENT(patientId!)
+      // );
+      // return data.data[0] ?? null;
     },
     enabled: Boolean(patientId),
   });
@@ -26,8 +45,12 @@ export function useEvaluation(id: string | null | undefined) {
   return useQuery<Evaluation>({
     queryKey: ['evaluation', id],
     queryFn: async () => {
-      const { data } = await api.get<Evaluation>(ENDPOINTS.EVALUATIONS.DETAIL(id!));
-      return data;
+      // MOCK DATA
+      return MOCK_EVALUATION;
+
+      // REAL API
+      // const { data } = await api.get<Evaluation>(ENDPOINTS.EVALUATIONS.DETAIL(id!));
+      // return data;
     },
     enabled: Boolean(id),
   });
@@ -39,11 +62,15 @@ export function useUpdateEvaluation(evaluationId: string) {
 
   return useMutation({
     mutationFn: async (payload: UpdateEvaluationPayload) => {
-      const { data } = await api.put<Evaluation>(
-        ENDPOINTS.EVALUATIONS.UPDATE(evaluationId),
-        payload
-      );
-      return data;
+      // MOCK DATA
+      return { ...MOCK_EVALUATION, ...payload };
+
+      // REAL API
+      // const { data } = await api.put<Evaluation>(
+      //   ENDPOINTS.EVALUATIONS.UPDATE(evaluationId),
+      //   payload
+      // );
+      // return data;
     },
     onSuccess: (updated) => {
       // Keep cache consistent
