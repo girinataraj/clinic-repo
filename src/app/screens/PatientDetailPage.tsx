@@ -26,7 +26,7 @@ const patientData: Record<string, any> = {
     associated: 'Mild swelling around the knee joint. Occasional clicking sound during flexion.',
     diagnosis: 'Right Knee ACL Partial Tear with associated meniscal irritation',
     notes: 'Patient requires 6-week physiotherapy protocol. RICE therapy for first week. Progressive strengthening exercises from week 2. Consider MRI follow-up.',
-    doctor: 'Dr. Rajesh Kumar',
+    doctor: 'Dr. SV. Sathish Kumar',
     date: 'April 27, 2025',
   },
 };

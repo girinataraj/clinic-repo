@@ -131,7 +131,9 @@ export function DoctorProfile() {
                 <Stethoscope size={16} color="#FEFFFF" />
               </div>
             </div>
-            <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#FEFFFF' }}>{user?.name || 'Doctor'}</h2>
+            <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#FEFFFF' }}>
+              {user?.name === 'Dr. Rajesh Kumar' ? 'Dr. SV. Sathish Kumar' : (user?.name || 'Doctor')}
+            </h2>
             <p style={{ fontSize: '14px', color: 'rgba(254,255,255,0.9)', marginTop: '4px' }}>
               Physiotherapist · {user?.displayId ?? '—'}
             </p>
@@ -149,7 +151,7 @@ export function DoctorProfile() {
               <span style={{ fontSize: '12px', color: 'rgba(254,255,255,0.7)', marginLeft: '2px' }}>(246 reviews)</span>
             </div>
             <div className="flex items-center gap-2 mt-4">
-              {[{ text: '12 yrs Exp' }, { text: 'MCI Verified' }, { text: 'SAAI Clinic' }].map((tag) => (
+              {[{ text: '16 yrs Exp' }, { text: 'MPT (Cardio-Resp)' }, { text: 'SAAI Clinic' }].map((tag) => (
                 <span
                   key={tag.text}
                   className="px-3 py-1.5 rounded-xl backdrop-blur-sm"
@@ -188,10 +190,28 @@ export function DoctorProfile() {
           <div className="p-5 rounded-2xl"
             style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #DEF2F1' }}>
             <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '8px' }}>About</p>
+            <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6, marginBottom: '12px' }}>
+              <strong>Qualifications:</strong> MPT (Cardio-Resp), PGDFM, DYT, CDNT<br/>
+              <strong>Consultant Physiotherapist</strong>
+            </p>
+            <ul style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6, listStyleType: 'disc', paddingLeft: '20px' }}>
+              <li>16 years of clinical experience</li>
+              <li>16 years as HOD at Erode Sudha Hospitals</li>
+              <li>Strong professional network</li>
+              <li>Author of 3 awareness books</li>
+              <li>6000+ pain cases treated</li>
+            </ul>
+          </div>
+
+          {/* Clinic Info */}
+          <div className="p-5 rounded-2xl"
+            style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #DEF2F1' }}>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '4px' }}>Saai Physiotherapy Clinic</p>
+            <p style={{ fontSize: '13px', fontStyle: 'italic', color: '#3AAFA9', marginBottom: '12px' }}>“Getting better every day”</p>
             <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6 }}>
-              Dr. Rajesh Kumar is a highly experienced sports physiotherapist with over 12 years of clinical practice
-              specializing in ACL rehabilitation, post-surgical recovery, and elite sports performance. He has worked
-              with national-level athletes and managed complex orthopedic cases.
+              20A/10, Sakthi Nagar, Sengodapalayam,<br/>
+              Thindal, Erode Dt – 638012<br/>
+              Tamil Nadu, India
             </p>
           </div>
 

@@ -39,7 +39,7 @@ export function NurseDashboard() {
 
   const patients = patientsData?.data ?? [];
 
-  const firstName = user?.name?.split(' ')[0] || 'Nurse';
+  const firstName = user?.name?.split(' ')[0] || 'Therapist';
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
   const waiting = patients.filter((p) => p.status === 'waiting').length;

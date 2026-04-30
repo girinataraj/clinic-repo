@@ -35,7 +35,8 @@ export function DoctorDashboard() {
 
   const patients = patientsData?.data ?? [];
 
-  const firstName = (user?.name || 'Doctor').replace('Dr. ', '');
+  const actualName = user?.name === 'Dr. Rajesh Kumar' ? 'Dr. SV. Sathish Kumar' : (user?.name || 'Doctor');
+  const firstName = actualName.replace('Dr. ', '');
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
 
   const waiting = patients.filter((p) => p.status === 'waiting').length;
@@ -66,7 +67,7 @@ export function DoctorDashboard() {
                   {today}
                 </p>
                 <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#FEFFFF', marginTop: '4px', letterSpacing: '-0.5px' }}>
-                  Dr. {firstName.split(' ')[0]} 👋
+                  {actualName} 👋
                 </h1>
                 <p style={{ fontSize: '14px', color: 'rgba(254, 255, 255, 0.8)', marginTop: '2px', fontWeight: 400 }}>
                   Sports Physiotherapist · SAAI Clinic

@@ -32,8 +32,8 @@ const roles: RoleOption[] = [
   },
   {
     value: 'nurse',
-    label: 'Nurse',
-    sublabel: 'Intake & care',
+    label: 'Therapist',
+    sublabel: 'Therapy & care',
     icon: HeartPulse,
     color: '#0f766e',
     bg: '#f0fdfa',
@@ -144,7 +144,7 @@ export function LoginScreen() {
             </span>
           </h2>
           <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: '36px' }}>
-            India's most trusted physiotherapy platform connecting patients, nurses, and doctors for seamless care delivery.
+            India's most trusted physiotherapy platform connecting patients, therapists, and doctors for seamless care delivery.
           </p>
 
           {/* Features */}
@@ -448,7 +448,7 @@ export function LoginScreen() {
                 onClick={() => { setRole('nurse'); setIdentifier('nurse@saai.com'); setPassword('Password@123'); }}
                 style={{ flex: 1, padding: '7px 4px', borderRadius: '12px', background: '#f0fdfa', border: '1.5px solid #99f6e4', fontSize: '11px', fontWeight: 700, color: '#0f766e' }}
               >
-                Nurse
+                Therapist
               </button>
               <button
                 onClick={() => { setRole('doctor'); setIdentifier('doctor@saai.com'); setPassword('Password@123'); }}

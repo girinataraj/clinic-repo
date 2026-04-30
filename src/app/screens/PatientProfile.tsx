@@ -163,7 +163,7 @@ export function PatientProfile() {
             </div>
             <div className="flex-1">
               <p style={{ fontSize: '12px', color: '#059669', fontWeight: 700 }}>NEXT APPOINTMENT</p>
-              <p style={{ fontSize: '14px', fontWeight: 800, color: '#064e3b' }}>Dr. Rajesh Kumar</p>
+              <p style={{ fontSize: '14px', fontWeight: 800, color: '#064e3b' }}>Dr. SV. Sathish Kumar</p>
               <p style={{ fontSize: '12px', color: '#059669', marginTop: '1px' }}>Tomorrow · 10:00 AM · Sports Physio</p>
             </div>
             <ChevronRight size={18} color="#059669" />

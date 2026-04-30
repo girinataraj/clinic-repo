@@ -71,7 +71,7 @@ export function NursePatients() {
     }
   };
 
-  const firstName = user?.name?.split(' ')[0] || 'Nurse';
+  const firstName = user?.name?.split(' ')[0] || 'Therapist';
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
   const stats = {
@@ -97,7 +97,7 @@ export function NursePatients() {
           <div className="max-w-5xl mx-auto relative z-10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold text-teal-100/80 mb-1 uppercase tracking-wider">Nurse Station</p>
+                <p className="text-[11px] font-bold text-teal-100/80 mb-1 uppercase tracking-wider">Therapist Station</p>
                 <h1 className="text-2xl font-extrabold text-white tracking-tight drop-shadow-sm">
                   Patient registry for {firstName}
                 </h1>

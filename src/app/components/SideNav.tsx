@@ -57,7 +57,7 @@ const roleConfig: Record<UserRole, {
     activeBorder: 'border-teal-200 dark:border-teal-800/50',
     activeText: 'text-teal-700 dark:text-teal-400',
     iconColor: '#0f766e',
-    label: 'Nurse Station',
+    label: 'Therapist Station',
   },
   doctor: {
     gradient: 'linear-gradient(135deg, #1e1b4b, #4338ca)',
@@ -178,8 +178,12 @@ export function SideNav() {
             <User size={17} color="#FEFFFF" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{user.name}</p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold capitalize">{role} · SAAI Clinic</p>
+            <p className="text-xs font-extrabold text-slate-900 dark:text-white">
+              {user.name === 'Dr. Rajesh Kumar' ? 'Dr. SV. Sathish Kumar' : user.name}
+            </p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold capitalize">
+              {role === 'nurse' ? 'therapist' : role} · SAAI Clinic
+            </p>
           </div>
         </div>
         <button

@@ -103,8 +103,8 @@ export function NurseProfile() {
                 <Star className="w-3 h-3 text-white fill-white" />
               </div>
             </div>
-            <h2 className="text-xl font-extrabold text-white">{user?.name || 'Nurse'}</h2>
-            <p className="text-sm text-white/75 mt-0.5">Nurse · {user?.displayId ?? '—'}</p>
+            <h2 className="text-xl font-extrabold text-white">{user?.name || 'Therapist'}</h2>
+            <p className="text-sm text-white/75 mt-0.5">Therapist · {user?.displayId ?? '—'}</p>
             <div className="flex items-center gap-2 mt-3">
               {[{ text: '6 yrs Exp' }, { text: 'RN Certified' }, { text: 'Physio Unit' }].map((tag) => (
                 <span
