@@ -60,11 +60,11 @@ const roleConfig: Record<UserRole, {
     label: 'Therapist Station',
   },
   doctor: {
-    gradient: 'linear-gradient(135deg, #1e1b4b, #4338ca)',
-    activeBg: 'bg-indigo-50 dark:bg-indigo-900/30',
-    activeBorder: 'border-indigo-200 dark:border-indigo-800/50',
-    activeText: 'text-indigo-700 dark:text-indigo-400',
-    iconColor: '#4338ca',
+    gradient: 'linear-gradient(135deg, #2B7A78, #3AAFA9)',
+    activeBg: 'bg-[#DEF2F1] dark:bg-teal-900/30',
+    activeBorder: 'border-[#DEF2F1] dark:border-teal-800/50',
+    activeText: 'text-[#2B7A78] dark:text-teal-400',
+    iconColor: '#2B7A78',
     label: 'Doctor Console',
   },
   admin: {

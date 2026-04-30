@@ -8,7 +8,6 @@ import {
   Bell,
   Shield,
   HelpCircle,
-  Settings,
   Edit3,
   Award,
   Star,
@@ -24,8 +23,6 @@ import {
   GraduationCap,
 } from 'lucide-react';
 
-const DOCTOR_PHOTO = ''; // Use initials fallback — no default photo
-
 // NOTE: These are UI structure placeholders.
 // Should be fetched from /api/users/me when the backend exposes them.
 // Currently NO backend API for these — DO NOT hardcode fake values.
@@ -39,20 +36,12 @@ const statusConfig: Record<string, { color: string; bg: string; label: string }>
   'completed': { color: '#10B981', bg: '#ECFDF5', label: 'Done' },
 };
 
-const settingsItems = [
-  { icon: Bell, label: 'Patient Notifications', sublabel: 'Alerts, reminders & updates', color: '#3AAFA9', bg: '#DEF2F1' },
-  { icon: Calendar, label: 'My Schedule', sublabel: 'Manage appointments & leave', color: '#2B7A78', bg: '#DEF2F1' },
-  { icon: FileText, label: 'Report Templates', sublabel: 'Customize your report formats', color: '#17252A', bg: '#DEF2F1' },
-  { icon: Shield, label: 'Privacy & Compliance', sublabel: 'HIPAA & data security', color: '#3AAFA9', bg: '#DEF2F1' },
-  { icon: HelpCircle, label: 'Help & Support', sublabel: 'Clinical support & FAQs', color: '#2B7A78', bg: '#DEF2F1' },
-  { icon: Settings, label: 'App Settings', sublabel: 'Language, theme & preferences', color: '#17252A', bg: '#DEF2F1' },
-];
+
 
 export function DoctorProfile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [imgError, setImgError] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -84,7 +73,7 @@ export function DoctorProfile() {
             >
               <ChevronLeft size={20} color="#FEFFFF" />
             </button>
-            <span style={{ fontSize: '16px', fontWeight: 700, color: '#FEFFFF' }}>My Profile</span>
+            <span className="absolute left-1/2 -translate-x-1/2" style={{ fontSize: '16px', fontWeight: 700, color: '#FEFFFF' }}>My Profile</span>
             <button
               className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
               style={{ width: '40px', height: '40px', background: 'rgba(254,255,255,0.15)' }}
@@ -94,48 +83,12 @@ export function DoctorProfile() {
           </div>
 
           {/* Profile hero */}
-          <div className="flex flex-col items-center pb-8 pt-4 px-6 relative z-10">
-            <div className="relative mb-4">
-              {imgError ? (
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    width: '96px', height: '96px',
-                    borderRadius: '32px',
-                    background: 'rgba(254,255,255,0.2)',
-                    border: '3px solid rgba(254,255,255,0.5)',
-                    fontSize: '40px',
-                  }}
-                >
-                  👨‍⚕️
-                </div>
-              ) : (
-                <img
-                  src={DOCTOR_PHOTO}
-                  alt={user?.name ?? 'Doctor'}
-                  onError={() => setImgError(true)}
-                  style={{
-                    width: '96px', height: '96px',
-                    borderRadius: '32px',
-                    objectFit: 'cover',
-                    objectPosition: 'top',
-                    border: '3px solid rgba(254,255,255,0.8)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                  }}
-                />
-              )}
-              <div
-                className="absolute -bottom-2 -right-2 flex items-center justify-center rounded-2xl"
-                style={{ width: '32px', height: '32px', background: '#2B7A78', border: '2px solid #FEFFFF' }}
-              >
-                <Stethoscope size={16} color="#FEFFFF" />
-              </div>
-            </div>
-            <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#FEFFFF' }}>
+          <div className="relative z-10 flex flex-col items-center text-center mt-4 pb-12 px-6">
+            <h2 style={{ fontSize: '32px', fontWeight: 800, color: '#FEFFFF', letterSpacing: '-0.02em' }}>
               {user?.name === 'Dr. Rajesh Kumar' ? 'Dr. SV. Sathish Kumar' : (user?.name || 'Doctor')}
             </h2>
             <p style={{ fontSize: '14px', color: 'rgba(254,255,255,0.9)', marginTop: '4px' }}>
-              Physiotherapist · {user?.displayId ?? '—'}
+              Physiotherapist
             </p>
             {/* Star rating */}
             <div className="flex items-center gap-1.5 mt-3">
@@ -313,33 +266,7 @@ export function DoctorProfile() {
             </div>
           </div>
 
-          {/* Settings */}
-          <div>
-            <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '12px' }}>Settings</p>
-            <div className="flex flex-col gap-0 rounded-2xl overflow-hidden"
-              style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #DEF2F1' }}>
-              {settingsItems.map((item, i) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.label}
-                    className="flex items-center gap-4 px-4 py-4 text-left transition-colors"
-                    style={{ borderBottom: i < settingsItems.length - 1 ? '1px solid #DEF2F1' : 'none' }}
-                  >
-                    <div className="flex items-center justify-center rounded-2xl shrink-0"
-                      style={{ width: '40px', height: '40px', background: item.bg }}>
-                      <Icon size={20} color={item.color} />
-                    </div>
-                    <div className="flex-1">
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#17252A' }}>{item.label}</p>
-                      <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>{item.sublabel}</p>
-                    </div>
-                    <ChevronRight size={18} color="#2B7A78" />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+
 
           {/* Logout */}
           <button

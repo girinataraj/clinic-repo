@@ -91,6 +91,15 @@ export function LoginScreen() {
 
   return (
     <div className="min-h-screen flex" style={{ background: '#f8faff' }}>
+      <style>{`
+        input:-webkit-autofill {
+          -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+          -webkit-text-fill-color: inherit !important;
+        }
+        input {
+          background-color: #ffffff !important;
+        }
+      `}</style>
 
       {/* ── LEFT BRANDING PANEL — desktop only ── */}
       <div
@@ -323,7 +332,7 @@ export function LoginScreen() {
               style={{
                 border: `1.5px solid ${identifier ? selectedRole.border : '#e2e8f0'}`,
                 borderRadius: '16px',
-                background: '#f8fafc',
+                background: '#ffffff',
                 transition: 'border-color 0.2s',
               }}
             >
@@ -360,7 +369,7 @@ export function LoginScreen() {
               style={{
                 border: `1.5px solid ${password ? selectedRole.border : '#e2e8f0'}`,
                 borderRadius: '16px',
-                background: '#f8fafc',
+                background: '#ffffff',
                 transition: 'border-color 0.2s',
               }}
             >

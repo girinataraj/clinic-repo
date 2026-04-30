@@ -5,12 +5,10 @@ import { BottomNav } from '../components/BottomNav';
 import { ThemeToggle } from '../components/ThemeToggle';
 import {
   ChevronRight, LogOut, Bell, Shield, HelpCircle,
-  Settings, Edit3, Award, Clock, Users,
+  Edit3, Award, Clock, Users,
   ClipboardList, ChevronLeft, MapPin, Phone, CheckCircle,
   Star, Calendar,
 } from 'lucide-react';
-
-const NURSE_PHOTO = ''; // No default photo — use initials fallback
 
 // NOTE: certifications & shiftInfo are kept as UI structure placeholders.
 // These should be fetched from a /api/users/me endpoint when available.
@@ -24,19 +22,12 @@ const shiftInfo = {
   supervisor: '—',
 };
 
-const settingsItems = [
-  { icon: Bell, label: 'Shift Notifications', sublabel: 'Alerts & duty reminders', iconColor: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/30' },
-  { icon: Calendar, label: 'Schedule & Roster', sublabel: 'View your monthly roster', iconColor: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30' },
-  { icon: Shield, label: 'Privacy & Security', sublabel: 'Data access controls', iconColor: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50 dark:bg-violet-900/30' },
-  { icon: HelpCircle, label: 'Help & Support', sublabel: 'Contact hospital IT desk', iconColor: 'text-orange-500 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/30' },
-  { icon: Settings, label: 'App Settings', sublabel: 'Language & preferences', iconColor: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-100 dark:bg-slate-800' },
-];
+
 
 export function NurseProfile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [imgError, setImgError] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -54,14 +45,14 @@ export function NurseProfile() {
           <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
           {/* Top bar */}
-          <div className="flex items-center justify-between px-6 pt-6 pb-2 max-w-5xl mx-auto">
+          <div className="flex items-center justify-between px-6 pt-6 pb-2 max-w-5xl mx-auto relative">
             <button
               onClick={() => navigate('/nurse')}
               className="flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors w-9 h-9"
             >
               <ChevronLeft className="w-5 h-5 text-white" />
             </button>
-            <span className="text-base font-extrabold text-white">My Profile</span>
+            <span className="absolute left-1/2 -translate-x-1/2 text-base font-extrabold text-white">My Profile</span>
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <button className="flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors w-9 h-9">
@@ -71,40 +62,9 @@ export function NurseProfile() {
           </div>
 
           {/* Profile hero */}
-          <div className="flex flex-col items-center pb-8 pt-4 px-5">
-            <div className="relative mb-3">
-              {imgError ? (
-                <div
-                  className="flex items-center justify-center text-4xl"
-                  style={{
-                    width: '88px', height: '88px',
-                    borderRadius: '28px',
-                    background: 'rgba(255,255,255,0.25)',
-                    border: '3px solid rgba(255,255,255,0.6)',
-                  }}
-                >
-                  👩‍⚕️
-                </div>
-              ) : (
-                <img
-                  src={NURSE_PHOTO}
-                  alt={user?.name || 'Kavya Reddy'}
-                  onError={() => setImgError(true)}
-                  className="object-cover object-top"
-                  style={{
-                    width: '88px', height: '88px',
-                    borderRadius: '28px',
-                    border: '3px solid rgba(255,255,255,0.6)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-                  }}
-                />
-              )}
-              <div className="absolute -bottom-1 -right-1 flex items-center justify-center rounded-full w-6 h-6 bg-teal-400 border-2 border-white dark:border-slate-800">
-                <Star className="w-3 h-3 text-white fill-white" />
-              </div>
-            </div>
-            <h2 className="text-xl font-extrabold text-white">{user?.name || 'Therapist'}</h2>
-            <p className="text-sm text-white/75 mt-0.5">Therapist · {user?.displayId ?? '—'}</p>
+          <div className="relative z-10 flex flex-col items-center text-center mt-2 pb-10 px-5">
+            <h2 className="text-3xl font-extrabold text-white tracking-tight">{user?.name || 'Therapist'}</h2>
+            <p className="text-sm text-white/75 mt-0.5">Therapist</p>
             <div className="flex items-center gap-2 mt-3">
               {[{ text: '6 yrs Exp' }, { text: 'RN Certified' }, { text: 'Physio Unit' }].map((tag) => (
                 <span
@@ -205,30 +165,7 @@ export function NurseProfile() {
             </div>
           </div>
 
-          {/* Settings */}
-          <div>
-            <p className="text-sm font-extrabold text-slate-900 dark:text-white mb-3 px-1">Settings</p>
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
-              {settingsItems.map((item, i) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.label}
-                    className={`flex items-center gap-3 px-4 py-3 text-left w-full hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${i < settingsItems.length - 1 ? 'border-b border-slate-50 dark:border-slate-700/50' : ''}`}
-                  >
-                    <div className={`flex items-center justify-center rounded-xl shrink-0 w-10 h-10 ${item.bg}`}>
-                      <Icon className={`w-4 h-4 ${item.iconColor}`} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">{item.label}</p>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500">{item.sublabel}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600" />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+
 
           {/* Logout */}
           <button

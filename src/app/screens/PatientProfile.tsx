@@ -8,7 +8,6 @@ import {
   Bell,
   Shield,
   HelpCircle,
-  Settings,
   Edit3,
   Heart,
   Droplets,
@@ -30,13 +29,7 @@ const PATIENT_PHOTO = ''; // Use initials fallback — no default photo
 const healthInfo: { label: string; value: string; icon: any; color: string; bg: string }[] = [];
 const conditions: { label: string; severity: string; color: string; bg: string }[] = [];
 
-const settingsItems = [
-  { icon: Bell, label: 'Notifications', sublabel: 'Appointment reminders & updates', color: '#2563eb', bg: '#eff6ff' },
-  { icon: Shield, label: 'Privacy & Security', sublabel: 'Data protection settings', color: '#7c3aed', bg: '#f5f3ff' },
-  { icon: FileText, label: 'Medical Records', sublabel: 'View & download reports', color: '#0f766e', bg: '#f0fdfa' },
-  { icon: HelpCircle, label: 'Help & Support', sublabel: 'FAQs & contact support', color: '#f97316', bg: '#fff7ed' },
-  { icon: Settings, label: 'App Settings', sublabel: 'Language, theme & more', color: '#64748b', bg: '#f8fafc' },
-];
+
 
 export function PatientProfile() {
   const { user, logout } = useAuth();
@@ -237,33 +230,7 @@ export function PatientProfile() {
             <ChevronRight size={16} color="#ef4444" />
           </div>
 
-          {/* Settings */}
-          <div>
-            <p style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>Settings</p>
-            <div className="flex flex-col gap-2 rounded-2xl overflow-hidden"
-              style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}>
-              {settingsItems.map((item, i) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.label}
-                    className="flex items-center gap-3 px-4 py-3 text-left"
-                    style={{ borderBottom: i < settingsItems.length - 1 ? '1px solid #f8fafc' : 'none' }}
-                  >
-                    <div className="flex items-center justify-center rounded-xl shrink-0"
-                      style={{ width: '38px', height: '38px', background: item.bg }}>
-                      <Icon size={17} color={item.color} />
-                    </div>
-                    <div className="flex-1">
-                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{item.label}</p>
-                      <p style={{ fontSize: '11px', color: '#94a3b8' }}>{item.sublabel}</p>
-                    </div>
-                    <ChevronRight size={16} color="#cbd5e1" />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+
 
           {/* Logout */}
           <button

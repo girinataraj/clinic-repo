@@ -123,7 +123,17 @@ export function DoctorDashboard() {
                     onClick={() => navigate('/doctor/profile')}
                     className="flex items-center justify-center rounded-2xl transition-all duration-300 relative z-50"
                     style={{ width: '48px', height: '48px', background: 'rgba(254, 255, 255, 0.15)', border: '1px solid rgba(254, 255, 255, 0.2)' }}>
-                    <User size={22} color="#FEFFFF" />
+                    <img
+                      src="/doctor.jpg"
+                      alt="Doctor Profile"
+                      style={{ width: '100%', height: '100%', borderRadius: '16px', objectFit: 'cover', objectPosition: 'center 15%' }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.setAttribute('style', 'display: block');
+                      }}
+                    />
+                    <User size={22} color="#FEFFFF" style={{ display: 'none' }} />
                   </button>
                 </div>
               </div>
