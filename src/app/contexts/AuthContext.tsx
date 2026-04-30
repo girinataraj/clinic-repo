@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 import api, { setAccessToken } from '../../services/api';
 import { ENDPOINTS } from '../../services/endpoints';
 import { queryClient } from '../../services/queryClient';
@@ -15,27 +16,63 @@ export interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null;
+  /** True while the initial session restore is in progress — gates route rendering */
+  isInitializing: boolean;
   isLoading: boolean;
   loginError: string | null;
   login: (email: string, password: string, role: UserRole) => Promise<void>;
   logout: () => Promise<void>;
 }
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true); // ← blocks render until session checked
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  const login = async (email: string, password: string, role: UserRole) => {
+  // ── Restore session on mount via refresh-token cookie ─────────────────────
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const { data } = await axios.post<{
+          success: boolean;
+          data: { accessToken: string; user: AuthUser };
+        }>(
+          `${BASE_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+        setAccessToken(data.data.accessToken);
+        setUser(data.data.user);
+      } catch {
+        // No valid refresh token — user needs to log in
+        setUser(null);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    restoreSession();
+  }, []);
+
+  const login = async (identifier: string, password: string, role: UserRole) => {
     setIsLoading(true);
     setLoginError(null);
     try {
+      // Patients authenticate with phone; staff with email
+      const isPhone = role === 'patient';
+      const body = isPhone
+        ? { phone: identifier, password, role }
+        : { email: identifier, password, role };
+
       const { data } = await api.post<{
         success: boolean;
         data: { accessToken: string; user: AuthUser };
-      }>(ENDPOINTS.AUTH.LOGIN, { email, password, role });
+      }>(ENDPOINTS.AUTH.LOGIN, body);
 
       setAccessToken(data.data.accessToken);
       setUser(data.data.user);
@@ -58,13 +95,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setAccessToken(null);
       setUser(null);
-      // Clear ALL cached React Query data to prevent stale data leaking
       queryClient.clear();
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, loginError, login, logout }}>
+    <AuthContext.Provider value={{ user, isInitializing, isLoading, loginError, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -14,6 +14,8 @@ export const ENDPOINTS = {
 
   PATIENTS: {
     LIST: '/patients',
+    LOOKUP_BY_PHONE: '/patients/lookup', // GET ?phone=xxx → { id, name, phone, ... }
+    CREATE: '/patients',
     DETAIL: (id: string) => `/patients/${id}`,
     UPDATE: (id: string) => `/patients/${id}`,
     RECORDS: (id: string) => `/patients/${id}/records`,
@@ -41,6 +43,19 @@ export const ENDPOINTS = {
     DETAIL: (planId: string) => `/exercise-plans/${planId}`,
     UPDATE: (planId: string) => `/exercise-plans/${planId}`,
     DELETE: (planId: string) => `/exercise-plans/${planId}`,
+  },
+
+  EXERCISE_LIBRARY: {
+    LIST: '/exercise-library',
+    CREATE: '/exercise-library',
+    DETAIL: (id: string) => `/exercise-library/${id}`,
+    UPDATE: (id: string) => `/exercise-library/${id}`,
+    DELETE: (id: string) => `/exercise-library/${id}`,
+    PATIENT_ASSIGNMENTS: (patientId: string) => `/exercise-library/patients/${patientId}/assignments`,
+    REMOVE_ASSIGNMENT: (patientId: string, templateId: string) =>
+      `/exercise-library/patients/${patientId}/assignments/${templateId}`,
+    CLEAR_ASSIGNMENTS: (patientId: string) =>
+      `/exercise-library/patients/${patientId}/assignments`,
   },
 
   REPORTS: {
