@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { useCreateEvaluation } from '../../hooks/useEvaluations';
+import { usePatientByPhone, useCreatePatient } from '../../hooks/usePatients';
 import {
-  ArrowLeft, ChevronRight, ChevronLeft, User, Heart,
-  Activity, Sliders, CheckSquare, ClipboardList, Save, Check, Loader2,
+  ArrowLeft, ChevronRight, ChevronLeft, User, Heart, Phone, Search, UserPlus,
+  Activity, Sliders, CheckSquare, ClipboardList, Save, Check, Loader2, AlertTriangle,
 } from 'lucide-react';
 
 const symptoms = [
@@ -50,16 +51,75 @@ const steps = [
 export function NurseIntakeForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const patientId = searchParams.get('patientId') ?? '';
+
+  // ── Phone lookup state ────────────────────────────────────────────────────
+  const [phoneInput, setPhoneInput] = useState(searchParams.get('phone') ?? '');
+  const [phoneToFetch, setPhoneToFetch] = useState(searchParams.get('phone') ?? '');
+  const [resolvedPatientId, setResolvedPatientId] = useState(searchParams.get('patientId') ?? '');
+  const [lookupDone, setLookupDone] = useState(
+    Boolean(searchParams.get('patientId') || searchParams.get('phone'))
+  );
+  const [showNewPatientForm, setShowNewPatientForm] = useState(false);
+  const [newPatient, setNewPatient] = useState({ name: '', age: '', gender: 'Male' as const, condition: '' });
+
+  const { data: foundPatient, isLoading: lookingUp, isError: lookupError } = usePatientByPhone(
+    phoneToFetch.trim().length >= 7 ? phoneToFetch.trim() : null
+  );
+  const createPatientMutation = useCreatePatient();
+
+  const handlePhoneLookup = useCallback(() => {
+    if (phoneInput.trim().length < 7) return;
+    setPhoneToFetch(phoneInput.trim());
+    setLookupDone(true);
+    setShowNewPatientForm(false);
+  }, [phoneInput]);
+
+  // When found patient resolves, prefill the form fields and capture UUID
+  const handleUsefoundPatient = useCallback(() => {
+    if (!foundPatient) return;
+    setResolvedPatientId(foundPatient.id);
+    setPatientInfo({
+      name: foundPatient.name ?? '',
+      age: foundPatient.age ? String(foundPatient.age) : '',
+      phone: foundPatient.phone ?? phoneToFetch,
+      gender: (foundPatient.gender as 'Male' | 'Female' | 'Other') ?? 'Male',
+      address: foundPatient.city ?? '',
+    });
+  }, [foundPatient, phoneToFetch]);
+
+  const handleCreateNewPatient = async () => {
+    if (!newPatient.name || !newPatient.age) return;
+    try {
+      const created = await createPatientMutation.mutateAsync({
+        name: newPatient.name,
+        age: Number(newPatient.age),
+        gender: newPatient.gender,
+        phone: phoneInput.trim(),
+        condition: newPatient.condition || undefined,
+      });
+      setResolvedPatientId(created.id);
+      setPatientInfo({
+        name: created.name,
+        age: String(created.age),
+        phone: created.phone ?? phoneInput.trim(),
+        gender: created.gender as 'Male' | 'Female' | 'Other',
+        address: created.city ?? '',
+      });
+      setShowNewPatientForm(false);
+      setStep(1);
+    } catch (err: any) {
+      setSubmitError(err?.response?.data?.message ?? 'Failed to create patient.');
+    }
+  };
+
+  // ── Multi-step form state ─────────────────────────────────────────────────
   const [step, setStep] = useState(0);
   const [saved, setSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // ── Real API mutation ──────────────────────────────────────────────────────
   const createEvaluation = useCreateEvaluation();
 
-  // Form data
-  const [patientInfo, setPatientInfo] = useState({ name: '', age: '', phone: '', gender: 'Male', address: '' });
+  const [patientInfo, setPatientInfo] = useState({ name: '', age: '', phone: '', gender: 'Male' as const, address: '' });
   const [vitals, setVitals] = useState({ bp_sys: '', bp_dia: '', pr: '', spo2: '', temp: '', ef: '' });
   const [checkedSymptoms, setCheckedSymptoms] = useState<string[]>([]);
   const [painLevel, setPainLevel] = useState(0);
@@ -74,9 +134,9 @@ export function NurseIntakeForm() {
   const handleSave = async () => {
     setSubmitError(null);
 
-    // Guard: patientId is required by the backend
+    const patientId = resolvedPatientId;
     if (!patientId) {
-      setSubmitError('No patient selected. Please open this form from a patient record.');
+      setSubmitError('No patient resolved. Please complete the phone lookup step first.');
       return;
     }
 
@@ -162,6 +222,140 @@ export function NurseIntakeForm() {
             />
           ))}
         </div>
+      </div>
+
+      {/* ── Phone Lookup Banner ─────────────────────────────────────────── */}
+      <div className="px-4 pt-3 pb-1 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shrink-0">
+        <div className="flex gap-2 items-center">
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <Phone size={15} className="text-teal-600 shrink-0" />
+            <input
+              type="tel"
+              inputMode="numeric"
+              value={phoneInput}
+              onChange={(e) => setPhoneInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handlePhoneLookup()}
+              placeholder="Enter patient mobile number"
+              className="flex-1 bg-transparent outline-none text-[13px] text-slate-800 dark:text-white placeholder:text-slate-400"
+            />
+          </div>
+          <button
+            onClick={handlePhoneLookup}
+            disabled={phoneInput.trim().length < 7}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white text-[13px] font-bold disabled:opacity-50 transition-opacity"
+            style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}
+          >
+            <Search size={14} />
+            Lookup
+          </button>
+        </div>
+
+        {/* Lookup results */}
+        {lookupDone && lookingUp && (
+          <div className="flex items-center gap-2 mt-2 px-2 py-1.5">
+            <Loader2 size={14} className="animate-spin text-teal-600" />
+            <span className="text-[12px] text-slate-500">Looking up patient…</span>
+          </div>
+        )}
+        {lookupDone && !lookingUp && foundPatient && !resolvedPatientId && (
+          <div className="mt-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
+            <div>
+              <p className="text-[12px] font-extrabold text-emerald-800 dark:text-emerald-300">{foundPatient.name}</p>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400">{foundPatient.phone} · {foundPatient.gender} · Age {foundPatient.age}</p>
+            </div>
+            <button
+              onClick={handleUsefoundPatient}
+              className="px-3 py-1.5 rounded-lg text-[12px] font-bold text-white"
+              style={{ background: '#059669' }}
+            >
+              Use Patient
+            </button>
+          </div>
+        )}
+        {lookupDone && !lookingUp && foundPatient && resolvedPatientId && (
+          <div className="mt-2 px-2 py-1.5 flex items-center gap-2">
+            <Check size={13} className="text-emerald-500" />
+            <span className="text-[12px] font-bold text-emerald-700 dark:text-emerald-400">
+              {foundPatient.name} · {foundPatient.phone}
+            </span>
+          </div>
+        )}
+        {lookupDone && !lookingUp && foundPatient === null && !showNewPatientForm && (
+          <div className="mt-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={14} className="text-amber-600" />
+              <span className="text-[12px] font-bold text-amber-700 dark:text-amber-400">
+                No patient found for {phoneToFetch}
+              </span>
+            </div>
+            <button
+              onClick={() => setShowNewPatientForm(true)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white"
+              style={{ background: '#0f766e' }}
+            >
+              <UserPlus size={12} /> New Patient
+            </button>
+          </div>
+        )}
+        {lookupError && (
+          <div className="mt-2 px-2 py-1.5 flex items-center gap-2">
+            <AlertTriangle size={13} className="text-red-500" />
+            <span className="text-[12px] text-red-600 font-semibold">Lookup failed. Check the number and retry.</span>
+          </div>
+        )}
+
+        {/* Create new patient mini-form */}
+        {showNewPatientForm && (
+          <div className="mt-2 p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col gap-2">
+            <p className="text-[12px] font-extrabold text-slate-700 dark:text-white">Register New Patient — {phoneInput}</p>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                placeholder="Full Name *"
+                value={newPatient.name}
+                onChange={(e) => setNewPatient(p => ({ ...p, name: e.target.value }))}
+                className="col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-[13px] text-slate-800 dark:text-white outline-none"
+              />
+              <input
+                placeholder="Age *"
+                type="number"
+                value={newPatient.age}
+                onChange={(e) => setNewPatient(p => ({ ...p, age: e.target.value }))}
+                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-[13px] text-slate-800 dark:text-white outline-none"
+              />
+              <select
+                value={newPatient.gender}
+                onChange={(e) => setNewPatient(p => ({ ...p, gender: e.target.value as 'Male' | 'Female' | 'Other' }))}
+                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-[13px] text-slate-800 dark:text-white outline-none"
+              >
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+              <input
+                placeholder="Condition (optional)"
+                value={newPatient.condition}
+                onChange={(e) => setNewPatient(p => ({ ...p, condition: e.target.value }))}
+                className="col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-[13px] text-slate-800 dark:text-white outline-none"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowNewPatientForm(false)}
+                className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-[12px] font-bold text-slate-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateNewPatient}
+                disabled={createPatientMutation.isPending || !newPatient.name || !newPatient.age}
+                className="flex-1 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-60"
+                style={{ background: '#0f766e' }}
+              >
+                {createPatientMutation.isPending ? <Loader2 size={14} className="animate-spin mx-auto" /> : 'Create & Continue'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Scrollable form content */}

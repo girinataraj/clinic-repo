@@ -59,14 +59,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     restoreSession();
   }, []);
 
-  const login = async (email: string, password: string, role: UserRole) => {
+  const login = async (identifier: string, password: string, role: UserRole) => {
     setIsLoading(true);
     setLoginError(null);
     try {
+      // Patients authenticate with phone; staff with email
+      const isPhone = role === 'patient';
+      const body = isPhone
+        ? { phone: identifier, password, role }
+        : { email: identifier, password, role };
+
       const { data } = await api.post<{
         success: boolean;
         data: { accessToken: string; user: AuthUser };
-      }>(ENDPOINTS.AUTH.LOGIN, { email, password, role });
+      }>(ENDPOINTS.AUTH.LOGIN, body);
 
       setAccessToken(data.data.accessToken);
       setUser(data.data.user);

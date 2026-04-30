@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import type { UserRole } from '../contexts/AuthContext';
 import {
-  Eye, EyeOff, Mail, Lock, Activity,
+  Eye, EyeOff, Mail, Lock, Activity, Phone,
   ChevronRight, UserCheck, HeartPulse, Stethoscope,
   Sparkles, CheckCircle, Shield, Users, Star, AlertCircle,
 } from 'lucide-react';
@@ -61,21 +61,27 @@ const features = [
 
 export function LoginScreen() {
   const [role, setRole] = useState<UserRole>('patient');
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState(''); // phone for patient, email for staff
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, loginError } = useAuth();
   const navigate = useNavigate();
 
   const selectedRole = roles.find((r) => r.value === role)!;
+  const isPatient = role === 'patient';
+
+  const handleRoleChange = (r: UserRole) => {
+    setRole(r);
+    setIdentifier(''); // clear field when switching role type
+  };
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) return;
+    if (!identifier.trim() || !password.trim()) return;
     try {
-      await login(email.trim(), password, role);
+      await login(identifier.trim(), password, role);
       navigate(`/${role}`);
     } catch {
-      // loginError is set in AuthContext; nothing extra needed here
+      // loginError is set in AuthContext
     }
   };
 
@@ -276,7 +282,7 @@ export function LoginScreen() {
                 return (
                   <button
                     key={r.value}
-                    onClick={() => setRole(r.value)}
+                    onClick={() => handleRoleChange(r.value)}
                     className="flex-1 flex flex-col items-center pt-3 pb-2.5 rounded-2xl"
                     style={{
                       border: `2px solid ${isSelected ? r.color : '#f1f5f9'}`,
@@ -307,30 +313,41 @@ export function LoginScreen() {
             </div>
           </div>
 
-          {/* Email */}
+          {/* Identifier: phone for patients, email for staff */}
           <div style={{ marginBottom: '12px' }}>
             <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', letterSpacing: '0.6px', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-              Email Address
+              {isPatient ? 'Mobile Number' : 'Email Address'}
             </label>
             <div
               className="flex items-center gap-3 px-4"
               style={{
-                border: `1.5px solid ${email ? selectedRole.border : '#e2e8f0'}`,
+                border: `1.5px solid ${identifier ? selectedRole.border : '#e2e8f0'}`,
                 borderRadius: '16px',
                 background: '#f8fafc',
                 transition: 'border-color 0.2s',
               }}
             >
-              <Mail size={17} color={email ? selectedRole.color : '#94a3b8'} />
+              {isPatient
+                ? <Phone size={17} color={identifier ? selectedRole.color : '#94a3b8'} />
+                : <Mail size={17} color={identifier ? selectedRole.color : '#94a3b8'} />}
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                id="identifier-input"
+                type={isPatient ? 'tel' : 'email'}
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={isPatient ? '9876543210' : 'your@email.com'}
                 className="flex-1 outline-none bg-transparent"
                 style={{ padding: '14px 0', fontSize: '14px', color: '#1e293b' }}
+                inputMode={isPatient ? 'numeric' : 'email'}
+                autoComplete={isPatient ? 'tel' : 'email'}
               />
             </div>
+            {isPatient && identifier && !/^[0-9+\s-]{7,15}$/.test(identifier) && (
+              <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px', fontWeight: 600 }}>
+                Enter a valid mobile number
+              </p>
+            )}
           </div>
 
           {/* Password */}
@@ -349,12 +366,15 @@ export function LoginScreen() {
             >
               <Lock size={17} color={password ? selectedRole.color : '#94a3b8'} />
               <input
+                id="password-input"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder="Enter your password"
                 className="flex-1 outline-none bg-transparent"
                 style={{ padding: '14px 0', fontSize: '14px', color: '#1e293b' }}
+                autoComplete="current-password"
               />
               <button onClick={() => setShowPassword(!showPassword)} style={{ padding: '4px' }}>
                 {showPassword ? <EyeOff size={17} color="#94a3b8" /> : <Eye size={17} color="#94a3b8" />}
@@ -418,28 +438,24 @@ export function LoginScreen() {
               </p>
             </div>
             <div className="flex gap-2">
-              {roles.map((r) => (
-                <button
-                  key={r.value}
-                  onClick={() => {
-                    setRole(r.value);
-                    setEmail(`${r.value}@saai.com`);
-                    setPassword('Password@123');
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '7px 4px',
-                    borderRadius: '12px',
-                    background: r.bg,
-                    border: `1.5px solid ${r.border}`,
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    color: r.color,
-                  }}
-                >
-                  {r.label}
-                </button>
-              ))}
+              <button
+                onClick={() => { setRole('patient'); setIdentifier('9876543210'); setPassword('Password@123'); }}
+                style={{ flex: 1, padding: '7px 4px', borderRadius: '12px', background: '#eff6ff', border: '1.5px solid #bfdbfe', fontSize: '11px', fontWeight: 700, color: '#2563eb' }}
+              >
+                Patient
+              </button>
+              <button
+                onClick={() => { setRole('nurse'); setIdentifier('nurse@saai.com'); setPassword('Password@123'); }}
+                style={{ flex: 1, padding: '7px 4px', borderRadius: '12px', background: '#f0fdfa', border: '1.5px solid #99f6e4', fontSize: '11px', fontWeight: 700, color: '#0f766e' }}
+              >
+                Nurse
+              </button>
+              <button
+                onClick={() => { setRole('doctor'); setIdentifier('doctor@saai.com'); setPassword('Password@123'); }}
+                style={{ flex: 1, padding: '7px 4px', borderRadius: '12px', background: '#eef2ff', border: '1.5px solid #c7d2fe', fontSize: '11px', fontWeight: 700, color: '#4338ca' }}
+              >
+                Doctor
+              </button>
             </div>
           </div>
 
