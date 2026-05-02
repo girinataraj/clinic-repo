@@ -7,6 +7,7 @@ export const ENDPOINTS = {
 
   USERS: {
     ME: '/users/me',
+    UPDATE_ME: '/users/me',
     LIST: '/users',
     STAFF: '/users/staff',
     CREATE: '/users',
@@ -67,5 +68,15 @@ export const ENDPOINTS = {
 
   REPORTS: {
     PDF: (evaluationId: string) => `/reports/${evaluationId}/pdf`,
+  },
+
+  REVENUE: {
+    LIST: '/revenue',
+  },
+
+  NOTIFICATIONS: {
+    LIST: '/notifications',
+    MARK_ALL_READ: '/notifications/mark-all-read',
+    UNREAD_COUNT: '/notifications/unread-count',
   },
 } as const;

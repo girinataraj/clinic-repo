@@ -81,7 +81,7 @@ export function ExercisePrescription() {
 function PatientExercisePlanView() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const patientId = user?.id ?? null;
+  const patientId = user?.patient_id ?? null;
 
   const { data: plansData, isLoading } = useExercisePlans(patientId ?? null);
   const plans = plansData?.data ?? [];

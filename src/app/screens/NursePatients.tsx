@@ -5,6 +5,7 @@ import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { usePatients } from '../../hooks/usePatients';
+import { useUnreadNotificationCount } from '../../hooks/useNotifications';
 import { TreatmentDetailModal } from '../../features/patients/components/TreatmentDetailModal';
 import {
   AlertTriangle,
@@ -45,6 +46,9 @@ export function NursePatients() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+
+  // ── Live notifications ──────────────────────────────────────────────────
+  const { data: unreadCount = 0 } = useUnreadNotificationCount();
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
@@ -106,11 +110,16 @@ export function NursePatients() {
               </div>
               <div className="flex items-center gap-2">
                 <ThemeToggle />
-                <button className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 backdrop-blur-sm">
+                <button
+                  onClick={() => navigate('/nurse/notifications')}
+                  className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 backdrop-blur-sm"
+                >
                   <Bell className="w-5 h-5 text-white" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm border border-red-400">
-                    2
-                  </span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm border border-red-400">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </button>
                 <button
                   onClick={() => navigate('/nurse/profile')}
@@ -366,11 +375,17 @@ export function NursePatients() {
                 <p className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-1">Contact hub</p>
                 <p className="text-sm font-bold text-slate-900 dark:text-white mb-4">Quick actions</p>
                 <div className="flex flex-col gap-2">
-                  <button className="flex items-center justify-between rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                  <button
+                    onClick={() => window.location.href = 'tel:+910444567890'}
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
                     Call front desk
                     <Phone className="w-3.5 h-3.5" />
                   </button>
-                  <button className="flex items-center justify-between rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                  <button
+                    onClick={() => navigate('/nurse/intake')}
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
                     Schedule follow ups
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>

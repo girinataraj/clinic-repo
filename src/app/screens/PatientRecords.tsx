@@ -5,6 +5,8 @@ import { BottomNav } from '../components/BottomNav';
 import { useEvaluations } from '../../hooks/useEvaluations';
 import type { Evaluation } from '../../types';
 import { FileText, Download, Activity, Calendar, ArrowLeft, Search, Filter, Heart, Sliders, CheckCircle } from 'lucide-react';
+import api from '../../services/api';
+import { ENDPOINTS } from '../../services/endpoints';
 
 const painColors = [
   '#22c55e', '#84cc16', '#a3e635', '#facc15', '#fb923c',
@@ -20,26 +22,37 @@ const typeColorMap: Record<string, { bg: string; color: string }> = {
 export function PatientRecords() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const patientId = user?.id;
+  const patientId = user?.patient_id;
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   // ── Live data ─────────────────────────────────────────────────────────────
   const { data: evalData, isLoading } = useEvaluations({ patientId, limit: 20 });
   const evaluations = evalData?.data ?? [];
 
-  const filtered = search.trim()
-    ? evaluations.filter((e) =>
-        (e.diagnosis ?? '').toLowerCase().includes(search.toLowerCase()) ||
-        (e.chiefComplaints ?? '').toLowerCase().includes(search.toLowerCase())
-      )
-    : evaluations;
+  const filtered = evaluations.filter((e) => {
+    const matchesSearch = !search.trim() ||
+      (e.diagnosis ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (e.chiefComplaints ?? '').toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || e.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const [selectedRecord, setSelectedRecord] = useState<Evaluation | null>(null);
 
-  const handleDownload = (e?: React.MouseEvent) => {
+  const handleDownload = async (recordId?: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    // TODO: Wire to GET /api/reports/:evaluationId/pdf when ready
-    window.print();
+    const id = recordId ?? selectedRecord?.id;
+    if (!id) return;
+
+    const response = await api.get(ENDPOINTS.REPORTS.PDF(id), {
+      responseType: 'blob',
+    });
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    window.open(url, '_blank', 'noopener,noreferrer');
+    window.setTimeout(() => window.URL.revokeObjectURL(url), 30_000);
   };
 
   // ── Detail View ───────────────────────────────────────────────────────────
@@ -74,7 +87,7 @@ export function PatientRecords() {
               </div>
             </div>
             <button
-              onClick={handleDownload}
+              onClick={(e) => handleDownload(undefined, e)}
               className="flex items-center gap-2 p-2.5 px-4 rounded-xl bg-white text-blue-600 font-bold hover:bg-blue-50 shadow-sm transition-colors"
             >
               <Download size={18} />
@@ -219,9 +232,29 @@ export function PatientRecords() {
                 placeholder="Search records..."
               />
             </div>
-            <button className="flex items-center justify-center p-2.5 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all backdrop-blur-sm">
-              <Filter className="h-5 w-5 text-white" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center justify-center p-2.5 border border-white/20 rounded-xl hover:bg-white/20 transition-all backdrop-blur-sm ${showFilters ? 'bg-white/25' : 'bg-white/10'}`}
+              >
+                <Filter className="h-5 w-5 text-white" />
+              </button>
+              {showFilters && (
+                <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                  {['all', 'draft', 'submitted', 'reviewed'].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => { setStatusFilter(s); setShowFilters(false); }}
+                      className={`w-full text-left px-4 py-2.5 text-xs font-bold capitalize transition-colors ${
+                        statusFilter === s ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {s === 'all' ? 'All Records' : s}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -289,7 +322,7 @@ export function PatientRecords() {
                     </div>
                   </div>
                   <button
-                    onClick={handleDownload}
+                    onClick={(e) => handleDownload(record.id, e)}
                     className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors shrink-0 opacity-100 md:opacity-0 group-hover:opacity-100"
                   >
                     <Download className="w-5 h-5" />

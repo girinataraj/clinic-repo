@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
-import { usePatients } from '../../hooks/usePatients';
+import { usePatients, useUpdatePatient } from '../../hooks/usePatients';
+import { useNotifications, useUnreadNotificationCount, useMarkAllNotificationsRead } from '../../hooks/useNotifications';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
   Search, Bell, Eye, Edit3, FileText, CheckCircle, ClipboardList,
@@ -26,6 +27,11 @@ export function DoctorDashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
+  // ── Live notifications ────────────────────────────────────────────────────
+  const { data: notifications = [] } = useNotifications({ limit: 5 });
+  const { data: unreadCount = 0 } = useUnreadNotificationCount();
+  const markAllRead = useMarkAllNotificationsRead();
+
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
@@ -33,6 +39,16 @@ export function DoctorDashboard() {
     bookedOnly: activeTab === 'waiting' ? 'true' : undefined,
     limit: 20,
   }, true); // ← 10s polling for live patient queue
+
+  const updatePatient = useUpdatePatient();
+
+  const handleCompleteSession = async (patientId: string) => {
+    try {
+      await updatePatient.mutateAsync({ id: patientId, status: 'completed' });
+    } catch (err) {
+      console.error('Failed to complete session', err);
+    }
+  };
 
   const patients = patientsData?.data ?? [];
 
@@ -90,10 +106,12 @@ export function DoctorDashboard() {
                     style={{ width: '48px', height: '48px', background: 'rgba(254, 255, 255, 0.15)', border: '1px solid rgba(254, 255, 255, 0.2)' }}>
                     <Bell size={22} color="#FEFFFF" />
                   </button>
-                  <div className="absolute -top-1 -right-1 rounded-full flex items-center justify-center pointer-events-none"
-                    style={{ width: '18px', height: '18px', background: '#17252A', fontSize: '10px', color: '#FEFFFF', fontWeight: 700, border: '2px solid #3AAFA9' }}>
-                    4
-                  </div>
+                  {unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 rounded-full flex items-center justify-center pointer-events-none"
+                      style={{ width: '18px', height: '18px', background: '#17252A', fontSize: '10px', color: '#FEFFFF', fontWeight: 700, border: '2px solid #3AAFA9' }}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </div>
+                  )}
                   
                   {/* Only show notifications dropdown on mobile */}
                   {showNotifications && (
@@ -102,17 +120,26 @@ export function DoctorDashboard() {
                         <h3 className="text-sm font-bold text-slate-800">Notifications</h3>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
-                        <div className="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer">
-                          <p className="text-xs font-semibold text-slate-800">New patient assigned</p>
-                          <p className="text-[10px] text-slate-500 mt-1">2 mins ago</p>
-                        </div>
-                        <div className="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer">
-                          <p className="text-xs font-semibold text-slate-800">System maintenance at midnight</p>
-                          <p className="text-[10px] text-slate-500 mt-1">1 hour ago</p>
-                        </div>
+                        {notifications.length === 0 && (
+                          <div className="p-4 text-center">
+                            <p className="text-xs text-slate-400">No notifications</p>
+                          </div>
+                        )}
+                        {notifications.map((n) => (
+                          <div key={n.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer ${!n.isRead ? 'bg-teal-50/40' : ''}`}>
+                            <p className="text-xs font-semibold text-slate-800">{n.title}</p>
+                            <p className="text-[10px] text-slate-500 mt-1">{n.body}</p>
+                          </div>
+                        ))}
                       </div>
                       <div className="p-3 text-center border-t border-slate-100">
-                        <button className="text-xs font-bold text-teal-600 hover:text-teal-700">Mark all as read</button>
+                        <button
+                          onClick={() => { markAllRead.mutate(); setShowNotifications(false); }}
+                          disabled={markAllRead.isPending}
+                          className="text-xs font-bold text-teal-600 hover:text-teal-700 disabled:opacity-50"
+                        >
+                          {markAllRead.isPending ? 'Marking…' : 'Mark all as read'}
+                        </button>
                       </div>
                     </div>
                   )}
@@ -177,10 +204,16 @@ export function DoctorDashboard() {
             </div>
             <div className="flex-1">
               <p style={{ fontSize: '12px', color: '#3AAFA9', fontWeight: 600, letterSpacing: '0.5px' }}>TODAY'S INSIGHT</p>
-              <p style={{ fontSize: '15px', fontWeight: 600, color: '#17252A', marginTop: '2px' }}>3 patients showing excellent recovery progress</p>
+              <p style={{ fontSize: '15px', fontWeight: 600, color: '#17252A', marginTop: '2px' }}>
+                {completed > 0 
+                  ? `${completed} patients successfully completed their session today`
+                  : waiting > 0 
+                    ? `${waiting} patients are waiting in the queue`
+                    : `Ready for your first patient of the day`}
+              </p>
             </div>
             <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-              <ChevronRight size={18} color="#2B7A78" />
+              <Activity size={18} color="#2B7A78" />
             </div>
           </div>
 
@@ -324,8 +357,9 @@ export function DoctorDashboard() {
                   <div style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
                     {patient.status === 'in-session' ? (
                       <button
-                        onClick={() => navigate(`/doctor/patient/${patient.id}/treatment`)}
-                        className="w-full flex items-center justify-center gap-2 py-4 transition-colors"
+                        onClick={() => handleCompleteSession(patient.id)}
+                        disabled={updatePatient.isPending}
+                        className="w-full flex items-center justify-center gap-2 py-4 transition-colors disabled:opacity-50"
                         style={{ color: '#FEFFFF', fontSize: '13px', fontWeight: 700, background: '#2B7A78' }}
                       >
                         <CheckCircle size={16} />

@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
+import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
+import { usePatientAppointments } from '../../hooks/useAppointments';
+import { useEvaluations } from '../../hooks/useEvaluations';
+import { useExercisePlans } from '../../hooks/useExercisePlans';
 import {
   ChevronRight,
   LogOut,
@@ -35,7 +39,39 @@ export function PatientProfile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
 
+  const patientId = user?.patient_id ?? null;
+  const { data: profile } = useProfile();
+  const updateProfile = useUpdateProfile();
+  const { data: apptData } = usePatientAppointments(patientId);
+  const { data: evalData } = useEvaluations({ patientId: patientId ?? undefined, limit: 100 });
+  const { data: planData } = useExercisePlans(patientId);
+
+  const appointments = apptData?.data ?? [];
+  const completedSessions = appointments.filter((a) => a.status === 'completed').length;
+  const totalReports = evalData?.data?.length ?? 0;
+  const exerciseCount = (planData?.data?.[0]?.items ?? []).length;
+
+  // Next upcoming appointment
+  const nextAppt = appointments.find((a) => a.status === 'pending' || a.status === 'confirmed');
+
+  const handleEditToggle = () => {
+    if (!editMode && profile) {
+      setEditName(profile.name);
+      setEditEmail(profile.email);
+    }
+    setEditMode(!editMode);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      await updateProfile.mutateAsync({ name: editName, email: editEmail });
+      setEditMode(false);
+    } catch { /* handled by RQ */ }
+  };
 
   const handleLogout = () => {
     logout();
@@ -67,8 +103,9 @@ export function PatientProfile() {
             </button>
             <span style={{ fontSize: '16px', fontWeight: 800, color: 'white' }}>My Profile</span>
             <button
+              onClick={handleEditToggle}
               className="flex items-center justify-center rounded-xl"
-              style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.2)' }}
+              style={{ width: '36px', height: '36px', background: editMode ? 'rgba(251,191,36,0.35)' : 'rgba(255,255,255,0.2)' }}
             >
               <Edit3 size={16} color="white" />
             </button>
@@ -94,15 +131,44 @@ export function PatientProfile() {
               ))}
             </div>
           </div>
+          {editMode && (
+            <div className="flex flex-col items-center px-5 pb-6 gap-3">
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full max-w-xs px-4 py-2.5 rounded-xl text-center text-sm font-bold outline-none"
+                style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}
+                placeholder="Name"
+              />
+              <input
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                className="w-full max-w-xs px-4 py-2.5 rounded-xl text-center text-sm font-bold outline-none"
+                style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}
+                placeholder="Email"
+              />
+              <button
+                onClick={handleSaveProfile}
+                disabled={updateProfile.isPending}
+                className="px-6 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
+                style={{ background: 'white', color: '#2563eb' }}
+              >
+                {updateProfile.isPending ? 'Saving…' : 'Save Profile'}
+              </button>
+              {updateProfile.isError && (
+                <p className="text-xs font-semibold" style={{ color: '#fca5a5' }}>Failed to save.</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Stats bar */}
         <div className="mx-4 -mt-4 rounded-2xl p-4 flex gap-0"
           style={{ background: 'white', boxShadow: '0 8px 32px rgba(37,99,235,0.12)', border: '1px solid #e0e7ff' }}>
           {[
-            { label: 'Sessions', value: '12', color: '#2563eb' },
-            { label: 'Reports', value: '5', color: '#7c3aed' },
-            { label: 'Exercises', value: '24', color: '#10b981' },
+            { label: 'Sessions', value: completedSessions, color: '#2563eb' },
+            { label: 'Reports', value: totalReports, color: '#7c3aed' },
+            { label: 'Exercises', value: exerciseCount, color: '#10b981' },
           ].map((s, i) => (
             <div key={s.label} className={`flex-1 flex flex-col items-center ${i !== 0 ? 'border-l border-slate-100' : ''}`}>
               <span style={{ fontSize: '22px', fontWeight: 900, color: s.color }}>{s.value}</span>
@@ -113,21 +179,39 @@ export function PatientProfile() {
 
         <div className="px-4 pt-4 pb-4 flex flex-col gap-4">
           {/* Next Appointment */}
-          <div
-            className="flex items-center gap-3 p-4 rounded-2xl"
-            style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)', border: '1px solid #a7f3d0' }}
-          >
-            <div className="flex items-center justify-center rounded-2xl shrink-0"
-              style={{ width: '48px', height: '48px', background: '#10b981' }}>
-              <Calendar size={22} color="white" />
+          {nextAppt ? (
+            <div
+              className="flex items-center gap-3 p-4 rounded-2xl"
+              style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)', border: '1px solid #a7f3d0' }}
+            >
+              <div className="flex items-center justify-center rounded-2xl shrink-0"
+                style={{ width: '48px', height: '48px', background: '#10b981' }}>
+                <Calendar size={22} color="white" />
+              </div>
+              <div className="flex-1">
+                <p style={{ fontSize: '12px', color: '#059669', fontWeight: 700 }}>NEXT APPOINTMENT</p>
+                <p style={{ fontSize: '14px', fontWeight: 800, color: '#064e3b' }}>{nextAppt.doctorName ?? 'Doctor'}</p>
+                <p style={{ fontSize: '12px', color: '#059669', marginTop: '1px' }}>
+                  {new Date(nextAppt.datetime).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })} · {new Date(nextAppt.datetime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+              <ChevronRight size={18} color="#059669" />
             </div>
-            <div className="flex-1">
-              <p style={{ fontSize: '12px', color: '#059669', fontWeight: 700 }}>NEXT APPOINTMENT</p>
-              <p style={{ fontSize: '14px', fontWeight: 800, color: '#064e3b' }}>Dr. SV. Sathish Kumar</p>
-              <p style={{ fontSize: '12px', color: '#059669', marginTop: '1px' }}>Tomorrow · 10:00 AM · Sports Physio</p>
+          ) : (
+            <div
+              className="flex items-center gap-3 p-4 rounded-2xl"
+              style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
+            >
+              <div className="flex items-center justify-center rounded-2xl shrink-0"
+                style={{ width: '48px', height: '48px', background: '#e2e8f0' }}>
+                <Calendar size={22} color="#94a3b8" />
+              </div>
+              <div className="flex-1">
+                <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 700 }}>NO UPCOMING APPOINTMENTS</p>
+                <p style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>Book your next session with your doctor</p>
+              </div>
             </div>
-            <ChevronRight size={18} color="#059669" />
-          </div>
+          )}
 
           {/* Health Info */}
           <div>

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import { usePatient } from '../../hooks/usePatients';
-import { useLatestEvaluation } from '../../hooks/useEvaluations';
+import { useLatestEvaluation, useUpdateEvaluation } from '../../hooks/useEvaluations';
 import {
   ArrowLeft,
   Edit3,
@@ -43,6 +43,24 @@ export function PatientDetailPage() {
   const [editMode, setEditMode] = useState(false);
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
+
+  const updateEvaluation = useUpdateEvaluation(evaluation?.id ?? '');
+
+  const handleSaveDiagnosis = async () => {
+    if (!evaluation?.id) return;
+    try {
+      await updateEvaluation.mutateAsync({ diagnosis });
+      setEditMode(false);
+    } catch { /* handled by RQ */ }
+  };
+
+  const handleSaveNotes = async () => {
+    if (!evaluation?.id) return;
+    try {
+      await updateEvaluation.mutateAsync({ management: notes });
+      setEditMode(false);
+    } catch { /* handled by RQ */ }
+  };
 
   useEffect(() => {
     if (!editMode) {
@@ -370,10 +388,13 @@ export function PatientDetailPage() {
             </div>
 
             {editMode && (
-              <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1"
+              <button
+                onClick={handleSaveDiagnosis}
+                disabled={updateEvaluation.isPending}
+                className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1 disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(43, 122, 120, 0.3)' }}>
                 <Save size={18} />
-                Save Diagnosis
+                {updateEvaluation.isPending ? 'Saving…' : 'Save Diagnosis'}
               </button>
             )}
           </div>
@@ -423,10 +444,13 @@ export function PatientDetailPage() {
             </div>
 
             {editMode && (
-              <button className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1"
+              <button
+                onClick={handleSaveNotes}
+                disabled={updateEvaluation.isPending}
+                className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1 disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(43, 122, 120, 0.3)' }}>
                 <Save size={18} />
-                Save Notes
+                {updateEvaluation.isPending ? 'Saving…' : 'Save Notes'}
               </button>
             )}
           </div>

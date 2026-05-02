@@ -5,6 +5,7 @@ import { BottomNav } from '../components/BottomNav';
 import { usePatientAppointments } from '../../hooks/useAppointments';
 import { useEvaluations } from '../../hooks/useEvaluations';
 import { useExercisePlans } from '../../hooks/useExercisePlans';
+import { useNotifications, useUnreadNotificationCount, useMarkAllNotificationsRead } from '../../hooks/useNotifications';
 import {
   Calendar, FileText, Activity, Bell, ChevronRight,
   Clock, CheckCircle, Dumbbell, TrendingUp, User,
@@ -39,7 +40,12 @@ export function PatientDashboard() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Patient ID — the logged-in user's ID is also their patient record ID
-  const patientId = user?.id ?? null;
+  const patientId = user?.patient_id ?? null;
+
+  // ── Live notifications ──────────────────────────────────────────────────
+  const { data: notifications = [] } = useNotifications({ patientId: patientId ?? undefined, limit: 5 });
+  const { data: unreadCount = 0 } = useUnreadNotificationCount({ patientId: patientId ?? undefined });
+  const markAllRead = useMarkAllNotificationsRead();
 
   // ── Live backend data ─────────────────────────────────────────────────────
   const { data: apptData, isLoading: apptLoading } = usePatientAppointments(patientId);
@@ -109,9 +115,9 @@ export function PatientDashboard() {
                     }}
                     className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 backdrop-blur-sm">
                     <Bell className="w-5 h-5 text-white" />
-                    {upcomingAppointments.length > 0 && (
+                    {unreadCount > 0 && (
                       <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm border border-red-400 pointer-events-none">
-                        {upcomingAppointments.length}
+                        {unreadCount > 99 ? '99+' : unreadCount}
                       </span>
                     )}
                   </button>
@@ -123,17 +129,26 @@ export function PatientDashboard() {
                         <h3 className="text-sm font-bold text-slate-800">Notifications</h3>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
-                        <div className="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer">
-                          <p className="text-xs font-semibold text-slate-800">Upcoming appointment tomorrow</p>
-                          <p className="text-[10px] text-slate-500 mt-1">Just now</p>
-                        </div>
-                        <div className="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer">
-                          <p className="text-xs font-semibold text-slate-800">New exercise plan ready</p>
-                          <p className="text-[10px] text-slate-500 mt-1">2 hours ago</p>
-                        </div>
+                        {notifications.length === 0 && (
+                          <div className="p-4 text-center">
+                            <p className="text-xs text-slate-400">No notifications</p>
+                          </div>
+                        )}
+                        {notifications.map((n) => (
+                          <div key={n.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer ${!n.isRead ? 'bg-blue-50/40' : ''}`}>
+                            <p className="text-xs font-semibold text-slate-800">{n.title}</p>
+                            <p className="text-[10px] text-slate-500 mt-1">{n.body}</p>
+                          </div>
+                        ))}
                       </div>
                       <div className="p-3 text-center border-t border-slate-100">
-                        <button className="text-xs font-bold text-blue-600 hover:text-blue-700">Mark all as read</button>
+                        <button
+                          onClick={() => { markAllRead.mutate(); setShowNotifications(false); }}
+                          disabled={markAllRead.isPending}
+                          className="text-xs font-bold text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                        >
+                          {markAllRead.isPending ? 'Marking…' : 'Mark all as read'}
+                        </button>
                       </div>
                     </div>
                   )}
