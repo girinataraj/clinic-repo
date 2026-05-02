@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router';
+import { useAuth } from './contexts/AuthContext';
 import { WebLayout } from './components/WebLayout';
 import { RoleGuard } from './components/RoleGuard';
 import { LoginScreen } from './screens/LoginScreen';
@@ -20,6 +21,22 @@ import { ReportGeneration } from './screens/ReportGeneration';
 import { TreatmentDetailPage } from '../features/patients/pages/TreatmentDetailPage';
 import { NotificationPage } from './screens/NotificationPage';
 import { PatientForm } from './screens/PatientForm';
+
+// ── Session Loader: waits for auth initialization before routing ─────────────
+function SessionLoader({ children }: { children: React.ReactNode }) {
+  const { isInitializing } = useAuth();
+  
+  // While checking session, show a simple spinner
+  if (isInitializing) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  return <>{children}</>;
+}
 
 export const router = createBrowserRouter([
   {
@@ -81,8 +98,15 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // ── Fallback → login ──────────────────────────────────────────────
-      { path: '*', element: <Navigate to="/login" replace /> },
+// ── Fallback → login (wrapped in SessionLoader) ─────────────────────
+      { 
+        path: '*', 
+        element: (
+          <SessionLoader>
+            <Navigate to="/login" replace />
+          </SessionLoader>
+        ) 
+      },
     ],
   },
 ]);

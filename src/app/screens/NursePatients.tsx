@@ -71,6 +71,14 @@ export function NursePatients() {
     }
   };
 
+  const getIntakePath = (patient: { id: string; phone?: string | null }) => {
+    const params = new URLSearchParams({ patientId: patient.id });
+    if (patient.phone) {
+      params.set('phone', patient.phone);
+    }
+    return `/nurse/intake?${params.toString()}`;
+  };
+
   const firstName = user?.name?.split(' ')[0] || 'Therapist';
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -296,7 +304,7 @@ export function NursePatients() {
 
                       <div className="flex gap-2 mt-3">
                         <button
-                          onClick={(e) => { e.stopPropagation(); navigate('/nurse/intake'); }}
+                          onClick={(e) => { e.stopPropagation(); navigate(getIntakePath(patient)); }}
                           className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-colors ${
                             patient.status === 'completed'
                               ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-600'

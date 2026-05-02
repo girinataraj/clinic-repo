@@ -7,6 +7,7 @@ export interface AuthUser {
   role: UserRole;
   name: string;
   email: string;
+  patient_id?: string;
 }
 
 // ─── Patient ───────────────────────────────────────────────────────────────────
