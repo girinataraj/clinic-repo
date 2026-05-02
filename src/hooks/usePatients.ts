@@ -76,7 +76,7 @@ export function usePatientByPhone(phone: string | null) {
   });
 }
 
-/** Create a new patient record (nurse/admin). */
+/** Create a new patient record (nurse/doctor/admin). */
 export function useCreatePatient() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -97,6 +97,38 @@ export function useCreatePatient() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+  });
+}
+
+/** Update an existing patient record (doctor/nurse/admin). */
+export function useUpdatePatient() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...payload
+    }: {
+      id: string;
+      name?: string;
+      age?: number;
+      gender?: 'Male' | 'Female' | 'Other';
+      phone?: string;
+      city?: string;
+      fileNumber?: string;
+      condition?: string;
+      status?: string;
+      priority?: string;
+    }) => {
+      const { data } = await api.patch<{ success: boolean; data: Patient }>(
+        ENDPOINTS.PATIENTS.UPDATE(id),
+        payload
+      );
+      return data.data;
+    },
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.setQueryData(['patient', updated.id], updated);
     },
   });
 }

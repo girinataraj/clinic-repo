@@ -4,16 +4,16 @@ import { useAuth } from '../contexts/AuthContext';
 import { SideNav } from './SideNav';
 
 export function WebLayout() {
-  const { user } = useAuth();
+  const { user, isInitializing } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
+    if (!isInitializing && !user) {
       navigate('/login');
     }
-  }, [user, navigate]);
+  }, [user, isInitializing, navigate]);
 
-  if (!user) return null;
+  if (isInitializing || !user) return null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">

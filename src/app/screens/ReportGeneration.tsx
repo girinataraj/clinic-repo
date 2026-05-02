@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { useEvaluation } from '../../hooks/useEvaluations';
-import { usePatient } from '../../hooks/usePatients';
+import { usePatient, usePatients } from '../../hooks/usePatients';
 import { useExercisePlans } from '../../hooks/useExercisePlans';
 import api from '../../services/api';
 import { ENDPOINTS } from '../../services/endpoints';
 import {
   ArrowLeft, Printer, Share2, Download, CheckCircle,
-  Activity, Phone, Mail, Dumbbell, Loader2,
+  Activity, Phone, Mail, Dumbbell, Loader2, Search,
 } from 'lucide-react';
 
 export function ReportGeneration() {
@@ -18,6 +18,14 @@ export function ReportGeneration() {
   const [action, setAction] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [patientSearch, setPatientSearch] = useState('');
+
+  // ── Patient picker (when no evaluationId provided) ─────────────────────
+  const { data: patientsData } = usePatients({
+    search: patientSearch.trim() || undefined,
+    limit: 10,
+  });
+  const patientsList = patientsData?.data ?? [];
 
   // ── Live data ─────────────────────────────────────────────────────────────
   const { data: evaluation, isLoading: evalLoading } = useEvaluation(evaluationId || null);
@@ -132,12 +140,59 @@ export function ReportGeneration() {
           </div>
         )}
 
-        {/* No evaluation selected */}
+        {/* No evaluation selected — show patient picker */}
         {!isLoading && !evaluation && (
-          <div className="rounded-2xl p-8 text-center" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-            <Activity size={40} color="#DEF2F1" className="mx-auto mb-3" />
-            <p style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>No evaluation selected</p>
-            <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>Please select an evaluation to generate a report.</p>
+          <div className="flex flex-col gap-4">
+            <div className="rounded-2xl p-6" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+              <div className="text-center mb-5">
+                <Activity size={36} color="#DEF2F1" className="mx-auto mb-2" />
+                <p style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>Select a patient to generate a report</p>
+                <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>Search by name and click to load their latest evaluation.</p>
+              </div>
+
+              {/* Search input */}
+              <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                <Search size={16} color="#2B7A78" />
+                <input
+                  value={patientSearch}
+                  onChange={(e) => setPatientSearch(e.target.value)}
+                  placeholder="Search patients…"
+                  className="flex-1 outline-none bg-transparent"
+                  style={{ fontSize: '14px', color: '#17252A' }}
+                />
+              </div>
+
+              {/* Patient list */}
+              <div className="flex flex-col gap-2 max-h-80 overflow-y-auto">
+                {patientsList.length === 0 && (
+                  <p className="text-center py-6" style={{ fontSize: '13px', color: '#2B7A78' }}>
+                    {patientSearch ? 'No patients found.' : 'Type to search patients.'}
+                  </p>
+                )}
+                {patientsList.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      // Navigate to the patient detail page which has the evaluation context
+                      navigate(`/doctor/patient/${p.id}`);
+                    }}
+                    className="flex items-center gap-3 p-3 rounded-xl text-left transition-colors hover:bg-slate-50"
+                    style={{ border: '1px solid #DEF2F1' }}
+                  >
+                    <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#DEF2F1' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#2B7A78' }}>
+                        {p.name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#17252A' }} className="truncate">{p.name}</p>
+                      <p style={{ fontSize: '12px', color: '#2B7A78' }}>{p.phone} · {p.age} yrs · {p.condition ?? '—'}</p>
+                    </div>
+                    <span style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600 }}>{p.displayId}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
