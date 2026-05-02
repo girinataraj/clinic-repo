@@ -116,7 +116,7 @@ export function PatientDetailPage() {
               <Edit3 size={18} color={editMode ? '#fbbf24' : '#FEFFFF'} />
             </button>
             <button
-              onClick={() => navigate('/doctor/report')}
+              onClick={() => navigate(evaluation?.id ? `/doctor/report?evaluationId=${evaluation.id}` : '/doctor/report')}
               className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
               style={{ width: '40px', height: '40px', background: 'rgba(254,255,255,0.15)' }}>
               <FileText size={18} color="#FEFFFF" />

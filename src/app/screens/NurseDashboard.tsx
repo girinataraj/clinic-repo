@@ -294,18 +294,25 @@ export function NurseDashboard() {
                   </div>
                   {patient.status !== 'completed' && (
                     <div className="border-t border-slate-100 dark:border-slate-700">
-                      <button
-                        onClick={() => navigate('/nurse/intake')}
-                        className={`w-full flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors ${
-                          patient.status === 'in-session'
-                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30'
-                            : 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/30'
-                        }`}
-                      >
-                        <ClipboardList className="w-3.5 h-3.5" />
-                        {patient.status === 'in-session' ? 'Continue Intake Form' : 'Start Intake Form'}
-                        <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
-                      </button>
+                      {patient.status === 'in-session' ? (
+                        <button
+                          onClick={() => navigate(`/nurse/patient/${patient.id}/treatment`)}
+                          className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          COMPLETE SESSION
+                          <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => navigate(`/nurse/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
+                          className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/30"
+                        >
+                          <ClipboardList className="w-3.5 h-3.5" />
+                          Start Intake Form
+                          <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

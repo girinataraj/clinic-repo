@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, type ChangeEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
+import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { useCreateEvaluation } from '../../hooks/useEvaluations';
 import { usePatientByPhone, useCreatePatient } from '../../hooks/usePatients';
@@ -51,6 +52,8 @@ const steps = [
 
 export function NurseIntakeForm() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const currentRole = (user?.role === 'doctor' ? 'doctor' : 'nurse') as 'nurse' | 'doctor';
   const [searchParams] = useSearchParams();
 
   // ── Phone lookup state ────────────────────────────────────────────────────
@@ -1115,7 +1118,7 @@ export function NurseIntakeForm() {
 
 
       <div className="md:hidden">
-        <BottomNav role="nurse" />
+        <BottomNav role={currentRole} />
       </div>
     </div>
   );

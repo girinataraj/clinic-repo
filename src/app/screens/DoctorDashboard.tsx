@@ -5,8 +5,8 @@ import { BottomNav } from '../components/BottomNav';
 import { usePatients } from '../../hooks/usePatients';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
-  Search, Bell, Eye, Edit3, FileText, CheckCircle,
-  Users, ChevronRight, Dumbbell, Calendar, User,
+  Search, Bell, Eye, Edit3, FileText, CheckCircle, ClipboardList,
+  Users, ChevronRight, Dumbbell, Calendar, User, UserPlus,
   TrendingUp, Zap, Activity
 } from 'lucide-react';
 
@@ -164,7 +164,22 @@ export function DoctorDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <button
+              onClick={() => navigate('/doctor/patient-form')}
+              className="flex items-center gap-4 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 group text-left"
+              style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}
+            >
+              <div className="rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                style={{ width: '48px', height: '48px', background: '#DEF2F1' }}>
+                <UserPlus size={22} color="#3AAFA9" />
+              </div>
+              <div className="flex-1">
+                <p style={{ fontSize: '15px', fontWeight: 600, color: '#17252A' }}>Add Patient</p>
+                <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>Register new</p>
+              </div>
+              <ChevronRight size={16} color="#3AAFA9" className="transition-transform group-hover:translate-x-1" />
+            </button>
             <button
               onClick={() => navigate('/doctor/exercise')}
               className="flex items-center gap-4 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 group text-left"
@@ -377,32 +392,43 @@ export function DoctorDashboard() {
 
                   {/* Actions */}
                   <div style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
-                    <div className="flex divide-x divide-slate-100" style={{ borderTop: '1px solid #DEF2F1' }}>
+                    {patient.status === 'in-session' ? (
                       <button
-                        onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                        className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
-                        style={{ color: '#2B7A78', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #DEF2F1' }}
+                        onClick={() => navigate(`/doctor/patient/${patient.id}/treatment`)}
+                        className="w-full flex items-center justify-center gap-2 py-4 transition-colors"
+                        style={{ color: '#FEFFFF', fontSize: '13px', fontWeight: 700, background: '#2B7A78' }}
                       >
-                        <Eye size={16} />
-                        View
+                        <CheckCircle size={16} />
+                        COMPLETE SESSION
                       </button>
-                      <button
-                        onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                        className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
-                        style={{ color: '#3AAFA9', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #DEF2F1' }}
-                      >
-                        <Edit3 size={16} />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => navigate('/doctor/report')}
-                        className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
-                        style={{ color: '#17252A', fontSize: '13px', fontWeight: 600 }}
-                      >
-                        <FileText size={16} />
-                        Report
-                      </button>
-                    </div>
+                    ) : (
+                      <div className="flex divide-x divide-slate-100" style={{ borderTop: '1px solid #DEF2F1' }}>
+                        <button
+                          onClick={() => navigate(`/doctor/patient/${patient.id}`)}
+                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
+                          style={{ color: '#2B7A78', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #DEF2F1' }}
+                        >
+                          <Eye size={16} />
+                          View
+                        </button>
+                        <button
+                          onClick={() => navigate(`/doctor/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
+                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
+                          style={{ color: '#3AAFA9', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #DEF2F1' }}
+                        >
+                          <ClipboardList size={16} />
+                          Intake
+                        </button>
+                        <button
+                          onClick={() => navigate(`/doctor/patient/${patient.id}`)}
+                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
+                          style={{ color: '#17252A', fontSize: '13px', fontWeight: 600 }}
+                        >
+                          <FileText size={16} />
+                          Report
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

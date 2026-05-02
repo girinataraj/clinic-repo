@@ -240,6 +240,8 @@ function PatientExercisePlanView() {
 
 function DoctorExerciseAssignments() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canAssign = user?.role === 'nurse'; // Only therapists can assign exercises
   const { patientId: routePatientId } = useParams<{ patientId?: string }>();
   const [searchParams] = useSearchParams();
   const queryPatientId = searchParams.get('patientId') ?? undefined;
@@ -380,13 +382,15 @@ function DoctorExerciseAssignments() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => navigate('/doctor/exercise-library')}>
-                  Manage library
+                <Button variant="outline" onClick={() => navigate(user?.role === 'doctor' ? '/doctor/exercise-library' : '/nurse/intake')}>
+                  {canAssign ? 'Manage library' : 'View library'}
                 </Button>
-                <Button onClick={handleAssign} disabled={assignMutation.isPending}>
-                  {assignMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  Assign selected
-                </Button>
+                {canAssign && (
+                  <Button onClick={handleAssign} disabled={assignMutation.isPending}>
+                    {assignMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    Assign selected
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -536,14 +540,16 @@ function DoctorExerciseAssignments() {
                                 </p>
                               )}
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleRemove(assignment.templateId)}
-                              disabled={removeMutation.isPending}
-                            >
-                              Remove
-                            </Button>
+                            {canAssign && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRemove(assignment.templateId)}
+                                disabled={removeMutation.isPending}
+                              >
+                                Remove
+                              </Button>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -625,7 +631,7 @@ function DoctorExerciseAssignments() {
                               <Checkbox
                                 checked={isChecked}
                                 onCheckedChange={(checked) => toggleTemplate(template.id, checked === true)}
-                                disabled={isAssigned}
+                                disabled={isAssigned || !canAssign}
                               />
                               <div className="flex-1">
                                 <div className="flex items-center justify-between gap-2">
