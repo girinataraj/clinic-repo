@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
@@ -12,6 +12,7 @@ import {
   CheckCircle,
   Clock,
   MessageSquare,
+  AlertTriangle,
 } from 'lucide-react';
 
 function getDaysInMonth(year: number, month: number) {
@@ -31,6 +32,29 @@ function buildAppointmentDate(year: number, month: number, day: number, slot: st
   if (meridiem === 'PM' && hours < 12) hours += 12;
   if (meridiem === 'AM' && hours === 12) hours = 0;
   return new Date(year, month, day, hours, minutes).toISOString();
+}
+
+/**
+ * Parse a "9:00 AM" style slot string into 24h hours.
+ * Returns the hour number (0-23).
+ */
+function slotTo24Hour(slot: string): number {
+  const match = slot.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return -1;
+  let hours = Number(match[1]);
+  const meridiem = match[3].toUpperCase();
+  if (meridiem === 'PM' && hours < 12) hours += 12;
+  if (meridiem === 'AM' && hours === 12) hours = 0;
+  return hours;
+}
+
+/**
+ * Calculate the next full hour from now.
+ * e.g. 12:01 → 13, 12:59 → 13, 13:00 → 14
+ */
+function getNextFullHour(): number {
+  const now = new Date();
+  return now.getHours() + 1; // always round up to next hour
 }
 
 export function AppointmentBooking() {
@@ -57,13 +81,105 @@ export function AppointmentBooking() {
   const dayLabels = appointmentConfig?.calendar?.dayLabels ?? [];
   const monthNames = appointmentConfig?.calendar?.monthNames ?? [];
 
+  // ── Date validation helpers ──────────────────────────────────────────────
+  const isMonthInPast = (year: number, month: number) => {
+    if (year < today.getFullYear()) return true;
+    if (year === today.getFullYear() && month < today.getMonth()) return true;
+    return false;
+  };
+
+  const isDayPast = (day: number) => {
+    if (currentYear < today.getFullYear()) return true;
+    if (currentYear === today.getFullYear() && currentMonth < today.getMonth()) return true;
+    if (currentYear === today.getFullYear() && currentMonth === today.getMonth() && day < today.getDate()) return true;
+    return false;
+  };
+
+  const isSelectedToday =
+    selectedDate !== null &&
+    currentYear === today.getFullYear() &&
+    currentMonth === today.getMonth() &&
+    selectedDate === today.getDate();
+
+  // ── Time slot validation ─────────────────────────────────────────────────
+  // If the selected date is today, disable all slots before the next full hour
+  const nextValidHour = getNextFullHour();
+
+  const isSlotDisabled = useMemo(() => {
+    return (slot: string): boolean => {
+      if (!isSelectedToday) return false;
+      const slotHour = slotTo24Hour(slot);
+      if (slotHour < 0) return false;
+      return slotHour < nextValidHour;
+    };
+  }, [isSelectedToday, nextValidHour]);
+
+  // Count how many slots are available (for UI feedback)
+  const availableSlotCount = useMemo(() => {
+    return timeSlots.filter((s) => !isSlotDisabled(s)).length;
+  }, [timeSlots, isSlotDisabled]);
+
+  // ── Month navigation guards ──────────────────────────────────────────────
+  const handlePrevMonth = () => {
+    let prevMonth = currentMonth - 1;
+    let prevYear = currentYear;
+    if (prevMonth < 0) { prevMonth = 11; prevYear -= 1; }
+    // Block navigating to past months
+    if (isMonthInPast(prevYear, prevMonth)) return;
+    setCurrentMonth(prevMonth);
+    setCurrentYear(prevYear);
+    setSelectedDate(null);
+    setSelectedSlot(null);
+  };
+
+  const handleNextMonth = () => {
+    let nextMonth = currentMonth + 1;
+    let nextYear = currentYear;
+    if (nextMonth > 11) { nextMonth = 0; nextYear += 1; }
+    setCurrentMonth(nextMonth);
+    setCurrentYear(nextYear);
+    setSelectedDate(null);
+    setSelectedSlot(null);
+  };
+
+  // Can't go back past the current month
+  const canGoPrevMonth = !isMonthInPast(
+    currentMonth === 0 ? currentYear - 1 : currentYear,
+    currentMonth === 0 ? 11 : currentMonth - 1
+  );
+
+  // ── Clear invalid slot when switching date ───────────────────────────────
+  const handleDateSelect = (day: number) => {
+    if (isDayPast(day)) return;
+    setSelectedDate(day);
+    // If switching to today and current slot is now invalid, clear it
+    const willBeToday =
+      currentYear === today.getFullYear() &&
+      currentMonth === today.getMonth() &&
+      day === today.getDate();
+    if (willBeToday && selectedSlot) {
+      const slotHour = slotTo24Hour(selectedSlot);
+      if (slotHour < getNextFullHour()) {
+        setSelectedSlot(null);
+      }
+    }
+  };
+
+  // ── Submit ───────────────────────────────────────────────────────────────
   const handleConfirm = async () => {
     if (!selectedDate || !selectedSlot || !selectedDoctor) return;
-    const patientId = user?.patient_id ?? user?.id;
+    const patientId = (user as any)?.patient_id ?? user?.id;
     if (!patientId) {
       setSubmitError('Patient record is missing for this account.');
       return;
     }
+
+    // Frontend guard: double-check time is valid
+    if (isSlotDisabled(selectedSlot)) {
+      setSubmitError('You can only book future time slots.');
+      return;
+    }
+
     try {
       setSubmitError(null);
       await createAppointment.mutateAsync({
@@ -176,12 +292,15 @@ export function AppointmentBooking() {
         >
           <div className="flex items-center justify-between mb-4">
             <button
-              onClick={() => {
-                if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); }
-                else setCurrentMonth(m => m - 1);
-              }}
+              onClick={handlePrevMonth}
+              disabled={!canGoPrevMonth}
               className="rounded-xl flex items-center justify-center"
-              style={{ width: '32px', height: '32px', background: '#f1f5f9' }}
+              style={{
+                width: '32px', height: '32px',
+                background: canGoPrevMonth ? '#f1f5f9' : '#f8fafc',
+                opacity: canGoPrevMonth ? 1 : 0.4,
+                cursor: canGoPrevMonth ? 'pointer' : 'not-allowed',
+              }}
             >
               <ChevronLeft size={16} color="#475569" />
             </button>
@@ -189,10 +308,7 @@ export function AppointmentBooking() {
               {monthNames[currentMonth] ?? ''} {currentYear}
             </span>
             <button
-              onClick={() => {
-                if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); }
-                else setCurrentMonth(m => m + 1);
-              }}
+              onClick={handleNextMonth}
               className="rounded-xl flex items-center justify-center"
               style={{ width: '32px', height: '32px', background: '#f1f5f9' }}
             >
@@ -216,20 +332,21 @@ export function AppointmentBooking() {
             ))}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
-              const isPast = currentMonth === today.getMonth() && currentYear === today.getFullYear() && day < today.getDate();
+              const isPast = isDayPast(day);
               const isToday = currentMonth === today.getMonth() && currentYear === today.getFullYear() && day === today.getDate();
               const isSelected = selectedDate === day;
               return (
                 <button
                   key={day}
                   disabled={isPast}
-                  onClick={() => !isPast && setSelectedDate(day)}
+                  onClick={() => handleDateSelect(day)}
                   className="flex items-center justify-center rounded-xl mx-auto"
                   style={{
                     width: '34px', height: '34px', fontSize: '13px', fontWeight: isSelected || isToday ? 700 : 500,
                     background: isSelected ? '#2563eb' : isToday ? '#eff6ff' : 'transparent',
                     color: isSelected ? 'white' : isToday ? '#2563eb' : isPast ? '#cbd5e1' : '#1e293b',
                     border: isToday && !isSelected ? '1.5px solid #2563eb' : 'none',
+                    cursor: isPast ? 'not-allowed' : 'pointer',
                   }}
                 >
                   {day}
@@ -246,23 +363,59 @@ export function AppointmentBooking() {
               <Clock size={14} style={{ display: 'inline', marginRight: '6px', color: '#64748b' }} />
               Available Time Slots
             </h3>
+
+            {/* Warning if today and some slots disabled */}
+            {isSelectedToday && availableSlotCount < timeSlots.length && (
+              <div
+                className="flex items-center gap-2 mb-3 p-3 rounded-xl"
+                style={{ background: '#fef3c7', border: '1px solid #fcd34d' }}
+              >
+                <AlertTriangle size={14} color="#d97706" />
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#92400e' }}>
+                  You can only book future time slots. Past slots for today are disabled.
+                </span>
+              </div>
+            )}
+
+            {isSelectedToday && availableSlotCount === 0 && (
+              <div
+                className="p-4 rounded-xl text-center"
+                style={{ background: '#fef2f2', border: '1px solid #fecaca' }}
+              >
+                <p style={{ fontSize: '13px', fontWeight: 700, color: '#b91c1c' }}>
+                  No available slots remaining for today.
+                </p>
+                <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>
+                  Please select a future date.
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-3 gap-2">
-              {timeSlots.map((slot) => (
-                <button
-                  key={slot}
-                  onClick={() => setSelectedSlot(slot)}
-                  className="py-2.5 rounded-xl"
-                  style={{
-                    fontSize: '12px', fontWeight: 700,
-                    background: selectedSlot === slot ? '#2563eb' : 'white',
-                    color: selectedSlot === slot ? 'white' : '#475569',
-                    border: `1.5px solid ${selectedSlot === slot ? '#2563eb' : '#e2e8f0'}`,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-                  }}
-                >
-                  {slot}
-                </button>
-              ))}
+              {timeSlots.map((slot) => {
+                const disabled = isSlotDisabled(slot);
+                const isSelected = selectedSlot === slot;
+                return (
+                  <button
+                    key={slot}
+                    disabled={disabled}
+                    onClick={() => !disabled && setSelectedSlot(slot)}
+                    className="py-2.5 rounded-xl transition-opacity"
+                    style={{
+                      fontSize: '12px', fontWeight: 700,
+                      background: disabled ? '#f1f5f9' : isSelected ? '#2563eb' : 'white',
+                      color: disabled ? '#94a3b8' : isSelected ? 'white' : '#475569',
+                      border: `1.5px solid ${disabled ? '#e2e8f0' : isSelected ? '#2563eb' : '#e2e8f0'}`,
+                      boxShadow: disabled ? 'none' : '0 1px 4px rgba(0,0,0,0.05)',
+                      cursor: disabled ? 'not-allowed' : 'pointer',
+                      opacity: disabled ? 0.5 : 1,
+                      textDecoration: disabled ? 'line-through' : 'none',
+                    }}
+                  >
+                    {slot}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -322,7 +475,13 @@ export function AppointmentBooking() {
           {createAppointment.isPending ? 'Booking...' : 'Confirm Appointment'}
         </button>
         {submitError && (
-          <p className="text-sm font-semibold text-red-600 text-center">{submitError}</p>
+          <div
+            className="flex items-center gap-2 p-3 rounded-xl mb-2"
+            style={{ background: '#fef2f2', border: '1px solid #fecaca' }}
+          >
+            <AlertTriangle size={14} color="#dc2626" />
+            <p style={{ fontSize: '13px', fontWeight: 600, color: '#b91c1c' }}>{submitError}</p>
+          </div>
         )}
       </div>
 
