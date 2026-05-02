@@ -27,12 +27,6 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
   completed:   { label: 'Completed',   color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30', dot: 'bg-emerald-400' },
 };
 
-const priorityConfig: Record<string, { label: string; color: string; bg: string }> = {
-  high:   { label: 'High',   color: 'text-red-700 dark:text-red-400',     bg: 'bg-red-100 dark:bg-red-900/30' },
-  medium: { label: 'Medium', color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/30' },
-  low:    { label: 'Low',    color: 'text-teal-700 dark:text-teal-400',   bg: 'bg-teal-100 dark:bg-teal-900/30' },
-};
-
 const avatarPalette = [
   { bg: 'bg-cyan-100 dark:bg-cyan-900/40',   color: 'text-cyan-800 dark:text-cyan-300' },
   { bg: 'bg-teal-100 dark:bg-teal-900/40',   color: 'text-teal-800 dark:text-teal-300' },
@@ -50,14 +44,12 @@ export function NursePatients() {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
-    priority: priorityFilter !== 'all' ? priorityFilter : undefined,
     limit: 50,
   });
 
@@ -78,7 +70,6 @@ export function NursePatients() {
     total: patientsData?.total ?? 0,
     waiting: patients.filter((p) => p.status === 'waiting').length,
     active: patients.filter((p) => p.status === 'in-session').length,
-    highPriority: patients.filter((p) => p.priority === 'high').length,
   };
 
   const getInitials = (name: string) => name.split(' ').map((p) => p[0]).join('');
@@ -123,12 +114,11 @@ export function NursePatients() {
             </div>
 
             {/* Stats row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
               {[
                 { label: 'Total patients', value: stats.total, color: 'text-teal-300' },
                 { label: 'Waiting', value: stats.waiting, color: 'text-amber-300' },
                 { label: 'Active', value: stats.active, color: 'text-blue-300' },
-                { label: 'High priority', value: stats.highPriority, color: 'text-red-300' },
               ].map((s) => (
                 <div key={s.label} className="py-3 px-4 rounded-2xl bg-white/10 border border-white/10 text-center">
                   <p className={`text-2xl font-black ${s.color} leading-none`}>{s.value}</p>
@@ -188,26 +178,6 @@ export function NursePatients() {
                     </button>
                   ))}
                 </div>
-                <div className="flex gap-2">
-                  {([
-                    { key: 'all', label: 'All priorities' },
-                    { key: 'high', label: 'High priority' },
-                    { key: 'medium', label: 'Medium priority' },
-                    { key: 'low', label: 'Low priority' },
-                  ] as const).map((item) => (
-                    <button
-                      key={item.key}
-                      onClick={() => setPriorityFilter(item.key)}
-                      className={`flex-1 rounded-xl px-3 py-2 text-[11px] font-bold border transition-colors ${
-                        priorityFilter === item.key
-                          ? 'bg-slate-900 dark:bg-slate-700 text-white border-slate-900 dark:border-slate-700'
-                          : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               {/* List heading */}
@@ -244,7 +214,6 @@ export function NursePatients() {
                 {/* Patient cards */}
                 {!isLoading && patients.map((patient, index) => {
                   const status = statusConfig[patient.status] ?? statusConfig['waiting'];
-                  const priority = priorityConfig[patient.priority] ?? priorityConfig['medium'];
                   const avatar = avatarPalette[index % avatarPalette.length];
                   const actionLabel = patient.status === 'completed'
                     ? 'Review notes'
@@ -287,9 +256,6 @@ export function NursePatients() {
                             <span className="rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[11px] font-semibold">
                               {patient.phone}
                             </span>
-                            <span className={`rounded-lg px-2 py-1 text-[11px] font-bold ${priority.bg} ${priority.color}`}>
-                              {priority.label} priority
-                            </span>
                           </div>
                         </div>
                       </div>
@@ -324,7 +290,7 @@ export function NursePatients() {
               {!isLoading && !isError && patients.length === 0 && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 text-center">
                   <p className="text-sm font-bold text-slate-900 dark:text-white">No patients found</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Try adjusting your search, status, or priority filters.</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Try adjusting your search or status filters.</p>
                 </div>
               )}
             </div>
@@ -343,18 +309,13 @@ export function NursePatients() {
                 <div className="flex flex-col gap-2">
                   {[
                     stats.waiting > 0 ? `${stats.waiting} patient(s) waiting` : 'No patients waiting',
-                    stats.highPriority > 0 ? `${stats.highPriority} high priority intake(s) pending` : 'No high priority alerts',
                     `${stats.total} total patient(s) today`,
-                  ].map((alert, index) => (
+                  ].map((alert) => (
                     <div
                       key={alert}
-                      className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold ${
-                        index === 1 && stats.highPriority > 0
-                          ? 'bg-amber-50 dark:bg-amber-900/30 text-slate-800 dark:text-amber-100'
-                          : 'bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
-                      }`}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200"
                     >
-                      <AlertTriangle className={`w-3.5 h-3.5 shrink-0 ${index === 1 && stats.highPriority > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-teal-600 dark:text-teal-400'}`} />
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-teal-600 dark:text-teal-400" />
                       {alert}
                     </div>
                   ))}

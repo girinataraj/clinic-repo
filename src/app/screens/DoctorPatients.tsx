@@ -22,21 +22,15 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
   completed:    { label: 'Completed',   color: '#FEFFFF', bg: '#3AAFA9', dot: '#FEFFFF' },
 };
 
-const priorityConfig: Record<string, { label: string; color: string; bg: string }> = {
-  high:   { label: 'High',   color: '#FEFFFF', bg: '#17252A' },
-  medium: { label: 'Medium', color: '#17252A', bg: '#3AAFA9' },
-  low:    { label: 'Low',    color: '#2B7A78', bg: '#DEF2F1' },
-};
-
 const avatarPalette = [
-  { bg: '#DEF2F1', color: '#2B7A78' },
-  { bg: '#DEF2F1', color: '#2B7A78' },
-  { bg: '#DEF2F1', color: '#2B7A78' },
-  { bg: '#DEF2F1', color: '#2B7A78' },
+  { bg: '#E0F2F1', color: '#004D40' },
+  { bg: '#E3F2FD', color: '#0D47A1' },
+  { bg: '#F3E5F5', color: '#4A148C' },
+  { bg: '#FFF3E0', color: '#E65100' },
+  { bg: '#F1F8E9', color: '#1B5E20' },
 ];
 
-const getInitials = (name: string) =>
-  name.split(' ').map((part) => part[0]).join('');
+const getInitials = (name: string) => name.split(' ').map(p => p[0]).join('');
 
 export function DoctorPatients() {
   const { user } = useAuth();
@@ -44,14 +38,12 @@ export function DoctorPatients() {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
-    priority: priorityFilter !== 'all' ? priorityFilter : undefined,
     limit: 50,
   });
 
@@ -76,7 +68,6 @@ export function DoctorPatients() {
     total: patientsData?.total ?? 0,
     active: patients.filter((p) => p.status === 'in-session').length,
     waiting: patients.filter((p) => p.status === 'waiting').length,
-    highPriority: patients.filter((p) => p.priority === 'high').length,
   };
 
 
@@ -128,12 +119,11 @@ export function DoctorPatients() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
               {[
                 { label: 'Total patients', value: stats.total, icon: Users },
                 { label: 'In session', value: stats.active, icon: Activity },
                 { label: 'Waiting', value: stats.waiting, icon: HeartPulse },
-                { label: 'High priority', value: stats.highPriority, icon: Flame },
               ].map((card) => {
                 const Icon = card.icon;
                 return (
@@ -198,30 +188,6 @@ export function DoctorPatients() {
                     ))}
                   </div>
                 </div>
-
-                <div className="flex gap-2 mt-3">
-                  {([
-                    { key: 'all', label: 'All priorities' },
-                    { key: 'high', label: 'High priority' },
-                    { key: 'medium', label: 'Medium priority' },
-                    { key: 'low', label: 'Low priority' },
-                  ] as const).map((item) => (
-                    <button
-                      key={item.key}
-                      onClick={() => setPriorityFilter(item.key)}
-                      className="rounded-xl px-3 py-2 flex-1"
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        background: priorityFilter === item.key ? '#2B7A78' : '#FEFFFF',
-                        color: priorityFilter === item.key ? '#FEFFFF' : '#2B7A78',
-                        border: `1px solid ${priorityFilter === item.key ? '#2B7A78' : '#DEF2F1'}`,
-                      }}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               <div className="flex items-center justify-between">
@@ -258,7 +224,6 @@ export function DoctorPatients() {
                 {/* Patient cards */}
                 {!isLoading && patients.map((patient, index) => {
                   const status = statusConfig[patient.status] ?? statusConfig['waiting'];
-                  const priority = priorityConfig[patient.priority] ?? priorityConfig['medium'];
                   const avatar = avatarPalette[index % avatarPalette.length];
 
                   return (
@@ -302,12 +267,6 @@ export function DoctorPatients() {
                               style={{ background: '#DEF2F1', color: '#17252A', fontSize: '11px', fontWeight: 700 }}
                             >
                               {patient.displayId}
-                            </span>
-                            <span
-                              className="rounded-lg px-2 py-1"
-                              style={{ background: priority.bg, color: priority.color, fontSize: '11px', fontWeight: 700 }}
-                            >
-                              {priority.label} priority
                             </span>
                             {patient.city && (
                               <span
@@ -360,7 +319,7 @@ export function DoctorPatients() {
                     No patients found
                   </p>
                   <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '6px' }}>
-                    Try adjusting your search, status, or priority filters.
+                    Try adjusting your search or status filters.
                   </p>
                 </div>
               )}
@@ -375,7 +334,6 @@ export function DoctorPatients() {
                 <div className="mt-4 flex flex-col gap-3">
                   {[
                     'Two patients need post session notes',
-                    'High priority intake in the next hour',
                     'Review progress on gait training plans',
                   ].map((item) => (
                     <div
@@ -398,7 +356,6 @@ export function DoctorPatients() {
                   {[
                     { label: 'In session now', value: `${stats.active} patient${stats.active !== 1 ? 's' : ''}`, color: '#3AAFA9' },
                     { label: 'Waiting', value: `${stats.waiting} patient${stats.waiting !== 1 ? 's' : ''}`, color: '#2B7A78' },
-                    { label: 'High priority', value: `${stats.highPriority} patient${stats.highPriority !== 1 ? 's' : ''}`, color: '#17252A' },
                   ].map((item) => (
                     <div
                       key={item.label}

@@ -379,15 +379,6 @@ export function DoctorDashboard() {
                         <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{patient.phone}</p>
                       </div>
                     </div>
-                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                        <span style={{ fontSize: '14px' }}>⚠️</span>
-                      </div>
-                      <div>
-                        <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600, marginBottom: '2px' }}>Priority</p>
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A', textTransform: 'capitalize' }}>{patient.priority}</p>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Actions */}
