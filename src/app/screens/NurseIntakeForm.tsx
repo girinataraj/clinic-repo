@@ -5,6 +5,7 @@ import { BottomNav } from '../components/BottomNav';
 import { useCreateEvaluation } from '../../hooks/useEvaluations';
 import { usePatientByPhone, useCreatePatient, usePatient } from '../../hooks/usePatients';
 import { useAppConfigScope } from '../../hooks/useAppConfig';
+import type { AppConfigScopes } from '../../hooks/useAppConfig';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, User, Heart, Phone, Search, UserPlus,
   Activity, Sliders, CheckSquare, ClipboardList, Save, Check, Loader2, AlertTriangle,
@@ -12,6 +13,89 @@ import {
 } from 'lucide-react';
 
 const stepIconMap = { User, Heart, Activity, Sliders, ClipboardList, CheckSquare, Save };
+
+const nonEmptyOrDefault = <T,>(value: T[] | undefined, fallback: T[]) =>
+  value && value.length > 0 ? value : fallback;
+
+type ResolvedIntakeConfig = Omit<Required<AppConfigScopes['intake']>, 'painScale'> & {
+  painScale: {
+    colors: string[];
+    textColors: string[];
+  };
+};
+
+const defaultIntakeConfig: ResolvedIntakeConfig = {
+  symptoms: [
+    'Lower Back Pain',
+    'Neck Pain',
+    'Shoulder Pain',
+    'Knee Pain',
+    'Hip Pain',
+    'Ankle Pain',
+    'Wrist Pain',
+    'Headache',
+    'Muscle Weakness',
+    'Numbness / Tingling',
+    'Swelling',
+    'Stiffness',
+    'Limited Range of Motion',
+    'Fatigue',
+    'Dizziness',
+  ],
+  functionalActivities: [
+    { label: 'Walking', key: 'walking' },
+    { label: 'Climbing Stairs', key: 'stairs' },
+    { label: 'Sitting', key: 'sitting' },
+    { label: 'Standing', key: 'standing' },
+    { label: 'Dressing', key: 'dressing' },
+    { label: 'Lifting Objects', key: 'lifting' },
+  ],
+  ratingLabels: ['No Difficulty', 'Mild', 'Moderate', 'Severe', 'Unable'],
+  functionalRatingColors: [
+    'bg-green-500 border-green-500',
+    'bg-lime-500 border-lime-500',
+    'bg-yellow-400 border-yellow-400',
+    'bg-orange-500 border-orange-500',
+    'bg-red-500 border-red-500',
+  ],
+  steps: [
+    { label: 'Patient Info', icon: 'User' },
+    { label: 'Vitals', icon: 'Heart' },
+    { label: 'Symptoms', icon: 'Activity' },
+    { label: 'Pain Scale', icon: 'Sliders' },
+    { label: 'Functional', icon: 'ClipboardList' },
+    { label: 'Complaints', icon: 'CheckSquare' },
+    { label: 'Review & Payment', icon: 'Save' },
+  ],
+  painScale: {
+    colors: [
+      'bg-green-500',
+      'bg-lime-500',
+      'bg-lime-400',
+      'bg-yellow-400',
+      'bg-orange-400',
+      'bg-orange-500',
+      'bg-red-500',
+      'bg-red-600',
+      'bg-red-700',
+      'bg-red-800',
+      'bg-red-900',
+    ],
+    textColors: [
+      'text-green-500',
+      'text-lime-500',
+      'text-lime-400',
+      'text-yellow-400',
+      'text-orange-400',
+      'text-orange-500',
+      'text-red-500',
+      'text-red-600',
+      'text-red-700',
+      'text-red-800',
+      'text-red-900',
+    ],
+  },
+};
 
 export function NurseIntakeForm() {
   const navigate = useNavigate();
@@ -36,7 +120,7 @@ export function NurseIntakeForm() {
   const createPatientMutation = useCreatePatient();
 
   // Fetch patient by ID when provided in URL - auto-fill the form
-  const { data: patientById, isLoading: loadingPatientById } = usePatient(
+  const { data: patientById } = usePatient(
     resolvedPatientId && !foundPatient ? resolvedPatientId : null
   );
 
@@ -91,7 +175,7 @@ export function NurseIntakeForm() {
   const handleCreateNewPatient = async () => {
     if (!newPatient.name || !newPatient.age) return;
     try {
-const created = await createPatientMutation.mutateAsync({
+      const created = await createPatientMutation.mutateAsync({
         name: newPatient.name,
         age: Number(newPatient.age),
         gender: newPatient.gender as 'Male' | 'Female' | 'Other',
@@ -118,7 +202,7 @@ const created = await createPatientMutation.mutateAsync({
   const [saved, setSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-const createEvaluation = useCreateEvaluation();
+  const createEvaluation = useCreateEvaluation();
 
   const [patientInfo, setPatientInfo] = useState<{ name: string; age: string; phone: string; gender: 'Male' | 'Female' | 'Other'; address: string }>({ name: '', age: '', phone: '', gender: 'Male', address: '' });
   const [vitals, setVitals] = useState({ bp_sys: '', bp_dia: '', pr: '', spo2: '', temp: '', ef: '' });
@@ -141,13 +225,33 @@ const createEvaluation = useCreateEvaluation();
   const [billAmount, setBillAmount] = useState<number | null>(null);
   const [billAmountInput, setBillAmountInput] = useState('');
 
-  const symptoms = intakeConfig?.symptoms ?? [];
-  const functionalActivities = intakeConfig?.functionalActivities ?? [];
-  const ratingLabels = intakeConfig?.ratingLabels ?? [];
-  const painColors = intakeConfig?.painScale?.colors ?? [];
-  const painTextColors = intakeConfig?.painScale?.textColors ?? [];
-  const functionalRatingColors = intakeConfig?.functionalRatingColors ?? [];
-  const steps = (intakeConfig?.steps ?? []).map((item) => ({
+  const resolvedIntakeConfig = {
+    symptoms: nonEmptyOrDefault(intakeConfig?.symptoms, defaultIntakeConfig.symptoms),
+    functionalActivities: nonEmptyOrDefault(
+      intakeConfig?.functionalActivities,
+      defaultIntakeConfig.functionalActivities
+    ),
+    ratingLabels: nonEmptyOrDefault(intakeConfig?.ratingLabels, defaultIntakeConfig.ratingLabels),
+    functionalRatingColors: nonEmptyOrDefault(
+      intakeConfig?.functionalRatingColors,
+      defaultIntakeConfig.functionalRatingColors
+    ),
+    steps: nonEmptyOrDefault(intakeConfig?.steps, defaultIntakeConfig.steps),
+    painScale: {
+      colors: nonEmptyOrDefault(intakeConfig?.painScale?.colors, defaultIntakeConfig.painScale.colors),
+      textColors: nonEmptyOrDefault(
+        intakeConfig?.painScale?.textColors,
+        defaultIntakeConfig.painScale.textColors
+      ),
+    },
+  };
+  const symptoms = resolvedIntakeConfig.symptoms;
+  const functionalActivities = resolvedIntakeConfig.functionalActivities;
+  const ratingLabels = resolvedIntakeConfig.ratingLabels;
+  const painColors = resolvedIntakeConfig.painScale.colors;
+  const painTextColors = resolvedIntakeConfig.painScale.textColors;
+  const functionalRatingColors = resolvedIntakeConfig.functionalRatingColors;
+  const steps = resolvedIntakeConfig.steps.map((item) => ({
     label: item.label,
     icon: stepIconMap[item.icon as keyof typeof stepIconMap] ?? ClipboardList,
   }));
@@ -253,7 +357,7 @@ const createEvaluation = useCreateEvaluation();
         billAmount,
       });
       setSaved(true);
-      setTimeout(() => navigate('/nurse'), 2000);
+      setTimeout(() => navigate(`/${currentRole}`), 2000);
     } catch (err: any) {
       setSubmitError(err?.response?.data?.message ?? 'Failed to save evaluation. Please try again.');
     }
@@ -299,14 +403,6 @@ const createEvaluation = useCreateEvaluation();
     );
   }
 
-  if (steps.length === 0) {
-    return (
-      <div className="h-full flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-        <Loader2 className="w-6 h-6 animate-spin text-teal-700" />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Header */}
@@ -318,7 +414,7 @@ const createEvaluation = useCreateEvaluation();
           <button
             onClick={() => {
               setSubmitError(null);
-              step > 0 ? setStep(step - 1) : navigate('/nurse');
+              step > 0 ? setStep(step - 1) : navigate(`/${currentRole}`);
             }}
             className="flex items-center justify-center rounded-xl w-9 h-9 bg-white/20 hover:bg-white/30 transition-colors"
           >
