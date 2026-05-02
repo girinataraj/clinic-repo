@@ -14,6 +14,7 @@ import {
   Search,
   Stethoscope,
   Users,
+  UserPlus,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -99,24 +100,44 @@ export function DoctorPatients() {
                   {today} - Sports physiotherapy
                 </p>
               </div>
-              <button
-                onClick={() => navigate('/doctor/exercise')}
-                className="flex items-center gap-3 rounded-2xl px-4 py-3"
-                style={{
-                  background: 'rgba(254,255,255,0.12)',
-                  color: '#FEFFFF',
-                  fontWeight: 700,
-                  border: '1px solid rgba(254,255,255,0.2)',
-                }}
-              >
-                <div
-                  className="flex items-center justify-center rounded-xl"
-                  style={{ width: '34px', height: '34px', background: 'rgba(254,255,255,0.2)' }}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => navigate('/doctor/patient-form')}
+                  className="flex items-center gap-3 rounded-2xl px-4 py-3"
+                  style={{
+                    background: 'rgba(254,255,255,0.12)',
+                    color: '#FEFFFF',
+                    fontWeight: 700,
+                    border: '1px solid rgba(254,255,255,0.2)',
+                  }}
                 >
-                  <Stethoscope size={18} />
-                </div>
-                Create exercise plan
-              </button>
+                  <div
+                    className="flex items-center justify-center rounded-xl"
+                    style={{ width: '34px', height: '34px', background: 'rgba(254,255,255,0.2)' }}
+                  >
+                    <UserPlus size={18} />
+                  </div>
+                  Add patient
+                </button>
+                <button
+                  onClick={() => navigate('/doctor/exercise')}
+                  className="flex items-center gap-3 rounded-2xl px-4 py-3"
+                  style={{
+                    background: 'rgba(254,255,255,0.12)',
+                    color: '#FEFFFF',
+                    fontWeight: 700,
+                    border: '1px solid rgba(254,255,255,0.2)',
+                  }}
+                >
+                  <div
+                    className="flex items-center justify-center rounded-xl"
+                    style={{ width: '34px', height: '34px', background: 'rgba(254,255,255,0.2)' }}
+                  >
+                    <Stethoscope size={18} />
+                  </div>
+                  Create exercise plan
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">

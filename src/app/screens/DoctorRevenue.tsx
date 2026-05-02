@@ -1,54 +1,55 @@
 import { useState, useMemo } from 'react';
 import { BottomNav } from '../components/BottomNav';
 import {
-  IndianRupee, TrendingUp, Filter, Calendar, User, ChevronDown,
-  ArrowUpRight, ArrowDownRight, Users, CreditCard
+  IndianRupee, TrendingUp, Filter, Calendar, User,
+  ChevronDown, ArrowUpRight, Users,
 } from 'lucide-react';
 
-// ── Static data ──────────────────────────────────────────────────────────────
+// ── Static data ───────────────────────────────────────────────────────────────
 const STATIC_VISITS = [
-  { id: '1', patientName: 'Rahul Verma', therapistName: 'Kavya Reddy', amount: 1500, date: '2026-05-02T10:30:00', mode: 'UPI' },
-  { id: '2', patientName: 'Priya Sharma', therapistName: 'Kavya Reddy', amount: 2000, date: '2026-05-02T09:00:00', mode: 'Cash' },
-  { id: '3', patientName: 'Arun Kumar', therapistName: 'Divya Nair', amount: 1800, date: '2026-05-01T14:00:00', mode: 'Card' },
-  { id: '4', patientName: 'Sneha Patel', therapistName: 'Kavya Reddy', amount: 1500, date: '2026-05-01T11:30:00', mode: 'UPI' },
-  { id: '5', patientName: 'Vikram Singh', therapistName: 'Divya Nair', amount: 2500, date: '2026-04-30T16:00:00', mode: 'Cash' },
-  { id: '6', patientName: 'Meera Iyer', therapistName: 'Kavya Reddy', amount: 1200, date: '2026-04-29T10:00:00', mode: 'UPI' },
-  { id: '7', patientName: 'Karthik Rajan', therapistName: 'Divya Nair', amount: 1800, date: '2026-04-28T13:00:00', mode: 'Card' },
-  { id: '8', patientName: 'Lakshmi Devi', therapistName: 'Kavya Reddy', amount: 2000, date: '2026-04-25T09:30:00', mode: 'Cash' },
-  { id: '9', patientName: 'Rajesh Menon', therapistName: 'Divya Nair', amount: 1500, date: '2026-04-20T15:00:00', mode: 'UPI' },
-  { id: '10', patientName: 'Ananya Rao', therapistName: 'Kavya Reddy', amount: 3000, date: '2026-04-15T11:00:00', mode: 'Card' },
-  { id: '11', patientName: 'Suresh Babu', therapistName: 'Divya Nair', amount: 1800, date: '2026-04-10T10:00:00', mode: 'Cash' },
-  { id: '12', patientName: 'Deepa Krishnan', therapistName: 'Kavya Reddy', amount: 2200, date: '2026-03-28T14:30:00', mode: 'UPI' },
-  { id: '13', patientName: 'Gopal Nath', therapistName: 'Divya Nair', amount: 1500, date: '2026-03-15T09:00:00', mode: 'Cash' },
-  { id: '14', patientName: 'Revathi S', therapistName: 'Kavya Reddy', amount: 2000, date: '2026-02-20T16:00:00', mode: 'Card' },
-  { id: '15', patientName: 'Manoj Kumar', therapistName: 'Divya Nair', amount: 1800, date: '2026-01-10T11:00:00', mode: 'UPI' },
+  { id: '1',  patientName: 'Rahul Verma',      therapistName: 'Kavya Reddy', amount: 1500, date: '2026-05-02T10:30:00', mode: 'UPI'  },
+  { id: '2',  patientName: 'Priya Sharma',     therapistName: 'Kavya Reddy', amount: 2000, date: '2026-05-02T09:00:00', mode: 'Cash' },
+  { id: '3',  patientName: 'Arun Kumar',       therapistName: 'Divya Nair',  amount: 1800, date: '2026-05-01T14:00:00', mode: 'Card' },
+  { id: '4',  patientName: 'Sneha Patel',      therapistName: 'Kavya Reddy', amount: 1500, date: '2026-05-01T11:30:00', mode: 'UPI'  },
+  { id: '5',  patientName: 'Vikram Singh',     therapistName: 'Divya Nair',  amount: 2500, date: '2026-04-30T16:00:00', mode: 'Cash' },
+  { id: '6',  patientName: 'Meera Iyer',       therapistName: 'Kavya Reddy', amount: 1200, date: '2026-04-29T10:00:00', mode: 'UPI'  },
+  { id: '7',  patientName: 'Karthik Rajan',    therapistName: 'Divya Nair',  amount: 1800, date: '2026-04-28T13:00:00', mode: 'Card' },
+  { id: '8',  patientName: 'Lakshmi Devi',     therapistName: 'Kavya Reddy', amount: 2000, date: '2026-04-25T09:30:00', mode: 'Cash' },
+  { id: '9',  patientName: 'Rajesh Menon',     therapistName: 'Divya Nair',  amount: 1500, date: '2026-04-20T15:00:00', mode: 'UPI'  },
+  { id: '10', patientName: 'Ananya Rao',       therapistName: 'Kavya Reddy', amount: 3000, date: '2026-04-15T11:00:00', mode: 'Card' },
+  { id: '11', patientName: 'Suresh Babu',      therapistName: 'Divya Nair',  amount: 1800, date: '2026-04-10T10:00:00', mode: 'Cash' },
+  { id: '12', patientName: 'Deepa Krishnan',   therapistName: 'Kavya Reddy', amount: 2200, date: '2026-03-28T14:30:00', mode: 'UPI'  },
+  { id: '13', patientName: 'Gopal Nath',       therapistName: 'Divya Nair',  amount: 1500, date: '2026-03-15T09:00:00', mode: 'Cash' },
+  { id: '14', patientName: 'Revathi S',        therapistName: 'Kavya Reddy', amount: 2000, date: '2026-02-20T16:00:00', mode: 'Card' },
+  { id: '15', patientName: 'Manoj Kumar',      therapistName: 'Divya Nair',  amount: 1800, date: '2026-01-10T11:00:00', mode: 'UPI'  },
 ];
 
 type FilterKey = 'today' | 'week' | 'month' | '6months' | 'all';
 
 const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
-  { key: 'today', label: 'Today' },
-  { key: 'week', label: 'Last 7 Days' },
-  { key: 'month', label: 'Last 30 Days' },
-  { key: '6months', label: 'Last 6 Months' },
-  { key: 'all', label: 'All Time' },
+  { key: 'today',   label: 'Today'          },
+  { key: 'week',    label: 'Last 7 Days'    },
+  { key: 'month',   label: 'Last 30 Days'   },
+  { key: '6months', label: 'Last 6 Months'  },
+  { key: 'all',     label: 'All Time'       },
 ];
 
 function getFilterDate(key: FilterKey): Date | null {
   const now = new Date();
   switch (key) {
-    case 'today': return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    case 'week': { const d = new Date(now); d.setDate(d.getDate() - 7); return d; }
-    case 'month': { const d = new Date(now); d.setDate(d.getDate() - 30); return d; }
-    case '6months': { const d = new Date(now); d.setMonth(d.getMonth() - 6); return d; }
-    case 'all': return null;
+    case 'today':   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    case 'week':    { const d = new Date(now); d.setDate(d.getDate() - 7);    return d; }
+    case 'month':   { const d = new Date(now); d.setDate(d.getDate() - 30);   return d; }
+    case '6months': { const d = new Date(now); d.setMonth(d.getMonth() - 6);  return d; }
+    case 'all':     return null;
   }
 }
 
-const getInitials = (name: string) => name.split(' ').map(p => p[0]).join('').slice(0, 2);
+const getInitials = (name: string) =>
+  name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
 
 const modeColors: Record<string, { bg: string; text: string }> = {
-  UPI: { bg: '#E0F2FE', text: '#0369A1' },
+  UPI:  { bg: '#E0F2FE', text: '#0369A1' },
   Cash: { bg: '#DCFCE7', text: '#15803D' },
   Card: { bg: '#FEF3C7', text: '#B45309' },
 };
@@ -63,134 +64,210 @@ export function DoctorRevenue() {
     return STATIC_VISITS.filter(v => new Date(v.date) >= cutoff);
   }, [activeFilter]);
 
-  const totalRevenue = useMemo(() => filteredVisits.reduce((s, v) => s + v.amount, 0), [filteredVisits]);
+  const totalRevenue = useMemo(
+    () => filteredVisits.reduce((s, v) => s + v.amount, 0),
+    [filteredVisits]
+  );
   const totalVisits = filteredVisits.length;
 
   const therapistTotals = useMemo(() => {
     const map: Record<string, number> = {};
-    filteredVisits.forEach(v => { map[v.therapistName] = (map[v.therapistName] || 0) + v.amount; });
+    filteredVisits.forEach(v => {
+      map[v.therapistName] = (map[v.therapistName] || 0) + v.amount;
+    });
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }, [filteredVisits]);
 
   const activeLabel = FILTER_OPTIONS.find(f => f.key === activeFilter)?.label ?? 'Today';
 
   return (
-    <div className="flex flex-col h-full" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1' }}>
-      <div className="flex-1 overflow-y-auto">
-        {/* Header */}
+    <div
+      className="flex flex-col h-full"
+      style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#f0fafa' }}
+    >
+      {/* ── Top Header Bar ─────────────────────────────────────────────── */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)',
+          padding: '24px 24px 24px 24px',
+          flexShrink: 0,
+        }}
+      >
         <div
-          className="px-6 pb-14 relative rounded-b-3xl"
-          style={{ background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)', paddingTop: '32px', boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)', zIndex: 20, position: 'relative' }}
+          className="max-w-4xl mx-auto flex items-center justify-between"
+          style={{ gap: '12px' }}
         >
-          <div className="absolute -right-16 -top-16 rounded-full opacity-10 pointer-events-none" style={{ width: '200px', height: '200px', background: '#FEFFFF' }} />
-          <div className="absolute right-10 top-20 rounded-full opacity-20 pointer-events-none" style={{ width: '80px', height: '80px', background: '#FEFFFF' }} />
+          {/* Title */}
+          <div>
+            <p style={{ fontSize: '11px', color: 'rgba(254,255,255,0.7)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
+              Revenue Overview
+            </p>
+            <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#FEFFFF', marginTop: '2px', letterSpacing: '-0.3px' }}>
+              Clinic Revenue
+            </h1>
+          </div>
 
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <p style={{ fontSize: '13px', color: 'rgba(254,255,255,0.8)', fontWeight: 500, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                  Revenue Overview
-                </p>
-                <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#FEFFFF', marginTop: '4px', letterSpacing: '-0.5px' }}>
-                  Clinic Revenue
-                </h1>
-              </div>
-              {/* Filter Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowDropdown(!showDropdown)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all"
-                  style={{ background: 'rgba(254,255,255,0.15)', border: '1px solid rgba(254,255,255,0.25)', color: '#FEFFFF', fontSize: '13px', fontWeight: 600 }}
+          {/* Filter Dropdown */}
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+              onClick={() => setShowDropdown(prev => !prev)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '8px 16px', borderRadius: '10px',
+                background: 'rgba(255,255,255,0.18)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: '#FEFFFF', fontSize: '13px', fontWeight: 600,
+                cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              <Filter size={13} />
+              {activeLabel}
+              <ChevronDown
+                size={13}
+                style={{ transition: 'transform 0.2s', transform: showDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              />
+            </button>
+
+            {showDropdown && (
+              <>
+                {/* Backdrop */}
+                <div
+                  style={{ position: 'fixed', inset: 0, zIndex: 998 }}
+                  onClick={() => setShowDropdown(false)}
+                />
+                <div
+                  style={{
+                    position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                    width: '180px', background: '#fff', borderRadius: '12px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                    border: '1px solid #e2e8f0', overflow: 'hidden', zIndex: 999,
+                  }}
                 >
-                  <Filter size={14} />
-                  {activeLabel}
-                  <ChevronDown size={14} className={`transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
-                </button>
-                {showDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden" style={{ zIndex: 9999 }}>
-                    {FILTER_OPTIONS.map(opt => (
-                      <button
-                        key={opt.key}
-                        onClick={() => { setActiveFilter(opt.key); setShowDropdown(false); }}
-                        className="w-full text-left px-4 py-3 transition-colors hover:bg-slate-50"
-                        style={{
-                          fontSize: '13px', fontWeight: activeFilter === opt.key ? 700 : 500,
-                          color: activeFilter === opt.key ? '#2B7A78' : '#334155',
-                          background: activeFilter === opt.key ? '#DEF2F1' : undefined,
-                        }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+                  {FILTER_OPTIONS.map(opt => (
+                    <button
+                      key={opt.key}
+                      onClick={() => { setActiveFilter(opt.key); setShowDropdown(false); }}
+                      style={{
+                        display: 'block', width: '100%', textAlign: 'left',
+                        padding: '11px 16px', border: 'none', cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: activeFilter === opt.key ? 700 : 500,
+                        color: activeFilter === opt.key ? '#2B7A78' : '#334155',
+                        background: activeFilter === opt.key ? '#DEF2F1' : '#fff',
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => {
+                        if (activeFilter !== opt.key)
+                          (e.currentTarget as HTMLButtonElement).style.background = '#f8fafc';
+                      }}
+                      onMouseLeave={e => {
+                        if (activeFilter !== opt.key)
+                          (e.currentTarget as HTMLButtonElement).style.background = '#fff';
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
+      </div>
 
-        <div className="px-5 pb-8 max-w-4xl mx-auto w-full" style={{ marginTop: '-48px', position: 'relative', zIndex: 5 }}>
-          {/* Summary Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      {/* ── Scrollable Content ─────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
+        <div
+          className="max-w-4xl mx-auto w-full"
+          style={{ padding: '24px 20px 32px' }}
+        >
+
+          {/* ── Summary Cards ──────────────────────────────────────────── */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: '16px',
+              marginBottom: '24px',
+            }}
+          >
             {/* Total Revenue */}
-            <div className="col-span-2 rounded-2xl p-5 transition-transform hover:-translate-y-1 duration-300"
-              style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', boxShadow: '0 8px 32px rgba(43,122,120,0.25)' }}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="rounded-xl flex items-center justify-center" style={{ width: '44px', height: '44px', background: 'rgba(254,255,255,0.2)' }}>
-                  <IndianRupee size={22} color="#FEFFFF" />
+            <div
+              style={{
+                gridColumn: 'span 2',
+                borderRadius: '14px',
+                padding: '20px',
+                background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)',
+                boxShadow: '0 4px 20px rgba(43,122,120,0.2)',
+                minWidth: 0,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <IndianRupee size={20} color="#FEFFFF" />
                 </div>
-                <p style={{ fontSize: '13px', color: 'rgba(254,255,255,0.8)', fontWeight: 600 }}>Total Revenue</p>
+                <p style={{ fontSize: '12px', color: 'rgba(254,255,255,0.8)', fontWeight: 600 }}>Total Revenue</p>
               </div>
-              <p style={{ fontSize: '32px', fontWeight: 800, color: '#FEFFFF', letterSpacing: '-1px' }}>
+              <p style={{ fontSize: '28px', fontWeight: 800, color: '#FEFFFF', letterSpacing: '-1px', lineHeight: 1 }}>
                 ₹{totalRevenue.toLocaleString('en-IN')}
               </p>
-              <div className="flex items-center gap-1 mt-2">
-                <ArrowUpRight size={14} color="#86EFAC" />
-                <span style={{ fontSize: '12px', color: '#86EFAC', fontWeight: 600 }}>+12.5% from previous period</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px' }}>
+                <ArrowUpRight size={13} color="#86EFAC" />
+                <span style={{ fontSize: '11px', color: '#86EFAC', fontWeight: 600 }}>+12.5% from previous period</span>
               </div>
             </div>
+
             {/* Total Visits */}
-            <div className="rounded-2xl p-5 transition-transform hover:-translate-y-1 duration-300"
-              style={{ background: '#FEFFFF', boxShadow: '0 8px 24px rgba(23,37,42,0.08)', border: '1px solid #DEF2F1' }}>
-              <div className="rounded-xl flex items-center justify-center mb-3" style={{ width: '40px', height: '40px', background: '#DEF2F1' }}>
-                <Users size={20} color="#3AAFA9" />
+            <div style={{ borderRadius: '14px', padding: '20px', background: '#fff', border: '1px solid #DEF2F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                <Users size={18} color="#3AAFA9" />
               </div>
-              <p style={{ fontSize: '24px', fontWeight: 700, color: '#17252A' }}>{totalVisits}</p>
-              <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 500, marginTop: '4px' }}>Total Visits</p>
+              <p style={{ fontSize: '26px', fontWeight: 700, color: '#17252A', lineHeight: 1 }}>{totalVisits}</p>
+              <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 500, marginTop: '6px' }}>Total Visits</p>
             </div>
+
             {/* Avg / Visit */}
-            <div className="rounded-2xl p-5 transition-transform hover:-translate-y-1 duration-300"
-              style={{ background: '#FEFFFF', boxShadow: '0 8px 24px rgba(23,37,42,0.08)', border: '1px solid #DEF2F1' }}>
-              <div className="rounded-xl flex items-center justify-center mb-3" style={{ width: '40px', height: '40px', background: '#DEF2F1' }}>
-                <TrendingUp size={20} color="#3AAFA9" />
+            <div style={{ borderRadius: '14px', padding: '20px', background: '#fff', border: '1px solid #DEF2F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                <TrendingUp size={18} color="#3AAFA9" />
               </div>
-              <p style={{ fontSize: '24px', fontWeight: 700, color: '#17252A' }}>
+              <p style={{ fontSize: '26px', fontWeight: 700, color: '#17252A', lineHeight: 1 }}>
                 ₹{totalVisits > 0 ? Math.round(totalRevenue / totalVisits).toLocaleString('en-IN') : 0}
               </p>
-              <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 500, marginTop: '4px' }}>Avg / Visit</p>
+              <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 500, marginTop: '6px' }}>Avg / Visit</p>
             </div>
           </div>
 
-          {/* Therapist Breakdown */}
+          {/* ── Therapist Breakdown ────────────────────────────────────── */}
           {therapistTotals.length > 0 && (
-            <div className="rounded-2xl p-5 mb-6" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23,37,42,0.04)' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '16px' }}>Therapist Breakdown</h3>
-              <div className="space-y-3">
+            <div
+              style={{
+                borderRadius: '14px', padding: '20px', marginBottom: '24px',
+                background: '#fff', border: '1px solid #DEF2F1',
+                boxShadow: '0 2px 12px rgba(23,37,42,0.06)',
+              }}
+            >
+              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '16px' }}>
+                Therapist Breakdown
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {therapistTotals.map(([name, amount]) => {
                   const pct = totalRevenue > 0 ? Math.round((amount / totalRevenue) * 100) : 0;
                   return (
                     <div key={name}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <span style={{ fontSize: '11px', fontWeight: 700, color: '#2B7A78' }}>{getInitials(name)}</span>
                           </div>
                           <span style={{ fontSize: '13px', fontWeight: 600, color: '#17252A' }}>{name}</span>
                         </div>
-                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#2B7A78' }}>₹{amount.toLocaleString('en-IN')}</span>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#2B7A78' }}>
+                          ₹{amount.toLocaleString('en-IN')}
+                        </span>
                       </div>
-                      <div className="w-full rounded-full overflow-hidden" style={{ height: '6px', background: '#DEF2F1' }}>
-                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #2B7A78, #3AAFA9)' }} />
+                      <div style={{ width: '100%', height: '6px', borderRadius: '99px', background: '#DEF2F1', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', borderRadius: '99px', width: `${pct}%`, background: 'linear-gradient(90deg, #2B7A78, #3AAFA9)', transition: 'width 0.6s ease' }} />
                       </div>
                     </div>
                   );
@@ -199,24 +276,24 @@ export function DoctorRevenue() {
             </div>
           )}
 
-          {/* Transaction List */}
-          <div className="flex items-center justify-between mb-4">
-            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#17252A' }}>Transactions</h3>
-            <span className="px-3 py-1 rounded-full" style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600, background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+          {/* ── Transactions ───────────────────────────────────────────── */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>Transactions</h3>
+            <span style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600, background: '#fff', border: '1px solid #DEF2F1', borderRadius: '99px', padding: '3px 12px' }}>
               {filteredVisits.length} records
             </span>
           </div>
 
           {filteredVisits.length === 0 ? (
-            <div className="text-center py-16 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-              <div className="flex items-center justify-center rounded-full mx-auto mb-4" style={{ width: '72px', height: '72px', background: '#DEF2F1' }}>
-                <IndianRupee size={32} color="#3AAFA9" />
+            <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: '14px', background: '#fff', border: '1px solid #DEF2F1' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <IndianRupee size={28} color="#3AAFA9" />
               </div>
-              <p style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>No transactions found</p>
-              <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '6px' }}>Try selecting a different time period</p>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>No transactions found</p>
+              <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>Try selecting a different time period</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {filteredVisits.map(visit => {
                 const dt = new Date(visit.date);
                 const dateStr = dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -225,30 +302,55 @@ export function DoctorRevenue() {
                 return (
                   <div
                     key={visit.id}
-                    className="rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-                    style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 2px 12px rgba(23,37,42,0.04)' }}
+                    style={{
+                      borderRadius: '14px', padding: '16px',
+                      background: '#fff', border: '1px solid #DEF2F1',
+                      boxShadow: '0 2px 8px rgba(23,37,42,0.04)',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                    }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+                      (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 20px rgba(43,122,120,0.1)';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+                      (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(23,37,42,0.04)';
+                    }}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="rounded-2xl flex items-center justify-center shrink-0" style={{ width: '48px', height: '48px', background: '#DEF2F1' }}>
-                        <span style={{ fontSize: '15px', fontWeight: 700, color: '#2B7A78' }}>{getInitials(visit.patientName)}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      {/* Avatar */}
+                      <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#2B7A78' }}>{getInitials(visit.patientName)}</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{visit.patientName}</p>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <User size={12} color="#2B7A78" />
+
+                      {/* Patient + Therapist */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {visit.patientName}
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '3px' }}>
+                          <User size={11} color="#2B7A78" />
                           <span style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 500 }}>{visit.therapistName}</span>
                         </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <p style={{ fontSize: '16px', fontWeight: 800, color: '#2B7A78' }}>₹{visit.amount.toLocaleString('en-IN')}</p>
-                        <div className="flex items-center gap-2 justify-end mt-1">
-                          <span className="px-2 py-0.5 rounded-full" style={{ fontSize: '10px', fontWeight: 700, background: mc.bg, color: mc.text }}>{visit.mode}</span>
-                        </div>
+
+                      {/* Amount + mode */}
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <p style={{ fontSize: '15px', fontWeight: 800, color: '#2B7A78' }}>
+                          ₹{visit.amount.toLocaleString('en-IN')}
+                        </p>
+                        <span style={{ fontSize: '10px', fontWeight: 700, background: mc.bg, color: mc.text, borderRadius: '99px', padding: '2px 8px', marginTop: '4px', display: 'inline-block' }}>
+                          {visit.mode}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 mt-3 pt-3" style={{ borderTop: '1px solid #DEF2F1' }}>
-                      <Calendar size={12} color="#3AAFA9" />
-                      <span style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 500 }}>{dateStr} · {timeStr}</span>
+
+                    {/* Date row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f0fafa' }}>
+                      <Calendar size={11} color="#3AAFA9" />
+                      <span style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 500 }}>
+                        {dateStr} · {timeStr}
+                      </span>
                     </div>
                   </div>
                 );
@@ -258,7 +360,8 @@ export function DoctorRevenue() {
         </div>
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
+      {/* ── Mobile Bottom Nav ──────────────────────────────────────────── */}
+      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#fff', flexShrink: 0 }}>
         <BottomNav role="doctor" />
       </div>
     </div>
