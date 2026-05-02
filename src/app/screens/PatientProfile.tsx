@@ -21,7 +21,7 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 
-const PATIENT_PHOTO = ''; // Use initials fallback — no default photo
+
 
 // NOTE: healthInfo and conditions should be fetched from /api/users/me
 // or a patient-specific profile endpoint when available.
@@ -35,7 +35,7 @@ export function PatientProfile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [imgError, setImgError] = useState(false);
+
 
   const handleLogout = () => {
     logout();
@@ -75,52 +75,19 @@ export function PatientProfile() {
           </div>
 
           {/* Profile hero */}
-          <div className="flex flex-col items-center pb-6 pt-4 px-5">
-            <div className="relative mb-3">
-              {imgError ? (
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    width: '88px', height: '88px',
-                    borderRadius: '28px',
-                    background: 'rgba(255,255,255,0.25)',
-                    border: '3px solid rgba(255,255,255,0.6)',
-                    fontSize: '36px',
-                  }}
-                >
-                  👩
-                </div>
-              ) : (
-                <img
-                  src={PATIENT_PHOTO}
-                  alt={user?.name ?? 'Patient'}
-                  onError={() => setImgError(true)}
-                  style={{
-                    width: '88px', height: '88px',
-                    borderRadius: '28px',
-                    objectFit: 'cover',
-                    border: '3px solid rgba(255,255,255,0.6)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-                  }}
-                />
-              )}
-              <div
-                className="absolute -bottom-1 -right-1 flex items-center justify-center rounded-full"
-                style={{ width: '26px', height: '26px', background: '#10b981', border: '2px solid white' }}
-              >
-                <Star size={12} color="white" fill="white" />
-              </div>
-            </div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'white' }}>{user?.name || 'Patient'}</h2>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', marginTop: '2px' }}>
-              Patient · {user?.displayId ?? '—'}
-            </p>
-            <div className="flex items-center gap-2 mt-3">
+          <div className="flex flex-col items-center pb-8 pt-2 px-5 text-center">
+            <h2 style={{ fontSize: '32px', fontWeight: 800, color: 'white', lineHeight: 1.2 }}>{user?.name || 'Patient'}</h2>
+            {user?.displayId && (
+              <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.85)', marginTop: '4px', fontWeight: 500 }}>
+                {user.displayId}
+              </p>
+            )}
+            <div className="flex items-center justify-center gap-2 mt-4">
               {[{ text: user?.role ?? 'Patient' }].map((tag) => (
                 <span
                   key={tag.text}
                   className="px-3 py-1 rounded-full"
-                  style={{ background: 'rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, color: 'white' }}
+                  style={{ background: 'rgba(255,255,255,0.25)', fontSize: '12px', fontWeight: 700, color: 'white' }}
                 >
                   {tag.text}
                 </span>

@@ -138,16 +138,6 @@ export function PatientDashboard() {
                     </div>
                   )}
                 </div>
-
-                {/* Profile Button */}
-                <div className="relative">
-                  <button
-                    onClick={() => navigate('/patient/profile')}
-                    className="p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 backdrop-blur-sm shadow-sm"
-                  >
-                    <User className="w-5 h-5 text-white" />
-                  </button>
-                </div>
               </div>
             </div>
           </div>
