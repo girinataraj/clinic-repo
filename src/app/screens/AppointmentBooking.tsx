@@ -1,29 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
+import { useAppConfigScope } from '../../hooks/useAppConfig';
+import { useCreateAppointment } from '../../hooks/useAppointments';
+import { useStaffUsers } from '../../hooks/useStaff';
 import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  Star,
   CheckCircle,
   Clock,
   MessageSquare,
 } from 'lucide-react';
-
-// NOTE: Doctors list should be fetched from GET /api/users?role=doctor
-// Currently NO dedicated endpoint for this — DO NOT hardcode fake values.
-const doctors: { id: number; name: string; spec: string; rating: number; exp: string; avatar: string; available: boolean }[] = [];
-
-const timeSlots = [
-  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
-  '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM',
-  '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
-];
-
-const reasons = [
-  'Back Pain', 'Knee Injury', 'Shoulder Pain', 'Post-Surgery', 'Sports Injury', 'Other',
-];
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate();
@@ -33,13 +22,25 @@ function getFirstDayOfMonth(year: number, month: number) {
   return new Date(year, month, 1).getDay();
 }
 
-const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'];
+function buildAppointmentDate(year: number, month: number, day: number, slot: string) {
+  const match = slot.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return new Date(year, month, day).toISOString();
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const meridiem = match[3].toUpperCase();
+  if (meridiem === 'PM' && hours < 12) hours += 12;
+  if (meridiem === 'AM' && hours === 12) hours = 0;
+  return new Date(year, month, day, hours, minutes).toISOString();
+}
 
 export function AppointmentBooking() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: appointmentConfig } = useAppConfigScope('appointment');
+  const { data: doctors = [], isLoading: doctorsLoading } = useStaffUsers({ role: 'doctor' });
+  const createAppointment = useCreateAppointment();
   const today = new Date();
-  const [selectedDoctor, setSelectedDoctor] = useState(1);
+  const [selectedDoctor, setSelectedDoctor] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -47,13 +48,36 @@ export function AppointmentBooking() {
   const [reason, setReason] = useState('');
   const [selectedReason, setSelectedReason] = useState('');
   const [confirmed, setConfirmed] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+  const timeSlots = appointmentConfig?.timeSlots ?? [];
+  const reasons = appointmentConfig?.reasons ?? [];
+  const dayLabels = appointmentConfig?.calendar?.dayLabels ?? [];
+  const monthNames = appointmentConfig?.calendar?.monthNames ?? [];
 
-  const handleConfirm = () => {
-    setConfirmed(true);
-    setTimeout(() => navigate('/patient'), 2000);
+  const handleConfirm = async () => {
+    if (!selectedDate || !selectedSlot || !selectedDoctor) return;
+    const patientId = user?.patient_id ?? user?.id;
+    if (!patientId) {
+      setSubmitError('Patient record is missing for this account.');
+      return;
+    }
+    try {
+      setSubmitError(null);
+      await createAppointment.mutateAsync({
+        patientId,
+        doctorId: selectedDoctor,
+        datetime: buildAppointmentDate(currentYear, currentMonth, selectedDate, selectedSlot),
+        reason: selectedReason || reason || undefined,
+        notes: reason || undefined,
+      });
+      setConfirmed(true);
+      setTimeout(() => navigate('/patient'), 2000);
+    } catch (err: any) {
+      setSubmitError(err?.response?.data?.message ?? 'Failed to book appointment.');
+    }
   };
 
   if (confirmed) {
@@ -112,35 +136,33 @@ export function AppointmentBooking() {
             Select Doctor
           </h3>
           <div className="flex flex-col gap-2">
+            {doctorsLoading && (
+              <div className="p-3 rounded-2xl bg-white text-sm text-slate-500">Loading doctors...</div>
+            )}
+            {!doctorsLoading && doctors.length === 0 && (
+              <div className="p-3 rounded-2xl bg-white text-sm text-slate-500">No doctors available.</div>
+            )}
             {doctors.map((doc) => (
               <button
                 key={doc.id}
-                onClick={() => doc.available && setSelectedDoctor(doc.id)}
+                onClick={() => setSelectedDoctor(doc.id)}
                 className="flex items-center gap-3 p-3 rounded-2xl text-left"
                 style={{
                   background: 'white',
                   border: `2px solid ${selectedDoctor === doc.id ? '#2563eb' : 'transparent'}`,
-                  opacity: doc.available ? 1 : 0.5,
                   boxShadow: selectedDoctor === doc.id ? '0 4px 16px rgba(37,99,235,0.15)' : '0 2px 8px rgba(0,0,0,0.06)',
                 }}
               >
                 <div className="rounded-2xl flex items-center justify-center shrink-0"
-                  style={{ width: '48px', height: '48px', background: '#eff6ff', fontSize: '24px' }}>
-                  {doc.avatar}
+                  style={{ width: '48px', height: '48px', background: '#eff6ff', fontSize: '16px', fontWeight: 800, color: '#2563eb' }}>
+                  {doc.name.split(' ').map((part) => part[0]).join('').slice(0, 2)}
                 </div>
                 <div className="flex-1">
                   <p style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{doc.name}</p>
-                  <p style={{ fontSize: '11px', color: '#64748b' }}>{doc.spec} · {doc.exp} exp</p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Star size={11} color="#f59e0b" fill="#f59e0b" />
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b' }}>{doc.rating}</span>
-                  </div>
+                  <p style={{ fontSize: '11px', color: '#64748b' }}>{doc.displayId}</p>
                 </div>
                 {selectedDoctor === doc.id && (
                   <CheckCircle size={20} color="#2563eb" />
-                )}
-                {!doc.available && (
-                  <span style={{ fontSize: '10px', color: '#ef4444', fontWeight: 700 }}>Unavailable</span>
                 )}
               </button>
             ))}
@@ -164,7 +186,7 @@ export function AppointmentBooking() {
               <ChevronLeft size={16} color="#475569" />
             </button>
             <span style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>
-              {monthNames[currentMonth]} {currentYear}
+              {monthNames[currentMonth] ?? ''} {currentYear}
             </span>
             <button
               onClick={() => {
@@ -180,7 +202,7 @@ export function AppointmentBooking() {
 
           {/* Day labels */}
           <div className="grid grid-cols-7 mb-2">
-            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+            {dayLabels.map((d) => (
               <div key={d} className="text-center" style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', padding: '4px 0' }}>
                 {d}
               </div>
@@ -285,20 +307,23 @@ export function AppointmentBooking() {
         {/* Confirm button */}
         <button
           onClick={handleConfirm}
-          disabled={!selectedDate || !selectedSlot}
+          disabled={!selectedDate || !selectedSlot || !selectedDoctor || createAppointment.isPending}
           className="w-full py-4 rounded-2xl"
           style={{
-            background: selectedDate && selectedSlot
+            background: selectedDate && selectedSlot && selectedDoctor
               ? 'linear-gradient(135deg, #1d4ed8, #2563eb)'
               : '#e2e8f0',
-            color: selectedDate && selectedSlot ? 'white' : '#94a3b8',
+            color: selectedDate && selectedSlot && selectedDoctor ? 'white' : '#94a3b8',
             fontSize: '16px', fontWeight: 700,
-            boxShadow: selectedDate && selectedSlot ? '0 8px 24px rgba(37,99,235,0.3)' : 'none',
+            boxShadow: selectedDate && selectedSlot && selectedDoctor ? '0 8px 24px rgba(37,99,235,0.3)' : 'none',
             marginBottom: '8px',
           }}
         >
-          Confirm Appointment
+          {createAppointment.isPending ? 'Booking...' : 'Confirm Appointment'}
         </button>
+        {submitError && (
+          <p className="text-sm font-semibold text-red-600 text-center">{submitError}</p>
+        )}
       </div>
 
       <div className="md:hidden">
