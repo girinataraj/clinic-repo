@@ -152,17 +152,9 @@ export function AppointmentBooking() {
   const handleDateSelect = (day: number) => {
     if (isDayPast(day)) return;
     setSelectedDate(day);
-    // If switching to today and current slot is now invalid, clear it
-    const willBeToday =
-      currentYear === today.getFullYear() &&
-      currentMonth === today.getMonth() &&
-      day === today.getDate();
-    if (willBeToday && selectedSlot) {
-      const slotHour = slotTo24Hour(selectedSlot);
-      if (slotHour < getNextFullHour()) {
-        setSelectedSlot(null);
-      }
-    }
+    // Always clear selected slot when date changes — forces user to pick a valid slot
+    // for the new date. Prevents stale slot from a different day being submitted.
+    setSelectedSlot(null);
   };
 
   // ── Submit ───────────────────────────────────────────────────────────────
@@ -365,7 +357,7 @@ export function AppointmentBooking() {
             </h3>
 
             {/* Warning if today and some slots disabled */}
-            {isSelectedToday && availableSlotCount < timeSlots.length && (
+            {isSelectedToday && availableSlotCount > 0 && availableSlotCount < timeSlots.length && (
               <div
                 className="flex items-center gap-2 mb-3 p-3 rounded-xl"
                 style={{ background: '#fef3c7', border: '1px solid #fcd34d' }}
@@ -377,46 +369,51 @@ export function AppointmentBooking() {
               </div>
             )}
 
-            {isSelectedToday && availableSlotCount === 0 && (
+            {/* No slots available — either all expired today, or config has no slots */}
+            {(availableSlotCount === 0 || timeSlots.length === 0) && (
               <div
-                className="p-4 rounded-xl text-center"
-                style={{ background: '#fef2f2', border: '1px solid #fecaca' }}
+                className="p-5 rounded-2xl text-center"
+                style={{ background: '#fef2f2', border: '1.5px solid #fecaca' }}
               >
-                <p style={{ fontSize: '13px', fontWeight: 700, color: '#b91c1c' }}>
-                  No available slots remaining for today.
+                <Clock size={28} color="#f87171" className="mx-auto mb-2" />
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#b91c1c' }}>
+                  Available time slot is not available now.
                 </p>
-                <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>
-                  Please select a future date.
+                <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '6px' }}>
+                  Please select a different date to see available slots.
                 </p>
               </div>
             )}
 
-            <div className="grid grid-cols-3 gap-2">
-              {timeSlots.map((slot) => {
-                const disabled = isSlotDisabled(slot);
-                const isSelected = selectedSlot === slot;
-                return (
-                  <button
-                    key={slot}
-                    disabled={disabled}
-                    onClick={() => !disabled && setSelectedSlot(slot)}
-                    className="py-2.5 rounded-xl transition-opacity"
-                    style={{
-                      fontSize: '12px', fontWeight: 700,
-                      background: disabled ? '#f1f5f9' : isSelected ? '#2563eb' : 'white',
-                      color: disabled ? '#94a3b8' : isSelected ? 'white' : '#475569',
-                      border: `1.5px solid ${disabled ? '#e2e8f0' : isSelected ? '#2563eb' : '#e2e8f0'}`,
-                      boxShadow: disabled ? 'none' : '0 1px 4px rgba(0,0,0,0.05)',
-                      cursor: disabled ? 'not-allowed' : 'pointer',
-                      opacity: disabled ? 0.5 : 1,
-                      textDecoration: disabled ? 'line-through' : 'none',
-                    }}
-                  >
-                    {slot}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Only render the grid if there are available slots */}
+            {availableSlotCount > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {timeSlots.map((slot) => {
+                  const disabled = isSlotDisabled(slot);
+                  const isSelected = selectedSlot === slot;
+                  return (
+                    <button
+                      key={slot}
+                      disabled={disabled}
+                      onClick={() => !disabled && setSelectedSlot(slot)}
+                      className="py-2.5 rounded-xl transition-opacity"
+                      style={{
+                        fontSize: '12px', fontWeight: 700,
+                        background: disabled ? '#f1f5f9' : isSelected ? '#2563eb' : 'white',
+                        color: disabled ? '#94a3b8' : isSelected ? 'white' : '#475569',
+                        border: `1.5px solid ${disabled ? '#e2e8f0' : isSelected ? '#2563eb' : '#e2e8f0'}`,
+                        boxShadow: disabled ? 'none' : '0 1px 4px rgba(0,0,0,0.05)',
+                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        opacity: disabled ? 0.5 : 1,
+                        textDecoration: disabled ? 'line-through' : 'none',
+                      }}
+                    >
+                      {slot}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

@@ -31,10 +31,12 @@ export function NurseDashboard() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // ── Live data from backend ─────────────────────────────────────────────────
+  // Therapist (nurse) sees only their assigned patients
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: filter !== 'all' ? filter : undefined,
     bookedOnly: filter === 'waiting' ? 'true' : undefined,
+    therapistId: user?.id,
     limit: 20,
   }, true); // ← 10s polling for live patient queue
 

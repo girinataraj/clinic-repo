@@ -14,6 +14,7 @@ import { NurseProfile } from './screens/NurseProfile';
 import { DoctorDashboard } from './screens/DoctorDashboard';
 import { DoctorPatients } from './screens/DoctorPatients';
 import { DoctorProfile } from './screens/DoctorProfile';
+import { DoctorRevenue } from './screens/DoctorRevenue';
 import { PatientDetailPage } from './screens/PatientDetailPage';
 import { ExercisePrescription } from './screens/ExercisePrescription';
 import { ExerciseLibrary } from './screens/ExerciseLibrary';
@@ -21,6 +22,7 @@ import { ReportGeneration } from './screens/ReportGeneration';
 import { TreatmentDetailPage } from '../features/patients/pages/TreatmentDetailPage';
 import { NotificationPage } from './screens/NotificationPage';
 import { PatientForm } from './screens/PatientForm';
+import { TherapistHierarchy } from './screens/TherapistHierarchy';
 
 // ── Session Loader: waits for auth initialization before routing ─────────────
 function SessionLoader({ children }: { children: React.ReactNode }) {
@@ -83,6 +85,7 @@ export const router = createBrowserRouter([
             children: [
               { path: 'doctor', Component: DoctorDashboard },
               { path: 'doctor/patients', Component: DoctorPatients },
+              { path: 'doctor/therapists', Component: TherapistHierarchy },
               { path: 'doctor/patient-form', Component: PatientForm },
               { path: 'doctor/intake', Component: NurseIntakeForm },
               { path: 'doctor/patient/:id', Component: PatientDetailPage },
@@ -91,6 +94,7 @@ export const router = createBrowserRouter([
               { path: 'doctor/exercise', Component: ExercisePrescription },
               { path: 'doctor/exercise-library', Component: ExerciseLibrary },
               { path: 'doctor/report', Component: ReportGeneration },
+              { path: 'doctor/revenue', Component: DoctorRevenue },
               { path: 'doctor/profile', Component: DoctorProfile },
               { path: 'doctor/notifications', Component: NotificationPage },
             ],

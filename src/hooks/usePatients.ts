@@ -8,6 +8,7 @@ export interface PatientsFilter {
   priority?: string;
   search?: string;
   bookedOnly?: 'true' | 'false';
+  therapistId?: string;
   page?: number;
   limit?: number;
   sort?: string;
@@ -89,6 +90,7 @@ export function useCreatePatient() {
       city?: string;
       fileNumber?: string;
       condition?: string;
+      therapistId?: string;
     }) => {
       const { data } = await api.post<{ success: boolean; data: Patient }>(
         ENDPOINTS.PATIENTS.CREATE,
@@ -120,6 +122,7 @@ export function useUpdatePatient() {
       condition?: string;
       status?: string;
       priority?: string;
+      therapistId?: string;
     }) => {
       const { data } = await api.patch<{ success: boolean; data: Patient }>(
         ENDPOINTS.PATIENTS.UPDATE(id),

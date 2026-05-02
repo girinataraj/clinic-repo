@@ -164,69 +164,7 @@ export function DoctorDashboard() {
             })}
           </div>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <button
-              onClick={() => navigate('/doctor/patient-form')}
-              className="flex items-center gap-4 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 group text-left"
-              style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}
-            >
-              <div className="rounded-xl flex items-center justify-center shrink-0 transition-colors"
-                style={{ width: '48px', height: '48px', background: '#DEF2F1' }}>
-                <UserPlus size={22} color="#3AAFA9" />
-              </div>
-              <div className="flex-1">
-                <p style={{ fontSize: '15px', fontWeight: 600, color: '#17252A' }}>Add Patient</p>
-                <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>Register new</p>
-              </div>
-              <ChevronRight size={16} color="#3AAFA9" className="transition-transform group-hover:translate-x-1" />
-            </button>
-            <button
-              onClick={() => navigate('/doctor/exercise')}
-              className="flex items-center gap-4 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 group text-left"
-              style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}
-            >
-              <div className="rounded-xl flex items-center justify-center shrink-0 transition-colors"
-                style={{ width: '48px', height: '48px', background: '#DEF2F1' }}>
-                <Dumbbell size={22} color="#3AAFA9" />
-              </div>
-              <div className="flex-1">
-                <p style={{ fontSize: '15px', fontWeight: 600, color: '#17252A' }}>Exercise Rx</p>
-                <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>Prescribe plan</p>
-              </div>
-              <ChevronRight size={16} color="#3AAFA9" className="transition-transform group-hover:translate-x-1" />
-            </button>
-            <button
-              onClick={() => navigate('/doctor/report')}
-              className="flex items-center gap-4 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 group text-left"
-              style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}
-            >
-              <div className="rounded-xl flex items-center justify-center shrink-0 transition-colors"
-                style={{ width: '48px', height: '48px', background: '#DEF2F1' }}>
-                <FileText size={22} color="#3AAFA9" />
-              </div>
-              <div className="flex-1">
-                <p style={{ fontSize: '15px', fontWeight: 600, color: '#17252A' }}>Reports</p>
-                <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>Generate PDF</p>
-              </div>
-              <ChevronRight size={16} color="#3AAFA9" className="transition-transform group-hover:translate-x-1" />
-            </button>
-            <button
-              onClick={() => navigate('/doctor/profile')}
-              className="hidden md:flex items-center gap-4 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 group text-left"
-              style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}
-            >
-              <div className="rounded-xl flex items-center justify-center shrink-0 transition-colors"
-                style={{ width: '48px', height: '48px', background: '#DEF2F1' }}>
-                <Calendar size={22} color="#3AAFA9" />
-              </div>
-              <div className="flex-1">
-                <p style={{ fontSize: '15px', fontWeight: 600, color: '#17252A' }}>Schedule</p>
-                <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>View today</p>
-              </div>
-              <ChevronRight size={16} color="#3AAFA9" className="transition-transform group-hover:translate-x-1" />
-            </button>
-          </div>
+
 
           {/* Recovery insight banner */}
           <div
