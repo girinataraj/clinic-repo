@@ -64,7 +64,7 @@ export function NurseIntakeForm() {
     Boolean(searchParams.get('patientId') || searchParams.get('phone'))
   );
   const [showNewPatientForm, setShowNewPatientForm] = useState(false);
-  const [newPatient, setNewPatient] = useState({ name: '', age: '', gender: 'Male' as const, condition: '' });
+  const [newPatient, setNewPatient] = useState<{ name: string; age: string; gender: 'Male' | 'Female' | 'Other'; condition: string }>({ name: '', age: '', gender: 'Male', condition: '' });
 
   const { data: foundPatient, isLoading: lookingUp, isError: lookupError } = usePatientByPhone(
     phoneToFetch.trim().length >= 7 ? phoneToFetch.trim() : null

@@ -30,6 +30,7 @@ export function DoctorDashboard() {
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: activeTab !== 'all' ? activeTab : undefined,
+    bookedOnly: activeTab === 'waiting' ? 'true' : undefined,
     limit: 20,
   }, true); // ← 10s polling for live patient queue
 

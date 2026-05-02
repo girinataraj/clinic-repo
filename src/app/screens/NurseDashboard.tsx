@@ -34,6 +34,7 @@ export function NurseDashboard() {
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: filter !== 'all' ? filter : undefined,
+    bookedOnly: filter === 'waiting' ? 'true' : undefined,
     limit: 20,
   }, true); // ← 10s polling for live patient queue
 

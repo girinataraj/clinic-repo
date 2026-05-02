@@ -7,6 +7,7 @@ export interface PatientsFilter {
   status?: string;
   priority?: string;
   search?: string;
+  bookedOnly?: 'true' | 'false';
   page?: number;
   limit?: number;
   sort?: string;
