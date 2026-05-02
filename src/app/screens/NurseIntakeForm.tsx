@@ -3,56 +3,20 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { useCreateEvaluation } from '../../hooks/useEvaluations';
-import { usePatientByPhone, useCreatePatient } from '../../hooks/usePatients';
+import { usePatientByPhone, useCreatePatient, usePatient } from '../../hooks/usePatients';
+import { useAppConfigScope } from '../../hooks/useAppConfig';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, User, Heart, Phone, Search, UserPlus,
   Activity, Sliders, CheckSquare, ClipboardList, Save, Check, Loader2, AlertTriangle,
   CreditCard, ImagePlus, X,
 } from 'lucide-react';
 
-const symptoms = [
-  'Lower Back Pain', 'Neck Pain', 'Shoulder Pain', 'Knee Pain',
-  'Hip Pain', 'Ankle Pain', 'Wrist Pain', 'Headache',
-  'Muscle Weakness', 'Numbness / Tingling', 'Swelling', 'Stiffness',
-  'Limited Range of Motion', 'Fatigue', 'Dizziness',
-];
-
-const functionalActivities = [
-  { label: 'Walking', key: 'walking' },
-  { label: 'Climbing Stairs', key: 'stairs' },
-  { label: 'Sitting', key: 'sitting' },
-  { label: 'Standing', key: 'standing' },
-  { label: 'Dressing', key: 'dressing' },
-  { label: 'Lifting Objects', key: 'lifting' },
-];
-
-const ratingLabels = ['No Difficulty', 'Mild', 'Moderate', 'Severe', 'Unable'];
-
-// Colors for pain scale corresponding to 0-10
-const painColors = [
-  'bg-green-500', 'bg-lime-500', 'bg-lime-400', 'bg-yellow-400', 'bg-orange-400',
-  'bg-orange-500', 'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-red-800', 'bg-red-900',
-];
-
-// corresponding text colors
-const painTextColors = [
-  'text-green-500', 'text-lime-500', 'text-lime-400', 'text-yellow-400', 'text-orange-400',
-  'text-orange-500', 'text-red-500', 'text-red-600', 'text-red-700', 'text-red-800', 'text-red-900',
-];
-
-const steps = [
-  { label: 'Patient Info', icon: User },
-  { label: 'Vitals', icon: Heart },
-  { label: 'Symptoms', icon: Activity },
-  { label: 'Pain Scale', icon: Sliders },
-  { label: 'Functional', icon: ClipboardList },
-  { label: 'Complaints', icon: CheckSquare },
-  { label: 'Review & Payment', icon: Save },
-];
+const stepIconMap = { User, Heart, Activity, Sliders, ClipboardList, CheckSquare, Save };
 
 export function NurseIntakeForm() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: intakeConfig } = useAppConfigScope('intake');
   const currentRole = (user?.role === 'doctor' ? 'doctor' : 'nurse') as 'nurse' | 'doctor';
   const [searchParams] = useSearchParams();
 
@@ -68,8 +32,41 @@ export function NurseIntakeForm() {
 
   const { data: foundPatient, isLoading: lookingUp, isError: lookupError } = usePatientByPhone(
     phoneToFetch.trim().length >= 7 ? phoneToFetch.trim() : null
-  );
+);
   const createPatientMutation = useCreatePatient();
+
+  // Fetch patient by ID when provided in URL - auto-fill the form
+  const { data: patientById, isLoading: loadingPatientById } = usePatient(
+    resolvedPatientId && !foundPatient ? resolvedPatientId : null
+  );
+
+  // Auto-fill form when patient is fetched via URL param
+  useEffect(() => {
+    if (patientById && !foundPatient && resolvedPatientId) {
+      setPatientInfo({
+        name: patientById.name ?? '',
+        age: patientById.age ? String(patientById.age) : '',
+        phone: patientById.phone ?? phoneToFetch,
+        gender: (patientById.gender as 'Male' | 'Female' | 'Other') ?? 'Male',
+        address: patientById.city ?? '',
+      });
+      setPhoneInput(patientById.phone ?? phoneToFetch);
+      setPhoneToFetch(patientById.phone ?? phoneToFetch);
+    }
+  }, [patientById, foundPatient, resolvedPatientId, phoneToFetch]);
+
+  // Auto-fill form when patient is found via phone lookup and we already have patientId from URL
+  useEffect(() => {
+    if (foundPatient && resolvedPatientId && resolvedPatientId === foundPatient.id) {
+      setPatientInfo({
+        name: foundPatient.name ?? '',
+        age: foundPatient.age ? String(foundPatient.age) : '',
+        phone: foundPatient.phone ?? phoneToFetch,
+        gender: (foundPatient.gender as 'Male' | 'Female' | 'Other') ?? 'Male',
+        address: foundPatient.city ?? '',
+      });
+    }
+  }, [foundPatient, resolvedPatientId, phoneToFetch]);
 
   const handlePhoneLookup = useCallback(() => {
     if (phoneInput.trim().length < 7) return;
@@ -94,10 +91,10 @@ export function NurseIntakeForm() {
   const handleCreateNewPatient = async () => {
     if (!newPatient.name || !newPatient.age) return;
     try {
-      const created = await createPatientMutation.mutateAsync({
+const created = await createPatientMutation.mutateAsync({
         name: newPatient.name,
         age: Number(newPatient.age),
-        gender: newPatient.gender,
+        gender: newPatient.gender as 'Male' | 'Female' | 'Other',
         phone: phoneInput.trim(),
         condition: newPatient.condition || undefined,
       });
@@ -121,9 +118,9 @@ export function NurseIntakeForm() {
   const [saved, setSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const createEvaluation = useCreateEvaluation();
+const createEvaluation = useCreateEvaluation();
 
-  const [patientInfo, setPatientInfo] = useState({ name: '', age: '', phone: '', gender: 'Male' as const, address: '' });
+  const [patientInfo, setPatientInfo] = useState<{ name: string; age: string; phone: string; gender: 'Male' | 'Female' | 'Other'; address: string }>({ name: '', age: '', phone: '', gender: 'Male', address: '' });
   const [vitals, setVitals] = useState({ bp_sys: '', bp_dia: '', pr: '', spo2: '', temp: '', ef: '' });
   const [checkedSymptoms, setCheckedSymptoms] = useState<string[]>([]);
   const [otherSymptom, setOtherSymptom] = useState('');
@@ -143,6 +140,18 @@ export function NurseIntakeForm() {
   const [paymentMode, setPaymentMode] = useState<'Cash' | 'GPay' | ''>('');
   const [billAmount, setBillAmount] = useState<number | null>(null);
   const [billAmountInput, setBillAmountInput] = useState('');
+
+  const symptoms = intakeConfig?.symptoms ?? [];
+  const functionalActivities = intakeConfig?.functionalActivities ?? [];
+  const ratingLabels = intakeConfig?.ratingLabels ?? [];
+  const painColors = intakeConfig?.painScale?.colors ?? [];
+  const painTextColors = intakeConfig?.painScale?.textColors ?? [];
+  const functionalRatingColors = intakeConfig?.functionalRatingColors ?? [];
+  const steps = (intakeConfig?.steps ?? []).map((item) => ({
+    label: item.label,
+    icon: stepIconMap[item.icon as keyof typeof stepIconMap] ?? ClipboardList,
+  }));
+  const totalSteps = Math.max(steps.length, 1);
 
   useEffect(() => {
     if (!intakePhoto) {
@@ -239,7 +248,6 @@ export function NurseIntakeForm() {
         chiefComplaints: complaints || undefined,
         associatedSymptoms: finalSymptoms.length > 0 ? finalSymptoms : undefined,
         medicalHistory: finalHistory.length > 0 ? finalHistory : undefined,
-        functionalScores: Object.keys(funcRatings).length > 0 ? funcRatings : undefined,
         status: 'submitted',
         paymentMode,
         billAmount,
@@ -291,6 +299,14 @@ export function NurseIntakeForm() {
     );
   }
 
+  if (steps.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <Loader2 className="w-6 h-6 animate-spin text-teal-700" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Header */}
@@ -311,7 +327,7 @@ export function NurseIntakeForm() {
           <div>
             <h1 className="text-[17px] font-extrabold text-white">Patient Intake Form</h1>
             <p className="text-[11px] text-white/70 font-medium">
-              Step {step + 1} of {steps.length} — {steps[step].label}
+              Step {step + 1} of {steps.length} — {steps[step]?.label ?? ''}
             </p>
           </div>
         </div>
@@ -320,7 +336,7 @@ export function NurseIntakeForm() {
         <div className="rounded-full h-1.5 bg-white/20">
           <div
             className="rounded-full h-full bg-white transition-all duration-300"
-            style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+            style={{ width: `${((step + 1) / totalSteps) * 100}%` }}
           />
         </div>
 
@@ -557,13 +573,13 @@ export function NurseIntakeForm() {
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
                 Gender
               </label>
-              <div className="flex gap-2">
+<div className="flex gap-2">
                 {['Male', 'Female', 'Other'].map((g) => {
                   const isSelected = patientInfo.gender === g;
                   return (
                     <button
                       key={g}
-                      onClick={() => setPatientInfo({ ...patientInfo, gender: g })}
+                      onClick={() => setPatientInfo({ ...patientInfo, gender: g as 'Male' | 'Female' | 'Other' })}
                       className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold border-2 transition-colors ${
                         isSelected
                           ? 'border-teal-700 dark:border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
@@ -735,12 +751,12 @@ export function NurseIntakeForm() {
 
             {/* Pain indicator */}
             <div className="flex flex-col items-center mb-6">
-              <div className={`rounded-full flex items-center justify-center mb-2 w-[100px] h-[100px] ${painColors[painLevel]} bg-opacity-20`}>
-                <div className={`rounded-full flex items-center justify-center w-[80px] h-[80px] ${painColors[painLevel]}`}>
+              <div className={`rounded-full flex items-center justify-center mb-2 w-[100px] h-[100px] ${painColors[painLevel] ?? ''} bg-opacity-20`}>
+                <div className={`rounded-full flex items-center justify-center w-[80px] h-[80px] ${painColors[painLevel] ?? ''}`}>
                   <span className="text-[32px] font-black text-white">{painLevel}</span>
                 </div>
               </div>
-              <p className={`text-base font-bold ${painTextColors[painLevel]}`}>
+              <p className={`text-base font-bold ${painTextColors[painLevel] ?? ''}`}>
                 {painLevel === 0 ? 'No Pain' : painLevel <= 2 ? 'Mild Pain' : painLevel <= 4 ? 'Moderate Pain' : painLevel <= 6 ? 'Significant Pain' : painLevel <= 8 ? 'Severe Pain' : 'Worst Pain'}
               </p>
             </div>
@@ -809,7 +825,7 @@ export function NurseIntakeForm() {
                   <div className="flex gap-2">
                     {[0, 1, 2, 3, 4].map((val) => {
                       const selected = funcRatings[act.key] === val;
-                      const colors = ['bg-green-500 border-green-500', 'bg-lime-500 border-lime-500', 'bg-yellow-400 border-yellow-400', 'bg-orange-500 border-orange-500', 'bg-red-500 border-red-500'];
+                      const colors = functionalRatingColors;
                       return (
                         <button
                           key={val}

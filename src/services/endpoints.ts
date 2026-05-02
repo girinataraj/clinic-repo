@@ -8,8 +8,14 @@ export const ENDPOINTS = {
   USERS: {
     ME: '/users/me',
     LIST: '/users',
+    STAFF: '/users/staff',
     DETAIL: (id: string) => `/users/${id}`,
     UPDATE: (id: string) => `/users/${id}`,
+  },
+
+  CONFIG: {
+    ALL: '/config',
+    SCOPE: (scope: string) => `/config/${scope}`,
   },
 
   PATIENTS: {
