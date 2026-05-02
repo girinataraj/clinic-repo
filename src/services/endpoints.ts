@@ -9,6 +9,7 @@ export const ENDPOINTS = {
     ME: '/users/me',
     LIST: '/users',
     STAFF: '/users/staff',
+    CREATE: '/users',
     DETAIL: (id: string) => `/users/${id}`,
     UPDATE: (id: string) => `/users/${id}`,
   },

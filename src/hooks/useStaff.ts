@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { ENDPOINTS } from '../services/endpoints';
 import type { UserRole } from '../types';
@@ -21,6 +21,28 @@ export function useStaffUsers(params?: { role?: 'doctor' | 'nurse'; search?: str
         { params }
       );
       return data.data;
+    },
+  });
+}
+
+/** Create a new staff user (therapist). Doctor can only create nurse role. */
+export function useCreateStaffUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      name: string;
+      email: string;
+      password: string;
+      role: 'nurse';
+    }) => {
+      const { data } = await api.post<ApiEnvelope<StaffUser>>(
+        ENDPOINTS.USERS.CREATE,
+        payload
+      );
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff-users'] });
     },
   });
 }
