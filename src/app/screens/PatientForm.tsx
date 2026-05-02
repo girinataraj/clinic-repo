@@ -32,8 +32,16 @@ export function PatientForm() {
   const [condition, setCondition] = useState('');
   const [therapistId, setTherapistId] = useState('');
 
-  // ── Therapist list for assignment ──────────────────────────────────────
+  // ── Therapist list for assignment (only fetched for doctor) ────────────
+  const isDoctorRole = role === 'doctor';
   const { data: therapists = [], isLoading: therapistsLoading } = useStaffUsers({ role: 'nurse' });
+
+  // For nurse/therapist: auto-set therapistId to self
+  useEffect(() => {
+    if (!isDoctorRole && user?.id && !therapistId) {
+      setTherapistId(user.id);
+    }
+  }, [isDoctorRole, user?.id, therapistId]);
 
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,10 +60,12 @@ export function PatientForm() {
   }, [isEdit, existingPatient]);
 
   // ── Validation ───────────────────────────────────────────────────────────
+  const resolvedTherapistId = isDoctorRole ? therapistId : (user?.id ?? therapistId);
   const validate = () => {
     if (!name.trim()) return 'Patient name is required.';
     if (!age.trim() || isNaN(Number(age)) || Number(age) <= 0) return 'Valid age is required.';
     if (!phone.trim() || phone.trim().length < 7) return 'Valid phone number is required.';
+    if (isDoctorRole && !resolvedTherapistId) return 'Please assign a therapist.';
     return null;
   };
 
@@ -75,7 +85,7 @@ export function PatientForm() {
           phone: phone.trim(),
           city: city.trim() || undefined,
           condition: condition.trim() || undefined,
-          therapistId: therapistId || undefined,
+          therapistId: resolvedTherapistId || undefined,
         });
       } else {
         await createPatient.mutateAsync({
@@ -85,7 +95,7 @@ export function PatientForm() {
           phone: phone.trim(),
           city: city.trim() || undefined,
           condition: condition.trim() || undefined,
-          therapistId: therapistId || undefined,
+          therapistId: resolvedTherapistId || undefined,
         });
       }
       setSuccess(true);
@@ -260,30 +270,29 @@ export function PatientForm() {
                 </div>
               </div>
 
-              {/* Assign Therapist */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
-                  Assign Therapist {role === 'doctor' && <span className="text-red-500">*</span>}
-                </label>
-                <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 transition-colors relative">
-                  <UserCog size={16} className="text-slate-400 shrink-0" />
-                  <select
-                    value={therapistId}
-                    onChange={(e) => setTherapistId(e.target.value)}
-                    className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white appearance-none cursor-pointer"
-                  >
-                    <option value="">Select a therapist…</option>
-                    {therapistsLoading && <option disabled>Loading…</option>}
-                    {therapists.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className="text-slate-400 shrink-0 pointer-events-none" />
+              {/* Assign Therapist — only shown for doctor role */}
+              {isDoctorRole && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                    Assign Therapist <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 transition-colors relative">
+                    <UserCog size={16} className="text-slate-400 shrink-0" />
+                    <select
+                      value={therapistId}
+                      onChange={(e) => setTherapistId(e.target.value)}
+                      className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white appearance-none cursor-pointer"
+                    >
+                      <option value="">Select a therapist…</option>
+                      {therapistsLoading && <option disabled>Loading…</option>}
+                      {therapists.map((t) => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="text-slate-400 shrink-0 pointer-events-none" />
+                  </div>
                 </div>
-                {role === 'nurse' && (
-                  <p className="text-[11px] text-slate-400 mt-1">Optional — Defaults to you if left empty.</p>
-                )}
-              </div>
+              )}
 
             </div>
           </div>

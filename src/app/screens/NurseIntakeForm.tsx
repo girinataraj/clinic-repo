@@ -3,13 +3,14 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { useCreateEvaluation } from '../../hooks/useEvaluations';
-import { usePatientByPhone, useCreatePatient, usePatient } from '../../hooks/usePatients';
+import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../hooks/usePatients';
+import { useStaffUsers } from '../../hooks/useStaff';
 import { useAppConfigScope } from '../../hooks/useAppConfig';
 import type { AppConfigScopes } from '../../hooks/useAppConfig';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, User, Heart, Phone, Search, UserPlus,
   Activity, Sliders, CheckSquare, ClipboardList, Save, Check, Loader2, AlertTriangle,
-  CreditCard, ImagePlus, X,
+  CreditCard, ImagePlus, X, UserCog, ChevronDown,
 } from 'lucide-react';
 
 const stepIconMap = { User, Heart, Activity, Sliders, ClipboardList, CheckSquare, Save };
@@ -118,6 +119,10 @@ export function NurseIntakeForm() {
     phoneToFetch.trim().length >= 7 ? phoneToFetch.trim() : null
 );
   const createPatientMutation = useCreatePatient();
+  const updatePatientMutation = useUpdatePatient();
+  const { data: therapistsList = [], isLoading: therapistsLoading } = useStaffUsers({ role: 'nurse' });
+  const [selectedTherapistId, setSelectedTherapistId] = useState('');
+  const isDoctorRole = currentRole === 'doctor';
 
   // Fetch patient by ID when provided in URL - auto-fill the form
   const { data: patientById } = usePatient(
@@ -136,6 +141,7 @@ export function NurseIntakeForm() {
       });
       setPhoneInput(patientById.phone ?? phoneToFetch);
       setPhoneToFetch(patientById.phone ?? phoneToFetch);
+      if (patientById.therapistId) setSelectedTherapistId(patientById.therapistId);
     }
   }, [patientById, foundPatient, resolvedPatientId, phoneToFetch]);
 
@@ -149,6 +155,7 @@ export function NurseIntakeForm() {
         gender: (foundPatient.gender as 'Male' | 'Female' | 'Other') ?? 'Male',
         address: foundPatient.city ?? '',
       });
+      if (foundPatient.therapistId) setSelectedTherapistId(foundPatient.therapistId);
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);
 
@@ -181,6 +188,7 @@ export function NurseIntakeForm() {
         gender: newPatient.gender as 'Male' | 'Female' | 'Other',
         phone: phoneInput.trim(),
         condition: newPatient.condition || undefined,
+        therapistId: isDoctorRole ? (selectedTherapistId || undefined) : (user?.id || undefined),
       });
       setResolvedPatientId(created.id);
       setPatientInfo({
@@ -689,6 +697,43 @@ export function NurseIntakeForm() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Assigned Therapist */}
+            <div className="mt-4">
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                <UserCog size={13} className="inline mr-1 text-teal-600" />
+                Assigned Therapist {isDoctorRole && <span className="text-red-500">*</span>}
+              </label>
+              {isDoctorRole ? (
+                <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 transition-colors relative">
+                  <UserCog size={15} className="text-slate-400 shrink-0" />
+                  <select
+                    value={selectedTherapistId}
+                    onChange={(e) => {
+                      setSelectedTherapistId(e.target.value);
+                      if (resolvedPatientId && e.target.value) {
+                        updatePatientMutation.mutate({ id: resolvedPatientId, therapistId: e.target.value });
+                      }
+                    }}
+                    className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white appearance-none cursor-pointer"
+                  >
+                    <option value="">Select a therapist…</option>
+                    {therapistsLoading && <option disabled>Loading…</option>}
+                    {therapistsList.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={13} className="text-slate-400 shrink-0 pointer-events-none" />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                  <UserCog size={15} className="text-teal-600 shrink-0" />
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    {user?.name ?? 'You'} (assigned automatically)
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
