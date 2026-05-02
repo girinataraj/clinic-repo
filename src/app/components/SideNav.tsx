@@ -4,7 +4,7 @@ import type { UserRole } from '../contexts/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import {
   Home, Calendar, FileText, User, Users, ClipboardList, BarChart2,
-  Activity, LogOut, Sparkles, ChevronRight, IndianRupee,
+  Activity, LogOut, Sparkles, ChevronRight, IndianRupee, UserCog,
 } from 'lucide-react';
 
 interface NavItem {
@@ -29,6 +29,7 @@ const navConfig: Record<UserRole, NavItem[]> = {
   doctor: [
     { label: 'Dashboard', Icon: Home, path: '/doctor' },
     { label: 'Patients', Icon: Users, path: '/doctor/patients' },
+    { label: 'Therapists', Icon: UserCog, path: '/doctor/therapists' },
     { label: 'Intake Form', Icon: ClipboardList, path: '/doctor/intake' },
     { label: 'Reports', Icon: BarChart2, path: '/doctor/report' },
     { label: 'Revenue', Icon: IndianRupee, path: '/doctor/revenue' },

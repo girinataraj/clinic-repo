@@ -26,6 +26,8 @@ export interface Patient {
   condition?: string;
   status: PatientStatus;
   priority: PatientPriority;
+  therapistId?: string;
+  therapistName?: string;
   createdAt: string;
 }
 
