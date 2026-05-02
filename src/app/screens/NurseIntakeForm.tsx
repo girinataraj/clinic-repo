@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, type ChangeEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { useCreateEvaluation } from '../../hooks/useEvaluations';
@@ -6,6 +6,7 @@ import { usePatientByPhone, useCreatePatient } from '../../hooks/usePatients';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, User, Heart, Phone, Search, UserPlus,
   Activity, Sliders, CheckSquare, ClipboardList, Save, Check, Loader2, AlertTriangle,
+  CreditCard, ImagePlus, X,
 } from 'lucide-react';
 
 const symptoms = [
@@ -45,7 +46,7 @@ const steps = [
   { label: 'Pain Scale', icon: Sliders },
   { label: 'Functional', icon: ClipboardList },
   { label: 'Complaints', icon: CheckSquare },
-  { label: 'Review', icon: Save },
+  { label: 'Review & Payment', icon: Save },
 ];
 
 export function NurseIntakeForm() {
@@ -126,6 +127,66 @@ export function NurseIntakeForm() {
   const [funcRatings, setFuncRatings] = useState<Record<string, number>>({});
   const [complaints, setComplaints] = useState('');
   const [associated, setAssociated] = useState('');
+  const [intakePhoto, setIntakePhoto] = useState<File | null>(null);
+  const [intakePhotoUrl, setIntakePhotoUrl] = useState<string | null>(null);
+  const [photoInputKey, setPhotoInputKey] = useState(0);
+  const [paymentMode, setPaymentMode] = useState<'Cash' | 'GPay' | ''>('');
+  const [billAmount, setBillAmount] = useState<number | null>(null);
+  const [billAmountInput, setBillAmountInput] = useState('');
+
+  useEffect(() => {
+    if (!intakePhoto) {
+      setIntakePhotoUrl(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(intakePhoto);
+    setIntakePhotoUrl(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [intakePhoto]);
+
+  const isPhotoUploaded = Boolean(intakePhoto);
+  const isPaymentComplete = Boolean(paymentMode && billAmount && billAmount > 0);
+
+  const formatRupees = (amount: number) => new Intl.NumberFormat('en-IN').format(amount);
+
+  const handleBillAmountChange = (value: string) => {
+    setSubmitError(null);
+    const digits = value.replace(/[^\d]/g, '');
+    if (!digits) {
+      setBillAmount(null);
+      setBillAmountInput('');
+      return;
+    }
+
+    const normalized = Number(digits);
+    if (Number.isNaN(normalized)) {
+      setBillAmount(null);
+      setBillAmountInput('');
+      return;
+    }
+
+    setBillAmount(normalized);
+    setBillAmountInput(formatRupees(normalized));
+  };
+
+  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setSubmitError('Please upload an image file.');
+      return;
+    }
+
+    setSubmitError(null);
+    setIntakePhoto(file);
+  };
+
+  const handlePhotoRemove = () => {
+    setIntakePhoto(null);
+    setPhotoInputKey((prev) => prev + 1);
+  };
 
   const toggleSymptom = (s: string) => {
     setCheckedSymptoms((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
@@ -137,6 +198,11 @@ export function NurseIntakeForm() {
     const patientId = resolvedPatientId;
     if (!patientId) {
       setSubmitError('No patient resolved. Please complete the phone lookup step first.');
+      return;
+    }
+
+    if (!paymentMode || !billAmount || billAmount <= 0) {
+      setSubmitError('Payment mode and bill amount are required before submission.');
       return;
     }
 
@@ -157,6 +223,8 @@ export function NurseIntakeForm() {
         associatedSymptoms: checkedSymptoms.length > 0 ? checkedSymptoms : undefined,
         functionalScores: Object.keys(funcRatings).length > 0 ? funcRatings : undefined,
         status: 'submitted',
+        paymentMode,
+        billAmount,
       } as Record<string, unknown>);
       setSaved(true);
       setTimeout(() => navigate('/nurse'), 2000);
@@ -369,6 +437,59 @@ export function NurseIntakeForm() {
                 <User size={18} className="text-teal-700 dark:text-teal-400" />
               </div>
               <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Patient Information</h2>
+            </div>
+            <div className="mb-4 p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg flex items-center justify-center w-8 h-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                    <ImagePlus size={16} className="text-teal-600 dark:text-teal-400" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-extrabold text-slate-700 dark:text-white">Intake Photo</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                      Upload a form or photo to skip manual entry
+                    </p>
+                  </div>
+                </div>
+                {intakePhoto && (
+                  <button
+                    onClick={handlePhotoRemove}
+                    className="flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  >
+                    <X size={12} />
+                    Remove
+                  </button>
+                )}
+              </div>
+              {intakePhotoUrl ? (
+                <div className="flex flex-col gap-2">
+                  <img
+                    src={intakePhotoUrl}
+                    alt="Intake upload preview"
+                    className="w-full max-h-56 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+                  />
+                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                    Photo uploaded. You can skip to payment below.
+                  </p>
+                </div>
+              ) : (
+                <label
+                  htmlFor="intake-photo"
+                  className="flex flex-col items-center justify-center gap-1.5 px-3 py-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <ImagePlus size={18} className="text-teal-600 dark:text-teal-400" />
+                  <span className="text-[12px] font-bold text-slate-700 dark:text-white">Tap to upload a photo</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">JPG, PNG, HEIC</span>
+                </label>
+              )}
+              <input
+                key={photoInputKey}
+                id="intake-photo"
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className="hidden"
+              />
             </div>
             {[
               { key: 'name', label: 'Full Name', placeholder: 'e.g. Priya Sharma', type: 'text' },
@@ -665,7 +786,7 @@ export function NurseIntakeForm() {
           </div>
         )}
 
-        {/* Step 7: Review */}
+        {/* Step 7: Review & Payment */}
         {step === 6 && (
           <div className="flex flex-col gap-3">
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
@@ -687,12 +808,86 @@ export function NurseIntakeForm() {
                   { label: 'SpO₂', value: vitals.spo2 ? `${vitals.spo2}%` : 'Not entered' },
                   { label: 'Pain Level', value: `${painLevel}/10` },
                   { label: 'Symptoms', value: checkedSymptoms.length > 0 ? `${checkedSymptoms.length} reported` : 'None' },
+                  { label: 'Intake Photo', value: isPhotoUploaded ? 'Uploaded' : 'Not uploaded' },
+                  {
+                    label: 'Payment',
+                    value: paymentMode && billAmount
+                      ? `${paymentMode} · ₹${formatRupees(billAmount)}`
+                      : 'Required',
+                  },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0 border-opacity-50">
                     <span className="text-[13px] text-slate-500 dark:text-slate-400 font-bold">{item.label}</span>
                     <span className="text-[13px] text-slate-900 dark:text-white font-extrabold">{item.value}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="rounded-xl flex items-center justify-center w-9 h-9 bg-amber-50 dark:bg-amber-900/30">
+                  <CreditCard size={18} className="text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Payment Details</h2>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                    Required to submit this intake
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                  Mode of Payment
+                </label>
+                <div className="flex gap-2">
+                  {['Cash', 'GPay'].map((mode) => {
+                    const selected = paymentMode === mode;
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => {
+                          setPaymentMode(mode as 'Cash' | 'GPay');
+                          setSubmitError(null);
+                        }}
+                        className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold border-2 transition-colors ${
+                          selected
+                            ? 'border-amber-600 dark:border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                            : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        {mode}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                  Bill Amount
+                </label>
+                <div
+                  className={`flex items-center gap-2 px-3.5 py-3 rounded-xl border bg-slate-50 dark:bg-slate-800 transition-colors ${
+                    !isPaymentComplete && submitError
+                      ? 'border-red-300 dark:border-red-500'
+                      : 'border-slate-200 dark:border-slate-700'
+                  }`}
+                >
+                  <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">₹</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={billAmountInput}
+                    onChange={(e) => handleBillAmountChange(e.target.value)}
+                    placeholder="0"
+                    className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-1">
+                  Enter the total amount for today's intake.
+                </p>
               </div>
             </div>
 
@@ -733,6 +928,14 @@ export function NurseIntakeForm() {
           >
             <ChevronLeft size={16} />
             Back
+          </button>
+        )}
+        {isPhotoUploaded && step < steps.length - 1 && (
+          <button
+            onClick={() => setStep(steps.length - 1)}
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-[14px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-extrabold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            Skip to Payment
           </button>
         )}
         {step < steps.length - 1 && (

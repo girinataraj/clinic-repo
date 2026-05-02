@@ -1,25 +1,49 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation, useParams, useSearchParams } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
-import { useExercisePlans, useCreateExercisePlan } from '../../hooks/useExercisePlans';
+import { ApiErrorBanner } from '../components/ApiErrorBanner';
+import { useExercisePlans } from '../../hooks/useExercisePlans';
+import {
+  useExerciseTemplates,
+  usePatientAssignments,
+  useAssignExercisesToPatient,
+  useRemoveExerciseAssignment,
+} from '../../hooks/useExerciseLibrary';
+import { usePatients, usePatient } from '../../hooks/usePatients';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
+import { Checkbox } from '../components/ui/checkbox';
+import { Badge } from '../components/ui/badge';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
 import type { ExerciseItem } from '../../types';
 import {
   ArrowLeft,
-  Plus,
-  Dumbbell,
-  Trash2,
-  Check,
   ChevronDown,
   ChevronUp,
-  Save,
   Clock,
-  Repeat,
+  Dumbbell,
   Info,
   Loader2,
+  Repeat,
+  Save,
+  Search,
+  User,
 } from 'lucide-react';
 
-const categories = ['Strengthening', 'Flexibility', 'Balance', 'Core', 'Cardio'];
 const difficulties = ['Easy', 'Medium', 'Hard'] as const;
 
 const difficultyColors = {
@@ -48,28 +72,21 @@ interface LocalExercise {
 }
 
 export function ExercisePrescription() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-  const { patientId } = useParams<{ patientId: string }>();
   const isPatientView = location.pathname.startsWith('/patient');
-  const navRole = isPatientView ? 'patient' : 'doctor';
 
-  // ── Resolve patientId from route param OR query string ─────────────────────
-  // Route: /doctor/patient/:patientId/exercise  → useParams
-  // Route: /doctor/exercise?patientId=xxx       → useSearchParams
-  const [searchParams] = useSearchParams();
-  const queryPatientId = searchParams.get('patientId') ?? undefined;
-  const effectivePatientId = isPatientView ? user?.id : (patientId ?? queryPatientId);
+  return isPatientView ? <PatientExercisePlanView /> : <DoctorExerciseAssignments />;
+}
 
-  const { data: plansData, isLoading } = useExercisePlans(effectivePatientId ?? null);
-  const createMutation = useCreateExercisePlan(effectivePatientId ?? '');
-  const [saveError, setSaveError] = useState<string | null>(null);
+function PatientExercisePlanView() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const patientId = user?.id ?? null;
 
+  const { data: plansData, isLoading } = useExercisePlans(patientId ?? null);
   const plans = plansData?.data ?? [];
-  const activePlan = plans[0]; // Most recent
+  const activePlan = plans[0];
 
-  // Map backend items into local shape for display
   const backendExercises: LocalExercise[] = (activePlan?.items ?? []).map((item: ExerciseItem) => ({
     id: item.id,
     name: item.name,
@@ -81,64 +98,11 @@ export function ExercisePrescription() {
     difficulty: (item.difficulty as 'Easy' | 'Medium' | 'Hard') ?? 'Easy',
   }));
 
-  // ── Local state for new exercises being added (doctor only) ─────────────────
-  const [localExercises, setLocalExercises] = useState<LocalExercise[]>([]);
-  const exercises = [...backendExercises, ...localExercises];
-
-  const [showAddForm, setShowAddForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [newExercise, setNewExercise] = useState<Omit<LocalExercise, 'id'>>({
-    name: '', sets: '', reps: '', duration: '', instructions: '', category: 'Strengthening', difficulty: 'Easy',
-  });
-
-  const handleAdd = () => {
-    if (!newExercise.name) return;
-    setLocalExercises([...localExercises, { ...newExercise, id: `local-${Date.now()}` }]);
-    setNewExercise({ name: '', sets: '', reps: '', duration: '', instructions: '', category: 'Strengthening', difficulty: 'Easy' });
-    setShowAddForm(false);
-  };
-
-  const handleDelete = (id: string) => {
-    setLocalExercises(localExercises.filter((e) => e.id !== id));
-  };
-
-  const handleSave = async () => {
-    setSaveError(null);
-    if (!effectivePatientId) {
-      setSaveError('No patient selected. Open this page from a patient record or add ?patientId= to the URL.');
-      return;
-    }
-    if (localExercises.length === 0) {
-      setSaveError('Add at least one exercise before saving.');
-      return;
-    }
-    try {
-      await createMutation.mutateAsync({
-        title: `Exercise Plan – ${new Date().toLocaleDateString('en-IN')}`,
-        notes: `Created by ${user?.name ?? 'Doctor'}`,
-        items: localExercises.map((ex, idx) => ({
-          name: ex.name,
-          sets: parseInt(ex.sets) || undefined,
-          reps: parseInt(ex.reps) || undefined,
-          duration: ex.duration || undefined,
-          instructions: ex.instructions || undefined,
-          category: ex.category,
-          difficulty: ex.difficulty,
-          orderIndex: backendExercises.length + idx,
-        })),
-      });
-      setSaved(true);
-      setLocalExercises([]);
-      setTimeout(() => setSaved(false), 2000);
-    } catch (err: any) {
-      setSaveError(err?.response?.data?.message ?? 'Failed to save plan. Please try again.');
-    }
-  };
+  const exercises = backendExercises;
 
   return (
     <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1' }}>
-      {/* Header */}
       <div
         className="px-6 pb-6 shrink-0 rounded-b-3xl relative overflow-hidden"
         style={{
@@ -149,7 +113,7 @@ export function ExercisePrescription() {
       >
         <div className="absolute -right-16 -top-16 rounded-full opacity-10"
           style={{ width: '200px', height: '200px', background: '#FEFFFF' }} />
-          
+
         <div className="flex items-center justify-between mb-6 relative z-10">
           <button
             onClick={() => navigate(-1)}
@@ -163,18 +127,9 @@ export function ExercisePrescription() {
               {activePlan ? activePlan.title : 'No active plan'}
             </p>
           </div>
-          {!isPatientView && (
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
-              style={{ width: '40px', height: '40px', background: 'rgba(254,255,255,0.15)' }}>
-              <Plus size={20} color="#FEFFFF" />
-            </button>
-          )}
-          {isPatientView && <div style={{ width: 40 }} />}
+          <div style={{ width: 40 }} />
         </div>
 
-        {/* Stats */}
         <div className="flex gap-3 relative z-10">
           {[
             { label: 'Exercises', value: exercises.length },
@@ -190,10 +145,7 @@ export function ExercisePrescription() {
         </div>
       </div>
 
-      {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-5 py-6 max-w-4xl mx-auto w-full">
-
-        {/* Loading skeleton */}
         {isLoading && (
           <div className="flex flex-col gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -210,108 +162,25 @@ export function ExercisePrescription() {
           </div>
         )}
 
-        {/* Add Exercise Form (doctor only) */}
-        {showAddForm && !isPatientView && (
-          <div className="p-5 rounded-2xl mb-5" style={{ background: '#FEFFFF', boxShadow: '0 4px 20px rgba(23, 37, 42, 0.08)', border: '1px solid #DEF2F1' }}>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                <Plus size={16} color="#3AAFA9" />
-              </div>
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>Add New Exercise</h3>
-            </div>
-
-            <div className="mb-4">
-              <label style={{ fontSize: '13px', fontWeight: 600, color: '#2B7A78', display: 'block', marginBottom: '8px' }}>Exercise Name *</label>
-              <input
-                value={newExercise.name}
-                onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value })}
-                placeholder="e.g. Quad Stretch"
-                className="w-full outline-none"
-                style={{ padding: '12px 16px', borderRadius: '12px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px' }}
-              />
-            </div>
-
-            <div className="flex gap-3 mb-4">
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, color: '#2B7A78', display: 'block', marginBottom: '8px' }}>Sets</label>
-                <input type="number" value={newExercise.sets} onChange={(e) => setNewExercise({ ...newExercise, sets: e.target.value })} placeholder="3" className="w-full outline-none text-center" style={{ padding: '12px', borderRadius: '12px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px' }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, color: '#2B7A78', display: 'block', marginBottom: '8px' }}>Reps</label>
-                <input type="number" value={newExercise.reps} onChange={(e) => setNewExercise({ ...newExercise, reps: e.target.value })} placeholder="15" className="w-full outline-none text-center" style={{ padding: '12px', borderRadius: '12px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px' }} />
-              </div>
-              <div style={{ flex: 1.5 }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, color: '#2B7A78', display: 'block', marginBottom: '8px' }}>Duration</label>
-                <input value={newExercise.duration} onChange={(e) => setNewExercise({ ...newExercise, duration: e.target.value })} placeholder="e.g. 10 sec" className="w-full outline-none" style={{ padding: '12px', borderRadius: '12px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px' }} />
-              </div>
-            </div>
-
-            {/* Category */}
-            <div className="mb-4">
-              <label style={{ fontSize: '13px', fontWeight: 600, color: '#2B7A78', display: 'block', marginBottom: '8px' }}>Category</label>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((cat) => (
-                  <button key={cat} onClick={() => setNewExercise({ ...newExercise, category: cat })} className="px-4 py-1.5 rounded-xl transition-all" style={{ fontSize: '13px', fontWeight: 600, background: newExercise.category === cat ? categoryColors[cat] : '#DEF2F1', color: newExercise.category === cat ? '#FEFFFF' : '#2B7A78' }}>
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Difficulty */}
-            <div className="mb-4">
-              <label style={{ fontSize: '13px', fontWeight: 600, color: '#2B7A78', display: 'block', marginBottom: '8px' }}>Difficulty</label>
-              <div className="flex gap-3">
-                {difficulties.map((d) => {
-                  const colors = difficultyColors[d];
-                  return (
-                    <button key={d} onClick={() => setNewExercise({ ...newExercise, difficulty: d })} className="flex-1 py-2.5 rounded-xl transition-all" style={{ fontSize: '13px', fontWeight: 600, background: newExercise.difficulty === d ? colors.bg : '#FEFFFF', color: newExercise.difficulty === d ? colors.color : '#2B7A78', border: `1px solid ${newExercise.difficulty === d ? colors.border : '#DEF2F1'}` }}>
-                      {d}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Instructions */}
-            <div className="mb-5">
-              <label style={{ fontSize: '13px', fontWeight: 600, color: '#2B7A78', display: 'block', marginBottom: '8px' }}>Instructions</label>
-              <textarea value={newExercise.instructions} onChange={(e) => setNewExercise({ ...newExercise, instructions: e.target.value })} placeholder="Step-by-step instructions for patient..." className="w-full outline-none resize-none" style={{ padding: '12px 16px', borderRadius: '12px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '80px' }} />
-            </div>
-
-            <div className="flex gap-3">
-              <button onClick={() => setShowAddForm(false)} className="flex-1 py-3.5 rounded-2xl transition-colors hover:bg-slate-200" style={{ background: '#DEF2F1', color: '#2B7A78', fontSize: '14px', fontWeight: 600 }}>Cancel</button>
-              <button onClick={handleAdd} className="flex-1 py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-transform hover:-translate-y-1" style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', color: '#FEFFFF', fontSize: '14px', fontWeight: 600, boxShadow: '0 4px 16px rgba(43, 122, 120, 0.3)' }}>
-                <Plus size={18} />
-                Add Exercise
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Empty state */}
         {!isLoading && exercises.length === 0 && (
           <div className="rounded-2xl p-8 text-center" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
             <Dumbbell size={40} color="#DEF2F1" className="mx-auto mb-3" />
             <p style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>No exercises yet</p>
             <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>
-              {isPatientView ? 'Your doctor will prescribe exercises for you.' : 'Click + to add exercises to this plan.'}
+              Your doctor will prescribe exercises for you.
             </p>
           </div>
         )}
 
-        {/* Exercise List */}
-        {!isLoading && (
+        {!isLoading && exercises.length > 0 && (
           <div className="flex flex-col gap-4">
             {exercises.map((exercise) => {
               const isExpanded = expandedId === exercise.id;
               const diffColors = difficultyColors[exercise.difficulty] ?? difficultyColors.Easy;
               const catColor = categoryColors[exercise.category] || '#3AAFA9';
-              const isLocal = exercise.id.startsWith('local-');
               return (
                 <div key={exercise.id} className="rounded-2xl overflow-hidden"
-                  style={{ background: '#FEFFFF', border: `1px solid ${isLocal ? '#3AAFA9' : '#DEF2F1'}`, boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
-                  {/* Exercise header */}
+                  style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
                   <div className="flex items-center gap-4 p-4">
                     <div className="flex items-center justify-center rounded-2xl shrink-0"
                       style={{ width: '48px', height: '48px', background: `${catColor}15` }}>
@@ -339,19 +208,11 @@ export function ExercisePrescription() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {!isPatientView && isLocal && (
-                        <button onClick={() => handleDelete(exercise.id)} className="flex items-center justify-center rounded-xl transition-colors hover:bg-rose-100" style={{ width: '36px', height: '36px', background: '#FFF1F2' }}>
-                          <Trash2 size={16} color="#E11D48" />
-                        </button>
-                      )}
-                      <button onClick={() => setExpandedId(isExpanded ? null : exercise.id)} className="flex items-center justify-center rounded-xl transition-colors hover:bg-sky-100" style={{ width: '36px', height: '36px', background: '#DEF2F1' }}>
-                        {isExpanded ? <ChevronUp size={16} color="#2B7A78" /> : <ChevronDown size={16} color="#2B7A78" />}
-                      </button>
-                    </div>
+                    <button onClick={() => setExpandedId(isExpanded ? null : exercise.id)} className="flex items-center justify-center rounded-xl transition-colors hover:bg-sky-100" style={{ width: '36px', height: '36px', background: '#DEF2F1' }}>
+                      {isExpanded ? <ChevronUp size={16} color="#2B7A78" /> : <ChevronDown size={16} color="#2B7A78" />}
+                    </button>
                   </div>
 
-                  {/* Expanded instructions */}
                   {isExpanded && exercise.instructions && (
                     <div className="px-5 pb-5 border-t" style={{ borderColor: '#DEF2F1' }}>
                       <div className="mt-4 flex items-start gap-3 p-4 rounded-xl" style={{ background: '#DEF2F1', border: '1px solid #DEF2F1' }}>
@@ -368,50 +229,442 @@ export function ExercisePrescription() {
             })}
           </div>
         )}
-
-        {/* No patient warning for doctor */}
-        {!isPatientView && !effectivePatientId && (
-          <div className="mt-4 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3">
-            <Info size={18} color="#d97706" style={{ flexShrink: 0, marginTop: 2 }} />
-            <div>
-              <p style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>No patient selected</p>
-              <p style={{ fontSize: '12px', color: '#b45309', marginTop: '2px' }}>
-                Open this page from a patient record to prescribe exercises.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Save error */}
-        {saveError && (
-          <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2">
-            <p style={{ fontSize: '13px', fontWeight: 600, color: '#b91c1c', flex: 1 }}>{saveError}</p>
-            <button onClick={() => setSaveError(null)} style={{ fontSize: '11px', color: '#dc2626', fontWeight: 700 }}>✕</button>
-          </div>
-        )}
-
-        {/* Save button (doctor only, when there are new local exercises) */}
-        {!isPatientView && localExercises.length > 0 && (
-          <button
-            onClick={handleSave}
-            disabled={createMutation.isPending}
-            className="mt-4 w-full py-4 rounded-2xl flex items-center justify-center gap-2 transition-transform hover:-translate-y-1 disabled:opacity-60"
-            style={{
-              background: saved
-                ? 'linear-gradient(135deg, #10B981, #059669)'
-                : 'linear-gradient(135deg, #2B7A78, #3AAFA9)',
-              color: '#FEFFFF', fontSize: '16px', fontWeight: 700,
-              boxShadow: saved ? '0 8px 24px rgba(16, 185, 129, 0.3)' : '0 8px 24px rgba(43, 122, 120, 0.3)',
-              marginBottom: '16px',
-            }}
-          >
-            {createMutation.isPending ? <><Loader2 size={20} className="animate-spin" />Saving...</> : saved ? <><Check size={20} />Plan Saved!</> : <><Save size={20} />Save Exercise Plan</>}
-          </button>
-        )}
       </div>
 
       <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
-        <BottomNav role={navRole} />
+        <BottomNav role="patient" />
+      </div>
+    </div>
+  );
+}
+
+function DoctorExerciseAssignments() {
+  const navigate = useNavigate();
+  const { patientId: routePatientId } = useParams<{ patientId?: string }>();
+  const [searchParams] = useSearchParams();
+  const queryPatientId = searchParams.get('patientId') ?? undefined;
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(routePatientId ?? queryPatientId ?? null);
+  const [patientSearch, setPatientSearch] = useState('');
+  const [templateSearch, setTemplateSearch] = useState('');
+  const [templateCategory, setTemplateCategory] = useState('');
+  const [templateDifficulty, setTemplateDifficulty] = useState('');
+  const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
+  const [assignError, setAssignError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (routePatientId) {
+      setSelectedPatientId(routePatientId);
+    }
+  }, [routePatientId]);
+
+  useEffect(() => {
+    if (!routePatientId && queryPatientId) {
+      navigate(`/doctor/patient/${queryPatientId}/exercise`, { replace: true });
+    }
+  }, [routePatientId, queryPatientId, navigate]);
+
+  useEffect(() => {
+    setSelectedTemplateIds([]);
+    setAssignError(null);
+  }, [selectedPatientId]);
+
+  const patientFilters = useMemo(
+    () => ({
+      search: patientSearch.trim() || undefined,
+      limit: 10,
+    }),
+    [patientSearch]
+  );
+
+  const templateFilters = useMemo(
+    () => ({
+      search: templateSearch.trim() || undefined,
+      category: templateCategory.trim() || undefined,
+      difficulty: templateDifficulty || undefined,
+    }),
+    [templateSearch, templateCategory, templateDifficulty]
+  );
+
+  const {
+    data: patientsData,
+    isLoading: patientsLoading,
+    isError: patientsError,
+    error: patientsErrorObj,
+  } = usePatients(patientFilters);
+
+  const {
+    data: selectedPatient,
+    isLoading: selectedPatientLoading,
+  } = usePatient(selectedPatientId);
+
+  const {
+    data: templates,
+    isLoading: templatesLoading,
+    isError: templatesError,
+    error: templatesErrorObj,
+  } = useExerciseTemplates(templateFilters);
+
+  const {
+    data: assignments,
+    isLoading: assignmentsLoading,
+    isError: assignmentsError,
+    error: assignmentsErrorObj,
+  } = usePatientAssignments(selectedPatientId);
+
+  const assignMutation = useAssignExercisesToPatient(selectedPatientId ?? '');
+  const removeMutation = useRemoveExerciseAssignment(selectedPatientId ?? '');
+
+  const assignedTemplateIds = useMemo(() => {
+    return new Set((assignments ?? []).map((assignment) => assignment.templateId));
+  }, [assignments]);
+
+  const handleSelectPatient = (id: string) => {
+    setSelectedPatientId(id);
+    navigate(`/doctor/patient/${id}/exercise`);
+  };
+
+  const toggleTemplate = (id: string, checked: boolean) => {
+    setSelectedTemplateIds((prev) => {
+      if (checked) {
+        return prev.includes(id) ? prev : [...prev, id];
+      }
+      return prev.filter((value) => value !== id);
+    });
+  };
+
+  const handleAssign = async () => {
+    setAssignError(null);
+    if (!selectedPatientId) {
+      setAssignError('Select a patient before assigning exercises.');
+      return;
+    }
+    if (selectedTemplateIds.length === 0) {
+      setAssignError('Select at least one exercise template.');
+      return;
+    }
+
+    try {
+      await assignMutation.mutateAsync({ templateIds: selectedTemplateIds });
+      setSelectedTemplateIds([]);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || 'Failed to assign exercises.';
+      setAssignError(message);
+    }
+  };
+
+  const handleRemove = async (templateId: string) => {
+    if (!selectedPatientId) return;
+    try {
+      await removeMutation.mutateAsync(templateId);
+    } catch {
+      // Errors are reflected by query refreshes.
+    }
+  };
+
+  const templateList = templates ?? [];
+  const patientList = patientsData?.data ?? [];
+
+  return (
+    <div className="flex flex-col h-full bg-slate-50">
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-6 pt-8 pb-6 border-b border-slate-200 bg-white">
+          <div className="max-w-6xl mx-auto w-full">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">Exercise assignments</h1>
+                  <p className="text-sm text-slate-500">Select a patient and assign exercises from the library.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => navigate('/doctor/exercise-library')}>
+                  Manage library
+                </Button>
+                <Button onClick={handleAssign} disabled={assignMutation.isPending}>
+                  {assignMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  Assign selected
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 py-6">
+          <div className="max-w-6xl mx-auto w-full grid grid-cols-1 gap-5 lg:grid-cols-[320px_1fr]">
+            <div className="space-y-5">
+              <Card className="border-slate-200">
+                <CardHeader>
+                  <CardTitle className="text-base">Select patient</CardTitle>
+                  <CardDescription>Choose a patient before assigning exercises.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      value={patientSearch}
+                      onChange={(event) => setPatientSearch(event.target.value)}
+                      placeholder="Search patients"
+                      className="pl-9"
+                    />
+                  </div>
+
+                  {selectedPatientId && (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      {selectedPatientLoading ? (
+                        <div className="text-xs text-slate-500">Loading patient details...</div>
+                      ) : selectedPatient ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-semibold text-slate-900">{selectedPatient.name}</p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedPatientId(null);
+                                navigate('/doctor/exercise');
+                              }}
+                            >
+                              Clear
+                            </Button>
+                          </div>
+                          <p className="text-xs text-slate-500">
+                            {selectedPatient.displayId} · {selectedPatient.phone}
+                          </p>
+                          {selectedPatient.condition && (
+                            <p className="text-xs text-slate-500">{selectedPatient.condition}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-xs text-slate-500">Patient not found.</div>
+                      )}
+                    </div>
+                  )}
+
+                  {patientsError && <ApiErrorBanner error={patientsErrorObj} />}
+
+                  {patientsLoading && (
+                    <div className="space-y-2">
+                      {Array.from({ length: 4 }).map((_, index) => (
+                        <div key={index} className="h-12 rounded-lg bg-slate-100 animate-pulse" />
+                      ))}
+                    </div>
+                  )}
+
+                  {!patientsLoading && !patientsError && patientList.length === 0 && (
+                    <div className="rounded-lg border border-dashed border-slate-200 bg-white p-4 text-center text-xs text-slate-500">
+                      No patients found.
+                    </div>
+                  )}
+
+                  {!patientsLoading && !patientsError && patientList.length > 0 && (
+                    <div className="space-y-2">
+                      {patientList.map((patient) => (
+                        <button
+                          key={patient.id}
+                          type="button"
+                          onClick={() => handleSelectPatient(patient.id)}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-left hover:border-slate-300"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900">{patient.name}</p>
+                              <p className="text-xs text-slate-500">
+                                {patient.displayId} · {patient.phone}
+                              </p>
+                            </div>
+                            {selectedPatientId === patient.id ? (
+                              <Badge variant="secondary">Selected</Badge>
+                            ) : (
+                              <User className="h-4 w-4 text-slate-400" />
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="border-slate-200">
+                <CardHeader>
+                  <CardTitle className="text-base">Assigned exercises</CardTitle>
+                  <CardDescription>Current plan for the selected patient.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {!selectedPatientId && (
+                    <div className="rounded-lg border border-dashed border-slate-200 bg-white p-4 text-center text-xs text-slate-500">
+                      Select a patient to view assignments.
+                    </div>
+                  )}
+
+                  {selectedPatientId && assignmentsError && (
+                    <ApiErrorBanner error={assignmentsErrorObj} />
+                  )}
+
+                  {selectedPatientId && assignmentsLoading && (
+                    <div className="space-y-2">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div key={index} className="h-12 rounded-lg bg-slate-100 animate-pulse" />
+                      ))}
+                    </div>
+                  )}
+
+                  {selectedPatientId && !assignmentsLoading && !assignmentsError && (assignments ?? []).length === 0 && (
+                    <div className="rounded-lg border border-dashed border-slate-200 bg-white p-4 text-center text-xs text-slate-500">
+                      No assigned exercises yet.
+                    </div>
+                  )}
+
+                  {selectedPatientId && !assignmentsLoading && !assignmentsError && (assignments ?? []).length > 0 && (
+                    <div className="space-y-3">
+                      {(assignments ?? []).map((assignment) => (
+                        <div key={assignment.id} className="rounded-lg border border-slate-200 bg-white p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900">{assignment.name}</p>
+                              <p className="text-xs text-slate-500">
+                                {assignment.category} · {assignment.difficulty}
+                              </p>
+                              {(assignment.sets || assignment.reps || assignment.duration) && (
+                                <p className="text-xs text-slate-500">
+                                  {assignment.sets && assignment.reps
+                                    ? `${assignment.sets} sets x ${assignment.reps} reps`
+                                    : assignment.duration ?? ''}
+                                </p>
+                              )}
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleRemove(assignment.templateId)}
+                              disabled={removeMutation.isPending}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-5">
+              <Card className="border-slate-200">
+                <CardHeader>
+                  <CardTitle className="text-base">Exercise templates</CardTitle>
+                  <CardDescription>Pick templates and assign them to the patient.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_0.6fr_0.5fr]">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                      <Input
+                        value={templateSearch}
+                        onChange={(event) => setTemplateSearch(event.target.value)}
+                        placeholder="Search templates"
+                        className="pl-9"
+                      />
+                    </div>
+                    <Input
+                      value={templateCategory}
+                      onChange={(event) => setTemplateCategory(event.target.value)}
+                      placeholder="Category"
+                    />
+                    <Select value={templateDifficulty} onValueChange={setTemplateDifficulty}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Difficulty" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {difficulties.map((level) => (
+                          <SelectItem key={level} value={level}>
+                            {level}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {templatesError && <ApiErrorBanner error={templatesErrorObj} />}
+
+                  {assignError && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
+                      {assignError}
+                    </div>
+                  )}
+
+                  {templatesLoading && (
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      {Array.from({ length: 6 }).map((_, index) => (
+                        <div key={index} className="h-28 rounded-lg bg-slate-100 animate-pulse" />
+                      ))}
+                    </div>
+                  )}
+
+                  {!templatesLoading && !templatesError && templateList.length === 0 && (
+                    <div className="rounded-lg border border-dashed border-slate-200 bg-white p-6 text-center text-xs text-slate-500">
+                      No templates match the current filters.
+                    </div>
+                  )}
+
+                  {!templatesLoading && !templatesError && templateList.length > 0 && (
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      {templateList.map((template) => {
+                        const isAssigned = assignedTemplateIds.has(template.id);
+                        const isChecked = selectedTemplateIds.includes(template.id);
+                        return (
+                          <div
+                            key={template.id}
+                            className="rounded-lg border border-slate-200 bg-white p-3"
+                          >
+                            <div className="flex items-start gap-3">
+                              <Checkbox
+                                checked={isChecked}
+                                onCheckedChange={(checked) => toggleTemplate(template.id, checked === true)}
+                                disabled={isAssigned}
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-sm font-semibold text-slate-900">{template.name}</p>
+                                  {isAssigned && <Badge variant="secondary">Assigned</Badge>}
+                                </div>
+                                <p className="text-xs text-slate-500">
+                                  {template.category} · {template.difficulty}
+                                </p>
+                                {(template.sets || template.reps || template.duration) && (
+                                  <p className="text-xs text-slate-500">
+                                    {template.sets && template.reps
+                                      ? `${template.sets} sets x ${template.reps} reps`
+                                      : template.duration ?? ''}
+                                  </p>
+                                )}
+                                {template.instructions && (
+                                  <p className="text-xs text-slate-500">
+                                    {template.instructions.length > 90
+                                      ? `${template.instructions.slice(0, 90)}...`
+                                      : template.instructions}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="md:hidden border-t border-slate-200 bg-white">
+        <BottomNav role="doctor" />
       </div>
     </div>
   );

@@ -336,7 +336,7 @@ export function DoctorPatients() {
                           View chart
                         </button>
                         <button
-                          onClick={() => navigate('/doctor/exercise')}
+                          onClick={() => navigate(`/doctor/patient/${patient.id}/exercise`)}
                           className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-shadow hover:shadow-md"
                           style={{
                             background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)',

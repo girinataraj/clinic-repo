@@ -172,8 +172,8 @@ export function NursePatients() {
                   {([
                     { key: 'all', label: 'All' },
                     { key: 'waiting', label: 'Waiting' },
-                    { key: 'in-progress', label: 'Active' },
-                    { key: 'done', label: 'Done' },
+                    { key: 'in-session', label: 'In session' },
+                    { key: 'completed', label: 'Completed' },
                   ] as const).map((item) => (
                     <button
                       key={item.key}

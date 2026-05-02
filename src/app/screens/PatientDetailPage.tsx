@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
+import { ApiErrorBanner } from '../components/ApiErrorBanner';
+import { usePatient } from '../../hooks/usePatients';
+import { useLatestEvaluation } from '../../hooks/useEvaluations';
 import {
   ArrowLeft,
   Edit3,
@@ -14,23 +17,6 @@ import {
   Save,
 } from 'lucide-react';
 
-const patientData: Record<string, any> = {
-  '1': {
-    name: 'Rahul Verma', age: 45, gender: 'Male', phone: '98765 43210',
-    condition: 'Knee Injury (ACL Tear)', token: 'T-01', id: 'SAAI-2025-001',
-    vitals: { bp: '120/80 mmHg', pr: '72 bpm', spo2: '98%', temp: '98.4°F', ef: '60%' },
-    symptoms: ['Knee Pain', 'Swelling', 'Limited Range of Motion', 'Muscle Weakness'],
-    painLevel: 6,
-    functional: { walking: 2, stairs: 3, sitting: 1, standing: 2, dressing: 0, lifting: 3 },
-    complaints: 'Patient reports severe pain in the right knee especially during walking and climbing stairs. Pain has been present for 3 weeks following a sports injury.',
-    associated: 'Mild swelling around the knee joint. Occasional clicking sound during flexion.',
-    diagnosis: 'Right Knee ACL Partial Tear with associated meniscal irritation',
-    notes: 'Patient requires 6-week physiotherapy protocol. RICE therapy for first week. Progressive strengthening exercises from week 2. Consider MRI follow-up.',
-    doctor: 'Dr. SV. Sathish Kumar',
-    date: 'April 27, 2025',
-  },
-};
-
 const funcLabels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
 const funcColors: Record<number, string> = { 0: '#3AAFA9', 1: '#3AAFA9', 2: '#2B7A78', 3: '#2B7A78', 4: '#17252A' };
 const painColors = ['#3AAFA9', '#3AAFA9', '#3AAFA9', '#2B7A78', '#2B7A78', '#2B7A78', '#17252A', '#17252A', '#17252A', '#17252A', '#17252A'];
@@ -38,13 +24,67 @@ const painColors = ['#3AAFA9', '#3AAFA9', '#3AAFA9', '#2B7A78', '#2B7A78', '#2B7
 const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes'];
 
 export function PatientDetailPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const patient = patientData[id || '1'] || patientData['1'];
+  const patientId = id ?? null;
+  const {
+    data: patient,
+    isLoading: patientLoading,
+    isError: patientError,
+    error: patientErrorObj,
+  } = usePatient(patientId);
+  const {
+    data: evaluation,
+    isLoading: evaluationLoading,
+    isError: evaluationError,
+    error: evaluationErrorObj,
+  } = useLatestEvaluation(patientId);
   const [activeTab, setActiveTab] = useState('Overview');
   const [editMode, setEditMode] = useState(false);
-  const [diagnosis, setDiagnosis] = useState(patient.diagnosis);
-  const [notes, setNotes] = useState(patient.notes);
+  const [diagnosis, setDiagnosis] = useState('');
+  const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (!editMode) {
+      setDiagnosis(evaluation?.diagnosis ?? '');
+      setNotes(evaluation?.management ?? '');
+    }
+  }, [editMode, evaluation?.diagnosis, evaluation?.management]);
+
+  const functionalEntries = useMemo(() => {
+    if (!evaluation?.functionalScores) return [] as Array<{ key: string; value: number }>;
+    return Object.entries(evaluation.functionalScores)
+      .map(([key, value]) => {
+        const numeric = typeof value === 'number' ? value : Number(value);
+        if (!Number.isFinite(numeric)) return null;
+        return { key, value: numeric };
+      })
+      .filter((entry): entry is { key: string; value: number } => entry !== null);
+  }, [evaluation?.functionalScores]);
+
+  const painLevel = typeof evaluation?.painLevel === 'number' ? evaluation.painLevel : null;
+  const symptoms = evaluation?.associatedSymptoms ?? [];
+  const complaintText = evaluation?.chiefComplaints ?? '';
+  const consultationName = evaluation?.createdBy?.name ?? '';
+  const consultationDate = evaluation?.createdAt
+    ? new Date(evaluation.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '';
+  const vitalsCards = [
+    { icon: '💓', label: 'Blood Pressure', value: evaluation?.bp ?? '-', color: '#3AAFA9' },
+    { icon: '❤️', label: 'Pulse Rate', value: evaluation?.pr != null ? `${evaluation.pr} bpm` : '-', color: '#2B7A78' },
+    { icon: '🫁', label: 'SpO2', value: evaluation?.spo2 != null ? `${evaluation.spo2}%` : '-', color: '#3AAFA9' },
+    { icon: '🌡️', label: 'Temperature', value: evaluation?.temperature != null ? `${evaluation.temperature}°F` : '-', color: '#2B7A78' },
+    { icon: '⚡', label: 'Ejection Fraction', value: evaluation?.ef != null ? `${evaluation.ef}%` : '-', color: '#3AAFA9' },
+  ];
+  const isLoading = patientLoading || evaluationLoading;
+
+  if (!patientId) {
+    return (
+      <div className="flex items-center justify-center h-full text-slate-500">
+        Invalid patient ID.
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1' }}>
@@ -92,18 +132,18 @@ export function PatientDetailPage() {
             🧑‍🦽
           </div>
           <div className="flex-1">
-            <p style={{ fontSize: '18px', fontWeight: 700, color: '#FEFFFF' }}>{patient.name}</p>
+            <p style={{ fontSize: '18px', fontWeight: 700, color: '#FEFFFF' }}>{patient?.name ?? 'Patient'}</p>
             <p style={{ fontSize: '13px', color: 'rgba(254,255,255,0.8)', marginTop: '2px' }}>
-              {patient.gender}, {patient.age} yrs · {patient.phone}
+              {patient?.gender ?? '-'}, {patient?.age ?? '-'} yrs · {patient?.phone ?? '-'}
             </p>
             <div className="flex gap-2 mt-2">
               <span className="px-3 py-1 rounded-full"
                 style={{ background: '#DEF2F1', color: '#3AAFA9', fontSize: '11px', fontWeight: 700 }}>
-                {patient.id}
+                {patient?.displayId ?? '-'}
               </span>
               <span className="px-3 py-1 rounded-full"
                 style={{ background: '#3AAFA9', color: '#FEFFFF', fontSize: '11px', fontWeight: 700 }}>
-                Token: {patient.token}
+                Status: {patient?.status ?? '-'}
               </span>
             </div>
           </div>
@@ -130,6 +170,15 @@ export function PatientDetailPage() {
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-5 py-6 max-w-4xl mx-auto w-full">
+        {(patientError || evaluationError) && (
+          <ApiErrorBanner error={patientError ? patientErrorObj : evaluationErrorObj} />
+        )}
+
+        {isLoading && (
+          <div className="rounded-2xl p-6 text-center" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+            <p style={{ fontSize: '14px', color: '#2B7A78' }}>Loading patient details...</p>
+          </div>
+        )}
 
         {/* Overview Tab */}
         {activeTab === 'Overview' && (
@@ -142,9 +191,9 @@ export function PatientDetailPage() {
                 </div>
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Primary Condition</h3>
               </div>
-              <p style={{ fontSize: '15px', fontWeight: 600, color: '#3AAFA9' }}>{patient.condition}</p>
+              <p style={{ fontSize: '15px', fontWeight: 600, color: '#3AAFA9' }}>{patient?.condition ?? '-'}</p>
               <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>
-                Consultation with {patient.doctor} on {patient.date}
+                Consultation with {consultationName || '-'} on {consultationDate || '-'}
               </p>
             </div>
 
@@ -157,10 +206,13 @@ export function PatientDetailPage() {
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Reported Symptoms</h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                {patient.symptoms.map((s: string) => (
-                  <span key={s} className="px-3 py-1.5 rounded-xl"
+                {symptoms.length === 0 && (
+                  <span style={{ fontSize: '13px', color: '#2B7A78' }}>No symptoms recorded</span>
+                )}
+                {symptoms.map((symptom) => (
+                  <span key={symptom} className="px-3 py-1.5 rounded-xl"
                     style={{ background: '#DEF2F1', color: '#3AAFA9', fontSize: '13px', fontWeight: 600, border: '1px solid #DEF2F1' }}>
-                    {s}
+                    {symptom}
                   </span>
                 ))}
               </div>
@@ -175,18 +227,24 @@ export function PatientDetailPage() {
                   </div>
                   <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Pain Level</h3>
                 </div>
-                <span style={{ fontSize: '20px', fontWeight: 800, color: painColors[patient.painLevel] }}>
-                  {patient.painLevel}/10
-                </span>
+                {painLevel == null ? (
+                  <span style={{ fontSize: '16px', fontWeight: 700, color: '#2B7A78' }}>-</span>
+                ) : (
+                  <span style={{ fontSize: '20px', fontWeight: 800, color: painColors[painLevel] }}>
+                    {painLevel}/10
+                  </span>
+                )}
               </div>
-              <div className="flex gap-1 rounded-xl overflow-hidden">
-                {painColors.map((c, i) => (
-                  <div key={i} className="flex-1 flex items-center justify-center rounded-sm"
-                    style={{ height: '32px', background: c, opacity: i <= patient.painLevel ? 1 : 0.15 }}>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#FEFFFF' }}>{i}</span>
-                  </div>
-                ))}
-              </div>
+              {painLevel != null && (
+                <div className="flex gap-1 rounded-xl overflow-hidden">
+                  {painColors.map((c, i) => (
+                    <div key={i} className="flex-1 flex items-center justify-center rounded-sm"
+                      style={{ height: '32px', background: c, opacity: i <= painLevel ? 1 : 0.15 }}>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#FEFFFF' }}>{i}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Functional Activities */}
@@ -198,14 +256,17 @@ export function PatientDetailPage() {
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Functional Activities</h3>
               </div>
               <div className="flex flex-col gap-3">
-                {Object.entries(patient.functional).map(([key, val]: [string, any]) => (
+                {functionalEntries.length === 0 && (
+                  <span style={{ fontSize: '13px', color: '#2B7A78' }}>No functional scores recorded</span>
+                )}
+                {functionalEntries.map(({ key, value }) => (
                   <div key={key} className="flex items-center justify-between py-1 border-b last:border-0" style={{ borderColor: '#DEF2F1' }}>
                     <span style={{ fontSize: '14px', color: '#2B7A78', fontWeight: 500, textTransform: 'capitalize' }}>
                       {key === 'stairs' ? 'Climbing Stairs' : key}
                     </span>
                     <span className="px-3 py-1 rounded-xl"
-                      style={{ background: `${funcColors[val]}15`, color: funcColors[val], fontSize: '12px', fontWeight: 600 }}>
-                      {val} — {funcLabels[val]}
+                      style={{ background: `${funcColors[value] ?? '#3AAFA9'}15`, color: funcColors[value] ?? '#3AAFA9', fontSize: '12px', fontWeight: 600 }}>
+                      {value} - {funcLabels[value] ?? 'Recorded'}
                     </span>
                   </div>
                 ))}
@@ -217,7 +278,9 @@ export function PatientDetailPage() {
               <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '10px' }}>
                 Chief Complaints
               </h3>
-              <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6 }}>{patient.complaints}</p>
+              <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6 }}>
+                {complaintText || 'No chief complaints recorded'}
+              </p>
             </div>
           </div>
         )}
@@ -233,13 +296,7 @@ export function PatientDetailPage() {
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Vital Signs</h3>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                {[
-                  { icon: '💓', label: 'Blood Pressure', value: patient.vitals.bp, color: '#3AAFA9' },
-                  { icon: '❤️', label: 'Pulse Rate', value: patient.vitals.pr, color: '#2B7A78' },
-                  { icon: '🫁', label: 'SpO₂', value: patient.vitals.spo2, color: '#3AAFA9' },
-                  { icon: '🌡️', label: 'Temperature', value: patient.vitals.temp, color: '#2B7A78' },
-                  { icon: '⚡', label: 'Ejection Fraction', value: patient.vitals.ef, color: '#3AAFA9' },
-                ].map((vital) => (
+                {vitalsCards.map((vital) => (
                   <div key={vital.label} className="p-4 rounded-2xl transition-transform hover:-translate-y-1"
                     style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
                     <span style={{ fontSize: '24px' }}>{vital.icon}</span>
@@ -273,7 +330,7 @@ export function PatientDetailPage() {
                   style={{ padding: '16px', borderRadius: '16px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '100px' }}
                 />
               ) : (
-                <p style={{ fontSize: '15px', fontWeight: 600, color: '#3AAFA9', lineHeight: 1.6 }}>{diagnosis}</p>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: '#3AAFA9', lineHeight: 1.6 }}>{diagnosis || 'No diagnosis recorded'}</p>
               )}
             </div>
 
@@ -282,15 +339,13 @@ export function PatientDetailPage() {
               <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '16px' }}>
                 Treatment Protocol
               </h3>
-              {['RICE Therapy (Week 1)', 'Ultrasound Therapy (3×/week)', 'Quadriceps Strengthening (Week 2+)', 'Proprioception Training (Week 4+)', 'Sports-specific Rehab (Week 6)'].map((item, i) => (
-                <div key={i} className="flex items-center gap-4 py-3" style={{ borderBottom: i < 4 ? '1px solid #DEF2F1' : 'none' }}>
-                  <div className="rounded-full flex items-center justify-center shrink-0"
-                    style={{ width: '28px', height: '28px', background: '#DEF2F1', color: '#3AAFA9', fontSize: '12px', fontWeight: 800 }}>
-                    {i + 1}
-                  </div>
-                  <span style={{ fontSize: '14px', color: '#2B7A78', fontWeight: 500 }}>{item}</span>
-                </div>
-              ))}
+              {evaluation?.plan ? (
+                <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  {evaluation.plan}
+                </p>
+              ) : (
+                <p style={{ fontSize: '13px', color: '#2B7A78' }}>No treatment plan recorded</p>
+              )}
             </div>
 
             {editMode && (
@@ -324,7 +379,7 @@ export function PatientDetailPage() {
                   style={{ padding: '16px', borderRadius: '16px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '140px' }}
                 />
               ) : (
-                <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.7 }}>{notes}</p>
+                <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.7 }}>{notes || 'No notes recorded'}</p>
               )}
             </div>
 
@@ -335,9 +390,11 @@ export function PatientDetailPage() {
                 </div>
                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Exercise Recommendation</span>
               </div>
-              <p style={{ fontSize: '14px', color: '#2B7A78', marginBottom: '16px' }}>Prescribed 6-week Active Recovery Plan. View in Exercise Prescription.</p>
+              <p style={{ fontSize: '14px', color: '#2B7A78', marginBottom: '16px' }}>
+                {evaluation?.plan || 'No exercise recommendation recorded'}
+              </p>
               <button
-                onClick={() => navigate('/doctor/exercise')}
+                onClick={() => id && navigate(`/doctor/patient/${id}/exercise`)}
                 className="px-5 py-2.5 rounded-xl transition-colors"
                 style={{ background: '#3AAFA9', color: '#FEFFFF', fontSize: '13px', fontWeight: 600 }}>
                 View Exercise Plan

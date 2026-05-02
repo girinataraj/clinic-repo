@@ -15,6 +15,7 @@ import { DoctorPatients } from './screens/DoctorPatients';
 import { DoctorProfile } from './screens/DoctorProfile';
 import { PatientDetailPage } from './screens/PatientDetailPage';
 import { ExercisePrescription } from './screens/ExercisePrescription';
+import { ExerciseLibrary } from './screens/ExerciseLibrary';
 import { ReportGeneration } from './screens/ReportGeneration';
 import { TreatmentDetailPage } from '../features/patients/pages/TreatmentDetailPage';
 import { NotificationPage } from './screens/NotificationPage';
@@ -65,7 +66,9 @@ export const router = createBrowserRouter([
               { path: 'doctor/patients', Component: DoctorPatients },
               { path: 'doctor/patient/:id', Component: PatientDetailPage },
               { path: 'doctor/patient/:patientId/treatment', Component: TreatmentDetailPage },
+              { path: 'doctor/patient/:patientId/exercise', Component: ExercisePrescription },
               { path: 'doctor/exercise', Component: ExercisePrescription },
+              { path: 'doctor/exercise-library', Component: ExerciseLibrary },
               { path: 'doctor/report', Component: ReportGeneration },
               { path: 'doctor/profile', Component: DoctorProfile },
               { path: 'doctor/notifications', Component: NotificationPage },

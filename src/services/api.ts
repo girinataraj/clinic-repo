@@ -75,20 +75,20 @@ api.interceptors.response.use(
       _isRefreshing = true;
 
       try {
-        const { data } = await axios.post<{ accessToken: string }>(
+        const { data } = await axios.post<{ success: boolean; data: { accessToken: string } }>(
           `${BASE_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );
-        setAccessToken(data.accessToken);
-        processQueue(null, data.accessToken);
-        original.headers.Authorization = `Bearer ${data.accessToken}`;
+        const newToken = data.data.accessToken;
+        setAccessToken(newToken);
+        processQueue(null, newToken);
+        original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
       } catch (refreshError) {
         processQueue(refreshError, null);
         setAccessToken(null);
-        // Redirect to login — replace so the user cannot go back
-        window.location.replace('/login');
+        // Let AuthContext handle the redirect — don't force window.location here
         return Promise.reject(refreshError);
       } finally {
         _isRefreshing = false;
