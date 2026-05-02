@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
-import { useEvaluation } from '../../hooks/useEvaluations';
+import { useEvaluation, useLatestEvaluation } from '../../hooks/useEvaluations';
 import { usePatient, usePatients } from '../../hooks/usePatients';
 import { useExercisePlans } from '../../hooks/useExercisePlans';
 import api from '../../services/api';
@@ -13,8 +13,9 @@ import {
 
 export function ReportGeneration() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const evaluationId = searchParams.get('evaluationId') ?? '';
+  const patientIdParam = searchParams.get('patientId') ?? '';
   const [action, setAction] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -28,7 +29,12 @@ export function ReportGeneration() {
   const patientsList = patientsData?.data ?? [];
 
   // ── Live data ─────────────────────────────────────────────────────────────
-  const { data: evaluation, isLoading: evalLoading } = useEvaluation(evaluationId || null);
+  const { data: specificEval, isLoading: specificEvalLoading } = useEvaluation(evaluationId || null);
+  const { data: latestEval, isLoading: latestEvalLoading } = useLatestEvaluation(patientIdParam || null);
+  
+  const evaluation = specificEval || latestEval;
+  const evalLoading = specificEvalLoading || latestEvalLoading;
+
   const { data: patient, isLoading: patientLoading } = usePatient(evaluation?.patientId ?? null);
   const { data: plansData } = useExercisePlans(evaluation?.patientId ?? null);
 
@@ -38,16 +44,17 @@ export function ReportGeneration() {
 
   // ── PDF download via blob ─────────────────────────────────────────────────
   const handleDownloadPdf = async () => {
-    if (!evaluationId) return;
+    const targetEvalId = evaluation?.id;
+    if (!targetEvalId) return;
     setDownloading(true);
     try {
-      const response = await api.get(ENDPOINTS.REPORTS.PDF(evaluationId), {
+      const response = await api.get(ENDPOINTS.REPORTS.PDF(targetEvalId), {
         responseType: 'blob',
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `report-${evaluationId}.pdf`);
+      link.setAttribute('download', `report-${targetEvalId}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -62,13 +69,42 @@ export function ReportGeneration() {
     }
   };
 
+  const handlePrintPdf = async () => {
+    const targetEvalId = evaluation?.id;
+    if (!targetEvalId) return;
+    setDownloading(true);
+    try {
+      const response = await api.get(ENDPOINTS.REPORTS.PDF(targetEvalId), {
+        responseType: 'blob',
+        headers: { Accept: 'application/pdf' },
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = url;
+      document.body.appendChild(iframe);
+      iframe.onload = () => {
+        iframe.contentWindow?.print();
+      };
+      setPdfError(null);
+      setAction('print');
+      setTimeout(() => setAction(null), 1500);
+    } catch {
+      setPdfError('Failed to generate PDF for printing.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const handleAction = (type: string) => {
     if (type === 'pdf') {
       handleDownloadPdf();
       return;
     }
     if (type === 'print') {
-      window.print();
+      handlePrintPdf();
+      return;
     }
     setAction(type);
     setTimeout(() => setAction(null), 1500);
@@ -143,6 +179,12 @@ export function ReportGeneration() {
         {/* No evaluation selected — show patient picker */}
         {!isLoading && !evaluation && (
           <div className="flex flex-col gap-4">
+            {patientIdParam && (
+              <div className="mb-4 p-4 rounded-2xl bg-amber-50 border border-amber-100 flex items-center gap-3">
+                <span className="text-sm font-semibold text-amber-700 flex-1">No evaluations found for the selected patient. Please complete an intake first.</span>
+                <button onClick={() => setSearchParams({})} className="text-xs font-bold text-amber-600 hover:text-amber-800">Clear</button>
+              </div>
+            )}
             <div className="rounded-2xl p-6" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
               <div className="text-center mb-5">
                 <Activity size={36} color="#DEF2F1" className="mx-auto mb-2" />
@@ -173,8 +215,8 @@ export function ReportGeneration() {
                   <button
                     key={p.id}
                     onClick={() => {
-                      // Navigate to the patient detail page which has the evaluation context
-                      navigate(`/doctor/patient/${p.id}`);
+                      // Navigate to the patient report page by setting patientId param
+                      setSearchParams({ patientId: p.id });
                     }}
                     className="flex items-center gap-3 p-3 rounded-xl text-left transition-colors hover:bg-slate-50"
                     style={{ border: '1px solid #DEF2F1' }}
