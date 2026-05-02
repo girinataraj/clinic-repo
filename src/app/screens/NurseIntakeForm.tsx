@@ -14,7 +14,17 @@ import {
 
 const stepIconMap = { User, Heart, Activity, Sliders, ClipboardList, CheckSquare, Save };
 
-const defaultIntakeConfig: Required<AppConfigScopes['intake']> = {
+const nonEmptyOrDefault = <T,>(value: T[] | undefined, fallback: T[]) =>
+  value && value.length > 0 ? value : fallback;
+
+type ResolvedIntakeConfig = Omit<Required<AppConfigScopes['intake']>, 'painScale'> & {
+  painScale: {
+    colors: string[];
+    textColors: string[];
+  };
+};
+
+const defaultIntakeConfig: ResolvedIntakeConfig = {
   symptoms: [
     'Lower Back Pain',
     'Neck Pain',
@@ -110,7 +120,7 @@ export function NurseIntakeForm() {
   const createPatientMutation = useCreatePatient();
 
   // Fetch patient by ID when provided in URL - auto-fill the form
-  const { data: patientById, isLoading: loadingPatientById } = usePatient(
+  const { data: patientById } = usePatient(
     resolvedPatientId && !foundPatient ? resolvedPatientId : null
   );
 
@@ -165,7 +175,7 @@ export function NurseIntakeForm() {
   const handleCreateNewPatient = async () => {
     if (!newPatient.name || !newPatient.age) return;
     try {
-const created = await createPatientMutation.mutateAsync({
+      const created = await createPatientMutation.mutateAsync({
         name: newPatient.name,
         age: Number(newPatient.age),
         gender: newPatient.gender as 'Male' | 'Female' | 'Other',
@@ -192,7 +202,7 @@ const created = await createPatientMutation.mutateAsync({
   const [saved, setSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-const createEvaluation = useCreateEvaluation();
+  const createEvaluation = useCreateEvaluation();
 
   const [patientInfo, setPatientInfo] = useState<{ name: string; age: string; phone: string; gender: 'Male' | 'Female' | 'Other'; address: string }>({ name: '', age: '', phone: '', gender: 'Male', address: '' });
   const [vitals, setVitals] = useState({ bp_sys: '', bp_dia: '', pr: '', spo2: '', temp: '', ef: '' });
@@ -216,11 +226,23 @@ const createEvaluation = useCreateEvaluation();
   const [billAmountInput, setBillAmountInput] = useState('');
 
   const resolvedIntakeConfig = {
-    ...defaultIntakeConfig,
-    ...intakeConfig,
+    symptoms: nonEmptyOrDefault(intakeConfig?.symptoms, defaultIntakeConfig.symptoms),
+    functionalActivities: nonEmptyOrDefault(
+      intakeConfig?.functionalActivities,
+      defaultIntakeConfig.functionalActivities
+    ),
+    ratingLabels: nonEmptyOrDefault(intakeConfig?.ratingLabels, defaultIntakeConfig.ratingLabels),
+    functionalRatingColors: nonEmptyOrDefault(
+      intakeConfig?.functionalRatingColors,
+      defaultIntakeConfig.functionalRatingColors
+    ),
+    steps: nonEmptyOrDefault(intakeConfig?.steps, defaultIntakeConfig.steps),
     painScale: {
-      ...defaultIntakeConfig.painScale,
-      ...intakeConfig?.painScale,
+      colors: nonEmptyOrDefault(intakeConfig?.painScale?.colors, defaultIntakeConfig.painScale.colors),
+      textColors: nonEmptyOrDefault(
+        intakeConfig?.painScale?.textColors,
+        defaultIntakeConfig.painScale.textColors
+      ),
     },
   };
   const symptoms = resolvedIntakeConfig.symptoms;
