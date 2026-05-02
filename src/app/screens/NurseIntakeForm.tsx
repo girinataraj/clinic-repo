@@ -221,9 +221,10 @@ export function NurseIntakeForm() {
   const [intakePhoto, setIntakePhoto] = useState<File | null>(null);
   const [intakePhotoUrl, setIntakePhotoUrl] = useState<string | null>(null);
   const [photoInputKey, setPhotoInputKey] = useState(0);
-  const [paymentMode, setPaymentMode] = useState<'Cash' | 'GPay' | ''>('');
+  const [paymentMode, setPaymentMode] = useState<'Cash' | 'UPI' | ''>('');
   const [billAmount, setBillAmount] = useState<number | null>(null);
   const [billAmountInput, setBillAmountInput] = useState('');
+  const [visitType, setVisitType] = useState<'Clinic' | 'Home'>('Clinic');
 
   const resolvedIntakeConfig = {
     symptoms: nonEmptyOrDefault(intakeConfig?.symptoms, defaultIntakeConfig.symptoms),
@@ -339,6 +340,7 @@ export function NurseIntakeForm() {
 
     try {
       const finalSymptoms = [...checkedSymptoms];
+      if (visitType) finalSymptoms.push(`Visit Type: ${visitType} Visit`);
       if (otherSymptom.trim()) finalSymptoms.push(`Other: ${otherSymptom.trim()}`);
       if (associated.trim()) finalSymptoms.push(`Notes: ${associated.trim()}`);
 
@@ -1069,6 +1071,31 @@ export function NurseIntakeForm() {
 
               {/* Summary */}
               <div className="flex flex-col gap-0">
+                {/* Visit Type Selection - Integrated at the top */}
+                <div className="pb-4 mb-2 border-b border-slate-100 dark:border-slate-800 border-opacity-50">
+                  <label className="block text-[11px] font-black text-teal-600 dark:text-teal-400 mb-2 uppercase tracking-widest">
+                    Select Visit Type
+                  </label>
+                  <div className="flex gap-2">
+                    {['Clinic', 'Home'].map((v) => {
+                      const isSelected = visitType === v;
+                      return (
+                        <button
+                          key={v}
+                          onClick={() => setVisitType(v as 'Clinic' | 'Home')}
+                          className={`flex-1 py-2.5 rounded-xl text-[12px] font-bold border-2 transition-all ${
+                            isSelected
+                              ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
+                              : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-slate-500'
+                          }`}
+                        >
+                          {v} Visit
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {[
                   { label: 'Patient Name', value: patientInfo.name || 'Not entered' },
                   { label: 'Age', value: patientInfo.age || 'Not entered' },
@@ -1112,13 +1139,13 @@ export function NurseIntakeForm() {
                   Mode of Payment
                 </label>
                 <div className="flex gap-2">
-                  {['Cash', 'GPay'].map((mode) => {
+                  {['Cash', 'UPI'].map((mode) => {
                     const selected = paymentMode === mode;
                     return (
                       <button
                         key={mode}
                         onClick={() => {
-                          setPaymentMode(mode as 'Cash' | 'GPay');
+                          setPaymentMode(mode as 'Cash' | 'UPI');
                           setSubmitError(null);
                         }}
                         className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold border-2 transition-colors ${
