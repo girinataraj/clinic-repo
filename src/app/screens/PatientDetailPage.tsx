@@ -218,6 +218,27 @@ export function PatientDetailPage() {
               </div>
             </div>
 
+            {/* Medical History */}
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                  <StickyNote size={16} color="#3AAFA9" />
+                </div>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Medical History</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(evaluation?.medicalHistory ?? []).length === 0 && (
+                  <span style={{ fontSize: '13px', color: '#2B7A78' }}>No medical history recorded</span>
+                )}
+                {(evaluation?.medicalHistory ?? []).map((history) => (
+                  <span key={history} className="px-3 py-1.5 rounded-xl"
+                    style={{ background: '#DEF2F1', color: '#2B7A78', fontSize: '13px', fontWeight: 600, border: '1px solid #DEF2F1' }}>
+                    {history}
+                  </span>
+                ))}
+              </div>
+            </div>
+
             {/* Pain level */}
             <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <div className="flex items-center justify-between mb-4">

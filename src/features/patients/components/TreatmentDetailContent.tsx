@@ -325,6 +325,10 @@ export function TreatmentDetailContent({
               editable={canEdit}
               onSave={savePlan}
             />
+            <FieldRow
+              label="Medical History"
+              value={evaluation.medicalHistory?.join(', ')}
+            />
             <FieldRow label="Referred By" value={evaluation.referredBy} />
             <FieldRow
               label="Remarks"

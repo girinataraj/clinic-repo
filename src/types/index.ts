@@ -70,7 +70,10 @@ export interface Evaluation {
   management?: string;
   chiefComplaints?: string;
   associatedSymptoms?: string[];
+  medicalHistory?: string[];
   referredBy?: string;
+  paymentMode?: string;
+  billAmount?: number;
   // Meta
   createdBy: EvaluationCreatedBy;
   updatedBy?: EvaluationCreatedBy;
@@ -95,24 +98,30 @@ export interface UpdateEvaluationPayload {
   painLevel?: number;
   chiefComplaints?: string;
   associatedSymptoms?: string[];
+  medicalHistory?: string[];
   referredBy?: string;
 }
 
 export interface CreateEvaluationPayload {
   patientId: string;
-  bp?: string;
-  pr?: number;
-  spo2?: number;
-  temperature?: number;
-  ef?: number;
+  vitals?: {
+    bp?: string;
+    pr?: number;
+    spo2?: number;
+    temperature?: number;
+    ef?: number;
+  };
   painLevel?: number;
   diagnosis?: string;
   plan?: string;
   management?: string;
   chiefComplaints?: string;
   associatedSymptoms?: string[];
+  medicalHistory?: string[];
   referredBy?: string;
   status?: 'draft' | 'submitted';
+  paymentMode?: string;
+  billAmount?: number;
 }
 
 // ─── Appointment ───────────────────────────────────────────────────────────────

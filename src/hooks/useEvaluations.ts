@@ -5,6 +5,7 @@ import type {
   Evaluation,
   EvaluationsListResponse,
   UpdateEvaluationPayload,
+  CreateEvaluationPayload,
 } from '../types';
 
 type ApiEnvelope<T> = { success: boolean; data: T; meta?: { total: number; page: number; limit: number } };
@@ -60,7 +61,7 @@ export function useCreateEvaluation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: Record<string, unknown>) => {
+    mutationFn: async (payload: CreateEvaluationPayload) => {
       const { data } = await api.post<ApiEnvelope<Evaluation>>(
         ENDPOINTS.EVALUATIONS.CREATE,
         payload

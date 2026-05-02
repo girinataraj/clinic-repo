@@ -123,6 +123,13 @@ export function NurseIntakeForm() {
   const [patientInfo, setPatientInfo] = useState({ name: '', age: '', phone: '', gender: 'Male' as const, address: '' });
   const [vitals, setVitals] = useState({ bp_sys: '', bp_dia: '', pr: '', spo2: '', temp: '', ef: '' });
   const [checkedSymptoms, setCheckedSymptoms] = useState<string[]>([]);
+  const [otherSymptom, setOtherSymptom] = useState('');
+  const [showOtherSymptom, setShowOtherSymptom] = useState(false);
+
+  const [selectedMedicalHistory, setSelectedMedicalHistory] = useState<string[]>([]);
+  const [otherMedicalHistory, setOtherMedicalHistory] = useState('');
+  const [showOtherMedicalHistory, setShowOtherMedicalHistory] = useState(false);
+
   const [painLevel, setPainLevel] = useState(0);
   const [funcRatings, setFuncRatings] = useState<Record<string, number>>({});
   const [complaints, setComplaints] = useState('');
@@ -215,22 +222,52 @@ export function NurseIntakeForm() {
     if (vitals.ef) vitalsPayload.ef = Number(vitals.ef);
 
     try {
+      const finalSymptoms = [...checkedSymptoms];
+      if (otherSymptom.trim()) finalSymptoms.push(`Other: ${otherSymptom.trim()}`);
+      if (associated.trim()) finalSymptoms.push(`Notes: ${associated.trim()}`);
+
+      const finalHistory = [...selectedMedicalHistory];
+      if (otherMedicalHistory.trim()) finalHistory.push(`Other: ${otherMedicalHistory.trim()}`);
+
       await createEvaluation.mutateAsync({
         patientId,
-        vitals: Object.keys(vitalsPayload).length > 0 ? vitalsPayload : undefined,
+        vitals: Object.keys(vitalsPayload).length > 0 ? (vitalsPayload as any) : undefined,
         painLevel,
         chiefComplaints: complaints || undefined,
-        associatedSymptoms: checkedSymptoms.length > 0 ? checkedSymptoms : undefined,
+        associatedSymptoms: finalSymptoms.length > 0 ? finalSymptoms : undefined,
+        medicalHistory: finalHistory.length > 0 ? finalHistory : undefined,
         functionalScores: Object.keys(funcRatings).length > 0 ? funcRatings : undefined,
         status: 'submitted',
         paymentMode,
         billAmount,
-      } as Record<string, unknown>);
+      });
       setSaved(true);
       setTimeout(() => navigate('/nurse'), 2000);
     } catch (err: any) {
       setSubmitError(err?.response?.data?.message ?? 'Failed to save evaluation. Please try again.');
     }
+  };
+
+  const handleNext = () => {
+    setSubmitError(null);
+
+    // Validation for Symptoms Step (Step 3, index 2)
+    if (step === 2) {
+      if (showOtherSymptom && !otherSymptom.trim()) {
+        setSubmitError('Please specify the other symptom(s) or uncheck the "Others" option.');
+        return;
+      }
+    }
+
+    // Validation for Complaints & Medical History Step (Step 6, index 5)
+    if (step === 5) {
+      if (showOtherMedicalHistory && !otherMedicalHistory.trim()) {
+        setSubmitError('Please specify the other medical history or uncheck the "Others" option.');
+        return;
+      }
+    }
+
+    setStep(step + 1);
   };
 
   if (saved) {
@@ -260,7 +297,10 @@ export function NurseIntakeForm() {
       >
         <div className="flex items-center gap-3 mb-3">
           <button
-            onClick={() => step > 0 ? setStep(step - 1) : navigate('/nurse')}
+            onClick={() => {
+              setSubmitError(null);
+              step > 0 ? setStep(step - 1) : navigate('/nurse');
+            }}
             className="flex items-center justify-center rounded-xl w-9 h-9 bg-white/20 hover:bg-white/30 transition-colors"
           >
             <ArrowLeft size={18} color="white" />
@@ -630,6 +670,52 @@ export function NurseIntakeForm() {
                   </button>
                 );
               })}
+
+              {/* Other Symptom */}
+              <div className="mt-2">
+                <button
+                  onClick={() => {
+                    setShowOtherSymptom(!showOtherSymptom);
+                    setSubmitError(null);
+                  }}
+                  className={`flex items-center gap-3 w-full p-3 rounded-xl text-left border-[1.5px] transition-colors ${
+                    showOtherSymptom || otherSymptom
+                      ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                  }`}
+                >
+                  <div
+                    className={`rounded-lg flex items-center justify-center shrink-0 w-[22px] h-[22px] border-2 ${
+                      showOtherSymptom || otherSymptom
+                        ? 'bg-blue-600 border-blue-600 dark:bg-blue-500 dark:border-blue-500'
+                        : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600'
+                    }`}
+                  >
+                    {(showOtherSymptom || otherSymptom) && <Check size={13} strokeWidth={3} color="white" />}
+                  </div>
+                  <span className={`text-[13px] ${showOtherSymptom || otherSymptom ? 'font-bold text-blue-800 dark:text-blue-300' : 'font-semibold text-slate-600 dark:text-slate-300'}`}>
+                    Others (please specify)
+                  </span>
+                </button>
+                {(showOtherSymptom || otherSymptom) && (
+                  <div className="mt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <input
+                      value={otherSymptom}
+                      onChange={(e) => {
+                        setOtherSymptom(e.target.value);
+                        if (e.target.value.trim()) setSubmitError(null);
+                      }}
+                      placeholder="Type other symptoms here..."
+                      className={`w-full outline-none px-3.5 py-3 rounded-xl border ${
+                        !otherSymptom.trim() && submitError
+                          ? 'border-red-500 dark:border-red-500'
+                          : 'border-blue-200 dark:border-blue-800'
+                      } bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 transition-colors shadow-sm`}
+                      autoFocus
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -775,12 +861,81 @@ export function NurseIntakeForm() {
                 Medical History
               </h3>
               <div className="flex flex-col gap-2">
-                {['Diabetes', 'Hypertension', 'Heart Disease', 'Previous Surgery', 'Allergies'].map((item) => (
-                  <div key={item} className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800">
-                    <input type="checkbox" id={item} className="w-4 h-4 accent-fuchsia-600 dark:accent-fuchsia-500 rounded" />
-                    <label htmlFor={item} className="text-[13px] font-semibold text-slate-600 dark:text-slate-300 cursor-pointer flex-1">{item}</label>
-                  </div>
-                ))}
+                {['Diabetes', 'Hypertension', 'Heart Disease', 'Previous Surgery', 'Allergies'].map((item) => {
+                  const isChecked = selectedMedicalHistory.includes(item);
+                  return (
+                    <button
+                      key={item}
+                      onClick={() => setSelectedMedicalHistory(prev =>
+                        isChecked ? prev.filter(x => x !== item) : [...prev, item]
+                      )}
+                      className={`flex items-center gap-3 p-3 rounded-xl text-left border-[1.5px] transition-colors ${
+                        isChecked
+                          ? 'border-fuchsia-600 dark:border-fuchsia-500 bg-fuchsia-50 dark:bg-fuchsia-900/20'
+                          : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <div
+                        className={`rounded-lg flex items-center justify-center shrink-0 w-[22px] h-[22px] border-2 ${
+                          isChecked
+                            ? 'bg-fuchsia-600 border-fuchsia-600 dark:bg-fuchsia-500 dark:border-fuchsia-500'
+                            : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600'
+                        }`}
+                      >
+                        {isChecked && <Check size={13} strokeWidth={3} color="white" />}
+                      </div>
+                      <label className={`text-[13px] ${isChecked ? 'font-bold text-fuchsia-800 dark:text-fuchsia-300' : 'font-semibold text-slate-600 dark:text-slate-300'} cursor-pointer flex-1`}>
+                        {item}
+                      </label>
+                    </button>
+                  );
+                })}
+
+                {/* Other Medical History */}
+                <div className="mt-1">
+                  <button
+                    onClick={() => {
+                      setShowOtherMedicalHistory(!showOtherMedicalHistory);
+                      setSubmitError(null);
+                    }}
+                    className={`flex items-center gap-3 w-full p-3 rounded-xl text-left border-[1.5px] transition-colors ${
+                      showOtherMedicalHistory || otherMedicalHistory
+                        ? 'border-fuchsia-600 dark:border-fuchsia-500 bg-fuchsia-50 dark:bg-fuchsia-900/20'
+                        : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                    }`}
+                  >
+                    <div
+                      className={`rounded-lg flex items-center justify-center shrink-0 w-[22px] h-[22px] border-2 ${
+                        showOtherMedicalHistory || otherMedicalHistory
+                          ? 'bg-fuchsia-600 border-fuchsia-600 dark:bg-fuchsia-500 dark:border-fuchsia-500'
+                          : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600'
+                      }`}
+                    >
+                      {(showOtherMedicalHistory || otherMedicalHistory) && <Check size={13} strokeWidth={3} color="white" />}
+                    </div>
+                    <span className={`text-[13px] ${showOtherMedicalHistory || otherMedicalHistory ? 'font-bold text-fuchsia-800 dark:text-fuchsia-300' : 'font-semibold text-slate-600 dark:text-slate-300'}`}>
+                      Others (please specify)
+                    </span>
+                  </button>
+                  {(showOtherMedicalHistory || otherMedicalHistory) && (
+                    <div className="mt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <input
+                        value={otherMedicalHistory}
+                        onChange={(e) => {
+                          setOtherMedicalHistory(e.target.value);
+                          if (e.target.value.trim()) setSubmitError(null);
+                        }}
+                        placeholder="Type other medical history here..."
+                        className={`w-full outline-none px-3.5 py-3 rounded-xl border ${
+                          !otherMedicalHistory.trim() && submitError
+                            ? 'border-red-500 dark:border-red-500'
+                            : 'border-fuchsia-200 dark:border-fuchsia-800'
+                        } bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-fuchsia-500 transition-colors shadow-sm`}
+                        autoFocus
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -891,12 +1046,6 @@ export function NurseIntakeForm() {
               </div>
             </div>
 
-            {submitError && (
-              <div className="mb-3 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 font-semibold">
-                {submitError}
-              </div>
-            )}
-
             <button
               onClick={handleSave}
               disabled={createEvaluation.isPending}
@@ -920,35 +1069,50 @@ export function NurseIntakeForm() {
       </div>
 
       {/* Navigation buttons */}
-      <div className="px-4 py-3 shrink-0 flex gap-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
-        {step > 0 && (
-          <button
-            onClick={() => setStep(step - 1)}
-            className="flex items-center justify-center gap-2 px-5 py-3 rounded-[14px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-extrabold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-          >
-            <ChevronLeft size={16} />
-            Back
-          </button>
+      <div className="px-4 py-3 shrink-0 flex flex-col gap-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
+        {submitError && (
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-[12px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+            <AlertTriangle size={14} />
+            {submitError}
+          </div>
         )}
-        {isPhotoUploaded && step < steps.length - 1 && (
-          <button
-            onClick={() => setStep(steps.length - 1)}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-[14px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-extrabold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          >
-            Skip to Payment
-          </button>
-        )}
-        {step < steps.length - 1 && (
-          <button
-            onClick={() => setStep(step + 1)}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[14px] text-white text-sm font-extrabold hover:opacity-90 transition-opacity"
-            style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}
-          >
-            Next Step
-            <ChevronRight size={16} />
-          </button>
-        )}
+        <div className="flex gap-3">
+          {step > 0 && (
+            <button
+              onClick={() => {
+                setSubmitError(null);
+                setStep(step - 1);
+              }}
+              className="flex items-center justify-center gap-2 px-5 py-3 rounded-[14px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-extrabold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            >
+              <ChevronLeft size={16} />
+              Back
+            </button>
+          )}
+          {isPhotoUploaded && step < steps.length - 1 && (
+            <button
+              onClick={() => {
+                setSubmitError(null);
+                setStep(steps.length - 1);
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-[14px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-extrabold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              Skip to Payment
+            </button>
+          )}
+          {step < steps.length - 1 && (
+            <button
+              onClick={handleNext}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[14px] text-white text-sm font-extrabold hover:opacity-90 transition-opacity"
+              style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}
+            >
+              Next Step
+              <ChevronRight size={16} />
+            </button>
+          )}
+        </div>
       </div>
+
 
       <div className="md:hidden">
         <BottomNav role="nurse" />
