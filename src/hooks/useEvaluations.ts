@@ -73,7 +73,7 @@ export function useEvaluation(id: string | null | undefined) {
   });
 }
 
-/** Create a new evaluation / intake record. */
+/** Create a new evaluation / assessment record. */
 export function useCreateEvaluation() {
   const queryClient = useQueryClient();
 

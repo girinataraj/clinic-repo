@@ -113,6 +113,8 @@ export function AssessmentForm() {
     try {
       const finalHistory=[...selectedMedicalHistory]; if (otherMedicalHistory.trim()) finalHistory.push(`Other: ${otherMedicalHistory.trim()}`);
       const allComplaints = [...chiefComplaints, complaintsText.trim()].filter(Boolean).join('; ');
+      const hasRomData = Object.keys(romData).length > 0;
+      const hasAnthro = Object.values(anthropometrics).some(v => v !== '');
       await createEvaluation.mutateAsync({
         patientId: resolvedPatientId,
         vitals: Object.keys(vitalsPayload).length>0 ? (vitalsPayload as any) : undefined,
@@ -123,6 +125,8 @@ export function AssessmentForm() {
         status: 'submitted',
         paymentMode, billAmount, visitType,
         associatedPains: chiefComplaints.length>0 ? chiefComplaints : undefined,
+        musclePowerRom: hasRomData ? romData : undefined,
+        anthropometrics: hasAnthro ? anthropometrics : undefined,
       });
       setSaved(true);
       setTimeout(() => navigate(`/${currentRole}`), 2000);
