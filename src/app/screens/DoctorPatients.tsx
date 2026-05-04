@@ -22,9 +22,9 @@ import {
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  waiting:      { label: 'Waiting',     color: '#2B7A78', bg: '#DEF2F1', dot: '#2B7A78' },
-  'in-session': { label: 'In Session',  color: '#17252A', bg: '#DEF2F1', dot: '#3AAFA9' },
-  completed:    { label: 'Completed',   color: '#FEFFFF', bg: '#3AAFA9', dot: '#FEFFFF' },
+  waiting:      { label: 'Waiting',     color: '#262842', bg: '#E8E9F1', dot: '#262842' },
+  'in-session': { label: 'In Session',  color: '#17252A', bg: '#E8E9F1', dot: '#3B3E66' },
+  completed:    { label: 'Completed',   color: '#FEFFFF', bg: '#3B3E66', dot: '#FEFFFF' },
 };
 
 const avatarPalette = [
@@ -95,14 +95,14 @@ export function DoctorPatients() {
 
 
   return (
-    <div className="flex flex-col h-full saai-page" style={{ backgroundColor: '#DEF2F1' }}>
+    <div className="flex flex-col h-full saai-page" style={{ backgroundColor: '#E8E9F1' }}>
       <div className="flex-1 overflow-y-auto">
         <div
           className="relative overflow-hidden rounded-b-3xl"
           style={{
-            background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)',
+            background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
             color: 'white',
-            boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)',
+            boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)',
           }}
         >
 
@@ -176,7 +176,7 @@ export function DoctorPatients() {
                     style={{ background: 'rgba(254,255,255,0.12)', border: '1px solid rgba(254,255,255,0.12)' }}
                   >
                     <div className="flex items-center gap-2">
-                      <Icon size={16} color="#DEF2F1" />
+                      <Icon size={16} color="#E8E9F1" />
                       <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(254,255,255,0.7)' }}>{card.label}</p>
                     </div>
                     <p className="display-font" style={{ fontSize: '24px', fontWeight: 700, color: '#FEFFFF', marginTop: '6px' }}>
@@ -192,13 +192,13 @@ export function DoctorPatients() {
         <div className="max-w-6xl mx-auto px-4 pb-8" style={{ marginTop: '-18px' }}>
           <div className="grid grid-cols-1 xl:grid-cols-[2fr,1fr] gap-4">
             <div className="flex flex-col gap-4">
-              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center">
                   <div
                     className="flex items-center gap-2 flex-1 rounded-2xl px-3"
-                    style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}
+                    style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
                   >
-                    <Search size={16} color="#2B7A78" />
+                    <Search size={16} color="#262842" />
                     <input
                       value={search}
                       onChange={(event) => setSearch(event.target.value)}
@@ -221,9 +221,9 @@ export function DoctorPatients() {
                         style={{
                           fontSize: '12px',
                           fontWeight: 600,
-                          background: statusFilter === item.key ? '#3AAFA9' : '#FEFFFF',
-                          color: statusFilter === item.key ? '#FEFFFF' : '#2B7A78',
-                          border: `1px solid ${statusFilter === item.key ? '#3AAFA9' : '#DEF2F1'}`,
+                          background: statusFilter === item.key ? '#3B3E66' : '#FEFFFF',
+                          color: statusFilter === item.key ? '#FEFFFF' : '#262842',
+                          border: `1px solid ${statusFilter === item.key ? '#3B3E66' : '#E8E9F1'}`,
                         }}
                       >
                         {item.label}
@@ -237,7 +237,7 @@ export function DoctorPatients() {
                 <h2 className="display-font" style={{ fontSize: '18px', fontWeight: 700, color: '#17252A' }}>
                   Patient list
                 </h2>
-                <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600 }}>
+                <p style={{ fontSize: '12px', color: '#262842', fontWeight: 600 }}>
                   {isLoading ? '…' : `${patients.length} results`}
                 </p>
               </div>
@@ -245,12 +245,12 @@ export function DoctorPatients() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Loading skeleton */}
                 {isLoading && Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="saai-panel rounded-2xl p-4 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                  <div key={i} className="saai-panel rounded-2xl p-4 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
                     <div className="flex gap-3">
-                      <div className="w-12 h-12 rounded-2xl shrink-0" style={{ background: '#DEF2F1' }} />
+                      <div className="w-12 h-12 rounded-2xl shrink-0" style={{ background: '#E8E9F1' }} />
                       <div className="flex-1 space-y-2">
-                        <div className="h-4 rounded" style={{ background: '#DEF2F1', width: '60%' }} />
-                        <div className="h-3 rounded" style={{ background: '#DEF2F1', width: '40%' }} />
+                        <div className="h-4 rounded" style={{ background: '#E8E9F1', width: '60%' }} />
+                        <div className="h-3 rounded" style={{ background: '#E8E9F1', width: '40%' }} />
                       </div>
                     </div>
                   </div>
@@ -273,7 +273,7 @@ export function DoctorPatients() {
                     <div
                       key={patient.id}
                       className="saai-panel rounded-2xl p-4 saai-stagger cursor-pointer hover:ring-2 hover:ring-teal-400/40 transition-all"
-                      style={{ animationDelay: `${index * 70}ms`, background: '#FEFFFF', border: '1px solid #DEF2F1' }}
+                      style={{ animationDelay: `${index * 70}ms`, background: '#FEFFFF', border: '1px solid #E8E9F1' }}
                       onClick={() => handlePatientClick(patient.id)}
                       role="button"
                       tabIndex={0}
@@ -292,7 +292,7 @@ export function DoctorPatients() {
                               <p className="display-font" style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>
                                 {patient.name}
                               </p>
-                              <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>
+                              <p style={{ fontSize: '12px', color: '#262842', marginTop: '2px' }}>
                                 {patient.condition ?? '—'} · {patient.age} yrs
                               </p>
                             </div>
@@ -307,14 +307,14 @@ export function DoctorPatients() {
                           <div className="flex flex-wrap gap-2 mt-3">
                             <span
                               className="rounded-lg px-2 py-1"
-                              style={{ background: '#DEF2F1', color: '#17252A', fontSize: '11px', fontWeight: 700 }}
+                              style={{ background: '#E8E9F1', color: '#17252A', fontSize: '11px', fontWeight: 700 }}
                             >
                               {patient.displayId}
                             </span>
                             {patient.city && (
                               <span
                                 className="rounded-lg px-2 py-1"
-                                style={{ background: '#DEF2F1', color: '#2B7A78', fontSize: '11px', fontWeight: 600 }}
+                                style={{ background: '#E8E9F1', color: '#262842', fontSize: '11px', fontWeight: 600 }}
                               >
                                 {patient.city}
                               </span>
@@ -344,8 +344,8 @@ export function DoctorPatients() {
                           onClick={() => navigate(`/doctor/patient/${patient.id}`)}
                           className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-colors"
                           style={{
-                            background: '#DEF2F1',
-                            color: '#2B7A78',
+                            background: '#E8E9F1',
+                            color: '#262842',
                             fontSize: '13px',
                             fontWeight: 600,
                           }}
@@ -357,7 +357,7 @@ export function DoctorPatients() {
                           onClick={() => navigate(`/doctor/patient/${patient.id}/exercise`)}
                           className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-shadow hover:shadow-md"
                           style={{
-                            background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)',
+                            background: 'linear-gradient(135deg, #262842, #3B3E66)',
                             color: '#FEFFFF',
                             fontSize: '13px',
                             fontWeight: 600,
@@ -373,11 +373,11 @@ export function DoctorPatients() {
               </div>
 
               {!isLoading && !isError && patients.length === 0 && (
-                <div className="saai-panel rounded-2xl p-6 text-center" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                <div className="saai-panel rounded-2xl p-6 text-center" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
                   <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>
                     No patients found
                   </p>
-                  <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '6px' }}>
+                  <p style={{ fontSize: '12px', color: '#262842', marginTop: '6px' }}>
                     Try adjusting your search or status filters.
                   </p>
                 </div>
@@ -385,8 +385,8 @@ export function DoctorPatients() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-                <p className="saai-kicker" style={{ color: '#2B7A78' }}>Care insights</p>
+              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                <p className="saai-kicker" style={{ color: '#262842' }}>Care insights</p>
                 <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A', marginTop: '6px' }}>
                   Focus today
                 </p>
@@ -398,7 +398,7 @@ export function DoctorPatients() {
                     <div
                       key={item}
                       className="rounded-xl px-3 py-2"
-                      style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', fontSize: '12px', fontWeight: 600, color: '#17252A' }}
+                      style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', fontSize: '12px', fontWeight: 600, color: '#17252A' }}
                     >
                       {item}
                     </div>
@@ -406,20 +406,20 @@ export function DoctorPatients() {
                 </div>
               </div>
 
-              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-                <p className="saai-kicker" style={{ color: '#2B7A78' }}>Vitals overview</p>
+              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                <p className="saai-kicker" style={{ color: '#262842' }}>Vitals overview</p>
                 <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A', marginTop: '6px' }}>
                   Session readiness
                 </p>
                 <div className="mt-4 flex flex-col gap-3">
                   {[
-                    { label: 'In session now', value: `${stats.active} patient${stats.active !== 1 ? 's' : ''}`, color: '#3AAFA9' },
-                    { label: 'Waiting', value: `${stats.waiting} patient${stats.waiting !== 1 ? 's' : ''}`, color: '#2B7A78' },
+                    { label: 'In session now', value: `${stats.active} patient${stats.active !== 1 ? 's' : ''}`, color: '#3B3E66' },
+                    { label: 'Waiting', value: `${stats.waiting} patient${stats.waiting !== 1 ? 's' : ''}`, color: '#262842' },
                   ].map((item) => (
                     <div
                       key={item.label}
                       className="flex items-center justify-between rounded-xl px-3 py-2"
-                      style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}
+                      style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
                     >
                       <span style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{item.label}</span>
                       <span style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.value}</span>
@@ -432,7 +432,7 @@ export function DoctorPatients() {
         </div>
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
+      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
         <BottomNav role="doctor" />
       </div>
 
@@ -457,15 +457,15 @@ export function DoctorPatients() {
                 <X size={16} color="#64748b" />
               </button>
             </div>
-            <p style={{ fontSize: '11px', color: '#2B7A78', marginBottom: '12px' }}>
+            <p style={{ fontSize: '11px', color: '#262842', marginBottom: '12px' }}>
               Patient: <strong>{assignPatient.name}</strong>
             </p>
 
             {/* Current */}
             {assignPatient.therapistId && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3" style={{ background: '#DEF2F1', border: '1px solid #b2dfdb' }}>
-                <UserCog size={13} color="#2B7A78" />
-                <span style={{ fontSize: '11px', fontWeight: 600, color: '#2B7A78' }}>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3" style={{ background: '#E8E9F1', border: '1px solid #b2dfdb' }}>
+                <UserCog size={13} color="#262842" />
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#262842' }}>
                   Current: {getTherapistName(assignPatient.therapistId) ?? 'Unknown'}
                 </span>
               </div>
@@ -486,18 +486,18 @@ export function DoctorPatients() {
                     disabled={isCurrent}
                     className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors"
                     style={{
-                      background: isSelected ? '#DEF2F1' : '#FEFFFF',
-                      border: isSelected ? '2px solid #3AAFA9' : '1px solid #DEF2F1',
+                      background: isSelected ? '#E8E9F1' : '#FEFFFF',
+                      border: isSelected ? '2px solid #3B3E66' : '1px solid #E8E9F1',
                       opacity: isCurrent ? 0.4 : 1,
                       cursor: isCurrent ? 'not-allowed' : 'pointer',
                     }}
                   >
-                    <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: '30px', height: '30px', background: isSelected ? '#3AAFA9' : '#DEF2F1' }}>
-                      <UserCog size={13} color={isSelected ? '#FEFFFF' : '#2B7A78'} />
+                    <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: '30px', height: '30px', background: isSelected ? '#3B3E66' : '#E8E9F1' }}>
+                      <UserCog size={13} color={isSelected ? '#FEFFFF' : '#262842'} />
                     </div>
                     <div className="flex-1">
                       <p style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{t.name}</p>
-                      <p style={{ fontSize: '10px', color: '#2B7A78' }}>
+                      <p style={{ fontSize: '10px', color: '#262842' }}>
                         {isCurrent ? 'Currently assigned' : t.displayId}
                       </p>
                     </div>
@@ -510,7 +510,7 @@ export function DoctorPatients() {
               <button
                 onClick={() => { setAssignPatient(null); setAssignTarget(null); }}
                 className="flex-1 py-2.5 rounded-xl text-xs font-bold"
-                style={{ background: '#DEF2F1', color: '#2B7A78' }}
+                style={{ background: '#E8E9F1', color: '#262842' }}
               >
                 Cancel
               </button>
@@ -518,7 +518,7 @@ export function DoctorPatients() {
                 onClick={handleAssign}
                 disabled={!assignTarget || updatePatient.isPending}
                 className="flex-1 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50"
-                style={{ background: '#2B7A78', color: '#FEFFFF' }}
+                style={{ background: '#262842', color: '#FEFFFF' }}
               >
                 {updatePatient.isPending ? 'Saving…' : 'Confirm'}
               </button>

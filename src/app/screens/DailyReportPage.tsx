@@ -123,11 +123,11 @@ export function DailyReportPage() {
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1' }}>
+    <div className="flex flex-col h-full" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1' }}>
       {/* Header */}
       <div
         className="px-5 pb-5 shrink-0 relative overflow-hidden rounded-b-3xl"
-        style={{ background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)', paddingTop: '28px', boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)' }}
+        style={{ background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)', paddingTop: '28px', boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)' }}
       >
         <div className="absolute -right-16 -top-16 rounded-full opacity-10" style={{ width: '200px', height: '200px', background: '#FEFFFF' }} />
         <div className="flex items-center gap-3 mb-4 relative z-10">
@@ -169,11 +169,11 @@ export function DailyReportPage() {
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {/* Calendar */}
-        <div className="rounded-2xl p-4 mb-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+        <div className="rounded-2xl p-4 mb-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
           <div className="flex items-center justify-between mb-3">
-            <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-slate-100"><ChevronLeft size={16} color="#2B7A78" /></button>
+            <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-slate-100"><ChevronLeft size={16} color="#262842" /></button>
             <span style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{MONTHS[viewMonth]} {viewYear}</span>
-            <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-slate-100"><ChevronRight size={16} color="#2B7A78" /></button>
+            <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-slate-100"><ChevronRight size={16} color="#262842" /></button>
           </div>
           <div className="grid grid-cols-7 gap-1 mb-1">
             {DAYS.map((d) => (
@@ -194,10 +194,10 @@ export function DailyReportPage() {
                     isSelected
                       ? 'text-white shadow-md'
                       : isTodayDate
-                        ? 'text-teal-700 bg-teal-50 border border-teal-200'
+                        ? 'text-indigo-950 bg-indigo-50 border border-teal-200'
                         : 'text-slate-600 hover:bg-slate-50'
                   }`}
-                  style={isSelected ? { background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)' } : {}}
+                  style={isSelected ? { background: 'linear-gradient(135deg, #262842, #3B3E66)' } : {}}
                 >
                   {day}
                 </button>
@@ -208,9 +208,9 @@ export function DailyReportPage() {
 
         {/* Selected date label */}
         <div className="flex items-center gap-2 mb-3">
-          <Calendar size={14} color="#2B7A78" />
+          <Calendar size={14} color="#262842" />
           <span style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }}>
-            {selectedLabel} {isToday && <span className="ml-1 text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full">Today</span>}
+            {selectedLabel} {isToday && <span className="ml-1 text-[10px] font-bold text-indigo-900 bg-indigo-50 px-2 py-0.5 rounded-full">Today</span>}
           </span>
         </div>
 
@@ -228,9 +228,9 @@ export function DailyReportPage() {
                 onClick={() => setReportTab(tab.key)}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold transition-all"
                 style={{
-                  background: isActive ? 'linear-gradient(135deg, #2B7A78, #3AAFA9)' : '#FEFFFF',
-                  color: isActive ? '#FEFFFF' : '#2B7A78',
-                  border: `1px solid ${isActive ? '#3AAFA9' : '#DEF2F1'}`,
+                  background: isActive ? 'linear-gradient(135deg, #262842, #3B3E66)' : '#FEFFFF',
+                  color: isActive ? '#FEFFFF' : '#262842',
+                  border: `1px solid ${isActive ? '#3B3E66' : '#E8E9F1'}`,
                 }}
               >
                 <Icon size={13} /> {tab.label}
@@ -242,17 +242,17 @@ export function DailyReportPage() {
         {/* Loading */}
         {isLoading && (
           <div className="flex flex-col items-center py-12">
-            <Loader2 size={28} className="animate-spin mb-3" color="#3AAFA9" />
-            <p style={{ fontSize: '13px', color: '#2B7A78', fontWeight: 600 }}>Loading report data…</p>
+            <Loader2 size={28} className="animate-spin mb-3" color="#3B3E66" />
+            <p style={{ fontSize: '13px', color: '#262842', fontWeight: 600 }}>Loading report data…</p>
           </div>
         )}
 
         {/* Empty */}
         {!isLoading && revenueByTherapist.length === 0 && (
-          <div className="rounded-2xl p-8 text-center" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-            <Activity size={36} color="#DEF2F1" className="mx-auto mb-3" />
+          <div className="rounded-2xl p-8 text-center" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+            <Activity size={36} color="#E8E9F1" className="mx-auto mb-3" />
             <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>No data for this date</p>
-            <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '4px' }}>No evaluations were submitted on {selectedLabel}.</p>
+            <p style={{ fontSize: '12px', color: '#262842', marginTop: '4px' }}>No evaluations were submitted on {selectedLabel}.</p>
           </div>
         )}
 
@@ -268,21 +268,21 @@ export function DailyReportPage() {
                 : (row.count / maxVal) * 100;
 
               return (
-                <div key={row.id} className="rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                <div key={row.id} className="rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '34px', height: '34px', background: row.id === 'unassigned' ? '#fef3c7' : '#DEF2F1' }}>
-                      <UserCog size={15} color={row.id === 'unassigned' ? '#d97706' : '#2B7A78'} />
+                    <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '34px', height: '34px', background: row.id === 'unassigned' ? '#fef3c7' : '#E8E9F1' }}>
+                      <UserCog size={15} color={row.id === 'unassigned' ? '#d97706' : '#262842'} />
                     </div>
                     <div className="flex-1">
                       <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }}>{row.name}</p>
-                      <p style={{ fontSize: '10px', color: '#2B7A78' }}>
+                      <p style={{ fontSize: '10px', color: '#262842' }}>
                         {row.count} patient{row.count !== 1 ? 's' : ''} · ₹{row.revenue.toLocaleString('en-IN')}
                       </p>
                     </div>
                     <span style={{
                       fontSize: '16px',
                       fontWeight: 800,
-                      color: '#3AAFA9',
+                      color: '#3B3E66',
                     }}>
                       {reportTab === 'revenue' ? `₹${row.revenue.toLocaleString('en-IN')}` : row.count}
                     </span>
@@ -293,7 +293,7 @@ export function DailyReportPage() {
                       className="h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${barWidth}%`,
-                        background: row.id === 'unassigned' ? '#fbbf24' : 'linear-gradient(90deg, #2B7A78, #3AAFA9)',
+                        background: row.id === 'unassigned' ? '#fbbf24' : 'linear-gradient(90deg, #262842, #3B3E66)',
                       }}
                     />
                   </div>
@@ -302,7 +302,7 @@ export function DailyReportPage() {
             })}
 
             {/* Total row */}
-            <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', boxShadow: '0 4px 16px rgba(43,122,120,0.12)' }}>
+            <div className="rounded-2xl p-4 mt-1" style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)', boxShadow: '0 4px 16px rgba(43,122,120,0.12)' }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(254,255,255,0.7)' }}>TOTAL</p>
@@ -325,7 +325,7 @@ export function DailyReportPage() {
         )}
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
+      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
         <BottomNav role="doctor" />
       </div>
     </div>

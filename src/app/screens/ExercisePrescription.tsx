@@ -47,17 +47,17 @@ import {
 const difficulties = ['Easy', 'Medium', 'Hard'] as const;
 
 const difficultyColors = {
-  Easy: { bg: '#DEF2F1', color: '#2B7A78', border: '#DEF2F1' },
-  Medium: { bg: '#FEFFFF', color: '#3AAFA9', border: '#DEF2F1' },
+  Easy: { bg: '#E8E9F1', color: '#262842', border: '#E8E9F1' },
+  Medium: { bg: '#FEFFFF', color: '#3B3E66', border: '#E8E9F1' },
   Hard: { bg: '#17252A', color: '#FEFFFF', border: '#17252A' },
 };
 
 const categoryColors: Record<string, string> = {
-  Strengthening: '#3AAFA9',
-  Flexibility: '#2B7A78',
+  Strengthening: '#3B3E66',
+  Flexibility: '#262842',
   Balance: '#17252A',
-  Core: '#3AAFA9',
-  Cardio: '#2B7A78',
+  Core: '#3B3E66',
+  Cardio: '#262842',
 };
 
 interface LocalExercise {
@@ -102,13 +102,13 @@ function PatientExercisePlanView() {
   const exercises = backendExercises;
 
   return (
-    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1' }}>
+    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1' }}>
       <div
         className="px-6 pb-6 shrink-0 rounded-b-3xl relative overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)',
+          background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
           paddingTop: '32px',
-          boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)',
+          boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)',
         }}
       >
         <div className="absolute -right-16 -top-16 rounded-full opacity-10"
@@ -149,12 +149,12 @@ function PatientExercisePlanView() {
         {isLoading && (
           <div className="flex flex-col gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="rounded-2xl p-4 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+              <div key={i} className="rounded-2xl p-4 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-2xl" style={{ background: '#DEF2F1' }} />
+                  <div className="w-12 h-12 rounded-2xl" style={{ background: '#E8E9F1' }} />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 rounded" style={{ background: '#DEF2F1', width: '60%' }} />
-                    <div className="h-3 rounded" style={{ background: '#DEF2F1', width: '40%' }} />
+                    <div className="h-4 rounded" style={{ background: '#E8E9F1', width: '60%' }} />
+                    <div className="h-3 rounded" style={{ background: '#E8E9F1', width: '40%' }} />
                   </div>
                 </div>
               </div>
@@ -163,10 +163,10 @@ function PatientExercisePlanView() {
         )}
 
         {!isLoading && exercises.length === 0 && (
-          <div className="rounded-2xl p-8 text-center" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-            <Dumbbell size={40} color="#DEF2F1" className="mx-auto mb-3" />
+          <div className="rounded-2xl p-8 text-center" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+            <Dumbbell size={40} color="#E8E9F1" className="mx-auto mb-3" />
             <p style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>No exercises yet</p>
-            <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>
+            <p style={{ fontSize: '13px', color: '#262842', marginTop: '4px' }}>
               Your doctor will prescribe exercises for you.
             </p>
           </div>
@@ -177,10 +177,10 @@ function PatientExercisePlanView() {
             {exercises.map((exercise) => {
               const isExpanded = expandedId === exercise.id;
               const diffColors = difficultyColors[exercise.difficulty] ?? difficultyColors.Easy;
-              const catColor = categoryColors[exercise.category] || '#3AAFA9';
+              const catColor = categoryColors[exercise.category] || '#3B3E66';
               return (
                 <div key={exercise.id} className="rounded-2xl overflow-hidden"
-                  style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+                  style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
                   <div className="flex items-center gap-4 p-4">
                     <div className="flex items-center justify-center rounded-2xl shrink-0"
                       style={{ width: '48px', height: '48px', background: `${catColor}15` }}>
@@ -196,27 +196,27 @@ function PatientExercisePlanView() {
                       <div className="flex items-center gap-4 mt-1">
                         {exercise.sets && exercise.reps && (
                           <div className="flex items-center gap-1.5">
-                            <Repeat size={12} color="#2B7A78" />
-                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#2B7A78' }}>{exercise.sets} × {exercise.reps} reps</span>
+                            <Repeat size={12} color="#262842" />
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#262842' }}>{exercise.sets} × {exercise.reps} reps</span>
                           </div>
                         )}
                         {exercise.duration && (
                           <div className="flex items-center gap-1.5">
-                            <Clock size={12} color="#2B7A78" />
-                            <span style={{ fontSize: '12px', color: '#2B7A78' }}>{exercise.duration}</span>
+                            <Clock size={12} color="#262842" />
+                            <span style={{ fontSize: '12px', color: '#262842' }}>{exercise.duration}</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <button onClick={() => setExpandedId(isExpanded ? null : exercise.id)} className="flex items-center justify-center rounded-xl transition-colors hover:bg-sky-100" style={{ width: '36px', height: '36px', background: '#DEF2F1' }}>
-                      {isExpanded ? <ChevronUp size={16} color="#2B7A78" /> : <ChevronDown size={16} color="#2B7A78" />}
+                    <button onClick={() => setExpandedId(isExpanded ? null : exercise.id)} className="flex items-center justify-center rounded-xl transition-colors hover:bg-sky-100" style={{ width: '36px', height: '36px', background: '#E8E9F1' }}>
+                      {isExpanded ? <ChevronUp size={16} color="#262842" /> : <ChevronDown size={16} color="#262842" />}
                     </button>
                   </div>
 
                   {isExpanded && exercise.instructions && (
-                    <div className="px-5 pb-5 border-t" style={{ borderColor: '#DEF2F1' }}>
-                      <div className="mt-4 flex items-start gap-3 p-4 rounded-xl" style={{ background: '#DEF2F1', border: '1px solid #DEF2F1' }}>
-                        <Info size={16} color="#2B7A78" style={{ marginTop: '2px', flexShrink: 0 }} />
+                    <div className="px-5 pb-5 border-t" style={{ borderColor: '#E8E9F1' }}>
+                      <div className="mt-4 flex items-start gap-3 p-4 rounded-xl" style={{ background: '#E8E9F1', border: '1px solid #E8E9F1' }}>
+                        <Info size={16} color="#262842" style={{ marginTop: '2px', flexShrink: 0 }} />
                         <p style={{ fontSize: '13px', color: '#17252A', lineHeight: 1.6 }}>{exercise.instructions}</p>
                       </div>
                       <div className="mt-3">
@@ -231,7 +231,7 @@ function PatientExercisePlanView() {
         )}
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
+      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
         <BottomNav role="patient" />
       </div>
     </div>

@@ -146,9 +146,9 @@ export function ReportGeneration() {
   ];
 
   return (
-    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1' }}>
+    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1' }}>
       {/* Header */}
-      <div className="px-6 pb-6 shrink-0 rounded-b-3xl relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)', paddingTop: '32px', boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)' }}>
+      <div className="px-6 pb-6 shrink-0 rounded-b-3xl relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)', paddingTop: '32px', boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)' }}>
         <div className="absolute -right-16 -top-16 rounded-full opacity-10" style={{ width: '200px', height: '200px', background: '#FEFFFF' }} />
         <div className="flex items-center gap-4 mb-6 relative z-10">
           <button onClick={() => navigate(-1)} className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20" style={{ width: '40px', height: '40px', background: 'rgba(254,255,255,0.15)' }}>
@@ -194,9 +194,9 @@ export function ReportGeneration() {
 
         {/* Loading */}
         {isLoading && (
-          <div className="rounded-2xl p-8 text-center animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-            <Loader2 size={32} className="animate-spin mx-auto mb-3" color="#3AAFA9" />
-            <p style={{ fontSize: '14px', color: '#2B7A78' }}>Loading report data…</p>
+          <div className="rounded-2xl p-8 text-center animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+            <Loader2 size={32} className="animate-spin mx-auto mb-3" color="#3B3E66" />
+            <p style={{ fontSize: '14px', color: '#262842' }}>Loading report data…</p>
           </div>
         )}
 
@@ -209,16 +209,16 @@ export function ReportGeneration() {
                 <button onClick={() => setSearchParams({})} className="text-xs font-bold text-amber-600 hover:text-amber-800">Clear</button>
               </div>
             )}
-            <div className="rounded-2xl p-6" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+            <div className="rounded-2xl p-6" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
               <div className="text-center mb-5">
-                <Activity size={36} color="#DEF2F1" className="mx-auto mb-2" />
+                <Activity size={36} color="#E8E9F1" className="mx-auto mb-2" />
                 <p style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>Select a patient to generate a report</p>
-                <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>Search by name and click to load their latest evaluation.</p>
+                <p style={{ fontSize: '13px', color: '#262842', marginTop: '4px' }}>Search by name and click to load their latest evaluation.</p>
               </div>
 
               {/* Search input */}
-              <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-                <Search size={16} color="#2B7A78" />
+              <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                <Search size={16} color="#262842" />
                 <input
                   value={patientSearch}
                   onChange={(e) => setPatientSearch(e.target.value)}
@@ -231,7 +231,7 @@ export function ReportGeneration() {
               {/* Patient list */}
               <div className="flex flex-col gap-2 max-h-80 overflow-y-auto">
                 {patientsList.length === 0 && (
-                  <p className="text-center py-6" style={{ fontSize: '13px', color: '#2B7A78' }}>
+                  <p className="text-center py-6" style={{ fontSize: '13px', color: '#262842' }}>
                     {patientSearch ? 'No patients found.' : 'Type to search patients.'}
                   </p>
                 )}
@@ -243,18 +243,18 @@ export function ReportGeneration() {
                       setSearchParams({ patientId: p.id });
                     }}
                     className="flex items-center gap-3 p-3 rounded-xl text-left transition-colors hover:bg-slate-50"
-                    style={{ border: '1px solid #DEF2F1' }}
+                    style={{ border: '1px solid #E8E9F1' }}
                   >
-                    <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#DEF2F1' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#2B7A78' }}>
+                    <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#E8E9F1' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#262842' }}>
                         {p.name.split(' ').map(n => n[0]).join('')}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p style={{ fontSize: '14px', fontWeight: 600, color: '#17252A' }} className="truncate">{p.name}</p>
-                      <p style={{ fontSize: '12px', color: '#2B7A78' }}>{p.phone} · {p.age} yrs · {p.condition ?? '—'}</p>
+                      <p style={{ fontSize: '12px', color: '#262842' }}>{p.phone} · {p.age} yrs · {p.condition ?? '—'}</p>
                     </div>
-                    <span style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600 }}>{p.displayId}</span>
+                    <span style={{ fontSize: '11px', color: '#262842', fontWeight: 600 }}>{p.displayId}</span>
                   </button>
                 ))}
               </div>
@@ -263,9 +263,9 @@ export function ReportGeneration() {
         )}
 
         {!isLoading && evaluation && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: '#FEFFFF', boxShadow: '0 8px 32px rgba(23, 37, 42, 0.05)', border: '1px solid #DEF2F1' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: '#FEFFFF', boxShadow: '0 8px 32px rgba(23, 37, 42, 0.05)', border: '1px solid #E8E9F1' }}>
             {/* Clinic letterhead */}
-            <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)' }}>
+            <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}>
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center rounded-2xl shrink-0" style={{ width: '48px', height: '48px', background: 'rgba(254,255,255,0.2)' }}>
                   <Activity size={24} color="#FEFFFF" />
@@ -289,13 +289,13 @@ export function ReportGeneration() {
             </div>
 
             {/* Report title */}
-            <div className="px-6 py-4 flex items-center justify-between" style={{ background: '#FEFFFF', borderBottom: '1px solid #DEF2F1' }}>
+            <div className="px-6 py-4 flex items-center justify-between" style={{ background: '#FEFFFF', borderBottom: '1px solid #E8E9F1' }}>
               <div>
                 <p style={{ fontSize: '14px', fontWeight: 800, color: '#17252A', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Physiotherapy Assessment Report</p>
-                <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>Report ID: {evaluation.displayId}</p>
+                <p style={{ fontSize: '12px', color: '#262842', marginTop: '2px' }}>Report ID: {evaluation.displayId}</p>
               </div>
               <div className="text-right">
-                <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600 }}>Date:</p>
+                <p style={{ fontSize: '11px', color: '#262842', fontWeight: 600 }}>Date:</p>
                 <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }}>{today}</p>
               </div>
             </div>
@@ -304,8 +304,8 @@ export function ReportGeneration() {
             <div className="px-6 py-5 flex flex-col gap-5">
               {/* Patient Info */}
               <section>
-                <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: '1.5px solid #3AAFA9' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#3AAFA9', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient Information</span>
+                <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: '1.5px solid #3B3E66' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#3B3E66', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient Information</span>
                 </div>
                 <div className="grid grid-cols-2 gap-y-3">
                   {[
@@ -317,7 +317,7 @@ export function ReportGeneration() {
                     { label: 'Status', value: evaluation.status },
                   ].map((item) => (
                     <div key={item.label}>
-                      <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600 }}>{item.label}</p>
+                      <p style={{ fontSize: '11px', color: '#262842', fontWeight: 600 }}>{item.label}</p>
                       <p style={{ fontSize: '13px', fontWeight: 600, color: '#17252A' }}>{item.value}</p>
                     </div>
                   ))}
@@ -326,13 +326,13 @@ export function ReportGeneration() {
 
               {/* Vitals */}
               <section>
-                <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: '1.5px solid #2B7A78' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#2B7A78', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Vital Signs</span>
+                <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: '1.5px solid #262842' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#262842', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Vital Signs</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {vitals.map((v) => (
-                    <div key={v.label} className="text-center p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-                      <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600 }}>{v.label}</p>
+                    <div key={v.label} className="text-center p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                      <p style={{ fontSize: '11px', color: '#262842', fontWeight: 600 }}>{v.label}</p>
                       <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{v.value}</p>
                     </div>
                   ))}
@@ -352,8 +352,8 @@ export function ReportGeneration() {
               {/* Treatment Plan */}
               {evaluation.plan && (
                 <section>
-                  <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: '1.5px solid #3AAFA9' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#3AAFA9', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Treatment Plan</span>
+                  <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: '1.5px solid #3B3E66' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#3B3E66', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Treatment Plan</span>
                   </div>
                   <p style={{ fontSize: '13px', color: '#17252A', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{evaluation.plan}</p>
                 </section>
@@ -362,17 +362,17 @@ export function ReportGeneration() {
               {/* Exercise Prescription — from backend */}
               {exerciseItems.length > 0 && (
                 <section>
-                  <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: '1.5px solid #2B7A78' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#2B7A78', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Home Exercise Programme</span>
+                  <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: '1.5px solid #262842' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#262842', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Home Exercise Programme</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     {exerciseItems.map((ex, i) => (
-                      <div key={ex.id} className="flex items-center justify-between py-2" style={{ borderBottom: i < exerciseItems.length - 1 ? '1px dashed #DEF2F1' : 'none' }}>
+                      <div key={ex.id} className="flex items-center justify-between py-2" style={{ borderBottom: i < exerciseItems.length - 1 ? '1px dashed #E8E9F1' : 'none' }}>
                         <div className="flex items-center gap-3">
-                          <Dumbbell size={14} color="#2B7A78" />
+                          <Dumbbell size={14} color="#262842" />
                           <span style={{ fontSize: '13px', fontWeight: 600, color: '#17252A' }}>{ex.name}</span>
                         </div>
-                        <span style={{ fontSize: '12px', color: '#2B7A78' }}>
+                        <span style={{ fontSize: '12px', color: '#262842' }}>
                           {ex.sets && ex.reps ? `${ex.sets} × ${ex.reps} reps` : ex.duration ?? ''}
                         </span>
                       </div>
@@ -387,12 +387,12 @@ export function ReportGeneration() {
                   <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: '1.5px solid #17252A' }}>
                     <span style={{ fontSize: '12px', fontWeight: 800, color: '#17252A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Clinical Notes</span>
                   </div>
-                  <p style={{ fontSize: '13px', color: '#2B7A78', lineHeight: 1.7 }}>{evaluation.management}</p>
+                  <p style={{ fontSize: '13px', color: '#262842', lineHeight: 1.7 }}>{evaluation.management}</p>
                 </section>
               )}
 
               {/* Signature */}
-              <section className="flex items-end justify-between pt-4 mt-2" style={{ borderTop: '1px solid #DEF2F1' }}>
+              <section className="flex items-end justify-between pt-4 mt-2" style={{ borderTop: '1px solid #E8E9F1' }}>
                 <div>
                   <div className="mb-2" style={{ height: '40px', borderBottom: '1px solid #17252A', width: '120px' }}>
                     <span style={{ fontSize: '20px', fontStyle: 'italic', color: '#17252A', fontFamily: 'cursive', fontWeight: 700 }}>
@@ -400,20 +400,20 @@ export function ReportGeneration() {
                     </span>
                   </div>
                   <p style={{ fontSize: '12px', fontWeight: 700, color: '#17252A' }}>{evaluation.createdBy?.name ?? '—'}</p>
-                  <p style={{ fontSize: '11px', color: '#2B7A78', marginTop: '2px' }}>SAAI Physiotherapy</p>
+                  <p style={{ fontSize: '11px', color: '#262842', marginTop: '2px' }}>SAAI Physiotherapy</p>
                 </div>
                 <div className="text-right">
-                  <div className="flex items-center justify-center rounded-2xl mb-2" style={{ width: '56px', height: '56px', background: '#DEF2F1', border: '2px solid #DEF2F1', marginLeft: 'auto' }}>
-                    <Activity size={24} color="#3AAFA9" />
+                  <div className="flex items-center justify-center rounded-2xl mb-2" style={{ width: '56px', height: '56px', background: '#E8E9F1', border: '2px solid #E8E9F1', marginLeft: 'auto' }}>
+                    <Activity size={24} color="#3B3E66" />
                   </div>
-                  <p style={{ fontSize: '10px', color: '#2B7A78', fontWeight: 600 }}>SAAI Clinic Stamp</p>
+                  <p style={{ fontSize: '10px', color: '#262842', fontWeight: 600 }}>SAAI Clinic Stamp</p>
                 </div>
               </section>
 
               {/* Footer */}
-              <div className="pt-4 text-center mt-2" style={{ borderTop: '1px dashed #DEF2F1' }}>
-                <p style={{ fontSize: '10px', color: '#2B7A78' }}>SAAI Physiotherapy Clinic · 42, Health Square, MG Road, Bengaluru – 560001</p>
-                <p style={{ fontSize: '10px', color: '#2B7A78', marginTop: '2px' }}>This report is for medical purposes only. Keep it confidential.</p>
+              <div className="pt-4 text-center mt-2" style={{ borderTop: '1px dashed #E8E9F1' }}>
+                <p style={{ fontSize: '10px', color: '#262842' }}>SAAI Physiotherapy Clinic · 42, Health Square, MG Road, Bengaluru – 560001</p>
+                <p style={{ fontSize: '10px', color: '#262842', marginTop: '2px' }}>This report is for medical purposes only. Keep it confidential.</p>
               </div>
             </div>
           </div>
@@ -424,21 +424,21 @@ export function ReportGeneration() {
           <div className="flex gap-3 mt-6 mb-4">
             <button onClick={() => handleAction('pdf')} disabled={downloading}
               className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl transition-transform hover:-translate-y-1 disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(43, 122, 120, 0.3)' }}>
+              style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(38, 40, 66, 0.3)' }}>
               {downloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
               {downloading ? 'Generating…' : 'Generate PDF'}
             </button>
-            <button onClick={() => handleAction('share')} className="flex items-center justify-center gap-2 px-5 py-4 rounded-2xl transition-colors" style={{ background: '#FEFFFF', color: '#3AAFA9', fontSize: '15px', fontWeight: 700, border: '1px solid #DEF2F1' }}>
+            <button onClick={() => handleAction('share')} className="flex items-center justify-center gap-2 px-5 py-4 rounded-2xl transition-colors" style={{ background: '#FEFFFF', color: '#3B3E66', fontSize: '15px', fontWeight: 700, border: '1px solid #E8E9F1' }}>
               <Share2 size={18} />
             </button>
-            <button onClick={() => handleAction('print')} className="flex items-center justify-center gap-2 px-5 py-4 rounded-2xl transition-colors" style={{ background: '#FEFFFF', color: '#2B7A78', fontSize: '15px', fontWeight: 700, border: '1px solid #DEF2F1' }}>
+            <button onClick={() => handleAction('print')} className="flex items-center justify-center gap-2 px-5 py-4 rounded-2xl transition-colors" style={{ background: '#FEFFFF', color: '#262842', fontSize: '15px', fontWeight: 700, border: '1px solid #E8E9F1' }}>
               <Printer size={18} />
             </button>
           </div>
         )}
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
+      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
         <BottomNav role="doctor" />
       </div>
     </div>
