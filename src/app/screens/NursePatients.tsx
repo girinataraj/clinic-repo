@@ -105,7 +105,7 @@ export function NursePatients() {
                   Patient registry for {firstName}
                 </h1>
                 <p className="text-sm text-teal-100 mt-1 font-medium">
-                  {today} · Unit B intake dashboard
+                  {today} · Assessment dashboard
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -147,7 +147,7 @@ export function NursePatients() {
         </div>
 
         <div className="px-6 max-w-5xl mx-auto w-full -mt-6 relative z-10">
-          {/* Start new intake CTA */}
+          {/* Start new assessment CTA */}
           <div className="mb-5">
             <button
               onClick={() => navigate('/nurse/intake')}
@@ -157,7 +157,7 @@ export function NursePatients() {
               <div className="flex items-center justify-center rounded-xl bg-white/20 w-8 h-8">
                 <Plus className="w-4 h-4" />
               </div>
-              Start new intake
+              Start new assessment
             </button>
           </div>
 
@@ -235,8 +235,8 @@ export function NursePatients() {
                   const actionLabel = patient.status === 'completed'
                     ? 'Review notes'
                     : patient.status === 'in-session'
-                      ? 'Continue intake'
-                      : 'Start intake';
+                      ? 'Continue assessment'
+                      : 'Start assessment';
 
                   return (
                     <div
@@ -319,7 +319,7 @@ export function NursePatients() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-1">Shift snapshot</p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Intake focus</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">Assessment focus</p>
                   </div>
                   <ShieldCheck className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                 </div>
@@ -343,7 +343,7 @@ export function NursePatients() {
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-1">Intake checklist</p>
+                    <p className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-1">Assessment checklist</p>
                     <p className="text-sm font-bold text-slate-900 dark:text-white">Make sure to log</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500" />

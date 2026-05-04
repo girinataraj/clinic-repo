@@ -411,7 +411,7 @@ export function DoctorDashboard() {
                           style={{ color: '#3AAFA9', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #DEF2F1' }}
                         >
                           <ClipboardList size={16} />
-                          Intake
+                          Assess
                         </button>
                         <button
                           onClick={() => navigate(`/doctor/patient/${patient.id}`)}
