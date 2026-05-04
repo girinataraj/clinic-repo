@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
+import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
+import { usePatients } from '../../hooks/usePatients';
 import {
   ChevronRight,
   LogOut,
@@ -28,7 +30,6 @@ import {
 // Currently NO backend API for these — DO NOT hardcode fake values.
 const specializations: string[] = [];
 const education: { degree: string; institution: string; year: string }[] = [];
-const todaySchedule: { time: string; patient: string; type: string; status: string }[] = [];
 
 const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
   'in-session': { color: '#3AAFA9', bg: '#DEF2F1', label: 'Active' },
@@ -42,6 +43,28 @@ export function DoctorProfile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+
+  const { data: profile } = useProfile();
+  const updateProfile = useUpdateProfile();
+  const { data: patientsData } = usePatients({ limit: 5 });
+
+  const handleEditToggle = () => {
+    if (!editMode && profile) {
+      setEditName(profile.name);
+      setEditEmail(profile.email);
+    }
+    setEditMode(!editMode);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      await updateProfile.mutateAsync({ name: editName, email: editEmail });
+      setEditMode(false);
+    } catch { /* handled by RQ */ }
+  };
 
   const handleLogout = () => {
     logout();
@@ -75,10 +98,11 @@ export function DoctorProfile() {
             </button>
             <span className="absolute left-1/2 -translate-x-1/2" style={{ fontSize: '16px', fontWeight: 700, color: '#FEFFFF' }}>My Profile</span>
             <button
+              onClick={handleEditToggle}
               className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
-              style={{ width: '40px', height: '40px', background: 'rgba(254,255,255,0.15)' }}
+              style={{ width: '40px', height: '40px', background: editMode ? 'rgba(251,191,36,0.3)' : 'rgba(254,255,255,0.15)' }}
             >
-              <Edit3 size={18} color="#FEFFFF" />
+              <Edit3 size={18} color={editMode ? '#fbbf24' : '#FEFFFF'} />
             </button>
           </div>
 
@@ -115,15 +139,44 @@ export function DoctorProfile() {
               ))}
             </div>
           </div>
+          {editMode && (
+            <div className="relative z-10 flex flex-col items-center px-6 pb-6 gap-3">
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full max-w-xs px-4 py-2.5 rounded-xl text-center text-sm font-bold outline-none"
+                style={{ background: 'rgba(254,255,255,0.2)', color: '#FEFFFF', border: '1px solid rgba(254,255,255,0.3)' }}
+                placeholder="Name"
+              />
+              <input
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                className="w-full max-w-xs px-4 py-2.5 rounded-xl text-center text-sm font-bold outline-none"
+                style={{ background: 'rgba(254,255,255,0.2)', color: '#FEFFFF', border: '1px solid rgba(254,255,255,0.3)' }}
+                placeholder="Email"
+              />
+              <button
+                onClick={handleSaveProfile}
+                disabled={updateProfile.isPending}
+                className="px-6 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
+                style={{ background: '#FEFFFF', color: '#2B7A78' }}
+              >
+                {updateProfile.isPending ? 'Saving…' : 'Save Profile'}
+              </button>
+              {updateProfile.isError && (
+                <p className="text-xs font-semibold" style={{ color: '#fca5a5' }}>Failed to save. Try again.</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Stats bar */}
         <div className="mx-5 -mt-6 rounded-2xl p-4 flex relative z-10 bg-white/95 backdrop-blur-md"
           style={{ background: '#FEFFFF', boxShadow: '0 8px 32px rgba(43, 122, 120, 0.12)', border: '1px solid #DEF2F1' }}>
           {[
-            { label: 'Patients', value: '1.2k', icon: Users, color: '#3AAFA9' },
-            { label: 'Today', value: '8', icon: Clock, color: '#2B7A78' },
-            { label: 'Satisfaction', value: '98%', icon: TrendingUp, color: '#17252A' },
+            { label: 'Patients', value: patientsData?.total ?? '—', icon: Users, color: '#3AAFA9' },
+            { label: 'Today', value: '—', icon: Clock, color: '#2B7A78' },
+            { label: 'Satisfaction', value: '—', icon: TrendingUp, color: '#17252A' },
           ].map((s, i) => {
             const Icon = s.icon;
             return (
@@ -198,24 +251,24 @@ export function DoctorProfile() {
               </button>
             </div>
             <div className="flex flex-col gap-3">
-              {todaySchedule.map((appt) => {
-                const s = statusConfig[appt.status];
+              {(patientsData?.data?.slice(0, 3) || []).map((patient) => {
+                const s = statusConfig[patient.status] || statusConfig['waiting'];
                 return (
                   <div
-                    key={appt.time}
+                    key={patient.id}
                     className="flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-transform hover:-translate-y-1"
                     style={{
                       background: '#FEFFFF',
                       boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)',
-                      border: `1px solid ${appt.status === 'in-session' ? '#3AAFA9' : '#DEF2F1'}`,
+                      border: `1px solid ${patient.status === 'in-session' ? '#3AAFA9' : '#DEF2F1'}`,
                     }}
                   >
                     <div>
-                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#3AAFA9' }}>{appt.time}</p>
+                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#3AAFA9' }}>Today</p>
                     </div>
                     <div className="flex-1">
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#17252A' }}>{appt.patient}</p>
-                      <p style={{ fontSize: '12px', color: '#2B7A78' }}>{appt.type}</p>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#17252A' }}>{patient.name}</p>
+                      <p style={{ fontSize: '12px', color: '#2B7A78' }}>{patient.condition || 'Consultation'}</p>
                     </div>
                     <span className="px-3 py-1 rounded-xl"
                       style={{ background: s.bg, color: s.color, fontSize: '11px', fontWeight: 700 }}>
@@ -224,6 +277,11 @@ export function DoctorProfile() {
                   </div>
                 );
               })}
+              {(!patientsData?.data || patientsData.data.length === 0) && (
+                <div className="text-center py-4" style={{ color: '#2B7A78', fontSize: '13px', fontWeight: 500 }}>
+                  No patients in queue today.
+                </div>
+              )}
             </div>
           </div>
 

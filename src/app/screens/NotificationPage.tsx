@@ -1,6 +1,7 @@
 import { Bell, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../../hooks/useNotifications';
 
 const themeConfig = {
   doctor: {
@@ -40,6 +41,7 @@ const themeConfig = {
 export function NotificationPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: notifications = [], isLoading, isError } = useNotifications({ limit: 30 });
   const role = user?.role || 'doctor';
   const theme = themeConfig[role as keyof typeof themeConfig] || themeConfig.doctor;
 
@@ -69,28 +71,38 @@ export function NotificationPage() {
         </div>
 
         <div className="px-5 pb-8 max-w-4xl mx-auto w-full mt-6 space-y-4">
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-start">
-            <div className={`w-10 h-10 rounded-full ${theme.iconBg} flex items-center justify-center shrink-0`}>
-              <Bell size={20} className={theme.accentColor} />
+          {isError ? (
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+              <p className="text-sm font-semibold text-slate-800">Unable to load notifications</p>
+              <p className="text-xs text-slate-500 mt-1">Please try again shortly</p>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-800">New patient assigned</p>
-              <p className="text-xs text-slate-500 mt-1">2 mins ago</p>
+          ) : isLoading ? (
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+              <p className="text-sm font-semibold text-slate-800">Loading notifications...</p>
             </div>
-          </div>
-          
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-start">
-            <div className={`w-10 h-10 rounded-full ${theme.iconBg} flex items-center justify-center shrink-0`}>
-              <Bell size={20} className={theme.accentColor} />
+          ) : notifications.length === 0 ? (
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+              <p className="text-sm font-semibold text-slate-800">No notifications yet</p>
+              <p className="text-xs text-slate-500 mt-1">New clinic activity will appear here</p>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-800">System maintenance at midnight</p>
-              <p className="text-xs text-slate-500 mt-1">1 hour ago</p>
-            </div>
-          </div>
+          ) : (
+            notifications.map((item) => (
+              <div key={`${item.type}-${item.id}`} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-start">
+                <div className={`w-10 h-10 rounded-full ${theme.iconBg} flex items-center justify-center shrink-0`}>
+                  <Bell size={20} className={theme.accentColor} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">{item.title}</p>
+                  <p className="text-xs text-slate-600 mt-1">{item.body}</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {new Date(item.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
   );
 }
-

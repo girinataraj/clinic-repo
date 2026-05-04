@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { ENDPOINTS } from '../services/endpoints';
 
@@ -28,5 +28,23 @@ export function useProfile() {
       return data.data;
     },
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+}
+
+/** Update the authenticated user's own profile (name, email) */
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: { name?: string; email?: string }) => {
+      const { data } = await api.patch<ApiEnvelope<UserProfile>>(
+        ENDPOINTS.USERS.UPDATE_ME,
+        payload
+      );
+      return data.data;
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['profile', 'me'], updated);
+    },
   });
 }

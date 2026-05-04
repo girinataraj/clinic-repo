@@ -4,25 +4,7 @@ import {
   IndianRupee, TrendingUp, Filter, Calendar, User,
   ChevronDown, ArrowUpRight, Users,
 } from 'lucide-react';
-
-// ── Static data ───────────────────────────────────────────────────────────────
-const STATIC_VISITS = [
-  { id: '1',  patientName: 'Rahul Verma',      therapistName: 'Kavya Reddy', amount: 1500, date: '2026-05-02T10:30:00', mode: 'UPI'  },
-  { id: '2',  patientName: 'Priya Sharma',     therapistName: 'Kavya Reddy', amount: 2000, date: '2026-05-02T09:00:00', mode: 'Cash' },
-  { id: '3',  patientName: 'Arun Kumar',       therapistName: 'Divya Nair',  amount: 1800, date: '2026-05-01T14:00:00', mode: 'Card' },
-  { id: '4',  patientName: 'Sneha Patel',      therapistName: 'Kavya Reddy', amount: 1500, date: '2026-05-01T11:30:00', mode: 'UPI'  },
-  { id: '5',  patientName: 'Vikram Singh',     therapistName: 'Divya Nair',  amount: 2500, date: '2026-04-30T16:00:00', mode: 'Cash' },
-  { id: '6',  patientName: 'Meera Iyer',       therapistName: 'Kavya Reddy', amount: 1200, date: '2026-04-29T10:00:00', mode: 'UPI'  },
-  { id: '7',  patientName: 'Karthik Rajan',    therapistName: 'Divya Nair',  amount: 1800, date: '2026-04-28T13:00:00', mode: 'Card' },
-  { id: '8',  patientName: 'Lakshmi Devi',     therapistName: 'Kavya Reddy', amount: 2000, date: '2026-04-25T09:30:00', mode: 'Cash' },
-  { id: '9',  patientName: 'Rajesh Menon',     therapistName: 'Divya Nair',  amount: 1500, date: '2026-04-20T15:00:00', mode: 'UPI'  },
-  { id: '10', patientName: 'Ananya Rao',       therapistName: 'Kavya Reddy', amount: 3000, date: '2026-04-15T11:00:00', mode: 'Card' },
-  { id: '11', patientName: 'Suresh Babu',      therapistName: 'Divya Nair',  amount: 1800, date: '2026-04-10T10:00:00', mode: 'Cash' },
-  { id: '12', patientName: 'Deepa Krishnan',   therapistName: 'Kavya Reddy', amount: 2200, date: '2026-03-28T14:30:00', mode: 'UPI'  },
-  { id: '13', patientName: 'Gopal Nath',       therapistName: 'Divya Nair',  amount: 1500, date: '2026-03-15T09:00:00', mode: 'Cash' },
-  { id: '14', patientName: 'Revathi S',        therapistName: 'Kavya Reddy', amount: 2000, date: '2026-02-20T16:00:00', mode: 'Card' },
-  { id: '15', patientName: 'Manoj Kumar',      therapistName: 'Divya Nair',  amount: 1800, date: '2026-01-10T11:00:00', mode: 'UPI'  },
-];
+import { useRevenueVisits } from '../../hooks/useRevenue';
 
 type FilterKey = 'today' | 'week' | 'month' | '6months' | 'all';
 
@@ -58,11 +40,16 @@ export function DoctorRevenue() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('today');
   const [showDropdown, setShowDropdown] = useState(false);
 
+  const cutoff = useMemo(() => getFilterDate(activeFilter), [activeFilter]);
+  const { data: visits = [], isLoading, isError } = useRevenueVisits({
+    from: cutoff?.toISOString(),
+    limit: 500,
+  });
+
   const filteredVisits = useMemo(() => {
-    const cutoff = getFilterDate(activeFilter);
-    if (!cutoff) return STATIC_VISITS;
-    return STATIC_VISITS.filter(v => new Date(v.date) >= cutoff);
-  }, [activeFilter]);
+    if (!cutoff) return visits;
+    return visits.filter(v => new Date(v.date) >= cutoff);
+  }, [cutoff, visits]);
 
   const totalRevenue = useMemo(
     () => filteredVisits.reduce((s, v) => s + v.amount, 0),
@@ -280,11 +267,16 @@ export function DoctorRevenue() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>Transactions</h3>
             <span style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600, background: '#fff', border: '1px solid #DEF2F1', borderRadius: '99px', padding: '3px 12px' }}>
-              {filteredVisits.length} records
+              {isLoading ? 'Loading' : `${filteredVisits.length} records`}
             </span>
           </div>
 
-          {filteredVisits.length === 0 ? (
+          {isError ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: '14px', background: '#fff', border: '1px solid #DEF2F1' }}>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Unable to load revenue</p>
+              <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>Please try again shortly</p>
+            </div>
+          ) : filteredVisits.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: '14px', background: '#fff', border: '1px solid #DEF2F1' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                 <IndianRupee size={28} color="#3AAFA9" />

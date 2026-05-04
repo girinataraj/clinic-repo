@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { usePatients } from '../../hooks/usePatients';
+import { usePatients, useUpdatePatient } from '../../hooks/usePatients';
+import { useNotifications, useUnreadNotificationCount, useMarkAllNotificationsRead } from '../../hooks/useNotifications';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
   Bell, ClipboardList, Clock, CheckCircle, ChevronRight,
@@ -30,6 +31,11 @@ export function NurseDashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
+  // ── Live notifications ──────────────────────────────────────────────────
+  const { data: notifications = [] } = useNotifications({ limit: 5 });
+  const { data: unreadCount = 0 } = useUnreadNotificationCount();
+  const markAllRead = useMarkAllNotificationsRead();
+
   // ── Live data from backend ─────────────────────────────────────────────────
   // Therapist (nurse) sees only their assigned patients
   const { data: patientsData, isLoading, isError } = usePatients({
@@ -39,6 +45,16 @@ export function NurseDashboard() {
     therapistId: user?.id,
     limit: 20,
   }, true); // ← 10s polling for live patient queue
+
+  const updatePatient = useUpdatePatient();
+
+  const handleCompleteSession = async (patientId: string) => {
+    try {
+      await updatePatient.mutateAsync({ id: patientId, status: 'completed' });
+    } catch (err) {
+      console.error('Failed to complete session', err);
+    }
+  };
 
   const patients = patientsData?.data ?? [];
 
@@ -87,7 +103,9 @@ export function NurseDashboard() {
                     }}
                     className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20">
                     <Bell className="w-5 h-5 text-white" />
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white border border-red-400 pointer-events-none">2</span>
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white border border-red-400 pointer-events-none">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                    )}
                   </button>
                   
                   {/* Only show notifications dropdown on mobile */}
@@ -97,17 +115,26 @@ export function NurseDashboard() {
                         <h3 className="text-sm font-bold text-slate-800 dark:text-white">Notifications</h3>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
-                        <div className="p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer">
-                          <p className="text-xs font-semibold text-slate-800 dark:text-white">Intake form required</p>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">5 mins ago</p>
-                        </div>
-                        <div className="p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer">
-                          <p className="text-xs font-semibold text-slate-800 dark:text-white">New message from Dr. Smith</p>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">10 mins ago</p>
-                        </div>
+                        {notifications.length === 0 && (
+                          <div className="p-4 text-center">
+                            <p className="text-xs text-slate-400 dark:text-slate-500">No notifications</p>
+                          </div>
+                        )}
+                        {notifications.map((n) => (
+                          <div key={n.id} className={`p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer ${!n.isRead ? 'bg-teal-50/40 dark:bg-teal-900/20' : ''}`}>
+                            <p className="text-xs font-semibold text-slate-800 dark:text-white">{n.title}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{n.body}</p>
+                          </div>
+                        ))}
                       </div>
                       <div className="p-3 text-center border-t border-slate-100 dark:border-slate-700">
-                        <button className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">Mark all as read</button>
+                        <button
+                          onClick={() => { markAllRead.mutate(); setShowNotifications(false); }}
+                          disabled={markAllRead.isPending}
+                          className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 disabled:opacity-50"
+                        >
+                          {markAllRead.isPending ? 'Marking…' : 'Mark all as read'}
+                        </button>
                       </div>
                     </div>
                   )}
@@ -299,8 +326,9 @@ export function NurseDashboard() {
                     <div className="border-t border-slate-100 dark:border-slate-700">
                       {patient.status === 'in-session' ? (
                         <button
-                          onClick={() => navigate(`/nurse/patient/${patient.id}/treatment`)}
-                          className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30"
+                          onClick={() => handleCompleteSession(patient.id)}
+                          disabled={updatePatient.isPending}
+                          className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 disabled:opacity-50"
                         >
                           <CheckCircle className="w-3.5 h-3.5" />
                           COMPLETE SESSION

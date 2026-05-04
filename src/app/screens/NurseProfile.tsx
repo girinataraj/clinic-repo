@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
 import {
   ChevronRight, LogOut, Bell, Shield, HelpCircle,
   Edit3, Award, Clock, Users,
@@ -28,6 +29,27 @@ export function NurseProfile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+
+  const { data: profile } = useProfile();
+  const updateProfile = useUpdateProfile();
+
+  const handleEditToggle = () => {
+    if (!editMode && profile) {
+      setEditName(profile.name);
+      setEditEmail(profile.email);
+    }
+    setEditMode(!editMode);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      await updateProfile.mutateAsync({ name: editName, email: editEmail });
+      setEditMode(false);
+    } catch { /* handled by RQ */ }
+  };
 
   const handleLogout = () => {
     logout();
@@ -55,7 +77,11 @@ export function NurseProfile() {
             <span className="absolute left-1/2 -translate-x-1/2 text-base font-extrabold text-white">My Profile</span>
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <button className="flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors w-9 h-9">
+              <button
+                onClick={handleEditToggle}
+                className="flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors w-9 h-9"
+                style={{ background: editMode ? 'rgba(251,191,36,0.3)' : undefined }}
+              >
                 <Edit3 className="w-4 h-4 text-white" />
               </button>
             </div>
@@ -76,6 +102,32 @@ export function NurseProfile() {
               ))}
             </div>
           </div>
+          {editMode && (
+            <div className="relative z-10 flex flex-col items-center px-5 pb-6 gap-3">
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full max-w-xs px-4 py-2.5 rounded-xl text-center text-sm font-bold outline-none bg-white/20 text-white border border-white/30"
+                placeholder="Name"
+              />
+              <input
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                className="w-full max-w-xs px-4 py-2.5 rounded-xl text-center text-sm font-bold outline-none bg-white/20 text-white border border-white/30"
+                placeholder="Email"
+              />
+              <button
+                onClick={handleSaveProfile}
+                disabled={updateProfile.isPending}
+                className="px-6 py-2.5 rounded-xl text-sm font-bold bg-white text-teal-700 disabled:opacity-50"
+              >
+                {updateProfile.isPending ? 'Saving…' : 'Save Profile'}
+              </button>
+              {updateProfile.isError && (
+                <p className="text-xs font-semibold text-red-300">Failed to save. Try again.</p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="px-6 max-w-5xl mx-auto w-full space-y-5 -mt-4 relative z-10 pb-6">
@@ -126,7 +178,9 @@ export function NurseProfile() {
           <div>
             <div className="flex items-center justify-between mb-3 px-1">
               <p className="text-sm font-extrabold text-slate-900 dark:text-white">Certifications</p>
-              <button className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">View All</button>
+              {certifications.length > 0 && (
+                <button className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">View All</button>
+              )}
             </div>
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
               {certifications.map((cert, i) => (

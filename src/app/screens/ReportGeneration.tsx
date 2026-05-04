@@ -97,6 +97,26 @@ export function ReportGeneration() {
     }
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `Report – ${patient?.name ?? 'Patient'}`,
+      text: `Physiotherapy Assessment Report for ${patient?.name ?? 'Patient'}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+      }
+      setAction('share');
+      setTimeout(() => setAction(null), 1500);
+    } catch {
+      // User cancelled or share failed — ignore
+    }
+  };
+
   const handleAction = (type: string) => {
     if (type === 'pdf') {
       handleDownloadPdf();
@@ -104,6 +124,10 @@ export function ReportGeneration() {
     }
     if (type === 'print') {
       handlePrintPdf();
+      return;
+    }
+    if (type === 'share') {
+      handleShare();
       return;
     }
     setAction(type);
