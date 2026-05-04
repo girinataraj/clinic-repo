@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router';
 import type { UserRole } from '../contexts/AuthContext';
-import { Home, Calendar, FileText, User, Users, ClipboardList, BarChart2, UserCog } from 'lucide-react';
+import { Home, Calendar, FileText, User, Users, ClipboardList, BarChart2, UserCog, Activity } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -19,6 +19,7 @@ const navConfig: Record<string, NavItem[]> = {
     { label: 'Home', Icon: Home, path: '/nurse' },
     { label: 'Intake', Icon: ClipboardList, path: '/nurse/intake' },
     { label: 'Patients', Icon: Users, path: '/nurse/patients' },
+    { label: 'Exercises', Icon: Activity, path: '/nurse/exercise' },
     { label: 'Profile', Icon: User, path: '/nurse/profile' },
   ],
   doctor: [

@@ -123,6 +123,9 @@ export function useUpdatePatient() {
       status?: string;
       priority?: string;
       therapistId?: string;
+      checkInTime?: string;
+      checkOutTime?: string;
+      visitType?: string;
     }) => {
       const { data } = await api.patch<{ success: boolean; data: Patient }>(
         ENDPOINTS.PATIENTS.UPDATE(id),
@@ -134,5 +137,37 @@ export function useUpdatePatient() {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       queryClient.setQueryData(['patient', updated.id], updated);
     },
+  });
+}
+
+/** Upload patient history photos (multi-file). */
+export function useUploadPatientHistory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ patientId, files }: { patientId: string; files: File[] }) => {
+      const formData = new FormData();
+      files.forEach((file) => formData.append('files', file));
+      const { data } = await api.post(
+        ENDPOINTS.PATIENTS.UPLOAD_HISTORY(patientId),
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      return data;
+    },
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['patient-history', vars.patientId] });
+    },
+  });
+}
+
+/** Fetch patient history files. */
+export function usePatientHistory(patientId: string | null | undefined) {
+  return useQuery<{ id: string; url: string; filename: string; createdAt: string }[]>({
+    queryKey: ['patient-history', patientId],
+    queryFn: async () => {
+      const { data } = await api.get(ENDPOINTS.PATIENTS.HISTORY(patientId!));
+      return (data as any).data ?? [];
+    },
+    enabled: Boolean(patientId),
   });
 }

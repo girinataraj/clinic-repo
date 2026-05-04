@@ -23,6 +23,7 @@ import { TreatmentDetailPage } from '../features/patients/pages/TreatmentDetailP
 import { NotificationPage } from './screens/NotificationPage';
 import { PatientForm } from './screens/PatientForm';
 import { TherapistHierarchy } from './screens/TherapistHierarchy';
+import { DailyReportPage } from './screens/DailyReportPage';
 
 // ── Session Loader: waits for auth initialization before routing ─────────────
 function SessionLoader({ children }: { children: React.ReactNode }) {
@@ -73,6 +74,10 @@ export const router = createBrowserRouter([
               { path: 'nurse/intake', Component: NurseIntakeForm },
               { path: 'nurse/patients', Component: NursePatients },
               { path: 'nurse/patient-form', Component: PatientForm },
+              { path: 'nurse/patient/:id', Component: PatientDetailPage },
+              { path: 'nurse/patient/:patientId/exercise', Component: ExercisePrescription },
+              { path: 'nurse/exercise', Component: ExercisePrescription },
+              { path: 'nurse/exercise-library', Component: ExerciseLibrary },
               { path: 'nurse/profile', Component: NurseProfile },
               { path: 'nurse/notifications', Component: NotificationPage },
               { path: 'nurse/patient/:patientId/treatment', Component: TreatmentDetailPage },
@@ -94,6 +99,7 @@ export const router = createBrowserRouter([
               { path: 'doctor/exercise', Component: ExercisePrescription },
               { path: 'doctor/exercise-library', Component: ExerciseLibrary },
               { path: 'doctor/report', Component: ReportGeneration },
+              { path: 'doctor/daily-report', Component: DailyReportPage },
               { path: 'doctor/revenue', Component: DoctorRevenue },
               { path: 'doctor/profile', Component: DoctorProfile },
               { path: 'doctor/notifications', Component: NotificationPage },

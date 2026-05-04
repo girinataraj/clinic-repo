@@ -8,7 +8,7 @@ import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
   Search, Bell, Eye, Edit3, FileText, CheckCircle, ClipboardList,
   Users, ChevronRight, Dumbbell, Calendar, User, UserPlus,
-  TrendingUp, Zap, Activity
+  TrendingUp, Zap, Activity, BarChart2, UserCog
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string; border: string }> = {
@@ -215,6 +215,36 @@ export function DoctorDashboard() {
             <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
               <Activity size={18} color="#2B7A78" />
             </div>
+          </div>
+
+          {/* Quick actions */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <button
+              onClick={() => navigate('/doctor/daily-report')}
+              className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md"
+              style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}
+            >
+              <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#DEF2F1' }}>
+                <BarChart2 size={18} color="#2B7A78" />
+              </div>
+              <div className="text-left">
+                <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }}>Daily Reports</p>
+                <p style={{ fontSize: '10px', color: '#2B7A78' }}>Revenue & stats by date</p>
+              </div>
+            </button>
+            <button
+              onClick={() => navigate('/doctor/therapists')}
+              className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md"
+              style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}
+            >
+              <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#DEF2F1' }}>
+                <UserCog size={18} color="#2B7A78" />
+              </div>
+              <div className="text-left">
+                <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }}>Therapists</p>
+                <p style={{ fontSize: '10px', color: '#2B7A78' }}>Assign & manage</p>
+              </div>
+            </button>
           </div>
 
           {/* Search + Tabs */}

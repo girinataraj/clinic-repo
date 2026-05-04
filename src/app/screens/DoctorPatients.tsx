@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { useAuth } from '../contexts/AuthContext';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { usePatients } from '../../hooks/usePatients';
+import { usePatients, useUpdatePatient } from '../../hooks/usePatients';
+import { useStaffUsers } from '../../hooks/useStaff';
 import { TreatmentDetailModal } from '../../features/patients/components/TreatmentDetailModal';
 import {
   Activity,
@@ -15,6 +16,9 @@ import {
   Stethoscope,
   Users,
   UserPlus,
+  UserCog,
+  RefreshCw,
+  X,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -40,6 +44,8 @@ export function DoctorPatients() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [assignPatient, setAssignPatient] = useState<{ id: string; name: string; therapistId?: string } | null>(null);
+  const [assignTarget, setAssignTarget] = useState<string | null>(null);
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
@@ -47,6 +53,8 @@ export function DoctorPatients() {
     status: statusFilter !== 'all' ? statusFilter : undefined,
     limit: 50,
   });
+  const { data: therapists = [] } = useStaffUsers({ role: 'nurse' });
+  const updatePatient = useUpdatePatient();
 
   const patients = patientsData?.data ?? [];
 
@@ -56,6 +64,20 @@ export function DoctorPatients() {
     } else {
       navigate(`/doctor/patient/${patientId}/treatment`);
     }
+  };
+
+  const handleAssign = async () => {
+    if (!assignPatient || !assignTarget) return;
+    try {
+      await updatePatient.mutateAsync({ id: assignPatient.id, therapistId: assignTarget });
+      setAssignPatient(null);
+      setAssignTarget(null);
+    } catch { /* handled by RQ */ }
+  };
+
+  const getTherapistName = (therapistId?: string) => {
+    if (!therapistId) return null;
+    return therapists.find((t) => t.id === therapistId)?.name ?? null;
   };
 
   const firstName = (user?.name || 'Doctor').replace('Dr. ', '').split(' ')[0];
@@ -297,6 +319,22 @@ export function DoctorPatients() {
                                 {patient.city}
                               </span>
                             )}
+                            {/* Therapist badge */}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setAssignPatient({ id: patient.id, name: patient.name, therapistId: patient.therapistId }); setAssignTarget(null); }}
+                              className="flex items-center gap-1 rounded-lg px-2 py-1 transition-colors hover:opacity-80"
+                              style={{
+                                background: patient.therapistId ? '#e0f2fe' : '#fef3c7',
+                                color: patient.therapistId ? '#0369a1' : '#92400e',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                border: `1px solid ${patient.therapistId ? '#bae6fd' : '#fde68a'}`,
+                              }}
+                            >
+                              <UserCog size={11} />
+                              {getTherapistName(patient.therapistId) ?? 'Unassigned'}
+                              <RefreshCw size={9} />
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -405,6 +443,89 @@ export function DoctorPatients() {
           viewerRole={user?.role ?? 'doctor'}
           onClose={() => setSelectedPatientId(null)}
         />
+      )}
+
+      {/* Therapist Assignment Modal */}
+      {assignPatient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-3xl p-5" style={{ background: '#FEFFFF', boxShadow: '0 24px 64px rgba(0,0,0,0.15)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#17252A' }}>
+                {assignPatient.therapistId ? 'Reassign' : 'Assign'} Therapist
+              </h3>
+              <button onClick={() => { setAssignPatient(null); setAssignTarget(null); }} className="p-1 rounded-lg hover:bg-slate-100">
+                <X size={16} color="#64748b" />
+              </button>
+            </div>
+            <p style={{ fontSize: '11px', color: '#2B7A78', marginBottom: '12px' }}>
+              Patient: <strong>{assignPatient.name}</strong>
+            </p>
+
+            {/* Current */}
+            {assignPatient.therapistId && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3" style={{ background: '#DEF2F1', border: '1px solid #b2dfdb' }}>
+                <UserCog size={13} color="#2B7A78" />
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#2B7A78' }}>
+                  Current: {getTherapistName(assignPatient.therapistId) ?? 'Unknown'}
+                </span>
+              </div>
+            )}
+
+            {/* Therapist list */}
+            <div className="flex flex-col gap-1.5 max-h-52 overflow-y-auto mb-4">
+              {therapists.length === 0 && (
+                <p className="text-center py-4 text-[11px] text-slate-400 font-semibold">No therapists found.</p>
+              )}
+              {therapists.map((t) => {
+                const isCurrent = assignPatient.therapistId === t.id;
+                const isSelected = assignTarget === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => !isCurrent && setAssignTarget(t.id)}
+                    disabled={isCurrent}
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors"
+                    style={{
+                      background: isSelected ? '#DEF2F1' : '#FEFFFF',
+                      border: isSelected ? '2px solid #3AAFA9' : '1px solid #DEF2F1',
+                      opacity: isCurrent ? 0.4 : 1,
+                      cursor: isCurrent ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: '30px', height: '30px', background: isSelected ? '#3AAFA9' : '#DEF2F1' }}>
+                      <UserCog size={13} color={isSelected ? '#FEFFFF' : '#2B7A78'} />
+                    </div>
+                    <div className="flex-1">
+                      <p style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{t.name}</p>
+                      <p style={{ fontSize: '10px', color: '#2B7A78' }}>
+                        {isCurrent ? 'Currently assigned' : t.displayId}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => { setAssignPatient(null); setAssignTarget(null); }}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold"
+                style={{ background: '#DEF2F1', color: '#2B7A78' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAssign}
+                disabled={!assignTarget || updatePatient.isPending}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50"
+                style={{ background: '#2B7A78', color: '#FEFFFF' }}
+              >
+                {updatePatient.isPending ? 'Saving…' : 'Confirm'}
+              </button>
+            </div>
+            {updatePatient.isError && <p className="text-[11px] font-semibold text-red-600 text-center mt-2">Failed to assign. Try again.</p>}
+          </div>
+        </div>
       )}
     </div>
   );

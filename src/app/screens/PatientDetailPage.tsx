@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
+import { PatientHistoryUpload } from '../components/PatientHistoryUpload';
 import { usePatient } from '../../hooks/usePatients';
 import { useLatestEvaluation, useUpdateEvaluation } from '../../hooks/useEvaluations';
 import {
@@ -15,13 +16,14 @@ import {
   StickyNote,
   Dumbbell,
   Save,
+  ImagePlus,
 } from 'lucide-react';
 
 const funcLabels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
 const funcColors: Record<number, string> = { 0: '#3AAFA9', 1: '#3AAFA9', 2: '#2B7A78', 3: '#2B7A78', 4: '#17252A' };
 const painColors = ['#3AAFA9', '#3AAFA9', '#3AAFA9', '#2B7A78', '#2B7A78', '#2B7A78', '#17252A', '#17252A', '#17252A', '#17252A', '#17252A'];
 
-const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes'];
+const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes', 'History'];
 
 export function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -453,6 +455,13 @@ export function PatientDetailPage() {
                 {updateEvaluation.isPending ? 'Saving…' : 'Save Notes'}
               </button>
             )}
+          </div>
+        )}
+
+        {/* History Tab */}
+        {activeTab === 'History' && patientId && (
+          <div className="rounded-2xl p-5" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 2px 12px rgba(23,37,42,0.04)' }}>
+            <PatientHistoryUpload patientId={patientId} patientName={patient?.name} />
           </div>
         )}
       </div>

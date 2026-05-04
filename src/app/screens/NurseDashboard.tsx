@@ -7,7 +7,7 @@ import { useNotifications, useUnreadNotificationCount, useMarkAllNotificationsRe
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
   Bell, ClipboardList, Clock, CheckCircle, ChevronRight,
-  UserPlus, User, Zap, Search,
+  UserPlus, User, Zap, Search, LogIn, LogOut,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -50,9 +50,17 @@ export function NurseDashboard() {
 
   const handleCompleteSession = async (patientId: string) => {
     try {
-      await updatePatient.mutateAsync({ id: patientId, status: 'completed' });
+      await updatePatient.mutateAsync({ id: patientId, status: 'completed', checkOutTime: new Date().toISOString() });
     } catch (err) {
       console.error('Failed to complete session', err);
+    }
+  };
+
+  const handleCheckIn = async (patientId: string) => {
+    try {
+      await updatePatient.mutateAsync({ id: patientId, status: 'in-session', checkInTime: new Date().toISOString() });
+    } catch (err) {
+      console.error('Failed to check in', err);
     }
   };
 
@@ -311,7 +319,7 @@ export function NurseDashboard() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{patient.condition ?? '—'} · Age {patient.age}</p>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600">
                           <Clock className="w-2.5 h-2.5 text-slate-400" />
                           <span className="text-[11px] text-slate-600 dark:text-slate-300 font-bold">{patient.displayId}</span>
@@ -319,28 +327,59 @@ export function NurseDashboard() {
                         <span className="px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600 text-[11px] text-slate-400 dark:text-slate-500 font-semibold">
                           {patient.phone}
                         </span>
+                        {patient.visitType && (
+                          <span className="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-900/30 border border-teal-100 dark:border-teal-800 text-[10px] text-teal-700 dark:text-teal-400 font-bold">
+                            {patient.visitType}
+                          </span>
+                        )}
                       </div>
+                      {/* Check-in / Check-out times */}
+                      {(patient.checkInTime || patient.checkOutTime) && (
+                        <div className="flex items-center gap-3 mt-1.5 text-[10px] text-slate-400">
+                          {patient.checkInTime && (
+                            <span className="flex items-center gap-0.5">
+                              <LogIn className="w-2.5 h-2.5" /> In: {new Date(patient.checkInTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                          {patient.checkOutTime && (
+                            <span className="flex items-center gap-0.5">
+                              <LogOut className="w-2.5 h-2.5" /> Out: {new Date(patient.checkOutTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   {patient.status !== 'completed' && (
-                    <div className="border-t border-slate-100 dark:border-slate-700">
-                      {patient.status === 'in-session' ? (
+                    <div className="border-t border-slate-100 dark:border-slate-700 flex">
+                      {patient.status === 'waiting' && !patient.checkInTime && (
+                        <button
+                          onClick={() => handleCheckIn(patient.id)}
+                          disabled={updatePatient.isPending}
+                          className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 disabled:opacity-50 border-r border-slate-100 dark:border-slate-700"
+                        >
+                          <LogIn className="w-3.5 h-3.5" />
+                          CHECK IN
+                        </button>
+                      )}
+                      {patient.status === 'waiting' && (
+                        <button
+                          onClick={() => navigate(`/nurse/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
+                          className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/30"
+                        >
+                          <ClipboardList className="w-3.5 h-3.5" />
+                          Start Intake
+                          <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
+                        </button>
+                      )}
+                      {patient.status === 'in-session' && (
                         <button
                           onClick={() => handleCompleteSession(patient.id)}
                           disabled={updatePatient.isPending}
-                          className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 disabled:opacity-50"
                         >
-                          <CheckCircle className="w-3.5 h-3.5" />
-                          COMPLETE SESSION
-                          <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => navigate(`/nurse/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
-                          className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/30"
-                        >
-                          <ClipboardList className="w-3.5 h-3.5" />
-                          Start Intake Form
+                          <LogOut className="w-3.5 h-3.5" />
+                          CHECK OUT
                           <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
                         </button>
                       )}

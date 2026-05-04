@@ -42,6 +42,23 @@ export function useEvaluations(params?: { patientId?: string; status?: string; p
   });
 }
 
+/** Fetch all evaluations (no patientId filter required). For reports/dashboards. */
+export function useAllEvaluations(params?: { status?: string; page?: number; limit?: number }) {
+  return useQuery<EvaluationsListResponse>({
+    queryKey: ['evaluations', 'all', params],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<Evaluation[]>>(
+        ENDPOINTS.EVALUATIONS.LIST,
+        { params }
+      );
+      return {
+        data: data.data,
+        total: data.meta?.total ?? data.data.length,
+      };
+    },
+  });
+}
+
 /** Fetch a single evaluation by its own ID. */
 export function useEvaluation(id: string | null | undefined) {
   return useQuery<Evaluation>({

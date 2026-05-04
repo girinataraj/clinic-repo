@@ -28,6 +28,8 @@ export const ENDPOINTS = {
     UPDATE: (id: string) => `/patients/${id}`,
     RECORDS: (id: string) => `/patients/${id}/records`,
     EXERCISE_PLANS: (patientId: string) => `/patients/${patientId}/exercise-plans`,
+    HISTORY: (patientId: string) => `/patients/${patientId}/history`,
+    UPLOAD_HISTORY: (patientId: string) => `/patients/${patientId}/history/upload`,
   },
 
   EVALUATIONS: {
@@ -68,6 +70,7 @@ export const ENDPOINTS = {
 
   REPORTS: {
     PDF: (evaluationId: string) => `/reports/${evaluationId}/pdf`,
+    DAILY: '/reports/daily',
   },
 
   REVENUE: {

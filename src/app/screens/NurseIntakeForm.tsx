@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect, type ChangeEvent } from 'react';
+import { useState, useCallback, useEffect, useRef, type ChangeEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
-import { useCreateEvaluation } from '../../hooks/useEvaluations';
+import { useCreateEvaluation, useLatestEvaluation } from '../../hooks/useEvaluations';
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../hooks/usePatients';
 import { useStaffUsers } from '../../hooks/useStaff';
 import { useAppConfigScope } from '../../hooks/useAppConfig';
@@ -97,6 +97,68 @@ const defaultIntakeConfig: ResolvedIntakeConfig = {
     ],
   },
 };
+
+// ── Searchable multi-select dropdown for associated pains ──────────────────
+function PainSearchDropdown({ options, selected, onChange }: {
+  options: string[];
+  selected: string[];
+  onChange: (val: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = options.filter(
+    (o) => o.toLowerCase().includes(search.toLowerCase()) && !selected.includes(o)
+  );
+
+  return (
+    <div ref={ref} className="relative">
+      <div
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 cursor-pointer hover:border-fuchsia-400 transition-colors"
+      >
+        <Search size={14} className="text-slate-400 shrink-0" />
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          placeholder={selected.length > 0 ? `${selected.length} selected — type to add more…` : 'Search pains / symptoms…'}
+          className="flex-1 bg-transparent outline-none text-[12px] text-slate-800 dark:text-white placeholder:text-slate-400"
+        />
+        <ChevronDown size={13} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </div>
+      {open && (
+        <div className="absolute z-20 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
+          {filtered.length === 0 && (
+            <p className="px-3 py-3 text-[11px] text-slate-400 text-center font-semibold">
+              {search ? 'No matching pains found' : 'All options selected'}
+            </p>
+          )}
+          {filtered.map((pain) => (
+            <button
+              key={pain}
+              type="button"
+              onClick={() => { onChange([...selected, pain]); setSearch(''); }}
+              className="w-full flex items-center gap-2 px-3.5 py-2.5 text-left text-[12px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/20 transition-colors border-b border-slate-50 dark:border-slate-800 last:border-0"
+            >
+              <span className="w-4 h-4 rounded border border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 text-[10px]" />
+              {pain}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function NurseIntakeForm() {
   const navigate = useNavigate();
@@ -226,13 +288,28 @@ export function NurseIntakeForm() {
   const [funcRatings, setFuncRatings] = useState<Record<string, number>>({});
   const [complaints, setComplaints] = useState('');
   const [associated, setAssociated] = useState('');
+  const [associatedPains, setAssociatedPains] = useState<string[]>([]);
   const [intakePhoto, setIntakePhoto] = useState<File | null>(null);
   const [intakePhotoUrl, setIntakePhotoUrl] = useState<string | null>(null);
   const [photoInputKey, setPhotoInputKey] = useState(0);
   const [paymentMode, setPaymentMode] = useState<'Cash' | 'UPI' | ''>('');
   const [billAmount, setBillAmount] = useState<number | null>(null);
   const [billAmountInput, setBillAmountInput] = useState('');
-  const [visitType, setVisitType] = useState<'Clinic' | 'Home'>('Clinic');
+  const [visitType, setVisitType] = useState<'Clinic' | 'Home Visit' | 'IP' | 'Day Care'>('Clinic');
+
+  // Associated pains options
+  const associatedPainOptions = [
+    'Radiating Pain', 'Referred Pain', 'Joint Stiffness', 'Muscle Spasm',
+    'Numbness', 'Tingling', 'Burning Sensation', 'Swelling',
+    'Weakness', 'Fatigue', 'Headache', 'Dizziness',
+    'Sleep Disturbance', 'Difficulty Walking', 'Restricted Movement',
+  ];
+
+  // ── Follow-up detection ───────────────────────────────────────────────────
+  const { data: previousEval, isLoading: loadingPrevEval } = useLatestEvaluation(
+    resolvedPatientId || null
+  );
+  const isFollowUp = Boolean(previousEval);
 
   const resolvedIntakeConfig = {
     symptoms: nonEmptyOrDefault(intakeConfig?.symptoms, defaultIntakeConfig.symptoms),
@@ -348,7 +425,6 @@ export function NurseIntakeForm() {
 
     try {
       const finalSymptoms = [...checkedSymptoms];
-      if (visitType) finalSymptoms.push(`Visit Type: ${visitType} Visit`);
       if (otherSymptom.trim()) finalSymptoms.push(`Other: ${otherSymptom.trim()}`);
       if (associated.trim()) finalSymptoms.push(`Notes: ${associated.trim()}`);
 
@@ -365,6 +441,8 @@ export function NurseIntakeForm() {
         status: 'submitted',
         paymentMode,
         billAmount,
+        visitType,
+        associatedPains: associatedPains.length > 0 ? associatedPains : undefined,
       });
       setSaved(true);
       setTimeout(() => navigate(`/${currentRole}`), 2000);
@@ -593,6 +671,48 @@ export function NurseIntakeForm() {
 
       {/* Scrollable form content */}
       <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full">
+
+        {/* Follow-up Banner */}
+        {resolvedPatientId && isFollowUp && previousEval && (
+          <div className="mb-4 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-2 mb-2">
+              <ClipboardList size={16} className="text-blue-600 dark:text-blue-400" />
+              <span className="text-[13px] font-extrabold text-blue-800 dark:text-blue-300">Follow-up Visit</span>
+              <span className="ml-auto text-[10px] font-bold text-blue-500 bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 rounded-full">
+                Previous: {new Date(previousEval.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+              {previousEval.bp && (
+                <p className="text-slate-600 dark:text-slate-400"><span className="font-bold">BP:</span> {previousEval.bp}</p>
+              )}
+              {previousEval.painLevel !== undefined && (
+                <p className="text-slate-600 dark:text-slate-400"><span className="font-bold">Pain:</span> {previousEval.painLevel}/10</p>
+              )}
+              {previousEval.chiefComplaints && (
+                <p className="col-span-2 text-slate-600 dark:text-slate-400"><span className="font-bold">Complaints:</span> {previousEval.chiefComplaints}</p>
+              )}
+              {previousEval.associatedSymptoms && previousEval.associatedSymptoms.length > 0 && (
+                <p className="col-span-2 text-slate-600 dark:text-slate-400">
+                  <span className="font-bold">Symptoms:</span> {previousEval.associatedSymptoms.slice(0, 4).join(', ')}
+                  {previousEval.associatedSymptoms.length > 4 && ` +${previousEval.associatedSymptoms.length - 4} more`}
+                </p>
+              )}
+              {previousEval.visitType && (
+                <p className="text-slate-600 dark:text-slate-400"><span className="font-bold">Visit:</span> {previousEval.visitType}</p>
+              )}
+              {previousEval.diagnosis && (
+                <p className="col-span-2 text-slate-600 dark:text-slate-400"><span className="font-bold">Diagnosis:</span> {previousEval.diagnosis}</p>
+              )}
+            </div>
+          </div>
+        )}
+        {resolvedPatientId && loadingPrevEval && (
+          <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800">
+            <Loader2 size={13} className="animate-spin text-teal-600" />
+            <span className="text-[11px] text-slate-500 font-semibold">Checking for previous assessments…</span>
+          </div>
+        )}
 
         {/* Step 1: Patient Info */}
         {step === 0 && (
@@ -1009,13 +1129,40 @@ export function NurseIntakeForm() {
             </div>
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
               <h3 className="text-[15px] font-extrabold text-slate-900 dark:text-white mb-2.5">
-                Associated Symptoms
+                Associated Pains / Symptoms
               </h3>
+
+              {/* Selected chips */}
+              {associatedPains.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {associatedPains.map((pain) => (
+                    <span key={pain} className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-fuchsia-50 dark:bg-fuchsia-900/20 text-fuchsia-700 dark:text-fuchsia-300 border border-fuchsia-200 dark:border-fuchsia-800">
+                      {pain}
+                      <button
+                        type="button"
+                        onClick={() => setAssociatedPains(prev => prev.filter(x => x !== pain))}
+                        className="ml-0.5 text-fuchsia-400 hover:text-fuchsia-600 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Searchable dropdown */}
+              <PainSearchDropdown
+                options={associatedPainOptions}
+                selected={associatedPains}
+                onChange={setAssociatedPains}
+              />
+
+              {/* Free-text notes */}
               <textarea
                 value={associated}
                 onChange={(e) => setAssociated(e.target.value)}
-                placeholder="Any other symptoms the patient is experiencing..."
-                className="w-full h-[80px] outline-none resize-none px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                placeholder="Additional notes on associated symptoms…"
+                className="w-full h-[60px] outline-none resize-none px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 mt-3"
               />
             </div>
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
@@ -1116,25 +1263,25 @@ export function NurseIntakeForm() {
 
               {/* Summary */}
               <div className="flex flex-col gap-0">
-                {/* Visit Type Selection - Integrated at the top */}
+                {/* Visit Type Selection - 4 options */}
                 <div className="pb-4 mb-2 border-b border-slate-100 dark:border-slate-800 border-opacity-50">
                   <label className="block text-[11px] font-black text-teal-600 dark:text-teal-400 mb-2 uppercase tracking-widest">
-                    Select Visit Type
+                    Visit Type
                   </label>
-                  <div className="flex gap-2">
-                    {['Clinic', 'Home'].map((v) => {
+                  <div className="grid grid-cols-2 gap-2">
+                    {['Clinic', 'Home Visit', 'IP', 'Day Care'].map((v) => {
                       const isSelected = visitType === v;
                       return (
                         <button
                           key={v}
-                          onClick={() => setVisitType(v as 'Clinic' | 'Home')}
-                          className={`flex-1 py-2.5 rounded-xl text-[12px] font-bold border-2 transition-all ${
+                          onClick={() => setVisitType(v as typeof visitType)}
+                          className={`py-2.5 rounded-xl text-[12px] font-bold border-2 transition-all ${
                             isSelected
                               ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
                               : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-slate-500'
                           }`}
                         >
-                          {v} Visit
+                          {v}
                         </button>
                       );
                     })}

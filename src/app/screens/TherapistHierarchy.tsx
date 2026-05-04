@@ -10,11 +10,15 @@ import {
   Mail, Lock, Eye, EyeOff, CheckCircle, X,
 } from 'lucide-react';
 
+const MAX_ACTIVE_PATIENTS = 2;
+
 interface TherapistNode {
   id: string;
   name: string;
   displayId: string;
   patients: Patient[];
+  activeCount: number;
+  atCapacity: boolean;
 }
 
 export function TherapistHierarchy() {
@@ -45,12 +49,18 @@ export function TherapistHierarchy() {
 
   // ── Hierarchy ─────────────────────────────────────────────────────────────
   const hierarchy: TherapistNode[] = useMemo(() => {
-    return therapists.map((t) => ({
-      id: t.id,
-      name: t.name,
-      displayId: t.displayId,
-      patients: allPatients.filter((p) => p.therapistId === t.id),
-    }));
+    return therapists.map((t) => {
+      const pts = allPatients.filter((p) => p.therapistId === t.id);
+      const activeCount = pts.filter((p) => p.status === 'waiting' || p.status === 'in-session').length;
+      return {
+        id: t.id,
+        name: t.name,
+        displayId: t.displayId,
+        patients: pts,
+        activeCount,
+        atCapacity: activeCount >= MAX_ACTIVE_PATIENTS,
+      };
+    });
   }, [therapists, allPatients]);
 
   const unassigned = useMemo(() => allPatients.filter((p) => !p.therapistId), [allPatients]);
@@ -217,6 +227,9 @@ export function TherapistHierarchy() {
                         <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }} className="truncate">{node.name}</p>
                         <p style={{ fontSize: '10px', color: '#2B7A78' }}>{node.displayId} · {node.patients.length} patient{node.patients.length !== 1 ? 's' : ''}</p>
                       </div>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${node.atCapacity ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                        {node.activeCount}/{MAX_ACTIVE_PATIENTS}
+                      </span>
                       {isExpanded ? <ChevronDown size={16} color="#3AAFA9" /> : <ChevronRight size={16} color="#2B7A78" />}
                     </button>
                   </div>
@@ -303,16 +316,21 @@ export function TherapistHierarchy() {
               {therapists.map((t) => {
                 const isCurrent = reassignPatient.therapistId === t.id;
                 const isSelected = reassignTarget === t.id;
+                const node = hierarchy.find((h) => h.id === t.id);
+                const isFull = node?.atCapacity && !isCurrent;
+                const isDisabled = isCurrent || isFull;
                 return (
-                  <button key={t.id} onClick={() => !isCurrent && setReassignTarget(t.id)} disabled={isCurrent}
+                  <button key={t.id} onClick={() => !isDisabled && setReassignTarget(t.id)} disabled={isDisabled}
                     className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors"
-                    style={{ background: isSelected ? '#DEF2F1' : '#FEFFFF', border: isSelected ? '2px solid #3AAFA9' : '1px solid #DEF2F1', opacity: isCurrent ? 0.4 : 1, cursor: isCurrent ? 'not-allowed' : 'pointer' }}>
+                    style={{ background: isSelected ? '#DEF2F1' : '#FEFFFF', border: isSelected ? '2px solid #3AAFA9' : '1px solid #DEF2F1', opacity: isDisabled ? 0.4 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}>
                     <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: '30px', height: '30px', background: isSelected ? '#3AAFA9' : '#DEF2F1' }}>
                       <UserCog size={13} color={isSelected ? '#FEFFFF' : '#2B7A78'} />
                     </div>
                     <div className="flex-1">
                       <p style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{t.name}</p>
-                      <p style={{ fontSize: '10px', color: '#2B7A78' }}>{isCurrent ? 'Currently assigned' : t.displayId}</p>
+                      <p style={{ fontSize: '10px', color: isFull ? '#dc2626' : '#2B7A78' }}>
+                        {isCurrent ? 'Currently assigned' : isFull ? `Full (${node?.activeCount}/${MAX_ACTIVE_PATIENTS})` : `${node?.activeCount ?? 0}/${MAX_ACTIVE_PATIENTS} active`}
+                      </p>
                     </div>
                   </button>
                 );

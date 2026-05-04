@@ -13,6 +13,7 @@ export interface AuthUser {
 // ─── Patient ───────────────────────────────────────────────────────────────────
 export type PatientStatus = 'waiting' | 'in-session' | 'completed';
 export type PatientPriority = 'high' | 'medium' | 'low';
+export type VisitType = 'Clinic' | 'Home Visit' | 'IP' | 'Day Care';
 
 export interface Patient {
   id: string;
@@ -28,6 +29,9 @@ export interface Patient {
   priority: PatientPriority;
   therapistId?: string;
   therapistName?: string;
+  visitType?: VisitType;
+  checkInTime?: string;
+  checkOutTime?: string;
   createdAt: string;
 }
 
@@ -77,6 +81,8 @@ export interface Evaluation {
   referredBy?: string;
   paymentMode?: string;
   billAmount?: number;
+  visitType?: VisitType;
+  associatedPains?: string[];
   // Meta
   createdBy: EvaluationCreatedBy;
   updatedBy?: EvaluationCreatedBy;
@@ -125,6 +131,8 @@ export interface CreateEvaluationPayload {
   status?: 'draft' | 'submitted';
   paymentMode?: string;
   billAmount?: number;
+  visitType?: VisitType;
+  associatedPains?: string[];
 }
 
 // ─── Appointment ───────────────────────────────────────────────────────────────

@@ -24,6 +24,7 @@ const navConfig: Record<UserRole, NavItem[]> = {
     { label: 'Dashboard', Icon: Home, path: '/nurse' },
     { label: 'Intake Form', Icon: ClipboardList, path: '/nurse/intake' },
     { label: 'Patients', Icon: Users, path: '/nurse/patients' },
+    { label: 'Exercises', Icon: Activity, path: '/nurse/exercise' },
     { label: 'Profile', Icon: User, path: '/nurse/profile' },
   ],
   doctor: [
