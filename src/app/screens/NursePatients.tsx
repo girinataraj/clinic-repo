@@ -5,11 +5,10 @@ import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { usePatients } from '../../hooks/usePatients';
-import { useUnreadNotificationCount } from '../../hooks/useNotifications';
+
 import { TreatmentDetailModal } from '../../features/patients/components/TreatmentDetailModal';
 import {
   AlertTriangle,
-  Bell,
   CalendarClock,
   ChevronRight,
   ClipboardList,
@@ -47,13 +46,13 @@ export function NursePatients() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  // ── Live notifications ──────────────────────────────────────────────────
-  const { data: unreadCount = 0 } = useUnreadNotificationCount();
+
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
+    therapistId: user?.id,
     limit: 50,
   });
 
@@ -110,17 +109,6 @@ export function NursePatients() {
               </div>
               <div className="flex items-center gap-2">
                 <ThemeToggle />
-                <button
-                  onClick={() => navigate('/nurse/notifications')}
-                  className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 backdrop-blur-sm"
-                >
-                  <Bell className="w-5 h-5 text-white" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm border border-red-400">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )}
-                </button>
                 <button
                   onClick={() => navigate('/nurse/profile')}
                   className="p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 backdrop-blur-sm shadow-sm"

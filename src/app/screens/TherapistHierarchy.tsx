@@ -10,7 +10,8 @@ import {
   Mail, Lock, Eye, EyeOff, CheckCircle, X,
 } from 'lucide-react';
 
-const MAX_ACTIVE_PATIENTS = 2;
+// The limit of 2 is only for slot booking, not for assignment.
+const MAX_BOOKING_CAPACITY = 2;
 
 interface TherapistNode {
   id: string;
@@ -58,7 +59,7 @@ export function TherapistHierarchy() {
         displayId: t.displayId,
         patients: pts,
         activeCount,
-        atCapacity: activeCount >= MAX_ACTIVE_PATIENTS,
+        atCapacity: false, // Capacity limit removed for assignment
       };
     });
   }, [therapists, allPatients]);
@@ -227,8 +228,8 @@ export function TherapistHierarchy() {
                         <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }} className="truncate">{node.name}</p>
                         <p style={{ fontSize: '10px', color: '#262842' }}>{node.displayId} · {node.patients.length} patient{node.patients.length !== 1 ? 's' : ''}</p>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${node.atCapacity ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                        {node.activeCount}/{MAX_ACTIVE_PATIENTS}
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                        {node.activeCount} active
                       </span>
                       {isExpanded ? <ChevronDown size={16} color="#3B3E66" /> : <ChevronRight size={16} color="#262842" />}
                     </button>
@@ -317,8 +318,8 @@ export function TherapistHierarchy() {
                 const isCurrent = reassignPatient.therapistId === t.id;
                 const isSelected = reassignTarget === t.id;
                 const node = hierarchy.find((h) => h.id === t.id);
-                const isFull = node?.atCapacity && !isCurrent;
-                const isDisabled = isCurrent || isFull;
+                const isFull = false; // Never full for assignment
+                const isDisabled = isCurrent;
                 return (
                   <button key={t.id} onClick={() => !isDisabled && setReassignTarget(t.id)} disabled={isDisabled}
                     className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors"
@@ -329,7 +330,7 @@ export function TherapistHierarchy() {
                     <div className="flex-1">
                       <p style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{t.name}</p>
                       <p style={{ fontSize: '10px', color: isFull ? '#dc2626' : '#262842' }}>
-                        {isCurrent ? 'Currently assigned' : isFull ? `Full (${node?.activeCount}/${MAX_ACTIVE_PATIENTS})` : `${node?.activeCount ?? 0}/${MAX_ACTIVE_PATIENTS} active`}
+                        {isCurrent ? 'Currently assigned' : `${node?.activeCount ?? 0} active`}
                       </p>
                     </div>
                   </button>

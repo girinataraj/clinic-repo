@@ -142,7 +142,7 @@ export function AssessmentForm() {
         <div className="flex flex-col items-center p-8 rounded-3xl mx-6 bg-white shadow-xl border border-slate-100">
           <div className="rounded-full flex items-center justify-center mb-4 w-20 h-20 bg-emerald-50"><Check className="w-11 h-11 text-emerald-500" /></div>
           <h2 className="text-xl font-extrabold text-slate-900 text-center">Assessment Saved!</h2>
-          <p className="text-[13px] text-slate-500 text-center mt-2">Patient assessment data saved successfully.</p>
+          <p className="text-[13px] text-slate-500 text-center mt-2">Assessment saved and session started.</p>
         </div>
       </div>
     );

@@ -13,6 +13,8 @@ import {
   Clock,
   MessageSquare,
   AlertTriangle,
+  UserCog,
+  User,
 } from 'lucide-react';
 
 function getDaysInMonth(year: number, month: number) {
@@ -62,9 +64,10 @@ export function AppointmentBooking() {
   const { user } = useAuth();
   const { data: appointmentConfig } = useAppConfigScope('appointment');
   const { data: doctors = [], isLoading: doctorsLoading } = useStaffUsers({ role: 'doctor' });
+  const { data: therapists = [], isLoading: therapistsLoading } = useStaffUsers({ role: 'nurse' });
   const createAppointment = useCreateAppointment();
   const today = new Date();
-  const selectedDoctor = doctors[0]?.id;
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -159,7 +162,7 @@ export function AppointmentBooking() {
 
   // ── Submit ───────────────────────────────────────────────────────────────
   const handleConfirm = async () => {
-    if (!selectedDate || !selectedSlot || !selectedDoctor) return;
+    if (!selectedDate || !selectedSlot || !selectedStaffId) return;
     const patientId = (user as any)?.patient_id ?? user?.id;
     if (!patientId) {
       setSubmitError('Patient record is missing for this account.');
@@ -176,7 +179,7 @@ export function AppointmentBooking() {
       setSubmitError(null);
       await createAppointment.mutateAsync({
         patientId,
-        doctorId: selectedDoctor,
+        doctorId: selectedStaffId,
         datetime: buildAppointmentDate(currentYear, currentMonth, selectedDate, selectedSlot),
         reason: selectedReason || reason || undefined,
         notes: reason || undefined,
@@ -237,6 +240,71 @@ export function AppointmentBooking() {
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full" style={{ background: '#f0f4ff' }}>
+        
+        {/* Staff Selection */}
+        <div style={{ marginBottom: '16px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '10px' }}>
+            <User size={14} style={{ display: 'inline', marginRight: '6px', color: '#64748b' }} />
+            Select Professional
+          </h3>
+          <div className="flex flex-col gap-2">
+            {/* Doctors */}
+            <div className="flex flex-col gap-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Doctors</p>
+              <div className="grid grid-cols-1 gap-2">
+                {doctors.map(d => (
+                  <button
+                    key={d.id}
+                    onClick={() => setSelectedStaffId(d.id)}
+                    className="flex items-center gap-3 p-3 rounded-2xl text-left transition-all"
+                    style={{
+                      background: selectedStaffId === d.id ? '#eff6ff' : 'white',
+                      border: `2px solid ${selectedStaffId === d.id ? '#2563eb' : 'transparent'}`,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    }}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-700">
+                      <User size={20} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[13px] font-bold text-slate-900">{d.name}</p>
+                      <p className="text-[11px] text-slate-500">Physiotherapy Specialist</p>
+                    </div>
+                    {selectedStaffId === d.id && <CheckCircle size={18} className="text-blue-600" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Therapists */}
+            <div className="flex flex-col gap-2 mt-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Therapists</p>
+              <div className="grid grid-cols-1 gap-2">
+                {therapists.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setSelectedStaffId(t.id)}
+                    className="flex items-center gap-3 p-3 rounded-2xl text-left transition-all"
+                    style={{
+                      background: selectedStaffId === t.id ? '#f0fdfa' : 'white',
+                      border: `2px solid ${selectedStaffId === t.id ? '#0d9488' : 'transparent'}`,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    }}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center text-teal-700">
+                      <UserCog size={20} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[13px] font-bold text-slate-900">{t.name}</p>
+                      <p className="text-[11px] text-slate-500">Therapist · SAAI Clinic</p>
+                    </div>
+                    {selectedStaffId === t.id && <CheckCircle size={18} className="text-teal-600" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
 
 
         {/* Calendar */}
@@ -419,15 +487,15 @@ export function AppointmentBooking() {
         {/* Confirm button */}
         <button
           onClick={handleConfirm}
-          disabled={!selectedDate || !selectedSlot || !selectedDoctor || createAppointment.isPending}
+          disabled={!selectedDate || !selectedSlot || !selectedStaffId || createAppointment.isPending}
           className="w-full py-4 rounded-2xl"
           style={{
-            background: selectedDate && selectedSlot && selectedDoctor
+            background: selectedDate && selectedSlot && selectedStaffId
               ? 'linear-gradient(135deg, #1d4ed8, #2563eb)'
               : '#e2e8f0',
-            color: selectedDate && selectedSlot && selectedDoctor ? 'white' : '#94a3b8',
+            color: selectedDate && selectedSlot && selectedStaffId ? 'white' : '#94a3b8',
             fontSize: '16px', fontWeight: 700,
-            boxShadow: selectedDate && selectedSlot && selectedDoctor ? '0 8px 24px rgba(37,99,235,0.3)' : 'none',
+            boxShadow: selectedDate && selectedSlot && selectedStaffId ? '0 8px 24px rgba(37,99,235,0.3)' : 'none',
             marginBottom: '8px',
           }}
         >

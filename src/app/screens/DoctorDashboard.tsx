@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { usePatients, useUpdatePatient } from '../../hooks/usePatients';
-import { useNotifications, useUnreadNotificationCount, useMarkAllNotificationsRead } from '../../hooks/useNotifications';
+
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
-  Search, Bell, Eye, Edit3, FileText, CheckCircle, ClipboardList,
+  Search, Eye, Edit3, FileText, CheckCircle, ClipboardList,
   Users, ChevronRight, Dumbbell, Calendar, User, UserPlus,
   TrendingUp, Zap, Activity, BarChart2, UserCog
 } from 'lucide-react';
@@ -24,13 +24,10 @@ export function DoctorDashboard() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
-  const [showNotifications, setShowNotifications] = useState(false);
+
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  // ── Live notifications ────────────────────────────────────────────────────
-  const { data: notifications = [] } = useNotifications({ limit: 5 });
-  const { data: unreadCount = 0 } = useUnreadNotificationCount();
-  const markAllRead = useMarkAllNotificationsRead();
+
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
@@ -91,59 +88,6 @@ export function DoctorDashboard() {
                 </p>
               </div>
               <div className="flex items-center gap-3 relative z-50">
-                {/* Notification Dropdown */}
-                <div className="relative">
-                  <button 
-                    onClick={() => {
-                      if (window.innerWidth >= 768) {
-                        navigate('/doctor/notifications');
-                      } else {
-                        setShowNotifications(!showNotifications);
-                        setShowProfileMenu(false);
-                      }
-                    }}
-                    className="flex items-center justify-center rounded-2xl transition-all duration-300 relative z-50"
-                    style={{ width: '48px', height: '48px', background: 'rgba(254, 255, 255, 0.15)', border: '1px solid rgba(254, 255, 255, 0.2)' }}>
-                    <Bell size={22} color="#FEFFFF" />
-                  </button>
-                  {unreadCount > 0 && (
-                    <div className="absolute -top-1 -right-1 rounded-full flex items-center justify-center pointer-events-none"
-                      style={{ width: '18px', height: '18px', background: '#17252A', fontSize: '10px', color: '#FEFFFF', fontWeight: 700, border: '2px solid #3B3E66' }}>
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </div>
-                  )}
-                  
-                  {/* Only show notifications dropdown on mobile */}
-                  {showNotifications && (
-                    <div className="md:hidden absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden text-left">
-                      <div className="p-4 border-b border-slate-100 bg-slate-50">
-                        <h3 className="text-sm font-bold text-slate-800">Notifications</h3>
-                      </div>
-                      <div className="max-h-64 overflow-y-auto">
-                        {notifications.length === 0 && (
-                          <div className="p-4 text-center">
-                            <p className="text-xs text-slate-400">No notifications</p>
-                          </div>
-                        )}
-                        {notifications.map((n) => (
-                          <div key={n.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer ${!n.isRead ? 'bg-indigo-50/40' : ''}`}>
-                            <p className="text-xs font-semibold text-slate-800">{n.title}</p>
-                            <p className="text-[10px] text-slate-500 mt-1">{n.body}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="p-3 text-center border-t border-slate-100">
-                        <button
-                          onClick={() => { markAllRead.mutate(); setShowNotifications(false); }}
-                          disabled={markAllRead.isPending}
-                          className="text-xs font-bold text-indigo-900 hover:text-indigo-950 disabled:opacity-50"
-                        >
-                          {markAllRead.isPending ? 'Marking…' : 'Mark all as read'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
 
                 {/* Profile Button */}
                 <div className="relative">
