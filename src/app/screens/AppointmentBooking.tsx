@@ -64,7 +64,7 @@ export function AppointmentBooking() {
   const { data: doctors = [], isLoading: doctorsLoading } = useStaffUsers({ role: 'doctor' });
   const createAppointment = useCreateAppointment();
   const today = new Date();
-  const [selectedDoctor, setSelectedDoctor] = useState<string | null>(null);
+  const selectedDoctor = doctors[0]?.id;
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -238,44 +238,6 @@ export function AppointmentBooking() {
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full" style={{ background: '#f0f4ff' }}>
 
-        {/* Doctor Selection */}
-        <div style={{ marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '10px' }}>
-            Select Doctor
-          </h3>
-          <div className="flex flex-col gap-2">
-            {doctorsLoading && (
-              <div className="p-3 rounded-2xl bg-white text-sm text-slate-500">Loading doctors...</div>
-            )}
-            {!doctorsLoading && doctors.length === 0 && (
-              <div className="p-3 rounded-2xl bg-white text-sm text-slate-500">No doctors available.</div>
-            )}
-            {doctors.map((doc) => (
-              <button
-                key={doc.id}
-                onClick={() => setSelectedDoctor(doc.id)}
-                className="flex items-center gap-3 p-3 rounded-2xl text-left"
-                style={{
-                  background: 'white',
-                  border: `2px solid ${selectedDoctor === doc.id ? '#2563eb' : 'transparent'}`,
-                  boxShadow: selectedDoctor === doc.id ? '0 4px 16px rgba(37,99,235,0.15)' : '0 2px 8px rgba(0,0,0,0.06)',
-                }}
-              >
-                <div className="rounded-2xl flex items-center justify-center shrink-0"
-                  style={{ width: '48px', height: '48px', background: '#eff6ff', fontSize: '16px', fontWeight: 800, color: '#2563eb' }}>
-                  {doc.name.split(' ').map((part) => part[0]).join('').slice(0, 2)}
-                </div>
-                <div className="flex-1">
-                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{doc.name}</p>
-                  <p style={{ fontSize: '11px', color: '#64748b' }}>{doc.displayId}</p>
-                </div>
-                {selectedDoctor === doc.id && (
-                  <CheckCircle size={20} color="#2563eb" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Calendar */}
         <div
