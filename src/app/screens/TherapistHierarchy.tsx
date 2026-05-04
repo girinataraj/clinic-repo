@@ -7,7 +7,7 @@ import type { Patient } from '../../types';
 import {
   ArrowLeft, ChevronDown, ChevronRight, Users, User, Search,
   Activity, Loader2, AlertTriangle, UserCog, RefreshCw, Plus,
-  Mail, Lock, Eye, EyeOff, CheckCircle, X,
+  Mail, Lock, Eye, EyeOff, CheckCircle, X, ExternalLink,
 } from 'lucide-react';
 
 // The limit of 2 is only for slot booking, not for assignment.
@@ -227,6 +227,13 @@ export function TherapistHierarchy() {
                       <div className="flex-1 min-w-0">
                         <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }} className="truncate">{node.name}</p>
                         <p style={{ fontSize: '10px', color: '#262842' }}>{node.displayId} · {node.patients.length} patient{node.patients.length !== 1 ? 's' : ''}</p>
+                        <span
+                          onClick={(e) => { e.stopPropagation(); navigate(`/doctor/therapist/${node.id}`); }}
+                          className="inline-block mt-1 cursor-pointer hover:underline"
+                          style={{ fontSize: '11px', fontWeight: 700, color: '#3B3E66' }}
+                        >
+                          View Profile →
+                        </span>
                       </div>
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
                         {node.activeCount} active
@@ -234,6 +241,7 @@ export function TherapistHierarchy() {
                       {isExpanded ? <ChevronDown size={16} color="#3B3E66" /> : <ChevronRight size={16} color="#262842" />}
                     </button>
                   </div>
+
 
                   {/* Patient list */}
                   {isExpanded && (

@@ -137,30 +137,6 @@ export function DoctorDashboard() {
 
 
 
-          {/* Recovery insight banner */}
-          <div
-            className="flex items-center gap-4 p-5 rounded-2xl mb-8"
-            style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
-          >
-            <div className="flex items-center justify-center rounded-xl shrink-0"
-              style={{ width: '48px', height: '48px', background: '#262842', boxShadow: '0 4px 12px rgba(43,122,120,0.3)' }}>
-              <Activity size={24} color="#FEFFFF" />
-            </div>
-            <div className="flex-1">
-              <p style={{ fontSize: '12px', color: '#3B3E66', fontWeight: 600, letterSpacing: '0.5px' }}>TODAY'S INSIGHT</p>
-              <p style={{ fontSize: '15px', fontWeight: 600, color: '#17252A', marginTop: '2px' }}>
-                {completed > 0 
-                  ? `${completed} patients successfully completed their session today`
-                  : waiting > 0 
-                    ? `${waiting} patients are waiting in the queue`
-                    : `Ready for your first patient of the day`}
-              </p>
-            </div>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
-              <Activity size={18} color="#262842" />
-            </div>
-          </div>
-
           {/* Quick actions */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <button

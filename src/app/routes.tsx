@@ -23,6 +23,7 @@ import { TreatmentDetailPage } from '../features/patients/pages/TreatmentDetailP
 
 import { PatientForm } from './screens/PatientForm';
 import { TherapistHierarchy } from './screens/TherapistHierarchy';
+import { TherapistDetailPage } from './screens/TherapistDetailPage';
 import { DailyReportPage } from './screens/DailyReportPage';
 
 // ── Session Loader: waits for auth initialization before routing ─────────────
@@ -91,6 +92,7 @@ export const router = createBrowserRouter([
               { path: 'doctor', Component: DoctorDashboard },
               { path: 'doctor/patients', Component: DoctorPatients },
               { path: 'doctor/therapists', Component: TherapistHierarchy },
+              { path: 'doctor/therapist/:id', Component: TherapistDetailPage },
               { path: 'doctor/patient-form', Component: PatientForm },
               { path: 'doctor/intake', Component: AssessmentForm },
               { path: 'doctor/patient/:id', Component: PatientDetailPage },
