@@ -475,7 +475,7 @@ export function NurseIntakeForm() {
 
   if (saved) {
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-teal-50 dark:bg-slate-950 font-sans">
+      <div className="h-full flex flex-col items-center justify-center bg-indigo-50 dark:bg-slate-950 font-sans">
         <div className="flex flex-col items-center p-8 rounded-[24px] mx-6 bg-white dark:bg-slate-900 shadow-xl dark:shadow-none border border-slate-100 dark:border-slate-800 border-opacity-50">
           <div className="rounded-full flex items-center justify-center mb-4 w-20 h-20 bg-emerald-50 dark:bg-emerald-900/30">
             <Check className="w-11 h-11 text-emerald-500" />
@@ -496,7 +496,7 @@ export function NurseIntakeForm() {
       {/* Header */}
       <div
         className="px-5 pb-4 shrink-0 pt-5"
-        style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}
+        style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}
       >
         <div className="flex items-center gap-3 mb-3">
           <button
@@ -539,7 +539,7 @@ export function NurseIntakeForm() {
       <div className="px-4 pt-3 pb-1 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shrink-0">
         <div className="flex gap-2 items-center">
           <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-            <Phone size={15} className="text-teal-600 shrink-0" />
+            <Phone size={15} className="text-indigo-900 shrink-0" />
             <input
               type="tel"
               inputMode="numeric"
@@ -554,7 +554,7 @@ export function NurseIntakeForm() {
             onClick={handlePhoneLookup}
             disabled={phoneInput.trim().length < 7}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white text-[13px] font-bold disabled:opacity-50 transition-opacity"
-            style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}
+            style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}
           >
             <Search size={14} />
             Lookup
@@ -564,7 +564,7 @@ export function NurseIntakeForm() {
         {/* Lookup results */}
         {lookupDone && lookingUp && (
           <div className="flex items-center gap-2 mt-2 px-2 py-1.5">
-            <Loader2 size={14} className="animate-spin text-teal-600" />
+            <Loader2 size={14} className="animate-spin text-indigo-900" />
             <span className="text-[12px] text-slate-500">Looking up patient…</span>
           </div>
         )}
@@ -602,7 +602,7 @@ export function NurseIntakeForm() {
             <button
               onClick={() => setShowNewPatientForm(true)}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white"
-              style={{ background: '#0f766e' }}
+              style={{ background: '#262842' }}
             >
               <UserPlus size={12} /> New Patient
             </button>
@@ -660,7 +660,7 @@ export function NurseIntakeForm() {
                 onClick={handleCreateNewPatient}
                 disabled={createPatientMutation.isPending || !newPatient.name || !newPatient.age}
                 className="flex-1 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-60"
-                style={{ background: '#0f766e' }}
+                style={{ background: '#262842' }}
               >
                 {createPatientMutation.isPending ? <Loader2 size={14} className="animate-spin mx-auto" /> : 'Create & Continue'}
               </button>
@@ -709,7 +709,7 @@ export function NurseIntakeForm() {
         )}
         {resolvedPatientId && loadingPrevEval && (
           <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800">
-            <Loader2 size={13} className="animate-spin text-teal-600" />
+            <Loader2 size={13} className="animate-spin text-indigo-900" />
             <span className="text-[11px] text-slate-500 font-semibold">Checking for previous assessments…</span>
           </div>
         )}
@@ -718,8 +718,8 @@ export function NurseIntakeForm() {
         {step === 0 && (
           <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2 mb-4">
-              <div className="rounded-xl flex items-center justify-center w-9 h-9 bg-teal-50 dark:bg-teal-900/30">
-                <User size={18} className="text-teal-700 dark:text-teal-400" />
+              <div className="rounded-xl flex items-center justify-center w-9 h-9 bg-indigo-50 dark:bg-indigo-900/30">
+                <User size={18} className="text-indigo-950 dark:text-indigo-400" />
               </div>
               <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Patient Information</h2>
             </div>
@@ -727,7 +727,7 @@ export function NurseIntakeForm() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg flex items-center justify-center w-8 h-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
-                    <ImagePlus size={16} className="text-teal-600 dark:text-teal-400" />
+                    <ImagePlus size={16} className="text-indigo-900 dark:text-indigo-400" />
                   </div>
                   <div>
                     <p className="text-[12px] font-extrabold text-slate-700 dark:text-white">Intake Photo</p>
@@ -762,7 +762,7 @@ export function NurseIntakeForm() {
                   htmlFor="intake-photo"
                   className="flex flex-col items-center justify-center gap-1.5 px-3 py-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
-                  <ImagePlus size={18} className="text-teal-600 dark:text-teal-400" />
+                  <ImagePlus size={18} className="text-indigo-900 dark:text-indigo-400" />
                   <span className="text-[12px] font-bold text-slate-700 dark:text-white">Tap to upload a photo</span>
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">JPG, PNG, HEIC</span>
                 </label>
@@ -791,7 +791,7 @@ export function NurseIntakeForm() {
                   value={(patientInfo as any)[field.key]}
                   onChange={(e) => setPatientInfo({ ...patientInfo, [field.key]: e.target.value })}
                   placeholder={field.placeholder}
-                  className="w-full outline-none px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-teal-500 dark:focus:border-teal-500 transition-colors"
+                  className="w-full outline-none px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-indigo-500 dark:focus:border-indigo-500 transition-colors"
                 />
               </div>
             ))}
@@ -808,7 +808,7 @@ export function NurseIntakeForm() {
                       onClick={() => setPatientInfo({ ...patientInfo, gender: g as 'Male' | 'Female' | 'Other' })}
                       className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold border-2 transition-colors ${
                         isSelected
-                          ? 'border-teal-700 dark:border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
+                          ? 'border-teal-700 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-950 dark:text-indigo-300'
                           : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                       }`}
                     >
@@ -822,11 +822,11 @@ export function NurseIntakeForm() {
             {/* Assigned Therapist */}
             <div className="mt-4">
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
-                <UserCog size={13} className="inline mr-1 text-teal-600" />
+                <UserCog size={13} className="inline mr-1 text-indigo-900" />
                 Assigned Therapist {isDoctorRole && <span className="text-red-500">*</span>}
               </label>
               {isDoctorRole ? (
-                <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 transition-colors relative">
+                <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-colors relative">
                   <UserCog size={15} className="text-slate-400 shrink-0" />
                   <select
                     value={selectedTherapistId}
@@ -848,7 +848,7 @@ export function NurseIntakeForm() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
-                  <UserCog size={15} className="text-teal-600 shrink-0" />
+                  <UserCog size={15} className="text-indigo-900 shrink-0" />
                   <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                     {user?.name ?? 'You'} (assigned automatically)
                   </span>
@@ -878,14 +878,14 @@ export function NurseIntakeForm() {
                   value={vitals.bp_sys}
                   onChange={(e) => setVitals({ ...vitals, bp_sys: e.target.value })}
                   placeholder="Systolic"
-                  className="flex-1 outline-none text-center px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  className="flex-1 outline-none text-center px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
                 <span className="text-slate-400 dark:text-slate-500 font-bold">/</span>
                 <input
                   value={vitals.bp_dia}
                   onChange={(e) => setVitals({ ...vitals, bp_dia: e.target.value })}
                   placeholder="Diastolic"
-                  className="flex-1 outline-none text-center px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  className="flex-1 outline-none text-center px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
             </div>
@@ -905,7 +905,7 @@ export function NurseIntakeForm() {
                   value={(vitals as any)[field.key]}
                   onChange={(e) => setVitals({ ...vitals, [field.key]: e.target.value })}
                   placeholder={field.placeholder}
-                  className="w-full outline-none px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  className="w-full outline-none px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
             ))}
@@ -1124,7 +1124,7 @@ export function NurseIntakeForm() {
                 value={complaints}
                 onChange={(e) => setComplaints(e.target.value)}
                 placeholder="Describe the patient's main complaints in detail..."
-                className="w-full h-[100px] outline-none resize-none px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                className="w-full h-[100px] outline-none resize-none px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               />
             </div>
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
@@ -1162,7 +1162,7 @@ export function NurseIntakeForm() {
                 value={associated}
                 onChange={(e) => setAssociated(e.target.value)}
                 placeholder="Additional notes on associated symptoms…"
-                className="w-full h-[60px] outline-none resize-none px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 mt-3"
+                className="w-full h-[60px] outline-none resize-none px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 mt-3"
               />
             </div>
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
@@ -1255,8 +1255,8 @@ export function NurseIntakeForm() {
           <div className="flex flex-col gap-3">
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 mb-4">
-                <div className="rounded-xl flex items-center justify-center w-9 h-9 bg-teal-50 dark:bg-teal-900/30">
-                  <Save size={18} className="text-teal-700 dark:text-teal-400" />
+                <div className="rounded-xl flex items-center justify-center w-9 h-9 bg-indigo-50 dark:bg-indigo-900/30">
+                  <Save size={18} className="text-indigo-950 dark:text-indigo-400" />
                 </div>
                 <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Review & Save</h2>
               </div>
@@ -1265,7 +1265,7 @@ export function NurseIntakeForm() {
               <div className="flex flex-col gap-0">
                 {/* Visit Type Selection - 4 options */}
                 <div className="pb-4 mb-2 border-b border-slate-100 dark:border-slate-800 border-opacity-50">
-                  <label className="block text-[11px] font-black text-teal-600 dark:text-teal-400 mb-2 uppercase tracking-widest">
+                  <label className="block text-[11px] font-black text-indigo-900 dark:text-indigo-400 mb-2 uppercase tracking-widest">
                     Visit Type
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -1277,7 +1277,7 @@ export function NurseIntakeForm() {
                           onClick={() => setVisitType(v as typeof visitType)}
                           className={`py-2.5 rounded-xl text-[12px] font-bold border-2 transition-all ${
                             isSelected
-                              ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
+                              ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-950 dark:text-indigo-300'
                               : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-slate-500'
                           }`}
                         >
@@ -1383,8 +1383,8 @@ export function NurseIntakeForm() {
             <button
               onClick={handleSave}
               disabled={createEvaluation.isPending}
-              className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-white text-base font-extrabold shadow-lg shadow-teal-700/30 group disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}
+              className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-white text-base font-extrabold shadow-lg shadow-indigo-700/30 group disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}
             >
               {createEvaluation.isPending ? (
                 <><Loader2 size={18} className="animate-spin" /> Submitting…</>
@@ -1438,7 +1438,7 @@ export function NurseIntakeForm() {
             <button
               onClick={handleNext}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[14px] text-white text-sm font-extrabold hover:opacity-90 transition-opacity"
-              style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}
+              style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}
             >
               Next Step
               <ChevronRight size={16} />
