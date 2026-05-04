@@ -26,7 +26,7 @@ export function ThemeToggle() {
   const CurrentIcon = current.icon;
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative z-[60]">
       <button
         onClick={() => setOpen(v => !v)}
         className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 transition-colors backdrop-blur-sm"

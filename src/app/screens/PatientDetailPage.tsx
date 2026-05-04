@@ -107,62 +107,49 @@ export function PatientDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1' }}>
+    <div className="flex flex-col h-full saai-page font-sans bg-[#E8E9F1] dark:bg-slate-950">
       {/* Header */}
       <div
-        className="px-6 pb-6 shrink-0 rounded-b-3xl relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
-          paddingTop: '32px',
-          boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)',
-        }}
+        className="px-6 pb-6 shrink-0 rounded-b-3xl relative overflow-hidden pt-8 shadow-[0_4px_24px_rgba(38,40,66,0.15)] dark:shadow-none bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800"
       >
-        <div className="absolute -right-16 -top-16 rounded-full opacity-10"
-          style={{ width: '200px', height: '200px', background: '#FEFFFF' }} />
+        <div className="absolute -right-16 -top-16 rounded-full opacity-10 w-[200px] h-[200px] bg-white opacity-10" />
           
         <div className="flex items-center justify-between mb-6 relative z-10">
           <button
             onClick={() => navigate('/doctor')}
-            className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
-            style={{ width: '40px', height: '40px', background: 'rgba(254,255,255,0.15)' }}>
+            className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 bg-white/15">
             <ArrowLeft size={20} color="#FEFFFF" />
           </button>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#FEFFFF' }}>Patient Details</h1>
+          <h1 className="text-[18px] font-bold text-white">Patient Details</h1>
           <div className="flex gap-2">
             <button
               onClick={() => setEditMode(!editMode)}
-              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
-              style={{ width: '40px', height: '40px', background: editMode ? 'rgba(251,191,36,0.3)' : 'rgba(254,255,255,0.15)' }}>
+              className={`flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 ${editMode ? "bg-amber-400/30" : "bg-white/15"}`}>
               <Edit3 size={18} color={editMode ? '#fbbf24' : '#FEFFFF'} />
             </button>
             <button
               onClick={() => navigate(evaluation?.id ? `/doctor/report?evaluationId=${evaluation.id}` : '/doctor/report')}
-              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
-              style={{ width: '40px', height: '40px', background: 'rgba(254,255,255,0.15)' }}>
+              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 bg-white/15">
               <FileText size={18} color="#FEFFFF" />
             </button>
           </div>
         </div>
 
         {/* Patient card */}
-        <div className="flex items-center gap-4 p-4 rounded-2xl relative z-10 backdrop-blur-sm"
-          style={{ background: 'rgba(254,255,255,0.15)', border: '1px solid rgba(254,255,255,0.2)' }}>
-          <div className="rounded-2xl flex items-center justify-center shrink-0"
-            style={{ width: '56px', height: '56px', background: 'rgba(254,255,255,0.2)', fontSize: '24px' }}>
+        <div className="flex items-center gap-4 p-4 rounded-2xl relative z-10 backdrop-blur-sm bg-white/15 border border-white/20">
+          <div className="rounded-2xl flex items-center justify-center shrink-0 w-14 h-14 bg-white/20 text-[24px]">
             🧑‍🦽
           </div>
           <div className="flex-1">
-            <p style={{ fontSize: '18px', fontWeight: 700, color: '#FEFFFF' }}>{patient?.name ?? 'Patient'}</p>
-            <p style={{ fontSize: '13px', color: 'rgba(254,255,255,0.8)', marginTop: '2px' }}>
+            <p className="text-[18px] font-bold text-white">{patient?.name ?? 'Patient'}</p>
+            <p className="text-[13px] text-white/80 mt-[2px]">
               {patient?.gender ?? '-'}, {patient?.age ?? '-'} yrs · {patient?.phone ?? '-'}
             </p>
             <div className="flex gap-2 mt-2">
-              <span className="px-3 py-1 rounded-full"
-                style={{ background: '#E8E9F1', color: '#3B3E66', fontSize: '11px', fontWeight: 700 }}>
+              <span className="px-3 py-1 rounded-full bg-[#E8E9F1] dark:bg-slate-800 text-[#3B3E66] dark:text-slate-200 text-[11px] font-bold">
                 {patient?.displayId ?? '-'}
               </span>
-              <span className="px-3 py-1 rounded-full"
-                style={{ background: '#3B3E66', color: '#FEFFFF', fontSize: '11px', fontWeight: 700 }}>
+              <span className="px-3 py-1 rounded-full bg-[#3B3E66] dark:bg-teal-600 text-white text-[11px] font-bold">
                 Status: {patient?.status ?? '-'}
               </span>
             </div>
@@ -171,17 +158,12 @@ export function PatientDetailPage() {
       </div>
 
       {/* Tab navigation */}
-      <div className="flex shrink-0 px-4 pt-4 pb-0" style={{ background: '#FEFFFF', borderBottom: '1px solid #E8E9F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}>
+      <div className="flex shrink-0 px-4 pt-4 pb-0 bg-white dark:bg-slate-900 border-b border-[#E8E9F1] dark:border-slate-800 shadow-[0_2px_8px_rgba(23,37,42,0.02)] dark:shadow-none">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="flex-1 py-3 text-center transition-all duration-300"
-            style={{
-              fontSize: '13px', fontWeight: 600,
-              color: activeTab === tab ? '#3B3E66' : '#262842',
-              borderBottom: `2px solid ${activeTab === tab ? '#3B3E66' : 'transparent'}`,
-            }}
+            className={`flex-1 py-3 text-center transition-all duration-300 text-[13px] font-semibold border-b-2 ${activeTab === tab ? "text-[#3B3E66] dark:text-teal-400 border-[#3B3E66] dark:border-teal-400" : "text-[#262842] dark:text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300"}`}
           >
             {tab}
           </button>
@@ -195,8 +177,8 @@ export function PatientDetailPage() {
         )}
 
         {isLoading && (
-          <div className="rounded-2xl p-6 text-center" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
-            <p style={{ fontSize: '14px', color: '#262842' }}>Loading patient details...</p>
+          <div className="rounded-2xl p-6 text-center bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
+            <p className="text-[14px] text-[#262842] dark:text-slate-400">Loading patient details...</p>
           </div>
         )}
 
@@ -204,34 +186,33 @@ export function PatientDetailPage() {
         {activeTab === 'Overview' && (
           <div className="flex flex-col gap-4">
             {/* Condition */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
                   <Stethoscope size={16} color="#3B3E66" />
                 </div>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Primary Condition</h3>
+                <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Primary Condition</h3>
               </div>
-              <p style={{ fontSize: '15px', fontWeight: 600, color: '#3B3E66' }}>{patient?.condition ?? '-'}</p>
-              <p style={{ fontSize: '13px', color: '#262842', marginTop: '4px' }}>
+              <p className="text-[15px] font-semibold text-[#3B3E66] dark:text-slate-200">{patient?.condition ?? '-'}</p>
+              <p className="text-[13px] text-[#262842] dark:text-slate-400 mt-1">
                 Consultation with {consultationName || '-'} on {consultationDate || '-'}
               </p>
             </div>
 
             {/* Symptoms */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
                   <Activity size={16} color="#3B3E66" />
                 </div>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Reported Symptoms</h3>
+                <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Reported Symptoms</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {symptoms.length === 0 && (
-                  <span style={{ fontSize: '13px', color: '#262842' }}>No symptoms recorded</span>
+                  <span className="text-[13px] text-[#262842] dark:text-slate-400">No symptoms recorded</span>
                 )}
                 {symptoms.map((symptom) => (
-                  <span key={symptom} className="px-3 py-1.5 rounded-xl"
-                    style={{ background: '#E8E9F1', color: '#3B3E66', fontSize: '13px', fontWeight: 600, border: '1px solid #E8E9F1' }}>
+                  <span key={symptom} className="px-3 py-1.5 rounded-xl bg-[#E8E9F1] dark:bg-slate-800 text-[#3B3E66] dark:text-slate-200 text-[13px] font-semibold border border-[#E8E9F1] dark:border-slate-700">
                     {symptom}
                   </span>
                 ))}
@@ -239,20 +220,19 @@ export function PatientDetailPage() {
             </div>
 
             {/* Medical History */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
                   <StickyNote size={16} color="#3B3E66" />
                 </div>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Medical History</h3>
+                <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Medical History</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {(evaluation?.medicalHistory ?? []).length === 0 && (
-                  <span style={{ fontSize: '13px', color: '#262842' }}>No medical history recorded</span>
+                  <span className="text-[13px] text-[#262842] dark:text-slate-400">No medical history recorded</span>
                 )}
                 {(evaluation?.medicalHistory ?? []).map((history) => (
-                  <span key={history} className="px-3 py-1.5 rounded-xl"
-                    style={{ background: '#E8E9F1', color: '#262842', fontSize: '13px', fontWeight: 600, border: '1px solid #E8E9F1' }}>
+                  <span key={history} className="px-3 py-1.5 rounded-xl bg-[#E8E9F1] dark:bg-slate-800 text-[#262842] dark:text-slate-300 text-[13px] font-semibold border border-[#E8E9F1] dark:border-slate-700">
                     {history}
                   </span>
                 ))}
@@ -260,18 +240,18 @@ export function PatientDetailPage() {
             </div>
 
             {/* Pain level */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
-                    <span style={{ fontSize: '16px' }}>🔴</span>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
+                    <span className="text-[16px]">🔴</span>
                   </div>
-                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Pain Level</h3>
+                  <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Pain Level</h3>
                 </div>
                 {painLevel == null ? (
-                  <span style={{ fontSize: '16px', fontWeight: 700, color: '#262842' }}>-</span>
+                  <span className="text-[16px] font-bold text-[#262842] dark:text-slate-400">-</span>
                 ) : (
-                  <span style={{ fontSize: '20px', fontWeight: 800, color: painColors[painLevel] }}>
+                  <span className="text-[20px] font-extrabold" style={{ color: painColors[painLevel] }}>
                     {painLevel}/10
                   </span>
                 )}
@@ -279,9 +259,8 @@ export function PatientDetailPage() {
               {painLevel != null && (
                 <div className="flex gap-1 rounded-xl overflow-hidden">
                   {painColors.map((c, i) => (
-                    <div key={i} className="flex-1 flex items-center justify-center rounded-sm"
-                      style={{ height: '32px', background: c, opacity: i <= painLevel ? 1 : 0.15 }}>
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#FEFFFF' }}>{i}</span>
+                    <div key={i} className="flex-1 flex items-center justify-center rounded-sm h-8" style={{ background: c, opacity: i <= painLevel ? 1 : 0.15 }}>
+                      <span className="text-[10px] font-bold text-white">{i}</span>
                     </div>
                   ))}
                 </div>
@@ -289,24 +268,23 @@ export function PatientDetailPage() {
             </div>
 
             {/* Functional Activities */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
                   <CheckSquare size={16} color="#3B3E66" />
                 </div>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Functional Activities</h3>
+                <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Functional Activities</h3>
               </div>
               <div className="flex flex-col gap-3">
                 {functionalEntries.length === 0 && (
-                  <span style={{ fontSize: '13px', color: '#262842' }}>No functional scores recorded</span>
+                  <span className="text-[13px] text-[#262842] dark:text-slate-400">No functional scores recorded</span>
                 )}
                 {functionalEntries.map(({ key, value }) => (
-                  <div key={key} className="flex items-center justify-between py-1 border-b last:border-0" style={{ borderColor: '#E8E9F1' }}>
-                    <span style={{ fontSize: '14px', color: '#262842', fontWeight: 500, textTransform: 'capitalize' }}>
+                  <div key={key} className="flex items-center justify-between py-1 border-b last:border-0 border-b border-[#E8E9F1] dark:border-slate-800">
+                    <span className="text-[14px] font-medium text-[#262842] dark:text-slate-300 capitalize">
                       {key === 'stairs' ? 'Climbing Stairs' : key}
                     </span>
-                    <span className="px-3 py-1 rounded-xl"
-                      style={{ background: `${funcColors[value] ?? '#3B3E66'}15`, color: funcColors[value] ?? '#3B3E66', fontSize: '12px', fontWeight: 600 }}>
+                    <span className="px-3 py-1 rounded-xl text-[12px] font-semibold" style={{ background: `${funcColors[value] ?? "#3B3E66"}15`, color: funcColors[value] ?? "#3B3E66" }}>
                       {value} - {funcLabels[value] ?? 'Recorded'}
                     </span>
                   </div>
@@ -315,11 +293,11 @@ export function PatientDetailPage() {
             </div>
 
             {/* Complaints */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '10px' }}>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
+              <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white mb-2.5">
                 Chief Complaints
               </h3>
-              <p style={{ fontSize: '14px', color: '#262842', lineHeight: 1.6 }}>
+              <p className="text-[14px] text-[#262842] dark:text-slate-300 leading-relaxed">
                 {complaintText || 'No chief complaints recorded'}
               </p>
             </div>
@@ -329,20 +307,19 @@ export function PatientDetailPage() {
         {/* Vitals Tab */}
         {activeTab === 'Vitals' && (
           <div className="flex flex-col gap-4">
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
                   <Heart size={16} color="#3B3E66" />
                 </div>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Vital Signs</h3>
+                <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Vital Signs</h3>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 {vitalsCards.map((vital) => (
-                  <div key={vital.label} className="p-4 rounded-2xl transition-transform hover:-translate-y-1"
-                    style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                  <div key={vital.label} className="p-4 rounded-2xl transition-transform hover:-translate-y-1 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
                     <span style={{ fontSize: '24px' }}>{vital.icon}</span>
-                    <p style={{ fontSize: '12px', color: '#262842', fontWeight: 600, marginTop: '8px' }}>{vital.label}</p>
-                    <p style={{ fontSize: '16px', fontWeight: 700, color: vital.color }}>{vital.value}</p>
+                    <p className="text-[12px] font-semibold text-[#262842] dark:text-slate-400 mt-2">{vital.label}</p>
+                    <p className="text-[16px] font-bold" style={{ color: vital.color }}>{vital.value}</p>
                   </div>
                 ))}
               </div>
@@ -353,39 +330,38 @@ export function PatientDetailPage() {
         {/* Diagnosis Tab */}
         {activeTab === 'Diagnosis' && (
           <div className="flex flex-col gap-4">
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
                     <Stethoscope size={16} color="#3B3E66" />
                   </div>
-                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Diagnosis</h3>
+                  <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Diagnosis</h3>
                 </div>
-                {editMode && <span className="px-2 py-1 rounded-md text-amber-600" style={{ background: '#E8E9F1', fontSize: '11px', fontWeight: 700 }}>✏️ Edit Mode</span>}
+                {editMode && <span className="px-2 py-1 rounded-md text-amber-600 bg-[#E8E9F1] dark:bg-slate-800 text-[11px] font-bold">✏️ Edit Mode</span>}
               </div>
               {editMode ? (
                 <textarea
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
-                  className="w-full outline-none resize-none"
-                  style={{ padding: '16px', borderRadius: '16px', border: '1px solid #E8E9F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '100px' }}
+                  className="w-full outline-none resize-none p-4 rounded-2xl border border-[#E8E9F1] dark:border-slate-700 bg-white dark:bg-slate-900 text-[#17252A] dark:text-white text-[14px] min-h-[100px]"
                 />
               ) : (
-                <p style={{ fontSize: '15px', fontWeight: 600, color: '#3B3E66', lineHeight: 1.6 }}>{diagnosis || 'No diagnosis recorded'}</p>
+                <p className="text-[15px] font-semibold text-[#3B3E66] dark:text-slate-200 leading-relaxed">{diagnosis || 'No diagnosis recorded'}</p>
               )}
             </div>
 
             {/* Treatment Protocol */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '16px' }}>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
+              <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white mb-4">
                 Treatment Protocol
               </h3>
               {evaluation?.plan ? (
-                <p style={{ fontSize: '14px', color: '#262842', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                <p className="text-[14px] text-[#262842] dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
                   {evaluation.plan}
                 </p>
               ) : (
-                <p style={{ fontSize: '13px', color: '#262842' }}>No treatment plan recorded</p>
+                <p className="text-[13px] text-[#262842] dark:text-slate-400">No treatment plan recorded</p>
               )}
             </div>
 
@@ -393,8 +369,7 @@ export function PatientDetailPage() {
               <button
                 onClick={handleSaveDiagnosis}
                 disabled={updateEvaluation.isPending}
-                className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1 disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(38, 40, 66, 0.3)' }}>
+                className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1 disabled:opacity-50 bg-gradient-to-br from-[#262842] to-[#3B3E66] text-white text-[15px] font-bold shadow-[0_4px_16px_rgba(38,40,66,0.3)] dark:shadow-none">
                 <Save size={18} />
                 {updateEvaluation.isPending ? 'Saving…' : 'Save Diagnosis'}
               </button>
@@ -405,42 +380,40 @@ export function PatientDetailPage() {
         {/* Notes Tab */}
         {activeTab === 'Notes' && (
           <div className="flex flex-col gap-4">
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
                     <StickyNote size={16} color="#262842" />
                   </div>
-                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Doctor's Notes</h3>
+                  <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Doctor's Notes</h3>
                 </div>
-                {editMode && <span className="px-2 py-1 rounded-md text-amber-600" style={{ background: '#E8E9F1', fontSize: '11px', fontWeight: 700 }}>✏️ Edit Mode</span>}
+                {editMode && <span className="px-2 py-1 rounded-md text-amber-600 bg-[#E8E9F1] dark:bg-slate-800 text-[11px] font-bold">✏️ Edit Mode</span>}
               </div>
               {editMode ? (
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full outline-none resize-none"
-                  style={{ padding: '16px', borderRadius: '16px', border: '1px solid #E8E9F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '140px' }}
+                  className="w-full outline-none resize-none p-4 rounded-2xl border border-[#E8E9F1] dark:border-slate-700 bg-white dark:bg-slate-900 text-[#17252A] dark:text-white text-[14px] min-h-[140px]"
                 />
               ) : (
-                <p style={{ fontSize: '14px', color: '#262842', lineHeight: 1.7 }}>{notes || 'No notes recorded'}</p>
+                <p className="text-[14px] text-[#262842] dark:text-slate-300 leading-relaxed">{notes || 'No notes recorded'}</p>
               )}
             </div>
 
             <div className="p-5 rounded-2xl" style={{ background: '#E8E9F1', border: '1px solid #E8E9F1' }}>
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#FEFFFF' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-slate-900">
                   <Dumbbell size={16} color="#3B3E66" />
                 </div>
-                <span style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Exercise Recommendation</span>
+                <span className="text-[15px] font-bold text-[#17252A] dark:text-white">Exercise Recommendation</span>
               </div>
-              <p style={{ fontSize: '14px', color: '#262842', marginBottom: '16px' }}>
+              <p className="text-[14px] text-[#262842] dark:text-slate-400 mb-4">
                 {evaluation?.plan || 'No exercise recommendation recorded'}
               </p>
               <button
                 onClick={() => id && navigate(`/doctor/patient/${id}/exercise`)}
-                className="px-5 py-2.5 rounded-xl transition-colors"
-                style={{ background: '#3B3E66', color: '#FEFFFF', fontSize: '13px', fontWeight: 600 }}>
+                className="px-5 py-2.5 rounded-xl transition-colors bg-[#3B3E66] text-white text-[13px] font-semibold">
                 View Exercise Plan
               </button>
             </div>
@@ -449,8 +422,7 @@ export function PatientDetailPage() {
               <button
                 onClick={handleSaveNotes}
                 disabled={updateEvaluation.isPending}
-                className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1 disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(38, 40, 66, 0.3)' }}>
+                className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1 disabled:opacity-50 bg-gradient-to-br from-[#262842] to-[#3B3E66] text-white text-[15px] font-bold shadow-[0_4px_16px_rgba(38,40,66,0.3)] dark:shadow-none">
                 <Save size={18} />
                 {updateEvaluation.isPending ? 'Saving…' : 'Save Notes'}
               </button>
@@ -460,13 +432,13 @@ export function PatientDetailPage() {
 
         {/* History Tab */}
         {activeTab === 'History' && patientId && (
-          <div className="rounded-2xl p-5" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(23,37,42,0.04)' }}>
+          <div className="rounded-2xl p-5 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_2px_12px_rgba(23,37,42,0.04)] dark:shadow-none">
             <PatientHistoryUpload patientId={patientId} patientName={patient?.name} />
           </div>
         )}
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
+      <div className="md:hidden border-t border-[#E8E9F1] dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role="doctor" />
       </div>
     </div>

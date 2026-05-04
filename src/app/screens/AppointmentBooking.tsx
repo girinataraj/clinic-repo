@@ -190,19 +190,17 @@ export function AppointmentBooking() {
 
   if (confirmed) {
     return (
-      <div className="h-full flex flex-col items-center justify-center" style={{ background: '#eff6ff' }}>
+      <div className="h-full flex flex-col items-center justify-center bg-blue-50 dark:bg-slate-950">
         <div
-          className="flex flex-col items-center p-8 rounded-3xl mx-6"
-          style={{ background: 'white', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}
+          className="flex flex-col items-center p-8 rounded-3xl mx-6 bg-white dark:bg-slate-800 shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-none border border-transparent dark:border-slate-700"
         >
-          <div className="rounded-full flex items-center justify-center mb-4"
-            style={{ width: '80px', height: '80px', background: '#ecfdf5' }}>
-            <CheckCircle size={44} color="#10b981" />
+          <div className="rounded-full flex items-center justify-center mb-4 w-20 h-20 bg-emerald-50 dark:bg-emerald-900/30">
+            <CheckCircle size={44} className="text-emerald-500 dark:text-emerald-400" />
           </div>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', textAlign: 'center' }}>
+          <h2 className="text-[20px] font-extrabold text-slate-900 dark:text-white text-center">
             Appointment Confirmed!
           </h2>
-          <p style={{ fontSize: '13px', color: '#64748b', textAlign: 'center', marginTop: '8px' }}>
+          <p className="text-[13px] text-slate-500 dark:text-slate-400 text-center mt-2">
             You'll receive a confirmation shortly. Redirecting...
           </p>
         </div>
@@ -211,69 +209,55 @@ export function AppointmentBooking() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-blue-50/50 dark:bg-slate-950 font-sans">
       {/* Header */}
       <div
-        className="px-5 pb-5 shrink-0"
-        style={{
-          background: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
-          paddingTop: '20px',
-        }}
+        className="px-5 pt-5 pb-5 shrink-0 bg-gradient-to-br from-blue-900 to-blue-600 dark:from-slate-900 dark:to-slate-800"
       >
         <div className="flex items-center gap-3 mb-1">
           <button
             onClick={() => navigate('/patient')}
-            className="flex items-center justify-center rounded-xl"
-            style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.2)' }}
+            className="flex items-center justify-center rounded-xl w-9 h-9 bg-white/20 hover:bg-white/30 transition-colors"
           >
             <ArrowLeft size={18} color="white" />
           </button>
           <div>
-            <h1 style={{ fontSize: '18px', fontWeight: 800, color: 'white' }}>Book Appointment</h1>
-            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>Schedule your next visit</p>
+            <h1 className="text-[18px] font-extrabold text-white">Book Appointment</h1>
+            <p className="text-[12px] text-white/70 font-medium">Schedule your next visit</p>
           </div>
         </div>
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full" style={{ background: '#f0f4ff' }}>
-
+      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full">
 
         {/* Calendar */}
         <div
-          className="p-4 rounded-2xl mb-4"
-          style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
+          className="p-4 rounded-2xl mb-4 bg-white dark:bg-slate-800 shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:shadow-none border border-transparent dark:border-slate-700"
         >
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={handlePrevMonth}
               disabled={!canGoPrevMonth}
-              className="rounded-xl flex items-center justify-center"
-              style={{
-                width: '32px', height: '32px',
-                background: canGoPrevMonth ? '#f1f5f9' : '#f8fafc',
-                opacity: canGoPrevMonth ? 1 : 0.4,
-                cursor: canGoPrevMonth ? 'pointer' : 'not-allowed',
-              }}
+              className={`rounded-xl flex items-center justify-center w-8 h-8 transition-colors ${canGoPrevMonth ? 'bg-slate-100 dark:bg-slate-700 cursor-pointer text-slate-600 dark:text-slate-300' : 'bg-slate-50 dark:bg-slate-800 opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-600'}`}
             >
-              <ChevronLeft size={16} color="#475569" />
+              <ChevronLeft size={16} />
             </button>
-            <span style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>
+            <span className="text-[15px] font-extrabold text-slate-900 dark:text-white">
               {monthNames[currentMonth] ?? ''} {currentYear}
             </span>
             <button
               onClick={handleNextMonth}
-              className="rounded-xl flex items-center justify-center"
-              style={{ width: '32px', height: '32px', background: '#f1f5f9' }}
+              className="rounded-xl flex items-center justify-center w-8 h-8 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
             >
-              <ChevronRight size={16} color="#475569" />
+              <ChevronRight size={16} />
             </button>
           </div>
 
           {/* Day labels */}
           <div className="grid grid-cols-7 mb-2">
             {dayLabels.map((d) => (
-              <div key={d} className="text-center" style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', padding: '4px 0' }}>
+              <div key={d} className="text-center text-[11px] font-bold text-slate-400 py-1">
                 {d}
               </div>
             ))}
@@ -294,14 +278,12 @@ export function AppointmentBooking() {
                   key={day}
                   disabled={isPast}
                   onClick={() => handleDateSelect(day)}
-                  className="flex items-center justify-center rounded-xl mx-auto"
-                  style={{
-                    width: '34px', height: '34px', fontSize: '13px', fontWeight: isSelected || isToday ? 700 : 500,
-                    background: isSelected ? '#2563eb' : isToday ? '#eff6ff' : 'transparent',
-                    color: isSelected ? 'white' : isToday ? '#2563eb' : isPast ? '#cbd5e1' : '#1e293b',
-                    border: isToday && !isSelected ? '1.5px solid #2563eb' : 'none',
-                    cursor: isPast ? 'not-allowed' : 'pointer',
-                  }}
+                  className={`flex items-center justify-center rounded-xl mx-auto w-8 h-8 text-[13px] ${
+                    isSelected ? 'bg-blue-600 text-white font-bold' :
+                    isToday ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold border-2 border-blue-600 dark:border-blue-500' :
+                    isPast ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed font-medium' :
+                    'text-slate-800 dark:text-slate-200 cursor-pointer font-medium hover:bg-slate-50 dark:hover:bg-slate-700'
+                  }`}
                 >
                   {day}
                 </button>
@@ -312,20 +294,17 @@ export function AppointmentBooking() {
 
         {/* Time Slots */}
         {selectedDate && (
-          <div style={{ marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '10px' }}>
-              <Clock size={14} style={{ display: 'inline', marginRight: '6px', color: '#64748b' }} />
+          <div className="mb-4">
+            <h3 className="text-[14px] font-extrabold text-slate-900 dark:text-white mb-2.5 flex items-center">
+              <Clock size={14} className="mr-1.5 text-slate-500 dark:text-slate-400" />
               Available Time Slots
             </h3>
 
             {/* Warning if today and some slots disabled */}
             {isSelectedToday && availableSlotCount > 0 && availableSlotCount < timeSlots.length && (
-              <div
-                className="flex items-center gap-2 mb-3 p-3 rounded-xl"
-                style={{ background: '#fef3c7', border: '1px solid #fcd34d' }}
-              >
-                <AlertTriangle size={14} color="#d97706" />
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#92400e' }}>
+              <div className="flex items-center gap-2 mb-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/50">
+                <AlertTriangle size={14} className="text-amber-600 dark:text-amber-500" />
+                <span className="text-[12px] font-bold text-amber-800 dark:text-amber-400">
                   You can only book future time slots. Past slots for today are disabled.
                 </span>
               </div>
@@ -333,15 +312,12 @@ export function AppointmentBooking() {
 
             {/* No slots available — either all expired today, or config has no slots */}
             {(availableSlotCount === 0 || timeSlots.length === 0) && (
-              <div
-                className="p-5 rounded-2xl text-center"
-                style={{ background: '#fef2f2', border: '1.5px solid #fecaca' }}
-              >
-                <Clock size={28} color="#f87171" className="mx-auto mb-2" />
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#b91c1c' }}>
+              <div className="p-5 rounded-2xl text-center bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50">
+                <Clock size={28} className="mx-auto mb-2 text-red-400 dark:text-red-500" />
+                <p className="text-[14px] font-bold text-red-700 dark:text-red-400">
                   Available time slot is not available now.
                 </p>
-                <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '6px' }}>
+                <p className="text-[12px] text-red-600 dark:text-red-300 mt-1.5">
                   Please select a different date to see available slots.
                 </p>
               </div>
@@ -358,17 +334,11 @@ export function AppointmentBooking() {
                       key={slot}
                       disabled={disabled}
                       onClick={() => !disabled && setSelectedSlot(slot)}
-                      className="py-2.5 rounded-xl transition-opacity"
-                      style={{
-                        fontSize: '12px', fontWeight: 700,
-                        background: disabled ? '#f1f5f9' : isSelected ? '#2563eb' : 'white',
-                        color: disabled ? '#94a3b8' : isSelected ? 'white' : '#475569',
-                        border: `1.5px solid ${disabled ? '#e2e8f0' : isSelected ? '#2563eb' : '#e2e8f0'}`,
-                        boxShadow: disabled ? 'none' : '0 1px 4px rgba(0,0,0,0.05)',
-                        cursor: disabled ? 'not-allowed' : 'pointer',
-                        opacity: disabled ? 0.5 : 1,
-                        textDecoration: disabled ? 'line-through' : 'none',
-                      }}
+                      className={`py-2.5 rounded-xl transition-all text-[12px] font-bold ${
+                        disabled ? 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-700 cursor-not-allowed opacity-50 line-through' :
+                        isSelected ? 'bg-blue-600 text-white border border-blue-600' :
+                        'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm'
+                      }`}
                     >
                       {slot}
                     </button>
@@ -380,8 +350,8 @@ export function AppointmentBooking() {
         )}
 
         {/* Reason for Visit */}
-        <div style={{ marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '10px' }}>
+        <div className="mb-4">
+          <h3 className="text-[14px] font-extrabold text-slate-900 dark:text-white mb-2.5">
             Reason for Visit
           </h3>
           <div className="flex flex-wrap gap-2 mb-3">
@@ -389,29 +359,23 @@ export function AppointmentBooking() {
               <button
                 key={r}
                 onClick={() => setSelectedReason(r)}
-                className="px-3 py-1.5 rounded-xl"
-                style={{
-                  fontSize: '12px', fontWeight: 600,
-                  background: selectedReason === r ? '#eff6ff' : 'white',
-                  color: selectedReason === r ? '#2563eb' : '#64748b',
-                  border: `1.5px solid ${selectedReason === r ? '#2563eb' : '#e2e8f0'}`,
-                }}
+                className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold border transition-colors ${
+                  selectedReason === r ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-600' : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
               >
                 {r}
               </button>
             ))}
           </div>
           <div
-            className="flex items-start gap-3 p-3 rounded-xl"
-            style={{ background: 'white', border: '1.5px solid #e2e8f0' }}
+            className="flex items-start gap-3 p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
           >
-            <MessageSquare size={16} color="#94a3b8" style={{ marginTop: '2px', flexShrink: 0 }} />
+            <MessageSquare size={16} className="text-slate-400 mt-0.5 shrink-0" />
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Add additional notes about your condition..."
-              className="flex-1 outline-none resize-none bg-transparent"
-              style={{ fontSize: '13px', color: '#1e293b', minHeight: '60px' }}
+              className="flex-1 outline-none resize-none bg-transparent text-[13px] text-slate-800 dark:text-white min-h-[60px] placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
           </div>
         </div>
@@ -420,31 +384,23 @@ export function AppointmentBooking() {
         <button
           onClick={handleConfirm}
           disabled={!selectedDate || !selectedSlot || !selectedDoctor || createAppointment.isPending}
-          className="w-full py-4 rounded-2xl"
-          style={{
-            background: selectedDate && selectedSlot && selectedDoctor
-              ? 'linear-gradient(135deg, #1d4ed8, #2563eb)'
-              : '#e2e8f0',
-            color: selectedDate && selectedSlot && selectedDoctor ? 'white' : '#94a3b8',
-            fontSize: '16px', fontWeight: 700,
-            boxShadow: selectedDate && selectedSlot && selectedDoctor ? '0 8px 24px rgba(37,99,235,0.3)' : 'none',
-            marginBottom: '8px',
-          }}
+          className={`w-full py-4 rounded-2xl text-[16px] font-bold mb-2 transition-all ${
+            selectedDate && selectedSlot && selectedDoctor
+              ? 'bg-gradient-to-br from-blue-700 to-blue-600 text-white shadow-[0_8px_24px_rgba(37,99,235,0.3)] dark:shadow-none'
+              : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed'
+          }`}
         >
           {createAppointment.isPending ? 'Booking...' : 'Confirm Appointment'}
         </button>
         {submitError && (
-          <div
-            className="flex items-center gap-2 p-3 rounded-xl mb-2"
-            style={{ background: '#fef2f2', border: '1px solid #fecaca' }}
-          >
-            <AlertTriangle size={14} color="#dc2626" />
-            <p style={{ fontSize: '13px', fontWeight: 600, color: '#b91c1c' }}>{submitError}</p>
+          <div className="flex items-center gap-2 p-3 rounded-xl mb-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50">
+            <AlertTriangle size={14} className="text-red-600 dark:text-red-500" />
+            <p className="text-[13px] font-bold text-red-700 dark:text-red-400">{submitError}</p>
           </div>
         )}
       </div>
 
-      <div className="md:hidden">
+      <div className="md:hidden shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role="patient" />
       </div>
     </div>

@@ -61,8 +61,7 @@ export function NurseProfile() {
       <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
         {/* Header */}
         <div
-          className="relative overflow-hidden shrink-0"
-          style={{ background: 'linear-gradient(135deg, #0d2b27, #0f766e)' }}
+          className="relative overflow-hidden shrink-0 bg-gradient-to-br from-[#0d2b27] to-[#0f766e] dark:from-slate-900 dark:to-teal-950"
         >
           <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
@@ -79,8 +78,7 @@ export function NurseProfile() {
               <ThemeToggle />
               <button
                 onClick={handleEditToggle}
-                className="flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors w-9 h-9"
-                style={{ background: editMode ? 'rgba(251,191,36,0.3)' : undefined }}
+                className={`flex items-center justify-center rounded-xl transition-colors w-9 h-9 ${editMode ? 'bg-amber-400/30' : 'bg-white/20 hover:bg-white/30'}`}
               >
                 <Edit3 className="w-4 h-4 text-white" />
               </button>
@@ -235,13 +233,11 @@ export function NurseProfile() {
       {/* Logout confirm modal */}
       {showLogoutConfirm && (
         <div
-          className="absolute inset-0 flex items-end justify-center z-50 transition-opacity"
-          style={{ background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)' }}
+          className="absolute inset-0 flex items-end justify-center z-50 transition-opacity bg-slate-900/60 backdrop-blur-sm"
           onClick={() => setShowLogoutConfirm(false)}
         >
           <div
-            className="w-full px-5 pt-6 pb-8 bg-white dark:bg-slate-900"
-            style={{ borderRadius: '28px 28px 0 0' }}
+            className="w-full px-5 pt-6 pb-8 bg-white dark:bg-slate-900 rounded-t-[28px]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-center mb-4">

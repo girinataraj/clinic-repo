@@ -95,7 +95,7 @@ export function DoctorPatients() {
 
 
   return (
-    <div className="flex flex-col h-full saai-page" style={{ backgroundColor: '#E8E9F1' }}>
+    <div className="flex flex-col h-full saai-page bg-[#E8E9F1] dark:bg-slate-950 font-sans">
       <div className="flex-1 overflow-y-auto">
         <div
           className="relative overflow-hidden rounded-b-3xl"
@@ -192,19 +192,17 @@ export function DoctorPatients() {
         <div className="max-w-6xl mx-auto px-4 pb-8" style={{ marginTop: '-18px' }}>
           <div className="grid grid-cols-1 xl:grid-cols-[2fr,1fr] gap-4">
             <div className="flex flex-col gap-4">
-              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+              <div className="saai-panel rounded-2xl p-4 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center">
                   <div
-                    className="flex items-center gap-2 flex-1 rounded-2xl px-3"
-                    style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
+                    className="flex items-center gap-2 flex-1 rounded-2xl px-3 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800"
                   >
                     <Search size={16} color="#262842" />
                     <input
                       value={search}
                       onChange={(event) => setSearch(event.target.value)}
                       placeholder="Search patients or conditions"
-                      className="flex-1 outline-none bg-transparent"
-                      style={{ padding: '10px 0', fontSize: '13px', color: '#17252A' }}
+                      className="flex-1 outline-none bg-transparent py-2.5 text-[13px] text-[#17252A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -234,10 +232,10 @@ export function DoctorPatients() {
               </div>
 
               <div className="flex items-center justify-between">
-                <h2 className="display-font" style={{ fontSize: '18px', fontWeight: 700, color: '#17252A' }}>
+                <h2 className="display-font text-[18px] font-bold text-[#17252A] dark:text-white">
                   Patient list
                 </h2>
-                <p style={{ fontSize: '12px', color: '#262842', fontWeight: 600 }}>
+                <p className="text-[12px] font-semibold text-[#262842] dark:text-slate-400">
                   {isLoading ? '…' : `${patients.length} results`}
                 </p>
               </div>
@@ -245,7 +243,7 @@ export function DoctorPatients() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Loading skeleton */}
                 {isLoading && Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="saai-panel rounded-2xl p-4 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                  <div key={i} className="saai-panel rounded-2xl p-4 animate-pulse bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
                     <div className="flex gap-3">
                       <div className="w-12 h-12 rounded-2xl shrink-0" style={{ background: '#E8E9F1' }} />
                       <div className="flex-1 space-y-2">
@@ -258,7 +256,7 @@ export function DoctorPatients() {
 
                 {/* Error state */}
                 {isError && !isLoading && (
-                  <div className="col-span-2 rounded-2xl p-6 text-center" style={{ background: '#fff5f5', border: '1px solid #fed7d7' }}>
+                  <div className="col-span-2 rounded-2xl p-6 text-center bg-[#fff5f5] dark:bg-red-900/20 border border-[#fed7d7] dark:border-red-900/50">
                     <p style={{ fontSize: '14px', fontWeight: 700, color: '#c53030' }}>Failed to load patients</p>
                     <p style={{ fontSize: '12px', color: '#e53e3e', marginTop: '6px' }}>Check your connection and try again.</p>
                   </div>
@@ -272,8 +270,8 @@ export function DoctorPatients() {
                   return (
                     <div
                       key={patient.id}
-                      className="saai-panel rounded-2xl p-4 saai-stagger cursor-pointer hover:ring-2 hover:ring-teal-400/40 transition-all"
-                      style={{ animationDelay: `${index * 70}ms`, background: '#FEFFFF', border: '1px solid #E8E9F1' }}
+                      className="saai-panel rounded-2xl p-4 saai-stagger cursor-pointer hover:ring-2 hover:ring-teal-400/40 transition-all bg-white dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700"
+                      style={{ animationDelay: `${index * 70}ms` }}
                       onClick={() => handlePatientClick(patient.id)}
                       role="button"
                       tabIndex={0}
@@ -289,10 +287,10 @@ export function DoctorPatients() {
                         <div className="flex-1">
                           <div className="flex items-center justify-between gap-2">
                             <div>
-                              <p className="display-font" style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>
+                              <p className="display-font text-[15px] font-bold text-[#17252A] dark:text-white">
                                 {patient.name}
                               </p>
-                              <p style={{ fontSize: '12px', color: '#262842', marginTop: '2px' }}>
+                              <p className="text-[12px] text-[#262842] dark:text-slate-400 mt-[2px]">
                                 {patient.condition ?? '—'} · {patient.age} yrs
                               </p>
                             </div>
@@ -306,15 +304,13 @@ export function DoctorPatients() {
                           </div>
                           <div className="flex flex-wrap gap-2 mt-3">
                             <span
-                              className="rounded-lg px-2 py-1"
-                              style={{ background: '#E8E9F1', color: '#17252A', fontSize: '11px', fontWeight: 700 }}
+                              className="rounded-lg px-2 py-1 bg-[#E8E9F1] dark:bg-slate-800 text-[#17252A] dark:text-slate-200 text-[11px] font-bold"
                             >
                               {patient.displayId}
                             </span>
                             {patient.city && (
                               <span
-                                className="rounded-lg px-2 py-1"
-                                style={{ background: '#E8E9F1', color: '#262842', fontSize: '11px', fontWeight: 600 }}
+                                className="rounded-lg px-2 py-1 bg-[#E8E9F1] dark:bg-slate-800 text-[#262842] dark:text-slate-300 text-[11px] font-semibold"
                               >
                                 {patient.city}
                               </span>
@@ -342,13 +338,7 @@ export function DoctorPatients() {
                       <div className="flex gap-2 mt-4">
                         <button
                           onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-colors"
-                          style={{
-                            background: '#E8E9F1',
-                            color: '#262842',
-                            fontSize: '13px',
-                            fontWeight: 600,
-                          }}
+                          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-colors bg-[#E8E9F1] dark:bg-slate-800 text-[#262842] dark:text-slate-200 text-[13px] font-semibold hover:bg-slate-200 dark:hover:bg-slate-700"
                         >
                           <FileText size={16} />
                           View chart
@@ -373,7 +363,7 @@ export function DoctorPatients() {
               </div>
 
               {!isLoading && !isError && patients.length === 0 && (
-                <div className="saai-panel rounded-2xl p-6 text-center" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                <div className="saai-panel rounded-2xl p-6 text-center bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
                   <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>
                     No patients found
                   </p>
@@ -385,9 +375,9 @@ export function DoctorPatients() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
-                <p className="saai-kicker" style={{ color: '#262842' }}>Care insights</p>
-                <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A', marginTop: '6px' }}>
+              <div className="saai-panel rounded-2xl p-4 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
+                <p className="saai-kicker text-[#262842] dark:text-slate-400">Care insights</p>
+                <p className="display-font text-[16px] font-bold text-[#17252A] dark:text-white mt-[6px]">
                   Focus today
                 </p>
                 <div className="mt-4 flex flex-col gap-3">
@@ -397,8 +387,7 @@ export function DoctorPatients() {
                   ].map((item) => (
                     <div
                       key={item}
-                      className="rounded-xl px-3 py-2"
-                      style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', fontSize: '12px', fontWeight: 600, color: '#17252A' }}
+                      className="rounded-xl px-3 py-2 bg-white dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700 text-[12px] font-semibold text-[#17252A] dark:text-white"
                     >
                       {item}
                     </div>
@@ -406,9 +395,9 @@ export function DoctorPatients() {
                 </div>
               </div>
 
-              <div className="saai-panel rounded-2xl p-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
-                <p className="saai-kicker" style={{ color: '#262842' }}>Vitals overview</p>
-                <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A', marginTop: '6px' }}>
+              <div className="saai-panel rounded-2xl p-4 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
+                <p className="saai-kicker text-[#262842] dark:text-slate-400">Vitals overview</p>
+                <p className="display-font text-[16px] font-bold text-[#17252A] dark:text-white mt-[6px]">
                   Session readiness
                 </p>
                 <div className="mt-4 flex flex-col gap-3">
@@ -418,10 +407,9 @@ export function DoctorPatients() {
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="flex items-center justify-between rounded-xl px-3 py-2"
-                      style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
+                      className="flex items-center justify-between rounded-xl px-3 py-2 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800"
                     >
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{item.label}</span>
+                      <span className="text-[12px] font-semibold text-[#17252A] dark:text-white">{item.label}</span>
                       <span style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.value}</span>
                     </div>
                   ))}
@@ -432,7 +420,7 @@ export function DoctorPatients() {
         </div>
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
+      <div className="md:hidden border-t border-[#E8E9F1] dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role="doctor" />
       </div>
 
@@ -448,7 +436,7 @@ export function DoctorPatients() {
       {/* Therapist Assignment Modal */}
       {assignPatient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-          <div className="w-full max-w-sm rounded-3xl p-5" style={{ background: '#FEFFFF', boxShadow: '0 24px 64px rgba(0,0,0,0.15)' }}>
+          <div className="w-full max-w-sm rounded-3xl p-5 bg-white dark:bg-slate-900 shadow-2xl dark:shadow-none border dark:border-slate-800">
             <div className="flex items-center justify-between mb-3">
               <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#17252A' }}>
                 {assignPatient.therapistId ? 'Reassign' : 'Assign'} Therapist
@@ -463,7 +451,7 @@ export function DoctorPatients() {
 
             {/* Current */}
             {assignPatient.therapistId && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3" style={{ background: '#E8E9F1', border: '1px solid #b2dfdb' }}>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 bg-[#E8E9F1] dark:bg-teal-900/30 border border-[#b2dfdb] dark:border-teal-900/50">
                 <UserCog size={13} color="#262842" />
                 <span style={{ fontSize: '11px', fontWeight: 600, color: '#262842' }}>
                   Current: {getTherapistName(assignPatient.therapistId) ?? 'Unknown'}

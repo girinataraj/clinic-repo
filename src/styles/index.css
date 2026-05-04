@@ -14,11 +14,24 @@
 		linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
+.dark .saai-page {
+	background:
+		radial-gradient(1200px 400px at 10% -10%, rgba(14, 116, 144, 0.12), transparent 60%),
+		radial-gradient(1000px 380px at 90% -5%, rgba(67, 56, 202, 0.12), transparent 60%),
+		linear-gradient(180deg, #0f172a 0%, #020617 100%);
+}
+
 .saai-panel {
 	background: rgba(255, 255, 255, 0.92);
 	border: 1px solid var(--saai-border);
 	box-shadow: var(--saai-shadow);
 	backdrop-filter: blur(8px);
+}
+
+.dark .saai-panel {
+	background: rgba(15, 23, 42, 0.92);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .saai-kicker {

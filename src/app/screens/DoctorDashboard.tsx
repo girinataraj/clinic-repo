@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { BottomNav } from '../components/BottomNav';
 import { usePatients, useUpdatePatient } from '../../hooks/usePatients';
 import { useNotifications, useUnreadNotificationCount, useMarkAllNotificationsRead } from '../../hooks/useNotifications';
@@ -12,9 +13,9 @@ import {
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string; border: string }> = {
-  waiting:      { label: 'Waiting',     color: '#262842', bg: '#E8E9F1', dot: '#262842', border: '#E8E9F1' },
-  'in-session': { label: 'In Session',  color: '#17252A', bg: '#E8E9F1', dot: '#3B3E66', border: '#E8E9F1' },
-  completed:    { label: 'Completed',   color: '#FEFFFF', bg: '#3B3E66', dot: '#FEFFFF', border: '#3B3E66' },
+  waiting:      { label: 'Waiting',     color: 'text-slate-800 dark:text-slate-300', bg: 'bg-slate-100 dark:bg-slate-800', dot: 'bg-slate-800 dark:bg-slate-300', border: 'border-slate-100 dark:border-slate-800' },
+  'in-session': { label: 'In Session',  color: 'text-indigo-900 dark:text-indigo-100', bg: 'bg-indigo-100 dark:bg-indigo-900/40', dot: 'bg-indigo-900 dark:bg-indigo-300', border: 'border-indigo-100 dark:border-indigo-900/40' },
+  completed:    { label: 'Completed',   color: 'text-emerald-50 dark:text-emerald-100', bg: 'bg-emerald-700 dark:bg-emerald-900', dot: 'bg-emerald-50 dark:bg-emerald-300', border: 'border-emerald-700 dark:border-emerald-900' },
 };
 
 const getInitials = (name: string) => name.split(' ').map(p => p[0]).join('');
@@ -61,36 +62,31 @@ export function DoctorDashboard() {
   const completed = patients.filter((p) => p.status === 'completed').length;
 
   return (
-    <div className="flex flex-col h-full" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1' }}>
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
       <div className="flex-1 overflow-y-auto">
         {/* Header */}
-        <div
-          className="px-6 pb-12 relative overflow-hidden rounded-b-3xl"
-          style={{
-            background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
-            paddingTop: '32px',
-            boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)',
-          }}
-        >
-          <div className="absolute -right-16 -top-16 rounded-full opacity-10 pointer-events-none"
-            style={{ width: '200px', height: '200px', background: '#FEFFFF' }} />
-          <div className="absolute right-10 top-20 rounded-full opacity-20 pointer-events-none"
-            style={{ width: '80px', height: '80px', background: '#FEFFFF' }} />
+        <div className="relative rounded-b-3xl bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-slate-900/10">
+          <div className="absolute inset-0 overflow-hidden rounded-b-3xl pointer-events-none">
+            <div className="absolute -right-16 -top-16 rounded-full opacity-10 bg-white/10 w-[200px] h-[200px]" />
+            <div className="absolute right-10 top-20 rounded-full opacity-20 bg-white/20 w-[80px] h-[80px]" />
+          </div>
+          <div className="px-6 pb-12 pt-8 relative z-30">
 
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <p style={{ fontSize: '13px', color: '#FEFFFF', fontWeight: 500, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                <p className="text-[13px] text-white font-medium tracking-[0.5px] uppercase">
                   {today}
                 </p>
-                <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#FEFFFF', marginTop: '4px', letterSpacing: '-0.5px' }}>
+                <h1 className="text-[26px] font-bold text-white mt-1 tracking-tight">
                   {actualName} 👋
                 </h1>
-                <p style={{ fontSize: '14px', color: 'rgba(254, 255, 255, 0.8)', marginTop: '2px', fontWeight: 400 }}>
+                <p className="text-sm text-white/80 mt-0.5 font-normal">
                   Sports Physiotherapist · SAAI Clinic
                 </p>
               </div>
               <div className="flex items-center gap-3 relative z-50">
+                <ThemeToggle />
                 {/* Notification Dropdown */}
                 <div className="relative">
                   <button 
@@ -102,41 +98,39 @@ export function DoctorDashboard() {
                         setShowProfileMenu(false);
                       }
                     }}
-                    className="flex items-center justify-center rounded-2xl transition-all duration-300 relative z-50"
-                    style={{ width: '48px', height: '48px', background: 'rgba(254, 255, 255, 0.15)', border: '1px solid rgba(254, 255, 255, 0.2)' }}>
-                    <Bell size={22} color="#FEFFFF" />
+                    className="flex items-center justify-center rounded-2xl transition-all duration-300 relative w-12 h-12 bg-white/15 hover:bg-white/20 border border-white/20">
+                    <Bell size={22} className="text-white" />
                   </button>
                   {unreadCount > 0 && (
-                    <div className="absolute -top-1 -right-1 rounded-full flex items-center justify-center pointer-events-none"
-                      style={{ width: '18px', height: '18px', background: '#17252A', fontSize: '10px', color: '#FEFFFF', fontWeight: 700, border: '2px solid #3B3E66' }}>
+                    <div className="absolute -top-1 -right-1 rounded-full flex items-center justify-center pointer-events-none w-4 h-4 bg-slate-900 text-[9px] text-white font-bold border-2 border-indigo-900">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </div>
                   )}
                   
                   {/* Only show notifications dropdown on mobile */}
                   {showNotifications && (
-                    <div className="md:hidden absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden text-left">
-                      <div className="p-4 border-b border-slate-100 bg-slate-50">
-                        <h3 className="text-sm font-bold text-slate-800">Notifications</h3>
+                    <div className="md:hidden absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden text-left">
+                      <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Notifications</h3>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
                         {notifications.length === 0 && (
                           <div className="p-4 text-center">
-                            <p className="text-xs text-slate-400">No notifications</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500">No notifications</p>
                           </div>
                         )}
                         {notifications.map((n) => (
-                          <div key={n.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer ${!n.isRead ? 'bg-indigo-50/40' : ''}`}>
-                            <p className="text-xs font-semibold text-slate-800">{n.title}</p>
-                            <p className="text-[10px] text-slate-500 mt-1">{n.body}</p>
+                          <div key={n.id} className={`p-4 border-b border-slate-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer ${!n.isRead ? 'bg-indigo-50/40 dark:bg-indigo-900/20' : ''}`}>
+                            <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{n.title}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{n.body}</p>
                           </div>
                         ))}
                       </div>
-                      <div className="p-3 text-center border-t border-slate-100">
+                      <div className="p-3 text-center border-t border-slate-100 dark:border-slate-700">
                         <button
                           onClick={() => { markAllRead.mutate(); setShowNotifications(false); }}
                           disabled={markAllRead.isPending}
-                          className="text-xs font-bold text-indigo-900 hover:text-indigo-950 disabled:opacity-50"
+                          className="text-xs font-bold text-indigo-900 dark:text-indigo-400 hover:text-indigo-950 dark:hover:text-indigo-300 disabled:opacity-50"
                         >
                           {markAllRead.isPending ? 'Marking…' : 'Mark all as read'}
                         </button>
@@ -149,27 +143,27 @@ export function DoctorDashboard() {
                 <div className="relative">
                   <button
                     onClick={() => navigate('/doctor/profile')}
-                    className="flex items-center justify-center rounded-2xl transition-all duration-300 relative z-50"
-                    style={{ width: '48px', height: '48px', background: 'rgba(254, 255, 255, 0.15)', border: '1px solid rgba(254, 255, 255, 0.2)' }}>
+                    className="flex items-center justify-center rounded-2xl transition-all duration-300 relative w-12 h-12 bg-white/15 hover:bg-white/20 border border-white/20 overflow-hidden">
                     <img
                       src="/doctor.jpg"
                       alt="Doctor Profile"
-                      style={{ width: '100%', height: '100%', borderRadius: '16px', objectFit: 'cover', objectPosition: 'center 15%' }}
+                      className="w-full h-full rounded-2xl object-cover object-[center_15%]"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                         target.nextElementSibling?.setAttribute('style', 'display: block');
                       }}
                     />
-                    <User size={22} color="#FEFFFF" style={{ display: 'none' }} />
+                    <User size={22} className="text-white hidden" />
                   </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        </div>
 
-        <div className="px-5 pb-8 max-w-6xl mx-auto w-full" style={{ marginTop: '-40px', position: 'relative', zIndex: 10 }}>
+        <div className="px-5 pb-8 max-w-6xl mx-auto w-full relative z-10 -mt-10">
           {/* Stats */}
           <div className="flex gap-4 mb-6">
             {[
@@ -179,13 +173,12 @@ export function DoctorDashboard() {
             ].map((s, i) => {
               const Icon = s.icon;
               return (
-                <div key={s.label} className="flex-1 rounded-2xl p-4 flex flex-col items-center justify-center transition-transform hover:-translate-y-1 duration-300"
-                  style={{ background: '#FEFFFF', boxShadow: '0 8px 24px rgba(23, 37, 42, 0.08)', border: '1px solid #E8E9F1' }}>
-                  <div className="rounded-xl flex items-center justify-center mb-2" style={{ width: '40px', height: '40px', background: '#E8E9F1' }}>
-                    <Icon size={20} color="#3B3E66" />
+                <div key={s.label} className="flex-1 rounded-2xl p-4 flex flex-col items-center justify-center transition-transform hover:-translate-y-1 duration-300 bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="rounded-xl flex items-center justify-center mb-2 w-10 h-10 bg-slate-100 dark:bg-slate-700">
+                    <Icon size={20} className="text-slate-600 dark:text-slate-300" />
                   </div>
-                  <span style={{ fontSize: '24px', fontWeight: 700, color: '#17252A', lineHeight: 1 }}>{s.value}</span>
-                  <span style={{ fontSize: '12px', color: '#262842', fontWeight: 500, marginTop: '6px', textAlign: 'center' }}>{s.label}</span>
+                  <span className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{s.value}</span>
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-1.5 text-center">{s.label}</span>
                 </div>
               );
             })}
@@ -195,16 +188,14 @@ export function DoctorDashboard() {
 
           {/* Recovery insight banner */}
           <div
-            className="flex items-center gap-4 p-5 rounded-2xl mb-8"
-            style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
+            className="flex items-center gap-4 p-5 rounded-2xl mb-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
           >
-            <div className="flex items-center justify-center rounded-xl shrink-0"
-              style={{ width: '48px', height: '48px', background: '#262842', boxShadow: '0 4px 12px rgba(43,122,120,0.3)' }}>
-              <Activity size={24} color="#FEFFFF" />
+            <div className="flex items-center justify-center rounded-xl shrink-0 w-12 h-12 bg-indigo-900 shadow-md shadow-indigo-900/20">
+              <Activity size={24} className="text-white" />
             </div>
             <div className="flex-1">
-              <p style={{ fontSize: '12px', color: '#3B3E66', fontWeight: 600, letterSpacing: '0.5px' }}>TODAY'S INSIGHT</p>
-              <p style={{ fontSize: '15px', fontWeight: 600, color: '#17252A', marginTop: '2px' }}>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold tracking-wide uppercase">TODAY'S INSIGHT</p>
+              <p className="text-[15px] font-semibold text-slate-900 dark:text-white mt-0.5">
                 {completed > 0 
                   ? `${completed} patients successfully completed their session today`
                   : waiting > 0 
@@ -212,8 +203,8 @@ export function DoctorDashboard() {
                     : `Ready for your first patient of the day`}
               </p>
             </div>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
-              <Activity size={18} color="#262842" />
+            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-700">
+              <Activity size={18} className="text-slate-600 dark:text-slate-300" />
             </div>
           </div>
 
@@ -221,28 +212,26 @@ export function DoctorDashboard() {
           <div className="grid grid-cols-2 gap-3 mb-6">
             <button
               onClick={() => navigate('/doctor/daily-report')}
-              className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md"
-              style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
+              className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
             >
-              <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#E8E9F1' }}>
-                <BarChart2 size={18} color="#262842" />
+              <div className="rounded-xl flex items-center justify-center shrink-0 w-10 h-10 bg-slate-100 dark:bg-slate-700">
+                <BarChart2 size={18} className="text-slate-600 dark:text-slate-300" />
               </div>
               <div className="text-left">
-                <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }}>Daily Reports</p>
-                <p style={{ fontSize: '10px', color: '#262842' }}>Revenue & stats by date</p>
+                <p className="text-[13px] font-bold text-slate-900 dark:text-white">Daily Reports</p>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400">Revenue & stats by date</p>
               </div>
             </button>
             <button
               onClick={() => navigate('/doctor/therapists')}
-              className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md"
-              style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
+              className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
             >
-              <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#E8E9F1' }}>
-                <UserCog size={18} color="#262842" />
+              <div className="rounded-xl flex items-center justify-center shrink-0 w-10 h-10 bg-slate-100 dark:bg-slate-700">
+                <UserCog size={18} className="text-slate-600 dark:text-slate-300" />
               </div>
               <div className="text-left">
-                <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }}>Therapists</p>
-                <p style={{ fontSize: '10px', color: '#262842' }}>Assign & manage</p>
+                <p className="text-[13px] font-bold text-slate-900 dark:text-white">Therapists</p>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400">Assign & manage</p>
               </div>
             </button>
           </div>
@@ -250,20 +239,18 @@ export function DoctorDashboard() {
           {/* Search + Tabs */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div
-              className="flex items-center gap-3 px-4 flex-1 rounded-2xl"
-              style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}
+              className="flex items-center gap-3 px-4 flex-1 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
             >
-              <Search size={18} color="#262842" />
+              <Search size={18} className="text-slate-400 dark:text-slate-500" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search patients or conditions..."
-                className="flex-1 outline-none bg-transparent"
-                style={{ padding: '14px 0', fontSize: '14px', color: '#17252A' }}
+                className="flex-1 outline-none bg-transparent py-3.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
 
-            <div className="flex gap-2 p-1 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}>
+            <div className="flex gap-2 p-1 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
               {[
                 { key: 'all', label: `All (${patientsData?.total ?? 0})` },
                 { key: 'waiting', label: `Wait (${waiting})` },
@@ -273,12 +260,11 @@ export function DoctorDashboard() {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className="px-4 py-2.5 rounded-xl transition-all duration-200"
-                  style={{
-                    fontSize: '13px', fontWeight: 600,
-                    background: activeTab === tab.key ? '#262842' : 'transparent',
-                    color: activeTab === tab.key ? '#FEFFFF' : '#262842',
-                  }}
+                  className={`px-4 py-2.5 rounded-xl transition-all duration-200 text-[13px] font-semibold ${
+                    activeTab === tab.key
+                      ? 'bg-slate-900 text-white dark:bg-slate-700'
+                      : 'bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                  }`}
                 >
                   {tab.label}
                 </button>
@@ -288,8 +274,8 @@ export function DoctorDashboard() {
 
           {/* Section header */}
           <div className="flex items-center justify-between mb-4">
-            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#17252A' }}>Patient Queue</h3>
-            <span className="px-3 py-1 rounded-full" style={{ fontSize: '12px', color: '#262842', fontWeight: 600, background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Patient Queue</h3>
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
               {isLoading ? '…' : `${patients.length} patients`}
             </span>
           </div>
@@ -298,12 +284,12 @@ export function DoctorDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Loading skeleton */}
             {isLoading && Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="rounded-2xl p-5 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+              <div key={i} className="rounded-2xl p-5 animate-pulse bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div className="flex gap-4">
-                  <div className="w-14 h-14 rounded-2xl" style={{ background: '#E8E9F1' }} />
+                  <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-700" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 rounded" style={{ background: '#E8E9F1', width: '60%' }} />
-                    <div className="h-3 rounded" style={{ background: '#E8E9F1', width: '40%' }} />
+                    <div className="h-4 rounded bg-slate-100 dark:bg-slate-700 w-3/5" />
+                    <div className="h-3 rounded bg-slate-100 dark:bg-slate-700 w-2/5" />
                   </div>
                 </div>
               </div>
@@ -317,10 +303,10 @@ export function DoctorDashboard() {
             )}
 
             {!isLoading && !isError && patients.length === 0 && (
-              <div className="col-span-full text-center py-10 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
-                <Users className="w-10 h-10 mx-auto mb-3" style={{ color: '#E8E9F1' }} />
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>No patients found</p>
-                <p style={{ fontSize: '12px', color: '#262842', marginTop: '4px' }}>Try adjusting your search or filters</p>
+              <div className="col-span-full text-center py-10 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                <Users className="w-10 h-10 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+                <p className="text-sm font-bold text-slate-900 dark:text-white">No patients found</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Try adjusting your search or filters</p>
               </div>
             )}
 
@@ -329,32 +315,32 @@ export function DoctorDashboard() {
               return (
                 <div
                   key={patient.id}
-                  className="rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-                  style={{
-                    background: '#FEFFFF',
-                    boxShadow: '0 4px 20px rgba(23, 37, 42, 0.04)',
-                    border: `1px solid ${patient.status === 'in-session' ? '#3B3E66' : '#E8E9F1'}`,
-                  }}
+                  className={`rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg bg-white dark:bg-slate-800 shadow-sm border ${patient.status === 'in-session' ? 'border-indigo-500 dark:border-indigo-400' : 'border-slate-200 dark:border-slate-700'}`}
                 >
                   {/* Patient header */}
                   <div className="flex items-center gap-4 p-5 pb-4">
-                    <div className="rounded-2xl flex items-center justify-center shrink-0 relative"
-                      style={{ width: '56px', height: '56px', background: '#E8E9F1' }}>
-                      <span style={{ fontSize: '18px', fontWeight: 700, color: '#262842' }}>{getInitials(patient.name)}</span>
+                    <div className="rounded-2xl flex items-center justify-center shrink-0 relative w-14 h-14 bg-slate-100 dark:bg-slate-700">
+                      <span className="text-lg font-bold text-slate-800 dark:text-white">{getInitials(patient.name)}</span>
                       {patient.status === 'in-session' && (
-                        <div className="absolute -top-1 -right-1 rounded-full"
-                          style={{ width: '14px', height: '14px', background: '#3B3E66', border: '2px solid #FEFFFF' }} />
+                        <div className="absolute -top-1 -right-1 rounded-full w-3.5 h-3.5 bg-indigo-500 border-2 border-white dark:border-slate-800" />
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div>
-                          <p style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>{patient.name}</p>
-                          <p style={{ fontSize: '13px', color: '#262842', marginTop: '2px' }}>{patient.condition ?? '—'} · {patient.age} yrs</p>
+                          <p className="text-base font-bold text-slate-900 dark:text-white">{patient.name}</p>
+                          <p className="text-[13px] text-slate-600 dark:text-slate-400 mt-0.5">{patient.condition ?? '—'} · {patient.age} yrs</p>
                         </div>
-                        <span className="px-3 py-1 rounded-full flex items-center gap-1.5"
-                          style={{ background: config.bg, color: config.color, fontSize: '12px', fontWeight: 600 }}>
-                          <div className="rounded-full" style={{ width: '6px', height: '6px', background: config.dot }} />
+                        <span className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-xs font-semibold ${
+                          patient.status === 'in-session' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' : 
+                          patient.status === 'completed' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 
+                          'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                        }`}>
+                          <div className={`rounded-full w-1.5 h-1.5 ${
+                            patient.status === 'in-session' ? 'bg-indigo-500' : 
+                            patient.status === 'completed' ? 'bg-emerald-500' : 
+                            'bg-amber-500'
+                          }`} />
                           {config.label}
                         </span>
                       </div>
@@ -363,60 +349,56 @@ export function DoctorDashboard() {
 
                   {/* Info row */}
                   <div className="flex gap-3 px-5 pb-5">
-                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
-                        <span style={{ fontSize: '14px' }}>🆔</span>
+                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600/50">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm">
+                        <span className="text-sm">🆔</span>
                       </div>
                       <div>
-                        <p style={{ fontSize: '11px', color: '#262842', fontWeight: 600, marginBottom: '2px' }}>ID</p>
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{patient.displayId}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mb-0.5">ID</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">{patient.displayId}</p>
                       </div>
                     </div>
-                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
-                        <span style={{ fontSize: '14px' }}>📞</span>
+                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600/50">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm">
+                        <span className="text-sm">📞</span>
                       </div>
                       <div>
-                        <p style={{ fontSize: '11px', color: '#262842', fontWeight: 600, marginBottom: '2px' }}>Phone</p>
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{patient.phone}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mb-0.5">Phone</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">{patient.phone}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
+                  <div className="border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                     {patient.status === 'in-session' ? (
                       <button
                         onClick={() => handleCompleteSession(patient.id)}
                         disabled={updatePatient.isPending}
-                        className="w-full flex items-center justify-center gap-2 py-4 transition-colors disabled:opacity-50"
-                        style={{ color: '#FEFFFF', fontSize: '13px', fontWeight: 700, background: '#262842' }}
+                        className="w-full flex items-center justify-center gap-2 py-4 transition-colors disabled:opacity-50 text-[13px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
                       >
                         <CheckCircle size={16} />
                         COMPLETE SESSION
                       </button>
                     ) : (
-                      <div className="flex divide-x divide-slate-100" style={{ borderTop: '1px solid #E8E9F1' }}>
+                      <div className="flex divide-x divide-slate-200 dark:divide-slate-700">
                         <button
                           onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
-                          style={{ color: '#262842', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #E8E9F1' }}
+                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors text-[13px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                         >
                           <Eye size={16} />
                           View
                         </button>
                         <button
                           onClick={() => navigate(`/doctor/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
-                          style={{ color: '#3B3E66', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #E8E9F1' }}
+                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors text-[13px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                         >
                           <ClipboardList size={16} />
                           Intake
                         </button>
                         <button
                           onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
-                          style={{ color: '#17252A', fontSize: '13px', fontWeight: 600 }}
+                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors text-[13px] font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
                         >
                           <FileText size={16} />
                           Report
@@ -430,19 +412,18 @@ export function DoctorDashboard() {
           </div>
 
           {!isLoading && patients.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 rounded-2xl shadow-sm mt-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
-              <div className="flex items-center justify-center rounded-full mb-4"
-                style={{ width: '72px', height: '72px', background: '#E8E9F1' }}>
-                <Users size={32} color="#3B3E66" />
+            <div className="flex flex-col items-center justify-center py-16 rounded-2xl shadow-sm mt-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-center rounded-full mb-4 w-16 h-16 bg-slate-100 dark:bg-slate-700">
+                <Users size={32} className="text-slate-400 dark:text-slate-500" />
               </div>
-              <p style={{ fontSize: '18px', fontWeight: 600, color: '#17252A' }}>No patients found</p>
-              <p style={{ fontSize: '14px', color: '#262842', marginTop: '6px' }}>Try adjusting your search or filter</p>
+              <p className="text-lg font-semibold text-slate-900 dark:text-white">No patients found</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Try adjusting your search or filter</p>
             </div>
           )}
         </div>
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
+      <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role="doctor" />
       </div>
     </div>

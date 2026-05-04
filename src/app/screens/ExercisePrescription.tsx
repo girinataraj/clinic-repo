@@ -47,17 +47,17 @@ import {
 const difficulties = ['Easy', 'Medium', 'Hard'] as const;
 
 const difficultyColors = {
-  Easy: { bg: '#E8E9F1', color: '#262842', border: '#E8E9F1' },
-  Medium: { bg: '#FEFFFF', color: '#3B3E66', border: '#E8E9F1' },
-  Hard: { bg: '#17252A', color: '#FEFFFF', border: '#17252A' },
+  Easy: { bg: 'bg-slate-100 dark:bg-slate-800', color: 'text-slate-700 dark:text-slate-300', border: 'border-slate-200 dark:border-slate-700' },
+  Medium: { bg: 'bg-blue-50 dark:bg-blue-900/30', color: 'text-blue-700 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-900/50' },
+  Hard: { bg: 'bg-rose-50 dark:bg-rose-900/30', color: 'text-rose-700 dark:text-rose-400', border: 'border-rose-200 dark:border-rose-900/50' },
 };
 
-const categoryColors: Record<string, string> = {
-  Strengthening: '#3B3E66',
-  Flexibility: '#262842',
-  Balance: '#17252A',
-  Core: '#3B3E66',
-  Cardio: '#262842',
+const categoryColors: Record<string, { bg: string, color: string }> = {
+  Strengthening: { bg: 'bg-indigo-50 dark:bg-indigo-900/30', color: 'text-indigo-600 dark:text-indigo-400' },
+  Flexibility: { bg: 'bg-teal-50 dark:bg-teal-900/30', color: 'text-teal-600 dark:text-teal-400' },
+  Balance: { bg: 'bg-amber-50 dark:bg-amber-900/30', color: 'text-amber-600 dark:text-amber-400' },
+  Core: { bg: 'bg-rose-50 dark:bg-rose-900/30', color: 'text-rose-600 dark:text-rose-400' },
+  Cardio: { bg: 'bg-blue-50 dark:bg-blue-900/30', color: 'text-blue-600 dark:text-blue-400' },
 };
 
 interface LocalExercise {
@@ -102,32 +102,24 @@ function PatientExercisePlanView() {
   const exercises = backendExercises;
 
   return (
-    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1' }}>
-      <div
-        className="px-6 pb-6 shrink-0 rounded-b-3xl relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
-          paddingTop: '32px',
-          boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)',
-        }}
-      >
-        <div className="absolute -right-16 -top-16 rounded-full opacity-10"
-          style={{ width: '200px', height: '200px', background: '#FEFFFF' }} />
+    <div className="flex flex-col h-full font-sans bg-[#E8E9F1] dark:bg-slate-950">
+      <div className="px-6 pb-6 pt-8 shrink-0 rounded-b-3xl relative overflow-hidden bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-[0_4px_24px_rgba(38,40,66,0.15)] dark:shadow-none">
+        <div className="absolute -right-16 -top-16 rounded-full opacity-10 bg-white w-[200px] h-[200px]" />
 
         <div className="flex items-center justify-between mb-6 relative z-10">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20"
-            style={{ width: '40px', height: '40px', background: 'rgba(254,255,255,0.15)' }}>
-            <ArrowLeft size={20} color="#FEFFFF" />
+            className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 bg-white/15"
+          >
+            <ArrowLeft size={20} className="text-white" />
           </button>
           <div className="text-center">
-            <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#FEFFFF' }}>Exercise Prescription</h1>
-            <p style={{ fontSize: '13px', color: 'rgba(254,255,255,0.8)' }}>
+            <h1 className="text-[18px] font-bold text-white">Exercise Prescription</h1>
+            <p className="text-[13px] text-white/80">
               {activePlan ? activePlan.title : 'No active plan'}
             </p>
           </div>
-          <div style={{ width: 40 }} />
+          <div className="w-10" />
         </div>
 
         <div className="flex gap-3 relative z-10">
@@ -136,10 +128,9 @@ function PatientExercisePlanView() {
             { label: 'Sets Total', value: exercises.reduce((a, e) => a + parseInt(e.sets || '0'), 0) },
             { label: 'Plans', value: plans.length },
           ].map((s) => (
-            <div key={s.label} className="flex-1 text-center py-3 rounded-2xl backdrop-blur-sm"
-              style={{ background: 'rgba(254,255,255,0.15)', border: '1px solid rgba(254,255,255,0.2)' }}>
-              <p style={{ fontSize: '20px', fontWeight: 800, color: '#FEFFFF' }}>{isLoading ? '…' : s.value}</p>
-              <p style={{ fontSize: '12px', color: 'rgba(254,255,255,0.8)' }}>{s.label}</p>
+            <div key={s.label} className="flex-1 text-center py-3 rounded-2xl backdrop-blur-sm bg-white/15 border border-white/20">
+              <p className="text-[20px] font-extrabold text-white">{isLoading ? '…' : s.value}</p>
+              <p className="text-[12px] text-white/80">{s.label}</p>
             </div>
           ))}
         </div>
@@ -149,12 +140,12 @@ function PatientExercisePlanView() {
         {isLoading && (
           <div className="flex flex-col gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="rounded-2xl p-4 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+              <div key={i} className="rounded-2xl p-4 animate-pulse bg-white dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700">
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-2xl" style={{ background: '#E8E9F1' }} />
+                  <div className="w-12 h-12 rounded-2xl bg-[#E8E9F1] dark:bg-slate-700" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 rounded" style={{ background: '#E8E9F1', width: '60%' }} />
-                    <div className="h-3 rounded" style={{ background: '#E8E9F1', width: '40%' }} />
+                    <div className="h-4 rounded bg-[#E8E9F1] dark:bg-slate-700 w-[60%]" />
+                    <div className="h-3 rounded bg-[#E8E9F1] dark:bg-slate-700 w-[40%]" />
                   </div>
                 </div>
               </div>
@@ -163,10 +154,10 @@ function PatientExercisePlanView() {
         )}
 
         {!isLoading && exercises.length === 0 && (
-          <div className="rounded-2xl p-8 text-center" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
-            <Dumbbell size={40} color="#E8E9F1" className="mx-auto mb-3" />
-            <p style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>No exercises yet</p>
-            <p style={{ fontSize: '13px', color: '#262842', marginTop: '4px' }}>
+          <div className="rounded-2xl p-8 text-center bg-white dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700">
+            <Dumbbell size={40} className="mx-auto mb-3 text-[#E8E9F1] dark:text-slate-600" />
+            <p className="text-[16px] font-bold text-[#17252A] dark:text-white">No exercises yet</p>
+            <p className="text-[13px] text-[#262842] dark:text-slate-400 mt-1">
               Your doctor will prescribe exercises for you.
             </p>
           </div>
@@ -177,50 +168,48 @@ function PatientExercisePlanView() {
             {exercises.map((exercise) => {
               const isExpanded = expandedId === exercise.id;
               const diffColors = difficultyColors[exercise.difficulty] ?? difficultyColors.Easy;
-              const catColor = categoryColors[exercise.category] || '#3B3E66';
+              const catColor = categoryColors[exercise.category] || categoryColors.Strengthening;
               return (
-                <div key={exercise.id} className="rounded-2xl overflow-hidden"
-                  style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+                <div key={exercise.id} className="rounded-2xl overflow-hidden bg-white dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
                   <div className="flex items-center gap-4 p-4">
-                    <div className="flex items-center justify-center rounded-2xl shrink-0"
-                      style={{ width: '48px', height: '48px', background: `${catColor}15` }}>
-                      <Dumbbell size={20} color={catColor} />
+                    <div className={`flex items-center justify-center rounded-2xl shrink-0 w-12 h-12 ${catColor.bg}`}>
+                      <Dumbbell size={20} className={catColor.color} />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>{exercise.name}</p>
-                        <span className="px-2 py-0.5 rounded-md" style={{ background: diffColors.bg, color: diffColors.color, fontSize: '10px', fontWeight: 700, border: `1px solid ${diffColors.border}` }}>
+                        <p className="text-[15px] font-bold text-[#17252A] dark:text-white">{exercise.name}</p>
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${diffColors.bg} ${diffColors.color} ${diffColors.border}`}>
                           {exercise.difficulty}
                         </span>
                       </div>
                       <div className="flex items-center gap-4 mt-1">
                         {exercise.sets && exercise.reps && (
                           <div className="flex items-center gap-1.5">
-                            <Repeat size={12} color="#262842" />
-                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#262842' }}>{exercise.sets} × {exercise.reps} reps</span>
+                            <Repeat size={12} className="text-[#262842] dark:text-slate-400" />
+                            <span className="text-[12px] font-semibold text-[#262842] dark:text-slate-300">{exercise.sets} × {exercise.reps} reps</span>
                           </div>
                         )}
                         {exercise.duration && (
                           <div className="flex items-center gap-1.5">
-                            <Clock size={12} color="#262842" />
-                            <span style={{ fontSize: '12px', color: '#262842' }}>{exercise.duration}</span>
+                            <Clock size={12} className="text-[#262842] dark:text-slate-400" />
+                            <span className="text-[12px] text-[#262842] dark:text-slate-300">{exercise.duration}</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <button onClick={() => setExpandedId(isExpanded ? null : exercise.id)} className="flex items-center justify-center rounded-xl transition-colors hover:bg-sky-100" style={{ width: '36px', height: '36px', background: '#E8E9F1' }}>
-                      {isExpanded ? <ChevronUp size={16} color="#262842" /> : <ChevronDown size={16} color="#262842" />}
+                    <button onClick={() => setExpandedId(isExpanded ? null : exercise.id)} className="flex items-center justify-center rounded-xl transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 w-9 h-9 bg-[#E8E9F1] dark:bg-slate-800">
+                      {isExpanded ? <ChevronUp size={16} className="text-[#262842] dark:text-slate-300" /> : <ChevronDown size={16} className="text-[#262842] dark:text-slate-300" />}
                     </button>
                   </div>
 
                   {isExpanded && exercise.instructions && (
-                    <div className="px-5 pb-5 border-t" style={{ borderColor: '#E8E9F1' }}>
-                      <div className="mt-4 flex items-start gap-3 p-4 rounded-xl" style={{ background: '#E8E9F1', border: '1px solid #E8E9F1' }}>
-                        <Info size={16} color="#262842" style={{ marginTop: '2px', flexShrink: 0 }} />
-                        <p style={{ fontSize: '13px', color: '#17252A', lineHeight: 1.6 }}>{exercise.instructions}</p>
+                    <div className="px-5 pb-5 border-t border-[#E8E9F1] dark:border-slate-700">
+                      <div className="mt-4 flex items-start gap-3 p-4 rounded-xl bg-[#E8E9F1] dark:bg-slate-800/50 border border-[#E8E9F1] dark:border-slate-700">
+                        <Info size={16} className="text-[#262842] dark:text-slate-400 mt-0.5 shrink-0" />
+                        <p className="text-[13px] text-[#17252A] dark:text-slate-300 leading-relaxed">{exercise.instructions}</p>
                       </div>
                       <div className="mt-3">
-                        <span className="px-3 py-1.5 rounded-lg" style={{ background: `${catColor}15`, color: catColor, fontSize: '12px', fontWeight: 600 }}>{exercise.category}</span>
+                        <span className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold ${catColor.bg} ${catColor.color}`}>{exercise.category}</span>
                       </div>
                     </div>
                   )}
@@ -231,7 +220,7 @@ function PatientExercisePlanView() {
         )}
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
+      <div className="md:hidden border-t border-[#E8E9F1] dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role="patient" />
       </div>
     </div>
@@ -367,27 +356,45 @@ function DoctorExerciseAssignments() {
   const patientList = patientsData?.data ?? [];
 
   return (
-    <div className="flex flex-col h-full bg-slate-50">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
       <div className="flex-1 overflow-y-auto">
-        <div className="px-6 pt-8 pb-6 border-b border-slate-200 bg-white">
-          <div className="max-w-6xl mx-auto w-full">
+        <div 
+          className="px-6 pt-8 pb-8 relative overflow-hidden shrink-0 shadow-md"
+          style={{ background: user?.role === 'nurse' ? 'linear-gradient(135deg, #0d2b27, #0f766e)' : 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)', color: 'white' }}
+        >
+          <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="max-w-6xl mx-auto relative z-10 w-full">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => navigate(-1)}
+                  className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 bg-white/10 border border-white/20"
+                >
+                  <ArrowLeft size={20} className="text-white" />
+                </button>
                 <div>
-                  <h1 className="text-xl font-bold text-slate-900">Exercise assignments</h1>
-                  <p className="text-sm text-slate-500">Select a patient and assign exercises from the library.</p>
+                  <p className="text-[11px] font-bold text-white/70 uppercase tracking-wider mb-0.5">
+                    {user?.role === 'nurse' ? 'Therapist Station' : 'Doctor Console'}
+                  </p>
+                  <h1 className="text-2xl font-extrabold text-white tracking-tight drop-shadow-sm">Exercise assignments</h1>
+                  <p className="text-sm text-white/80 mt-0.5">Select a patient and assign exercises from the library.</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => navigate(user?.role === 'doctor' ? '/doctor/exercise-library' : '/nurse/intake')}>
+              <div className="flex items-center gap-2 mt-2 md:mt-0">
+                <Button 
+                  variant="outline" 
+                  className="bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white"
+                  onClick={() => navigate(user?.role === 'doctor' ? '/doctor/exercise-library' : '/nurse/intake')}
+                >
                   {canAssign ? 'Manage library' : 'View library'}
                 </Button>
                 {canAssign && (
-                  <Button onClick={handleAssign} disabled={assignMutation.isPending}>
-                    {assignMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  <Button 
+                    className="bg-white text-slate-900 hover:bg-slate-100"
+                    onClick={handleAssign} 
+                    disabled={assignMutation.isPending}
+                  >
+                    {assignMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin text-slate-900" /> : <Save className="h-4 w-4 mr-2" />}
                     Assign selected
                   </Button>
                 )}
@@ -399,14 +406,14 @@ function DoctorExerciseAssignments() {
         <div className="px-6 py-6">
           <div className="max-w-6xl mx-auto w-full grid grid-cols-1 gap-5 lg:grid-cols-[320px_1fr]">
             <div className="space-y-5">
-              <Card className="border-slate-200">
+              <Card className="border-slate-200 dark:border-slate-800">
                 <CardHeader>
                   <CardTitle className="text-base">Select patient</CardTitle>
                   <CardDescription>Choose a patient before assigning exercises.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                     <Input
                       value={patientSearch}
                       onChange={(event) => setPatientSearch(event.target.value)}
@@ -416,13 +423,13 @@ function DoctorExerciseAssignments() {
                   </div>
 
                   {selectedPatientId && (
-                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-3">
                       {selectedPatientLoading ? (
-                        <div className="text-xs text-slate-500">Loading patient details...</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Loading patient details...</div>
                       ) : selectedPatient ? (
                         <div className="space-y-1">
                           <div className="flex items-center justify-between">
-                            <p className="text-sm font-semibold text-slate-900">{selectedPatient.name}</p>
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{selectedPatient.name}</p>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -434,15 +441,15 @@ function DoctorExerciseAssignments() {
                               Clear
                             </Button>
                           </div>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                             {selectedPatient.displayId} · {selectedPatient.phone}
                           </p>
                           {selectedPatient.condition && (
-                            <p className="text-xs text-slate-500">{selectedPatient.condition}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">{selectedPatient.condition}</p>
                           )}
                         </div>
                       ) : (
-                        <div className="text-xs text-slate-500">Patient not found.</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Patient not found.</div>
                       )}
                     </div>
                   )}
@@ -452,13 +459,13 @@ function DoctorExerciseAssignments() {
                   {patientsLoading && (
                     <div className="space-y-2">
                       {Array.from({ length: 4 }).map((_, index) => (
-                        <div key={index} className="h-12 rounded-lg bg-slate-100 animate-pulse" />
+                        <div key={index} className="h-12 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
                       ))}
                     </div>
                   )}
 
                   {!patientsLoading && !patientsError && patientList.length === 0 && (
-                    <div className="rounded-lg border border-dashed border-slate-200 bg-white p-4 text-center text-xs text-slate-500">
+                    <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-center text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                       No patients found.
                     </div>
                   )}
@@ -470,19 +477,19 @@ function DoctorExerciseAssignments() {
                           key={patient.id}
                           type="button"
                           onClick={() => handleSelectPatient(patient.id)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-left hover:border-slate-300"
+                          className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-left hover:border-slate-300 dark:border-slate-700"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div>
-                              <p className="text-sm font-semibold text-slate-900">{patient.name}</p>
-                              <p className="text-xs text-slate-500">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-white">{patient.name}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                                 {patient.displayId} · {patient.phone}
                               </p>
                             </div>
                             {selectedPatientId === patient.id ? (
                               <Badge variant="secondary">Selected</Badge>
                             ) : (
-                              <User className="h-4 w-4 text-slate-400" />
+                              <User className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                             )}
                           </div>
                         </button>
@@ -492,14 +499,14 @@ function DoctorExerciseAssignments() {
                 </CardContent>
               </Card>
 
-              <Card className="border-slate-200">
+              <Card className="border-slate-200 dark:border-slate-800">
                 <CardHeader>
                   <CardTitle className="text-base">Assigned exercises</CardTitle>
                   <CardDescription>Current plan for the selected patient.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {!selectedPatientId && (
-                    <div className="rounded-lg border border-dashed border-slate-200 bg-white p-4 text-center text-xs text-slate-500">
+                    <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-center text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                       Select a patient to view assignments.
                     </div>
                   )}
@@ -511,13 +518,13 @@ function DoctorExerciseAssignments() {
                   {selectedPatientId && assignmentsLoading && (
                     <div className="space-y-2">
                       {Array.from({ length: 3 }).map((_, index) => (
-                        <div key={index} className="h-12 rounded-lg bg-slate-100 animate-pulse" />
+                        <div key={index} className="h-12 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
                       ))}
                     </div>
                   )}
 
                   {selectedPatientId && !assignmentsLoading && !assignmentsError && (assignments ?? []).length === 0 && (
-                    <div className="rounded-lg border border-dashed border-slate-200 bg-white p-4 text-center text-xs text-slate-500">
+                    <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-center text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                       No assigned exercises yet.
                     </div>
                   )}
@@ -525,15 +532,15 @@ function DoctorExerciseAssignments() {
                   {selectedPatientId && !assignmentsLoading && !assignmentsError && (assignments ?? []).length > 0 && (
                     <div className="space-y-3">
                       {(assignments ?? []).map((assignment) => (
-                        <div key={assignment.id} className="rounded-lg border border-slate-200 bg-white p-3">
+                        <div key={assignment.id} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <p className="text-sm font-semibold text-slate-900">{assignment.name}</p>
-                              <p className="text-xs text-slate-500">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-white">{assignment.name}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                                 {assignment.category} · {assignment.difficulty}
                               </p>
                               {(assignment.sets || assignment.reps || assignment.duration) && (
-                                <p className="text-xs text-slate-500">
+                                <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                                   {assignment.sets && assignment.reps
                                     ? `${assignment.sets} sets x ${assignment.reps} reps`
                                     : assignment.duration ?? ''}
@@ -560,7 +567,7 @@ function DoctorExerciseAssignments() {
             </div>
 
             <div className="space-y-5">
-              <Card className="border-slate-200">
+              <Card className="border-slate-200 dark:border-slate-800">
                 <CardHeader>
                   <CardTitle className="text-base">Exercise templates</CardTitle>
                   <CardDescription>Pick templates and assign them to the patient.</CardDescription>
@@ -568,7 +575,7 @@ function DoctorExerciseAssignments() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_0.6fr_0.5fr]">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                       <Input
                         value={templateSearch}
                         onChange={(event) => setTemplateSearch(event.target.value)}
@@ -598,7 +605,7 @@ function DoctorExerciseAssignments() {
                   {templatesError && <ApiErrorBanner error={templatesErrorObj} />}
 
                   {assignError && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
+                    <div className="rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 p-3 text-xs font-semibold text-red-700 dark:text-red-400">
                       {assignError}
                     </div>
                   )}
@@ -606,13 +613,13 @@ function DoctorExerciseAssignments() {
                   {templatesLoading && (
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       {Array.from({ length: 6 }).map((_, index) => (
-                        <div key={index} className="h-28 rounded-lg bg-slate-100 animate-pulse" />
+                        <div key={index} className="h-28 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
                       ))}
                     </div>
                   )}
 
                   {!templatesLoading && !templatesError && templateList.length === 0 && (
-                    <div className="rounded-lg border border-dashed border-slate-200 bg-white p-6 text-center text-xs text-slate-500">
+                    <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-center text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                       No templates match the current filters.
                     </div>
                   )}
@@ -625,7 +632,7 @@ function DoctorExerciseAssignments() {
                         return (
                           <div
                             key={template.id}
-                            className="rounded-lg border border-slate-200 bg-white p-3"
+                            className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3"
                           >
                             <div className="flex items-start gap-3">
                               <Checkbox
@@ -635,21 +642,21 @@ function DoctorExerciseAssignments() {
                               />
                               <div className="flex-1">
                                 <div className="flex items-center justify-between gap-2">
-                                  <p className="text-sm font-semibold text-slate-900">{template.name}</p>
+                                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{template.name}</p>
                                   {isAssigned && <Badge variant="secondary">Assigned</Badge>}
                                 </div>
-                                <p className="text-xs text-slate-500">
+                                <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                                   {template.category} · {template.difficulty}
                                 </p>
                                 {(template.sets || template.reps || template.duration) && (
-                                  <p className="text-xs text-slate-500">
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                                     {template.sets && template.reps
                                       ? `${template.sets} sets x ${template.reps} reps`
                                       : template.duration ?? ''}
                                   </p>
                                 )}
                                 {template.instructions && (
-                                  <p className="text-xs text-slate-500">
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                                     {template.instructions.length > 90
                                       ? `${template.instructions.slice(0, 90)}...`
                                       : template.instructions}
@@ -669,7 +676,7 @@ function DoctorExerciseAssignments() {
         </div>
       </div>
 
-      <div className="md:hidden border-t border-slate-200 bg-white">
+      <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role="doctor" />
       </div>
     </div>

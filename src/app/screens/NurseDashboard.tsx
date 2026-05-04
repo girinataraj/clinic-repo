@@ -79,8 +79,7 @@ export function NurseDashboard() {
 
         {/* ── Header ── */}
         <div
-          className="px-6 pt-8 pb-12 relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #0d2b27 0%, #0f766e 100%)' }}
+          className="px-6 pt-8 pb-12 relative overflow-hidden bg-gradient-to-br from-teal-900 to-teal-600 dark:from-slate-900 dark:to-slate-800"
         >
           <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
@@ -183,8 +182,7 @@ export function NurseDashboard() {
             {/* New Intake */}
             <button
               onClick={() => navigate('/nurse/intake')}
-              className="flex items-center gap-3 p-4 rounded-2xl text-left group"
-              style={{ background: 'linear-gradient(135deg, #0f6a60, #14b8a6)', boxShadow: '0 8px 24px rgba(15,118,110,0.3)' }}
+              className="flex items-center gap-3 p-4 rounded-2xl text-left group bg-gradient-to-br from-teal-800 to-teal-500 dark:from-teal-900 dark:to-teal-700 shadow-lg shadow-teal-900/20 dark:shadow-none"
             >
               <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                 <UserPlus className="w-5 h-5 text-white" />

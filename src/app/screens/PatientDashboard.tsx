@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { BottomNav } from '../components/BottomNav';
 import { usePatientAppointments } from '../../hooks/useAppointments';
 import { useEvaluations } from '../../hooks/useEvaluations';
@@ -21,12 +22,12 @@ const quickActions = [
 // ── Skeleton block ─────────────────────────────────────────────────────────────
 function CardSkeleton() {
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm animate-pulse">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm animate-pulse">
       <div className="flex gap-3">
-        <div className="w-12 h-12 rounded-xl bg-slate-200 shrink-0" />
+        <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-700 shrink-0" />
         <div className="flex-1 space-y-2">
-          <div className="h-3.5 bg-slate-200 rounded w-3/4" />
-          <div className="h-3 bg-slate-100 rounded w-1/2" />
+          <div className="h-3.5 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
+          <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded w-1/2" />
         </div>
       </div>
     </div>
@@ -80,17 +81,18 @@ export function PatientDashboard() {
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 font-sans">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
       <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
         {/* Header Section */}
         <div 
-          className="px-6 pt-8 pb-12 relative overflow-hidden shrink-0"
-          style={{ background: 'linear-gradient(135deg, #1e3a8a, #2563eb)' }}
+          className="relative shrink-0 bg-gradient-to-br from-blue-900 to-blue-600 dark:from-slate-900 dark:to-slate-800"
         >
           {/* Subtle background decoration */}
-          <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+          </div>
           
-          <div className="max-w-5xl mx-auto relative z-10">
+          <div className="px-6 pt-8 pb-12 max-w-5xl mx-auto relative z-30">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-bold text-blue-100/80 mb-1 uppercase tracking-wider">{today}</p>
@@ -102,6 +104,7 @@ export function PatientDashboard() {
                 </p>
               </div>
               <div className="flex items-center gap-3 relative z-50">
+                <ThemeToggle />
                 {/* Notification Dropdown */}
                 <div className="relative">
                   <button 
@@ -124,28 +127,28 @@ export function PatientDashboard() {
                   
                   {/* Only show notifications dropdown on mobile */}
                   {showNotifications && (
-                    <div className="md:hidden absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden text-left">
-                      <div className="p-4 border-b border-slate-100 bg-slate-50">
-                        <h3 className="text-sm font-bold text-slate-800">Notifications</h3>
+                    <div className="md:hidden absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden text-left">
+                      <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Notifications</h3>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
                         {notifications.length === 0 && (
                           <div className="p-4 text-center">
-                            <p className="text-xs text-slate-400">No notifications</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500">No notifications</p>
                           </div>
                         )}
                         {notifications.map((n) => (
-                          <div key={n.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer ${!n.isRead ? 'bg-blue-50/40' : ''}`}>
-                            <p className="text-xs font-semibold text-slate-800">{n.title}</p>
-                            <p className="text-[10px] text-slate-500 mt-1">{n.body}</p>
+                          <div key={n.id} className={`p-4 border-b border-slate-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer ${!n.isRead ? 'bg-blue-50/40 dark:bg-blue-900/20' : ''}`}>
+                            <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{n.title}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{n.body}</p>
                           </div>
                         ))}
                       </div>
-                      <div className="p-3 text-center border-t border-slate-100">
+                      <div className="p-3 text-center border-t border-slate-100 dark:border-slate-700">
                         <button
                           onClick={() => { markAllRead.mutate(); setShowNotifications(false); }}
                           disabled={markAllRead.isPending}
-                          className="text-xs font-bold text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                          className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 disabled:opacity-50"
                         >
                           {markAllRead.isPending ? 'Marking…' : 'Mark all as read'}
                         </button>
@@ -160,26 +163,26 @@ export function PatientDashboard() {
 
         <div className="px-6 max-w-5xl mx-auto w-full space-y-6 -mt-6 relative z-10">
           {/* Recovery Progress - dynamic from evaluations */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-                <span className="text-sm font-semibold text-slate-800">Recovery Progress</span>
+                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 dark:text-white">Recovery Progress</span>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 rounded-full border border-slate-100">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 dark:bg-slate-700/50 rounded-full border border-slate-100 dark:border-slate-600">
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-xs font-bold text-emerald-600">
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
                   {completedAppointments} session{completedAppointments !== 1 ? 's' : ''} completed
                 </span>
               </div>
             </div>
-            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden mb-3">
+            <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-3">
               <div
                 className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-700"
                 style={{ width: `${Math.min((completedAppointments / Math.max(appointments.length, 1)) * 100, 100)}%` }}
               />
             </div>
-            <p className="text-xs font-medium text-slate-500">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500">
               {isLoading ? 'Loading...' : `${completedAppointments} of ${appointments.length} total sessions completed`}
             </p>
           </div>
@@ -191,21 +194,21 @@ export function PatientDashboard() {
             <div className="flex gap-3">
               {isLoading
                 ? Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex-1 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm animate-pulse">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 mb-2 mx-auto" />
-                      <div className="h-5 bg-slate-100 rounded w-1/2 mx-auto mb-1" />
+                    <div key={i} className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 shadow-sm animate-pulse">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 mb-2 mx-auto" />
+                      <div className="h-5 bg-slate-100 dark:bg-slate-700 rounded w-1/2 mx-auto mb-1" />
                       <div className="h-3 bg-slate-50 rounded w-3/4 mx-auto" />
                     </div>
                   ))
                 : stats.map((stat) => {
                     const Icon = stat.icon;
                     return (
-                      <div key={stat.label} className="flex-1 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
-                        <div className={`p-2.5 rounded-xl ${stat.bg} mb-2`}>
+                      <div key={stat.label} className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center justify-center text-center">
+                        <div className={`p-2.5 rounded-xl ${stat.bg.replace('50', '50 dark:bg-slate-700')} mb-2`}>
                           <Icon className={`w-5 h-5 ${stat.color}`} />
                         </div>
-                        <span className="text-xl font-bold text-slate-900">{stat.value}</span>
-                        <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 mt-1">{stat.label}</span>
+                        <span className="text-xl font-bold text-slate-900 dark:text-white">{stat.value}</span>
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">{stat.label}</span>
                       </div>
                     );
                   })}
@@ -219,12 +222,12 @@ export function PatientDashboard() {
                   <button
                     key={action.label}
                     onClick={() => navigate(action.path)}
-                    className={`flex-1 flex flex-col items-center justify-center p-4 rounded-2xl border border-slate-200 shadow-sm bg-gradient-to-br ${action.gradient} hover:shadow-md transition-shadow`}
+                    className={`flex-1 flex flex-col items-center justify-center p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm bg-gradient-to-br ${action.gradient} dark:from-slate-800 dark:to-slate-800 hover:shadow-md transition-shadow`}
                   >
-                    <div className={`p-2.5 rounded-xl ${action.bg} mb-2`}>
+                    <div className={`p-2.5 rounded-xl ${action.bg} dark:bg-slate-700 mb-2`}>
                       <Icon className={`w-5 h-5 ${action.color}`} />
                     </div>
-                    <span className="text-xs font-bold text-slate-700">{action.label}</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{action.label}</span>
                   </button>
                 );
               })}
@@ -234,7 +237,7 @@ export function PatientDashboard() {
           {/* Book Appointment CTA */}
           <button
             onClick={() => navigate('/patient/appointment')}
-            className="w-full relative overflow-hidden bg-emerald-600 hover:bg-emerald-700 transition-colors rounded-2xl p-5 shadow-lg shadow-emerald-600/20 flex items-center justify-between group"
+            className="w-full relative overflow-hidden bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors rounded-2xl p-5 shadow-lg shadow-emerald-600/20 flex items-center justify-between group"
           >
             <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
             <div className="flex items-center gap-4 relative z-10">
@@ -258,44 +261,44 @@ export function PatientDashboard() {
             <div className="space-y-6">
               
               {/* Upcoming Appointments */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-slate-900">Upcoming Appointments</h3>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Upcoming Appointments</h3>
                   <button onClick={() => navigate('/patient/appointment')} className="text-sm font-semibold text-blue-600 hover:text-blue-700">See All</button>
                 </div>
                 <div className="space-y-3">
                   {apptLoading && <CardSkeleton />}
                   {!apptLoading && upcomingAppointments.length === 0 && (
                     <div className="text-center py-6">
-                      <Calendar className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-slate-400">No upcoming appointments</p>
-                      <p className="text-xs text-slate-400 mt-1">Book one to get started</p>
+                      <Calendar className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">No upcoming appointments</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Book one to get started</p>
                     </div>
                   )}
                   {upcomingAppointments.slice(0, 3).map((appt) => (
-                    <div key={appt.id} className={`flex items-start gap-4 p-4 rounded-xl border ${appt.status === 'confirmed' ? 'border-emerald-100 bg-emerald-50/30' : 'border-slate-100 bg-slate-50/50'}`}>
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-blue-100 text-blue-600">
+                    <div key={appt.id} className={`flex items-start gap-4 p-4 rounded-xl border ${appt.status === 'confirmed' ? 'border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-900/20' : 'border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50'}`}>
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                         <Calendar className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-900 truncate">{appt.doctorName ?? 'Doctor'}</p>
-                        <p className="text-xs font-medium text-slate-500 mt-0.5">{appt.reason ?? 'Appointment'}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{appt.doctorName ?? 'Doctor'}</p>
+                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{appt.reason ?? 'Appointment'}</p>
                         <div className="flex items-center gap-3 mt-3">
-                          <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm">
-                            <Calendar className="w-3 h-3 text-slate-400" />
-                            <span className="text-[11px] font-bold text-slate-600">
+                          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
                               {new Date(appt.datetime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                             </span>
                           </div>
-                          <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm">
-                            <Clock className="w-3 h-3 text-slate-400" />
-                            <span className="text-[11px] font-bold text-slate-600">
+                          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
                               {new Date(appt.datetime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex shrink-0 items-center gap-1 ${appt.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                      <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex shrink-0 items-center gap-1 ${appt.status === 'confirmed' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}>
                         {appt.status === 'confirmed' ? '✓ Confirmed' : '⏳ Pending'}
                       </div>
                     </div>
@@ -304,36 +307,36 @@ export function PatientDashboard() {
               </div>
 
               {/* Recent Evaluations (replaces fake "reports") */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-slate-900">Recent Reports</h3>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Reports</h3>
                   <button onClick={() => navigate('/patient/records')} className="text-sm font-semibold text-blue-600 hover:text-blue-700">See All</button>
                 </div>
                 <div className="space-y-3">
                   {evalLoading && <CardSkeleton />}
                   {!evalLoading && evaluations.length === 0 && (
                     <div className="text-center py-6">
-                      <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-slate-400">No evaluations yet</p>
+                      <FileText className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">No evaluations yet</p>
                     </div>
                   )}
                   {evaluations.slice(0, 3).map((evaluation) => {
                     const typeColors: Record<string, { bg: string; color: string }> = {
-                      submitted: { bg: 'bg-blue-50', color: 'text-blue-600' },
-                      reviewed: { bg: 'bg-teal-50', color: 'text-teal-600' },
-                      draft: { bg: 'bg-purple-50', color: 'text-purple-600' },
+                      submitted: { bg: 'bg-blue-50 dark:bg-blue-900/30', color: 'text-blue-600 dark:text-blue-400' },
+                      reviewed: { bg: 'bg-teal-50 dark:bg-teal-900/30', color: 'text-teal-600 dark:text-teal-400' },
+                      draft: { bg: 'bg-purple-50 dark:bg-purple-900/30', color: 'text-purple-600 dark:text-purple-400' },
                     };
                     const tc = typeColors[evaluation.status] ?? typeColors.draft;
                     return (
-                      <div key={evaluation.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 cursor-pointer">
+                      <div key={evaluation.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-600 cursor-pointer">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tc.bg}`}>
                           <FileText className={`w-5 h-5 ${tc.color}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-slate-900 truncate">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
                             {evaluation.diagnosis ?? evaluation.chiefComplaints ?? 'Evaluation'}
                           </p>
-                          <p className="text-xs font-medium text-slate-500 mt-0.5">
+                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
                             {new Date(evaluation.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </p>
                         </div>
@@ -352,9 +355,9 @@ export function PatientDashboard() {
             <div className="space-y-6">
               
               {/* Active Exercise Plan */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-slate-900">Exercise Plan</h3>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Exercise Plan</h3>
                   <button
                     onClick={() => navigate('/patient/exercise')}
                     className="text-sm font-semibold text-blue-600 hover:text-blue-700"
@@ -365,52 +368,52 @@ export function PatientDashboard() {
 
                 {planLoading && (
                   <div className="animate-pulse space-y-3">
-                    <div className="h-16 bg-slate-100 rounded-xl" />
-                    <div className="h-8 bg-slate-100 rounded-lg" />
-                    <div className="h-8 bg-slate-100 rounded-lg" />
+                    <div className="h-16 bg-slate-100 dark:bg-slate-700 rounded-xl" />
+                    <div className="h-8 bg-slate-100 dark:bg-slate-700 rounded-lg" />
+                    <div className="h-8 bg-slate-100 dark:bg-slate-700 rounded-lg" />
                   </div>
                 )}
 
                 {!planLoading && !activePlan && (
                   <div className="text-center py-6">
-                    <Dumbbell className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-slate-400">No exercise plan assigned</p>
-                    <p className="text-xs text-slate-400 mt-1">Your doctor will create one for you</p>
+                    <Dumbbell className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">No exercise plan assigned</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Your doctor will create one for you</p>
                   </div>
                 )}
 
                 {!planLoading && activePlan && (
                   <>
-                    <div className="mb-5 bg-purple-50/50 rounded-xl p-4 border border-purple-100">
+                    <div className="mb-5 bg-purple-50/50 dark:bg-purple-900/10 rounded-xl p-4 border border-purple-100 dark:border-purple-900/50">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-purple-100 rounded-lg">
-                            <Dumbbell className="w-4 h-4 text-purple-600" />
+                          <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                            <Dumbbell className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-slate-900">{activePlan.title}</p>
-                            <p className="text-xs font-medium text-slate-500 mt-0.5">
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">{activePlan.title}</p>
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
                               {activePlan.notes ?? `${exerciseItems.length} exercises`}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-full border border-purple-100 shadow-sm">
+                        <div className="flex items-center gap-1 bg-white dark:bg-slate-800 px-2 py-1 rounded-full border border-purple-100 dark:border-purple-900/50 shadow-sm">
                           <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
-                          <span className="text-[10px] font-bold text-slate-700">{exerciseItems.length} items</span>
+                          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{exerciseItems.length} items</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-3">
                       {exerciseItems.map((ex) => (
-                        <div key={ex.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                        <div key={ex.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
                           <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 border-2 bg-white border-slate-300">
-                            <CheckCircle className="w-4 h-4 text-slate-300" />
+                            <CheckCircle className="w-4 h-4 text-slate-300 dark:text-slate-600" />
                           </div>
-                          <span className="text-sm flex-1 text-slate-700 font-semibold">
+                          <span className="text-sm flex-1 text-slate-700 dark:text-slate-200 font-semibold">
                             {ex.name}
                           </span>
-                          <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-md">
+                          <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-bold rounded-md border border-slate-200 dark:border-slate-700">
                             {ex.sets && ex.reps ? `${ex.sets} × ${ex.reps}` : ex.duration ?? '—'}
                           </span>
                         </div>
@@ -421,15 +424,15 @@ export function PatientDashboard() {
               </div>
 
               {/* Health Tip */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-2xl border border-blue-100 p-5 relative overflow-hidden">
-                <div className="absolute right-0 top-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3" />
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-slate-800 dark:to-slate-900/50 rounded-2xl border border-blue-100 dark:border-slate-700 p-5 relative overflow-hidden">
+                <div className="absolute right-0 top-0 w-24 h-24 bg-blue-500/5 dark:bg-blue-400/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3" />
                 <div className="flex items-center gap-2 mb-3 relative z-10">
-                  <div className="p-1.5 bg-blue-100 rounded-lg">
-                    <Heart className="w-4 h-4 text-blue-600 fill-blue-600" />
+                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <Heart className="w-4 h-4 text-blue-600 dark:text-blue-400 fill-blue-600 dark:fill-blue-400" />
                   </div>
-                  <span className="text-xs font-bold tracking-wider text-blue-800">DAILY TIP</span>
+                  <span className="text-xs font-bold tracking-wider text-blue-800 dark:text-blue-300">DAILY TIP</span>
                 </div>
-                <p className="text-sm font-medium text-slate-700 leading-relaxed relative z-10">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed relative z-10">
                   Stay consistent with your exercise plan. Even on low-energy days, light movement accelerates recovery significantly.
                 </p>
               </div>

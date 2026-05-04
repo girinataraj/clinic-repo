@@ -69,8 +69,7 @@ export function DoctorRevenue() {
 
   return (
     <div
-      className="flex flex-col h-full"
-      style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#f0fafa' }}
+      className="flex flex-col h-full font-sans bg-[#f0fafa] dark:bg-slate-950"
     >
       {/* ── Top Header Bar ─────────────────────────────────────────────── */}
       <div
@@ -125,7 +124,7 @@ export function DoctorRevenue() {
                 <div
                   style={{
                     position: 'absolute', right: 0, top: 'calc(100% + 8px)',
-                    width: '180px', background: '#fff', borderRadius: '12px',
+                    width: '180px', background: 'var(--tw-bg-opacity, #fff)' /* tailwind fallback */, borderRadius: '12px',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
                     border: '1px solid #e2e8f0', overflow: 'hidden', zIndex: 999,
                   }}
@@ -205,36 +204,32 @@ export function DoctorRevenue() {
             </div>
 
             {/* Total Visits */}
-            <div style={{ borderRadius: '14px', padding: '20px', background: '#fff', border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#E8E9F1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+            <div style={{ borderRadius: '14px', padding: '20px', background: 'var(--tw-bg-opacity, #fff)' /* tailwind fallback */, border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
+              <div className="w-[38px] h-[38px] rounded-[10px] bg-[#E8E9F1] dark:bg-slate-800 flex items-center justify-center mb-3">
                 <Users size={18} color="#3B3E66" />
               </div>
-              <p style={{ fontSize: '26px', fontWeight: 700, color: '#17252A', lineHeight: 1 }}>{totalVisits}</p>
-              <p style={{ fontSize: '12px', color: '#262842', fontWeight: 500, marginTop: '6px' }}>Total Visits</p>
+              <p className="text-[26px] font-bold text-[#17252A] dark:text-white leading-none">{totalVisits}</p>
+              <p className="text-[12px] font-medium text-[#262842] dark:text-slate-400 mt-[6px]">Total Visits</p>
             </div>
 
             {/* Avg / Visit */}
-            <div style={{ borderRadius: '14px', padding: '20px', background: '#fff', border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#E8E9F1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+            <div style={{ borderRadius: '14px', padding: '20px', background: 'var(--tw-bg-opacity, #fff)' /* tailwind fallback */, border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
+              <div className="w-[38px] h-[38px] rounded-[10px] bg-[#E8E9F1] dark:bg-slate-800 flex items-center justify-center mb-3">
                 <TrendingUp size={18} color="#3B3E66" />
               </div>
-              <p style={{ fontSize: '26px', fontWeight: 700, color: '#17252A', lineHeight: 1 }}>
+              <p className="text-[26px] font-bold text-[#17252A] dark:text-white leading-none">
                 ₹{totalVisits > 0 ? Math.round(totalRevenue / totalVisits).toLocaleString('en-IN') : 0}
               </p>
-              <p style={{ fontSize: '12px', color: '#262842', fontWeight: 500, marginTop: '6px' }}>Avg / Visit</p>
+              <p className="text-[12px] font-medium text-[#262842] dark:text-slate-400 mt-[6px]">Avg / Visit</p>
             </div>
           </div>
 
           {/* ── Therapist Breakdown ────────────────────────────────────── */}
           {therapistTotals.length > 0 && (
             <div
-              style={{
-                borderRadius: '14px', padding: '20px', marginBottom: '24px',
-                background: '#fff', border: '1px solid #E8E9F1',
-                boxShadow: '0 2px 12px rgba(23,37,42,0.06)',
-              }}
+              className="rounded-[14px] p-5 mb-6 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-sm"
             >
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '16px' }}>
+              <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white mb-4">
                 Therapist Breakdown
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -244,16 +239,16 @@ export function DoctorRevenue() {
                     <div key={name}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#E8E9F1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#262842' }}>{getInitials(name)}</span>
+                          <div className="w-8 h-8 rounded-full bg-[#E8E9F1] dark:bg-slate-800 flex items-center justify-center shrink-0">
+                            <span className="text-[11px] font-bold text-[#262842] dark:text-slate-300">{getInitials(name)}</span>
                           </div>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#17252A' }}>{name}</span>
+                          <span className="text-[13px] font-semibold text-[#17252A] dark:text-white">{name}</span>
                         </div>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#262842' }}>
+                        <span className="text-[13px] font-bold text-[#262842] dark:text-slate-200">
                           ₹{amount.toLocaleString('en-IN')}
                         </span>
                       </div>
-                      <div style={{ width: '100%', height: '6px', borderRadius: '99px', background: '#E8E9F1', overflow: 'hidden' }}>
+                      <div className="w-full h-1.5 rounded-full bg-[#E8E9F1] dark:bg-slate-800 overflow-hidden">
                         <div style={{ height: '100%', borderRadius: '99px', width: `${pct}%`, background: 'linear-gradient(90deg, #262842, #3B3E66)', transition: 'width 0.6s ease' }} />
                       </div>
                     </div>
@@ -265,24 +260,24 @@ export function DoctorRevenue() {
 
           {/* ── Transactions ───────────────────────────────────────────── */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>Transactions</h3>
-            <span style={{ fontSize: '12px', color: '#262842', fontWeight: 600, background: '#fff', border: '1px solid #E8E9F1', borderRadius: '99px', padding: '3px 12px' }}>
+            <h3 className="text-[16px] font-bold text-[#17252A] dark:text-white">Transactions</h3>
+            <span className="text-[12px] font-semibold text-[#262842] dark:text-slate-300 bg-white dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700 rounded-full px-3 py-[3px]">
               {isLoading ? 'Loading' : `${filteredVisits.length} records`}
             </span>
           </div>
 
           {isError ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: '14px', background: '#fff', border: '1px solid #E8E9F1' }}>
-              <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Unable to load revenue</p>
-              <p style={{ fontSize: '13px', color: '#262842', marginTop: '4px' }}>Please try again shortly</p>
+            <div className="text-center py-16 px-5 rounded-[14px] bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
+              <p className="text-[15px] font-bold text-[#17252A] dark:text-white">Unable to load revenue</p>
+              <p className="text-[13px] text-[#262842] dark:text-slate-400 mt-1">Please try again shortly</p>
             </div>
           ) : filteredVisits.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: '14px', background: '#fff', border: '1px solid #E8E9F1' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#E8E9F1', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <div className="text-center py-16 px-5 rounded-[14px] bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
+              <div className="w-16 h-16 rounded-full bg-[#E8E9F1] dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
                 <IndianRupee size={28} color="#3B3E66" />
               </div>
-              <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>No transactions found</p>
-              <p style={{ fontSize: '13px', color: '#262842', marginTop: '4px' }}>Try selecting a different time period</p>
+              <p className="text-[15px] font-bold text-[#17252A] dark:text-white">No transactions found</p>
+              <p className="text-[13px] text-[#262842] dark:text-slate-400 mt-1">Try selecting a different time period</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -294,12 +289,7 @@ export function DoctorRevenue() {
                 return (
                   <div
                     key={visit.id}
-                    style={{
-                      borderRadius: '14px', padding: '16px',
-                      background: '#fff', border: '1px solid #E8E9F1',
-                      boxShadow: '0 2px 8px rgba(23,37,42,0.04)',
-                      transition: 'transform 0.2s, box-shadow 0.2s',
-                    }}
+                    className="rounded-[14px] p-4 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-sm transition-all duration-200 hover:-translate-y-[2px] hover:shadow-md"
                     onMouseEnter={e => {
                       (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
                       (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 20px rgba(43,122,120,0.1)';
@@ -311,24 +301,24 @@ export function DoctorRevenue() {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                       {/* Avatar */}
-                      <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#E8E9F1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#262842' }}>{getInitials(visit.patientName)}</span>
+                      <div className="w-11 h-11 rounded-xl bg-[#E8E9F1] dark:bg-slate-800 flex items-center justify-center shrink-0">
+                        <span className="text-[14px] font-bold text-[#262842] dark:text-slate-300">{getInitials(visit.patientName)}</span>
                       </div>
 
                       {/* Patient + Therapist */}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <p className="text-[14px] font-bold text-[#17252A] dark:text-white truncate">
                           {visit.patientName}
                         </p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '3px' }}>
                           <User size={11} color="#262842" />
-                          <span style={{ fontSize: '12px', color: '#262842', fontWeight: 500 }}>{visit.therapistName}</span>
+                          <span className="text-[12px] font-medium text-[#262842] dark:text-slate-400">{visit.therapistName}</span>
                         </div>
                       </div>
 
                       {/* Amount + mode */}
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <p style={{ fontSize: '15px', fontWeight: 800, color: '#262842' }}>
+                        <p className="text-[15px] font-extrabold text-[#262842] dark:text-white">
                           ₹{visit.amount.toLocaleString('en-IN')}
                         </p>
                         <span style={{ fontSize: '10px', fontWeight: 700, background: mc.bg, color: mc.text, borderRadius: '99px', padding: '2px 8px', marginTop: '4px', display: 'inline-block' }}>
@@ -338,9 +328,9 @@ export function DoctorRevenue() {
                     </div>
 
                     {/* Date row */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f0fafa' }}>
+                    <div className="flex items-center gap-1.5 mt-3 pt-2.5 border-t border-[#f0fafa] dark:border-slate-800">
                       <Calendar size={11} color="#3B3E66" />
-                      <span style={{ fontSize: '11px', color: '#262842', fontWeight: 500 }}>
+                      <span className="text-[11px] font-medium text-[#262842] dark:text-slate-400">
                         {dateStr} · {timeStr}
                       </span>
                     </div>
@@ -353,7 +343,7 @@ export function DoctorRevenue() {
       </div>
 
       {/* ── Mobile Bottom Nav ──────────────────────────────────────────── */}
-      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#fff', flexShrink: 0 }}>
+      <div className="md:hidden border-t border-[#E8E9F1] dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
         <BottomNav role="doctor" />
       </div>
     </div>
