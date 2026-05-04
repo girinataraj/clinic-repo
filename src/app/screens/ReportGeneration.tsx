@@ -205,7 +205,7 @@ export function ReportGeneration() {
           <div className="flex flex-col gap-4">
             {patientIdParam && (
               <div className="mb-4 p-4 rounded-2xl bg-amber-50 border border-amber-100 flex items-center gap-3">
-                <span className="text-sm font-semibold text-amber-700 flex-1">No evaluations found for the selected patient. Please complete an intake first.</span>
+                <span className="text-sm font-semibold text-amber-700 flex-1">No evaluations found for the selected patient. Please complete an assessment first.</span>
                 <button onClick={() => setSearchParams({})} className="text-xs font-bold text-amber-600 hover:text-amber-800">Clear</button>
               </div>
             )}

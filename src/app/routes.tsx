@@ -7,7 +7,7 @@ import { PatientDashboard } from './screens/PatientDashboard';
 import { PatientProfile } from './screens/PatientProfile';
 import { PatientRecords } from './screens/PatientRecords';
 import { AppointmentBooking } from './screens/AppointmentBooking';
-import { NurseIntakeForm } from './screens/NurseIntakeForm';
+import { AssessmentForm } from './screens/assessment/AssessmentForm';
 import { NurseDashboard } from './screens/NurseDashboard';
 import { NursePatients } from './screens/NursePatients';
 import { NurseProfile } from './screens/NurseProfile';
@@ -20,9 +20,10 @@ import { ExercisePrescription } from './screens/ExercisePrescription';
 import { ExerciseLibrary } from './screens/ExerciseLibrary';
 import { ReportGeneration } from './screens/ReportGeneration';
 import { TreatmentDetailPage } from '../features/patients/pages/TreatmentDetailPage';
-import { NotificationPage } from './screens/NotificationPage';
+
 import { PatientForm } from './screens/PatientForm';
 import { TherapistHierarchy } from './screens/TherapistHierarchy';
+import { TherapistDetailPage } from './screens/TherapistDetailPage';
 import { DailyReportPage } from './screens/DailyReportPage';
 
 // ── Session Loader: waits for auth initialization before routing ─────────────
@@ -62,7 +63,7 @@ export const router = createBrowserRouter([
               { path: 'patient/exercise', Component: ExercisePrescription },
               { path: 'patient/records', Component: PatientRecords },
               { path: 'patient/profile', Component: PatientProfile },
-              { path: 'patient/notifications', Component: NotificationPage },
+
             ],
           },
 
@@ -71,7 +72,7 @@ export const router = createBrowserRouter([
             element: <RoleGuard allowed={['nurse']} />,
             children: [
               { path: 'nurse', Component: NurseDashboard },
-              { path: 'nurse/intake', Component: NurseIntakeForm },
+              { path: 'nurse/intake', Component: AssessmentForm },
               { path: 'nurse/patients', Component: NursePatients },
               { path: 'nurse/patient-form', Component: PatientForm },
               { path: 'nurse/patient/:id', Component: PatientDetailPage },
@@ -79,7 +80,7 @@ export const router = createBrowserRouter([
               { path: 'nurse/exercise', Component: ExercisePrescription },
               { path: 'nurse/exercise-library', Component: ExerciseLibrary },
               { path: 'nurse/profile', Component: NurseProfile },
-              { path: 'nurse/notifications', Component: NotificationPage },
+
               { path: 'nurse/patient/:patientId/treatment', Component: TreatmentDetailPage },
             ],
           },
@@ -91,8 +92,9 @@ export const router = createBrowserRouter([
               { path: 'doctor', Component: DoctorDashboard },
               { path: 'doctor/patients', Component: DoctorPatients },
               { path: 'doctor/therapists', Component: TherapistHierarchy },
+              { path: 'doctor/therapist/:id', Component: TherapistDetailPage },
               { path: 'doctor/patient-form', Component: PatientForm },
-              { path: 'doctor/intake', Component: NurseIntakeForm },
+              { path: 'doctor/intake', Component: AssessmentForm },
               { path: 'doctor/patient/:id', Component: PatientDetailPage },
               { path: 'doctor/patient/:patientId/treatment', Component: TreatmentDetailPage },
               { path: 'doctor/patient/:patientId/exercise', Component: ExercisePrescription },
@@ -102,7 +104,7 @@ export const router = createBrowserRouter([
               { path: 'doctor/daily-report', Component: DailyReportPage },
               { path: 'doctor/revenue', Component: DoctorRevenue },
               { path: 'doctor/profile', Component: DoctorProfile },
-              { path: 'doctor/notifications', Component: NotificationPage },
+
             ],
           },
         ],

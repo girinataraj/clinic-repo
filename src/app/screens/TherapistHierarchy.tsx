@@ -7,10 +7,11 @@ import type { Patient } from '../../types';
 import {
   ArrowLeft, ChevronDown, ChevronRight, Users, User, Search,
   Activity, Loader2, AlertTriangle, UserCog, RefreshCw, Plus,
-  Mail, Lock, Eye, EyeOff, CheckCircle, X,
+  Mail, Lock, Eye, EyeOff, CheckCircle, X, ExternalLink,
 } from 'lucide-react';
 
-const MAX_ACTIVE_PATIENTS = 2;
+// The limit of 2 is only for slot booking, not for assignment.
+const MAX_BOOKING_CAPACITY = 2;
 
 interface TherapistNode {
   id: string;
@@ -58,7 +59,7 @@ export function TherapistHierarchy() {
         displayId: t.displayId,
         patients: pts,
         activeCount,
-        atCapacity: activeCount >= MAX_ACTIVE_PATIENTS,
+        atCapacity: false, // Capacity limit removed for assignment
       };
     });
   }, [therapists, allPatients]);
@@ -217,15 +218,23 @@ export function TherapistHierarchy() {
                         <UserCog size={15} className={isExpanded ? 'text-white' : 'text-[#262842] dark:text-slate-300'} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-bold text-[#17252A] dark:text-white truncate">{node.name}</p>
-                        <p className="text-[10px] text-[#262842] dark:text-slate-400">{node.displayId} · {node.patients.length} patient{node.patients.length !== 1 ? 's' : ''}</p>
+                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }} className="truncate">{node.name}</p>
+                        <p style={{ fontSize: '10px', color: '#262842' }}>{node.displayId} · {node.patients.length} patient{node.patients.length !== 1 ? 's' : ''}</p>
+                        <span
+                          onClick={(e) => { e.stopPropagation(); navigate(`/doctor/therapist/${node.id}`); }}
+                          className="inline-block mt-1 cursor-pointer hover:underline"
+                          style={{ fontSize: '11px', fontWeight: 700, color: '#3B3E66' }}
+                        >
+                          View Profile →
+                        </span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${node.atCapacity ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>
-                        {node.activeCount}/{MAX_ACTIVE_PATIENTS}
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                        {node.activeCount} active
                       </span>
                       {isExpanded ? <ChevronDown size={16} className="text-[#3B3E66] dark:text-slate-400" /> : <ChevronRight size={16} className="text-[#262842] dark:text-slate-400" />}
                     </button>
                   </div>
+
 
                   {/* Patient list */}
                   {isExpanded && (
@@ -311,8 +320,8 @@ export function TherapistHierarchy() {
                 const isCurrent = reassignPatient.therapistId === t.id;
                 const isSelected = reassignTarget === t.id;
                 const node = hierarchy.find((h) => h.id === t.id);
-                const isFull = node?.atCapacity && !isCurrent;
-                const isDisabled = isCurrent || isFull;
+                const isFull = false; // Never full for assignment
+                const isDisabled = isCurrent;
                 return (
                   <button key={t.id} onClick={() => !isDisabled && setReassignTarget(t.id)} disabled={isDisabled}
                     className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors bg-white dark:bg-slate-800 border ${isSelected ? 'border-[#3B3E66] dark:border-slate-500 bg-[#E8E9F1] dark:bg-slate-700' : 'border-[#E8E9F1] dark:border-slate-600'} ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}>
@@ -320,9 +329,9 @@ export function TherapistHierarchy() {
                       <UserCog size={13} className={isSelected ? 'text-white' : 'text-[#262842] dark:text-slate-300'} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[12px] font-semibold text-[#17252A] dark:text-white">{t.name}</p>
-                      <p className={`text-[10px] ${isFull ? 'text-red-600 dark:text-red-400' : 'text-[#262842] dark:text-slate-400'}`}>
-                        {isCurrent ? 'Currently assigned' : isFull ? `Full (${node?.activeCount}/${MAX_ACTIVE_PATIENTS})` : `${node?.activeCount ?? 0}/${MAX_ACTIVE_PATIENTS} active`}
+                      <p style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{t.name}</p>
+                      <p style={{ fontSize: '10px', color: isFull ? '#dc2626' : '#262842' }}>
+                        {isCurrent ? 'Currently assigned' : `${node?.activeCount ?? 0} active`}
                       </p>
                     </div>
                   </button>

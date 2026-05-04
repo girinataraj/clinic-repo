@@ -73,7 +73,7 @@ export function useEvaluation(id: string | null | undefined) {
   });
 }
 
-/** Create a new evaluation / intake record. */
+/** Create a new evaluation / assessment record. */
 export function useCreateEvaluation() {
   const queryClient = useQueryClient();
 
@@ -88,6 +88,8 @@ export function useCreateEvaluation() {
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['evaluations'] });
       queryClient.invalidateQueries({ queryKey: ['evaluations', 'latest', created.patientId] });
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['patient', created.patientId] });
     },
   });
 }

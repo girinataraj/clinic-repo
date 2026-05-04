@@ -6,9 +6,9 @@ import { BottomNav } from '../components/BottomNav';
 import { usePatientAppointments } from '../../hooks/useAppointments';
 import { useEvaluations } from '../../hooks/useEvaluations';
 import { useExercisePlans } from '../../hooks/useExercisePlans';
-import { useNotifications, useUnreadNotificationCount, useMarkAllNotificationsRead } from '../../hooks/useNotifications';
+
 import {
-  Calendar, FileText, Activity, Bell, ChevronRight,
+  Calendar, FileText, Activity, ChevronRight,
   Clock, CheckCircle, Dumbbell, TrendingUp, User,
   Zap, Heart, ArrowRight
 } from 'lucide-react';
@@ -37,16 +37,13 @@ function CardSkeleton() {
 export function PatientDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [showNotifications, setShowNotifications] = useState(false);
+
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Patient ID — the logged-in user's ID is also their patient record ID
   const patientId = user?.patient_id ?? null;
 
-  // ── Live notifications ──────────────────────────────────────────────────
-  const { data: notifications = [] } = useNotifications({ patientId: patientId ?? undefined, limit: 5 });
-  const { data: unreadCount = 0 } = useUnreadNotificationCount({ patientId: patientId ?? undefined });
-  const markAllRead = useMarkAllNotificationsRead();
+
 
   // ── Live backend data ─────────────────────────────────────────────────────
   const { data: apptData, isLoading: apptLoading } = usePatientAppointments(patientId);
@@ -103,60 +100,7 @@ export function PatientDashboard() {
                   Your recovery is on track
                 </p>
               </div>
-              <div className="flex items-center gap-3 relative z-50">
-                <ThemeToggle />
-                {/* Notification Dropdown */}
-                <div className="relative">
-                  <button 
-                    onClick={() => {
-                      if (window.innerWidth >= 768) {
-                        navigate('/patient/notifications');
-                      } else {
-                        setShowNotifications(!showNotifications);
-                        setShowProfileMenu(false);
-                      }
-                    }}
-                    className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 backdrop-blur-sm">
-                    <Bell className="w-5 h-5 text-white" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm border border-red-400 pointer-events-none">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
-                  </button>
-                  
-                  {/* Only show notifications dropdown on mobile */}
-                  {showNotifications && (
-                    <div className="md:hidden absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden text-left">
-                      <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Notifications</h3>
-                      </div>
-                      <div className="max-h-64 overflow-y-auto">
-                        {notifications.length === 0 && (
-                          <div className="p-4 text-center">
-                            <p className="text-xs text-slate-400 dark:text-slate-500">No notifications</p>
-                          </div>
-                        )}
-                        {notifications.map((n) => (
-                          <div key={n.id} className={`p-4 border-b border-slate-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer ${!n.isRead ? 'bg-blue-50/40 dark:bg-blue-900/20' : ''}`}>
-                            <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{n.title}</p>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{n.body}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="p-3 text-center border-t border-slate-100 dark:border-slate-700">
-                        <button
-                          onClick={() => { markAllRead.mutate(); setShowNotifications(false); }}
-                          disabled={markAllRead.isPending}
-                          className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 disabled:opacity-50"
-                        >
-                          {markAllRead.isPending ? 'Marking…' : 'Mark all as read'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+
             </div>
           </div>
         </div>

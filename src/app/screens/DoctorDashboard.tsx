@@ -4,10 +4,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { BottomNav } from '../components/BottomNav';
 import { usePatients, useUpdatePatient } from '../../hooks/usePatients';
-import { useNotifications, useUnreadNotificationCount, useMarkAllNotificationsRead } from '../../hooks/useNotifications';
+
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
-  Search, Bell, Eye, Edit3, FileText, CheckCircle, ClipboardList,
+  Search, Eye, Edit3, FileText, CheckCircle, ClipboardList,
   Users, ChevronRight, Dumbbell, Calendar, User, UserPlus,
   TrendingUp, Zap, Activity, BarChart2, UserCog
 } from 'lucide-react';
@@ -25,13 +25,10 @@ export function DoctorDashboard() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
-  const [showNotifications, setShowNotifications] = useState(false);
+
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  // ── Live notifications ────────────────────────────────────────────────────
-  const { data: notifications = [] } = useNotifications({ limit: 5 });
-  const { data: unreadCount = 0 } = useUnreadNotificationCount();
-  const markAllRead = useMarkAllNotificationsRead();
+
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
@@ -86,58 +83,6 @@ export function DoctorDashboard() {
                 </p>
               </div>
               <div className="flex items-center gap-3 relative z-50">
-                <ThemeToggle />
-                {/* Notification Dropdown */}
-                <div className="relative">
-                  <button 
-                    onClick={() => {
-                      if (window.innerWidth >= 768) {
-                        navigate('/doctor/notifications');
-                      } else {
-                        setShowNotifications(!showNotifications);
-                        setShowProfileMenu(false);
-                      }
-                    }}
-                    className="flex items-center justify-center rounded-2xl transition-all duration-300 relative w-12 h-12 bg-white/15 hover:bg-white/20 border border-white/20">
-                    <Bell size={22} className="text-white" />
-                  </button>
-                  {unreadCount > 0 && (
-                    <div className="absolute -top-1 -right-1 rounded-full flex items-center justify-center pointer-events-none w-4 h-4 bg-slate-900 text-[9px] text-white font-bold border-2 border-indigo-900">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </div>
-                  )}
-                  
-                  {/* Only show notifications dropdown on mobile */}
-                  {showNotifications && (
-                    <div className="md:hidden absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden text-left">
-                      <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Notifications</h3>
-                      </div>
-                      <div className="max-h-64 overflow-y-auto">
-                        {notifications.length === 0 && (
-                          <div className="p-4 text-center">
-                            <p className="text-xs text-slate-400 dark:text-slate-500">No notifications</p>
-                          </div>
-                        )}
-                        {notifications.map((n) => (
-                          <div key={n.id} className={`p-4 border-b border-slate-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer ${!n.isRead ? 'bg-indigo-50/40 dark:bg-indigo-900/20' : ''}`}>
-                            <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{n.title}</p>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{n.body}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="p-3 text-center border-t border-slate-100 dark:border-slate-700">
-                        <button
-                          onClick={() => { markAllRead.mutate(); setShowNotifications(false); }}
-                          disabled={markAllRead.isPending}
-                          className="text-xs font-bold text-indigo-900 dark:text-indigo-400 hover:text-indigo-950 dark:hover:text-indigo-300 disabled:opacity-50"
-                        >
-                          {markAllRead.isPending ? 'Marking…' : 'Mark all as read'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
 
                 {/* Profile Button */}
                 <div className="relative">
@@ -185,28 +130,6 @@ export function DoctorDashboard() {
           </div>
 
 
-
-          {/* Recovery insight banner */}
-          <div
-            className="flex items-center gap-4 p-5 rounded-2xl mb-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
-          >
-            <div className="flex items-center justify-center rounded-xl shrink-0 w-12 h-12 bg-indigo-900 shadow-md shadow-indigo-900/20">
-              <Activity size={24} className="text-white" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold tracking-wide uppercase">TODAY'S INSIGHT</p>
-              <p className="text-[15px] font-semibold text-slate-900 dark:text-white mt-0.5">
-                {completed > 0 
-                  ? `${completed} patients successfully completed their session today`
-                  : waiting > 0 
-                    ? `${waiting} patients are waiting in the queue`
-                    : `Ready for your first patient of the day`}
-              </p>
-            </div>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-700">
-              <Activity size={18} className="text-slate-600 dark:text-slate-300" />
-            </div>
-          </div>
 
           {/* Quick actions */}
           <div className="grid grid-cols-2 gap-3 mb-6">
@@ -394,7 +317,7 @@ export function DoctorDashboard() {
                           className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors text-[13px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                         >
                           <ClipboardList size={16} />
-                          Intake
+                          Assess
                         </button>
                         <button
                           onClick={() => navigate(`/doctor/patient/${patient.id}`)}

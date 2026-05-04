@@ -42,7 +42,7 @@ export interface PatientsListResponse {
   limit: number;
 }
 
-// ─── Evaluation / Intake ───────────────────────────────────────────────────────
+// ─── Evaluation / Assessment ──────────────────────────────────────────────────
 export interface EvaluationCreatedBy {
   id: string;
   name: string;
@@ -83,6 +83,8 @@ export interface Evaluation {
   billAmount?: number;
   visitType?: VisitType;
   associatedPains?: string[];
+  musclePowerRom?: Record<string, unknown> | null;
+  anthropometrics?: Record<string, unknown> | null;
   // Meta
   createdBy: EvaluationCreatedBy;
   updatedBy?: EvaluationCreatedBy;
@@ -133,6 +135,8 @@ export interface CreateEvaluationPayload {
   billAmount?: number;
   visitType?: VisitType;
   associatedPains?: string[];
+  musclePowerRom?: Record<string, unknown>;
+  anthropometrics?: Record<string, unknown>;
 }
 
 // ─── Appointment ───────────────────────────────────────────────────────────────
