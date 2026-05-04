@@ -111,11 +111,11 @@ export function TherapistHierarchy() {
   const totalTherapists = therapists.length;
 
   return (
-    <div className="flex flex-col h-full" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1' }}>
+    <div className="flex flex-col h-full" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1' }}>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div
         className="px-5 pb-5 shrink-0 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)', paddingTop: '28px', boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)' }}
+        style={{ background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)', paddingTop: '28px', boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)' }}
       >
         <div className="absolute -right-16 -top-16 rounded-full opacity-10" style={{ width: '200px', height: '200px', background: '#FEFFFF' }} />
         <div className="flex items-center gap-3 mb-4 relative z-10">
@@ -156,16 +156,16 @@ export function TherapistHierarchy() {
       {/* ── Content ────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {/* Search */}
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl mb-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          <Search size={15} color="#2B7A78" />
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl mb-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          <Search size={15} color="#262842" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search therapists or patients…" className="flex-1 outline-none bg-transparent text-sm" style={{ color: '#17252A' }} />
         </div>
 
         {/* Loading */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-16">
-            <Loader2 size={28} className="animate-spin mb-3" color="#3AAFA9" />
-            <p style={{ fontSize: '13px', color: '#2B7A78', fontWeight: 600 }}>Loading hierarchy…</p>
+            <Loader2 size={28} className="animate-spin mb-3" color="#3B3E66" />
+            <p style={{ fontSize: '13px', color: '#262842', fontWeight: 600 }}>Loading hierarchy…</p>
           </div>
         )}
 
@@ -180,10 +180,10 @@ export function TherapistHierarchy() {
 
         {/* Empty */}
         {!isLoading && !isError && therapists.length === 0 && (
-          <div className="rounded-2xl p-8 text-center" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-            <UserCog size={36} color="#DEF2F1" className="mx-auto mb-3" />
+          <div className="rounded-2xl p-8 text-center" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+            <UserCog size={36} color="#E8E9F1" className="mx-auto mb-3" />
             <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>No therapists found</p>
-            <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '4px' }}>Click "Add Therapist" to register one.</p>
+            <p style={{ fontSize: '12px', color: '#262842', marginTop: '4px' }}>Click "Add Therapist" to register one.</p>
           </div>
         )}
 
@@ -191,7 +191,7 @@ export function TherapistHierarchy() {
         {!isLoading && !isError && filteredHierarchy.length > 0 && (
           <div className="flex flex-col gap-2.5">
             {/* Doctor root */}
-            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', boxShadow: '0 4px 16px rgba(43, 122, 120, 0.12)' }}>
+            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)', boxShadow: '0 4px 16px rgba(38, 40, 66, 0.12)' }}>
               <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '34px', height: '34px', background: 'rgba(254,255,255,0.2)' }}>
                 <Activity size={16} color="#FEFFFF" />
               </div>
@@ -208,29 +208,29 @@ export function TherapistHierarchy() {
                 <div key={node.id} className="ml-3">
                   <div className="flex items-stretch">
                     <div className="w-3 flex flex-col items-center shrink-0">
-                      <div style={{ width: '2px', height: '14px', background: '#3AAFA9', opacity: 0.35 }} />
-                      <div style={{ width: '10px', height: '2px', background: '#3AAFA9', opacity: 0.35, alignSelf: 'flex-end' }} />
+                      <div style={{ width: '2px', height: '14px', background: '#3B3E66', opacity: 0.35 }} />
+                      <div style={{ width: '10px', height: '2px', background: '#3B3E66', opacity: 0.35, alignSelf: 'flex-end' }} />
                     </div>
                     <button
                       onClick={() => setExpandedTherapist(isExpanded ? null : node.id)}
                       className="flex-1 flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all"
                       style={{
                         background: '#FEFFFF',
-                        border: isExpanded ? '2px solid #3AAFA9' : '1px solid #DEF2F1',
+                        border: isExpanded ? '2px solid #3B3E66' : '1px solid #E8E9F1',
                         boxShadow: isExpanded ? '0 4px 16px rgba(43,122,120,0.1)' : '0 1px 6px rgba(0,0,0,0.04)',
                       }}
                     >
-                      <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '34px', height: '34px', background: isExpanded ? '#3AAFA9' : '#DEF2F1' }}>
-                        <UserCog size={15} color={isExpanded ? '#FEFFFF' : '#2B7A78'} />
+                      <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '34px', height: '34px', background: isExpanded ? '#3B3E66' : '#E8E9F1' }}>
+                        <UserCog size={15} color={isExpanded ? '#FEFFFF' : '#262842'} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }} className="truncate">{node.name}</p>
-                        <p style={{ fontSize: '10px', color: '#2B7A78' }}>{node.displayId} · {node.patients.length} patient{node.patients.length !== 1 ? 's' : ''}</p>
+                        <p style={{ fontSize: '10px', color: '#262842' }}>{node.displayId} · {node.patients.length} patient{node.patients.length !== 1 ? 's' : ''}</p>
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${node.atCapacity ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
                         {node.activeCount}/{MAX_ACTIVE_PATIENTS}
                       </span>
-                      {isExpanded ? <ChevronDown size={16} color="#3AAFA9" /> : <ChevronRight size={16} color="#2B7A78" />}
+                      {isExpanded ? <ChevronDown size={16} color="#3B3E66" /> : <ChevronRight size={16} color="#262842" />}
                     </button>
                   </div>
 
@@ -238,25 +238,25 @@ export function TherapistHierarchy() {
                   {isExpanded && (
                     <div className="ml-7 mt-1.5 flex flex-col gap-1.5">
                       {node.patients.length === 0 ? (
-                        <div className="py-4 px-4 rounded-xl text-center" style={{ background: '#f8fffe', border: '1px dashed #DEF2F1' }}>
-                          <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600 }}>No patients assigned yet.</p>
+                        <div className="py-4 px-4 rounded-xl text-center" style={{ background: '#f8fffe', border: '1px dashed #E8E9F1' }}>
+                          <p style={{ fontSize: '11px', color: '#262842', fontWeight: 600 }}>No patients assigned yet.</p>
                         </div>
                       ) : (
                         node.patients.map((patient) => (
-                          <div key={patient.id} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-                            <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: '30px', height: '30px', background: '#DEF2F1' }}>
-                              <User size={13} color="#2B7A78" />
+                          <div key={patient.id} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                            <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: '30px', height: '30px', background: '#E8E9F1' }}>
+                              <User size={13} color="#262842" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }} className="truncate">{patient.name}</p>
-                              <p style={{ fontSize: '10px', color: '#2B7A78' }}>{patient.phone} · {patient.condition ?? '—'}</p>
+                              <p style={{ fontSize: '10px', color: '#262842' }}>{patient.phone} · {patient.condition ?? '—'}</p>
                             </div>
                             <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{
                               background: patient.status === 'waiting' ? '#fef3c7' : patient.status === 'in-session' ? '#dbeafe' : '#dcfce7',
                               color: patient.status === 'waiting' ? '#92400e' : patient.status === 'in-session' ? '#1e40af' : '#166534',
                             }}>{patient.status}</span>
                             <button onClick={(e) => { e.stopPropagation(); setReassignPatient(patient); setReassignTarget(null); }} className="p-1 rounded-lg hover:bg-slate-100 transition-colors" title="Reassign">
-                              <RefreshCw size={11} color="#2B7A78" />
+                              <RefreshCw size={11} color="#262842" />
                             </button>
                           </div>
                         ))
@@ -283,7 +283,7 @@ export function TherapistHierarchy() {
                       <p style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }} className="truncate">{patient.name}</p>
                       <p style={{ fontSize: '10px', color: '#92400e' }}>{patient.phone}</p>
                     </div>
-                    <button onClick={() => { setReassignPatient(patient); setReassignTarget(null); }} className="px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ background: '#2B7A78', color: '#FEFFFF' }}>Assign</button>
+                    <button onClick={() => { setReassignPatient(patient); setReassignTarget(null); }} className="px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ background: '#262842', color: '#FEFFFF' }}>Assign</button>
                   </div>
                 ))}
               </div>
@@ -300,13 +300,13 @@ export function TherapistHierarchy() {
               <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#17252A' }}>{reassignPatient.therapistId ? 'Reassign' : 'Assign'} Therapist</h3>
               <button onClick={() => { setReassignPatient(null); setReassignTarget(null); }} className="p-1 rounded-lg hover:bg-slate-100"><X size={16} color="#64748b" /></button>
             </div>
-            <p style={{ fontSize: '11px', color: '#2B7A78', marginBottom: '12px' }}>Patient: <strong>{reassignPatient.name}</strong> ({reassignPatient.phone})</p>
+            <p style={{ fontSize: '11px', color: '#262842', marginBottom: '12px' }}>Patient: <strong>{reassignPatient.name}</strong> ({reassignPatient.phone})</p>
 
             {/* Current therapist */}
             {reassignPatient.therapistId && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3" style={{ background: '#DEF2F1', border: '1px solid #b2dfdb' }}>
-                <UserCog size={13} color="#2B7A78" />
-                <span style={{ fontSize: '11px', fontWeight: 600, color: '#2B7A78' }}>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3" style={{ background: '#E8E9F1', border: '1px solid #b2dfdb' }}>
+                <UserCog size={13} color="#262842" />
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#262842' }}>
                   Current: {therapists.find((t) => t.id === reassignPatient.therapistId)?.name ?? 'Unknown'}
                 </span>
               </div>
@@ -322,13 +322,13 @@ export function TherapistHierarchy() {
                 return (
                   <button key={t.id} onClick={() => !isDisabled && setReassignTarget(t.id)} disabled={isDisabled}
                     className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors"
-                    style={{ background: isSelected ? '#DEF2F1' : '#FEFFFF', border: isSelected ? '2px solid #3AAFA9' : '1px solid #DEF2F1', opacity: isDisabled ? 0.4 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}>
-                    <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: '30px', height: '30px', background: isSelected ? '#3AAFA9' : '#DEF2F1' }}>
-                      <UserCog size={13} color={isSelected ? '#FEFFFF' : '#2B7A78'} />
+                    style={{ background: isSelected ? '#E8E9F1' : '#FEFFFF', border: isSelected ? '2px solid #3B3E66' : '1px solid #E8E9F1', opacity: isDisabled ? 0.4 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}>
+                    <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: '30px', height: '30px', background: isSelected ? '#3B3E66' : '#E8E9F1' }}>
+                      <UserCog size={13} color={isSelected ? '#FEFFFF' : '#262842'} />
                     </div>
                     <div className="flex-1">
                       <p style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{t.name}</p>
-                      <p style={{ fontSize: '10px', color: isFull ? '#dc2626' : '#2B7A78' }}>
+                      <p style={{ fontSize: '10px', color: isFull ? '#dc2626' : '#262842' }}>
                         {isCurrent ? 'Currently assigned' : isFull ? `Full (${node?.activeCount}/${MAX_ACTIVE_PATIENTS})` : `${node?.activeCount ?? 0}/${MAX_ACTIVE_PATIENTS} active`}
                       </p>
                     </div>
@@ -337,8 +337,8 @@ export function TherapistHierarchy() {
               })}
             </div>
             <div className="flex gap-2.5">
-              <button onClick={() => { setReassignPatient(null); setReassignTarget(null); }} className="flex-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: '#DEF2F1', color: '#2B7A78' }}>Cancel</button>
-              <button onClick={handleReassign} disabled={!reassignTarget || updatePatient.isPending} className="flex-1 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50" style={{ background: '#2B7A78', color: '#FEFFFF' }}>
+              <button onClick={() => { setReassignPatient(null); setReassignTarget(null); }} className="flex-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: '#E8E9F1', color: '#262842' }}>Cancel</button>
+              <button onClick={handleReassign} disabled={!reassignTarget || updatePatient.isPending} className="flex-1 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50" style={{ background: '#262842', color: '#FEFFFF' }}>
                 {updatePatient.isPending ? 'Saving…' : 'Confirm'}
               </button>
             </div>
@@ -400,7 +400,7 @@ export function TherapistHierarchy() {
 
                 <button onClick={handleAddTherapist} disabled={createStaffUser.isPending}
                   className="w-full py-3 rounded-xl text-sm font-bold disabled:opacity-50 mt-1"
-                  style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', color: '#FEFFFF', boxShadow: '0 4px 16px rgba(43,122,120,0.2)' }}>
+                  style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)', color: '#FEFFFF', boxShadow: '0 4px 16px rgba(43,122,120,0.2)' }}>
                   {createStaffUser.isPending ? 'Creating…' : 'Create Therapist'}
                 </button>
               </div>
@@ -409,7 +409,7 @@ export function TherapistHierarchy() {
         </div>
       )}
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
+      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
         <BottomNav role="doctor" />
       </div>
     </div>

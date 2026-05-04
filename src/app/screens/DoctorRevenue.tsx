@@ -75,7 +75,7 @@ export function DoctorRevenue() {
       {/* ── Top Header Bar ─────────────────────────────────────────────── */}
       <div
         style={{
-          background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)',
+          background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
           padding: '24px 24px 24px 24px',
           flexShrink: 0,
         }}
@@ -139,8 +139,8 @@ export function DoctorRevenue() {
                         padding: '11px 16px', border: 'none', cursor: 'pointer',
                         fontSize: '13px',
                         fontWeight: activeFilter === opt.key ? 700 : 500,
-                        color: activeFilter === opt.key ? '#2B7A78' : '#334155',
-                        background: activeFilter === opt.key ? '#DEF2F1' : '#fff',
+                        color: activeFilter === opt.key ? '#262842' : '#334155',
+                        background: activeFilter === opt.key ? '#E8E9F1' : '#fff',
                         transition: 'background 0.15s',
                       }}
                       onMouseEnter={e => {
@@ -184,7 +184,7 @@ export function DoctorRevenue() {
                 gridColumn: 'span 2',
                 borderRadius: '14px',
                 padding: '20px',
-                background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)',
+                background: 'linear-gradient(135deg, #262842, #3B3E66)',
                 boxShadow: '0 4px 20px rgba(43,122,120,0.2)',
                 minWidth: 0,
               }}
@@ -205,23 +205,23 @@ export function DoctorRevenue() {
             </div>
 
             {/* Total Visits */}
-            <div style={{ borderRadius: '14px', padding: '20px', background: '#fff', border: '1px solid #DEF2F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                <Users size={18} color="#3AAFA9" />
+            <div style={{ borderRadius: '14px', padding: '20px', background: '#fff', border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#E8E9F1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                <Users size={18} color="#3B3E66" />
               </div>
               <p style={{ fontSize: '26px', fontWeight: 700, color: '#17252A', lineHeight: 1 }}>{totalVisits}</p>
-              <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 500, marginTop: '6px' }}>Total Visits</p>
+              <p style={{ fontSize: '12px', color: '#262842', fontWeight: 500, marginTop: '6px' }}>Total Visits</p>
             </div>
 
             {/* Avg / Visit */}
-            <div style={{ borderRadius: '14px', padding: '20px', background: '#fff', border: '1px solid #DEF2F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                <TrendingUp size={18} color="#3AAFA9" />
+            <div style={{ borderRadius: '14px', padding: '20px', background: '#fff', border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#E8E9F1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                <TrendingUp size={18} color="#3B3E66" />
               </div>
               <p style={{ fontSize: '26px', fontWeight: 700, color: '#17252A', lineHeight: 1 }}>
                 ₹{totalVisits > 0 ? Math.round(totalRevenue / totalVisits).toLocaleString('en-IN') : 0}
               </p>
-              <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 500, marginTop: '6px' }}>Avg / Visit</p>
+              <p style={{ fontSize: '12px', color: '#262842', fontWeight: 500, marginTop: '6px' }}>Avg / Visit</p>
             </div>
           </div>
 
@@ -230,7 +230,7 @@ export function DoctorRevenue() {
             <div
               style={{
                 borderRadius: '14px', padding: '20px', marginBottom: '24px',
-                background: '#fff', border: '1px solid #DEF2F1',
+                background: '#fff', border: '1px solid #E8E9F1',
                 boxShadow: '0 2px 12px rgba(23,37,42,0.06)',
               }}
             >
@@ -244,17 +244,17 @@ export function DoctorRevenue() {
                     <div key={name}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#2B7A78' }}>{getInitials(name)}</span>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#E8E9F1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#262842' }}>{getInitials(name)}</span>
                           </div>
                           <span style={{ fontSize: '13px', fontWeight: 600, color: '#17252A' }}>{name}</span>
                         </div>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#2B7A78' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#262842' }}>
                           ₹{amount.toLocaleString('en-IN')}
                         </span>
                       </div>
-                      <div style={{ width: '100%', height: '6px', borderRadius: '99px', background: '#DEF2F1', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', borderRadius: '99px', width: `${pct}%`, background: 'linear-gradient(90deg, #2B7A78, #3AAFA9)', transition: 'width 0.6s ease' }} />
+                      <div style={{ width: '100%', height: '6px', borderRadius: '99px', background: '#E8E9F1', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', borderRadius: '99px', width: `${pct}%`, background: 'linear-gradient(90deg, #262842, #3B3E66)', transition: 'width 0.6s ease' }} />
                       </div>
                     </div>
                   );
@@ -266,23 +266,23 @@ export function DoctorRevenue() {
           {/* ── Transactions ───────────────────────────────────────────── */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>Transactions</h3>
-            <span style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600, background: '#fff', border: '1px solid #DEF2F1', borderRadius: '99px', padding: '3px 12px' }}>
+            <span style={{ fontSize: '12px', color: '#262842', fontWeight: 600, background: '#fff', border: '1px solid #E8E9F1', borderRadius: '99px', padding: '3px 12px' }}>
               {isLoading ? 'Loading' : `${filteredVisits.length} records`}
             </span>
           </div>
 
           {isError ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: '14px', background: '#fff', border: '1px solid #DEF2F1' }}>
+            <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: '14px', background: '#fff', border: '1px solid #E8E9F1' }}>
               <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Unable to load revenue</p>
-              <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>Please try again shortly</p>
+              <p style={{ fontSize: '13px', color: '#262842', marginTop: '4px' }}>Please try again shortly</p>
             </div>
           ) : filteredVisits.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: '14px', background: '#fff', border: '1px solid #DEF2F1' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <IndianRupee size={28} color="#3AAFA9" />
+            <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: '14px', background: '#fff', border: '1px solid #E8E9F1' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#E8E9F1', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <IndianRupee size={28} color="#3B3E66" />
               </div>
               <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>No transactions found</p>
-              <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>Try selecting a different time period</p>
+              <p style={{ fontSize: '13px', color: '#262842', marginTop: '4px' }}>Try selecting a different time period</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -296,7 +296,7 @@ export function DoctorRevenue() {
                     key={visit.id}
                     style={{
                       borderRadius: '14px', padding: '16px',
-                      background: '#fff', border: '1px solid #DEF2F1',
+                      background: '#fff', border: '1px solid #E8E9F1',
                       boxShadow: '0 2px 8px rgba(23,37,42,0.04)',
                       transition: 'transform 0.2s, box-shadow 0.2s',
                     }}
@@ -311,8 +311,8 @@ export function DoctorRevenue() {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                       {/* Avatar */}
-                      <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#DEF2F1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#2B7A78' }}>{getInitials(visit.patientName)}</span>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#E8E9F1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#262842' }}>{getInitials(visit.patientName)}</span>
                       </div>
 
                       {/* Patient + Therapist */}
@@ -321,14 +321,14 @@ export function DoctorRevenue() {
                           {visit.patientName}
                         </p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '3px' }}>
-                          <User size={11} color="#2B7A78" />
-                          <span style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 500 }}>{visit.therapistName}</span>
+                          <User size={11} color="#262842" />
+                          <span style={{ fontSize: '12px', color: '#262842', fontWeight: 500 }}>{visit.therapistName}</span>
                         </div>
                       </div>
 
                       {/* Amount + mode */}
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <p style={{ fontSize: '15px', fontWeight: 800, color: '#2B7A78' }}>
+                        <p style={{ fontSize: '15px', fontWeight: 800, color: '#262842' }}>
                           ₹{visit.amount.toLocaleString('en-IN')}
                         </p>
                         <span style={{ fontSize: '10px', fontWeight: 700, background: mc.bg, color: mc.text, borderRadius: '99px', padding: '2px 8px', marginTop: '4px', display: 'inline-block' }}>
@@ -339,8 +339,8 @@ export function DoctorRevenue() {
 
                     {/* Date row */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f0fafa' }}>
-                      <Calendar size={11} color="#3AAFA9" />
-                      <span style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 500 }}>
+                      <Calendar size={11} color="#3B3E66" />
+                      <span style={{ fontSize: '11px', color: '#262842', fontWeight: 500 }}>
                         {dateStr} · {timeStr}
                       </span>
                     </div>
@@ -353,7 +353,7 @@ export function DoctorRevenue() {
       </div>
 
       {/* ── Mobile Bottom Nav ──────────────────────────────────────────── */}
-      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#fff', flexShrink: 0 }}>
+      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#fff', flexShrink: 0 }}>
         <BottomNav role="doctor" />
       </div>
     </div>

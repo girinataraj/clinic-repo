@@ -12,9 +12,9 @@ import {
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string; border: string }> = {
-  waiting:      { label: 'Waiting',     color: '#2B7A78', bg: '#DEF2F1', dot: '#2B7A78', border: '#DEF2F1' },
-  'in-session': { label: 'In Session',  color: '#17252A', bg: '#DEF2F1', dot: '#3AAFA9', border: '#DEF2F1' },
-  completed:    { label: 'Completed',   color: '#FEFFFF', bg: '#3AAFA9', dot: '#FEFFFF', border: '#3AAFA9' },
+  waiting:      { label: 'Waiting',     color: '#262842', bg: '#E8E9F1', dot: '#262842', border: '#E8E9F1' },
+  'in-session': { label: 'In Session',  color: '#17252A', bg: '#E8E9F1', dot: '#3B3E66', border: '#E8E9F1' },
+  completed:    { label: 'Completed',   color: '#FEFFFF', bg: '#3B3E66', dot: '#FEFFFF', border: '#3B3E66' },
 };
 
 const getInitials = (name: string) => name.split(' ').map(p => p[0]).join('');
@@ -61,15 +61,15 @@ export function DoctorDashboard() {
   const completed = patients.filter((p) => p.status === 'completed').length;
 
   return (
-    <div className="flex flex-col h-full" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1' }}>
+    <div className="flex flex-col h-full" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1' }}>
       <div className="flex-1 overflow-y-auto">
         {/* Header */}
         <div
           className="px-6 pb-12 relative overflow-hidden rounded-b-3xl"
           style={{
-            background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)',
+            background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
             paddingTop: '32px',
-            boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)',
+            boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)',
           }}
         >
           <div className="absolute -right-16 -top-16 rounded-full opacity-10 pointer-events-none"
@@ -108,7 +108,7 @@ export function DoctorDashboard() {
                   </button>
                   {unreadCount > 0 && (
                     <div className="absolute -top-1 -right-1 rounded-full flex items-center justify-center pointer-events-none"
-                      style={{ width: '18px', height: '18px', background: '#17252A', fontSize: '10px', color: '#FEFFFF', fontWeight: 700, border: '2px solid #3AAFA9' }}>
+                      style={{ width: '18px', height: '18px', background: '#17252A', fontSize: '10px', color: '#FEFFFF', fontWeight: 700, border: '2px solid #3B3E66' }}>
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </div>
                   )}
@@ -126,7 +126,7 @@ export function DoctorDashboard() {
                           </div>
                         )}
                         {notifications.map((n) => (
-                          <div key={n.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer ${!n.isRead ? 'bg-teal-50/40' : ''}`}>
+                          <div key={n.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer ${!n.isRead ? 'bg-indigo-50/40' : ''}`}>
                             <p className="text-xs font-semibold text-slate-800">{n.title}</p>
                             <p className="text-[10px] text-slate-500 mt-1">{n.body}</p>
                           </div>
@@ -136,7 +136,7 @@ export function DoctorDashboard() {
                         <button
                           onClick={() => { markAllRead.mutate(); setShowNotifications(false); }}
                           disabled={markAllRead.isPending}
-                          className="text-xs font-bold text-teal-600 hover:text-teal-700 disabled:opacity-50"
+                          className="text-xs font-bold text-indigo-900 hover:text-indigo-950 disabled:opacity-50"
                         >
                           {markAllRead.isPending ? 'Marking…' : 'Mark all as read'}
                         </button>
@@ -180,12 +180,12 @@ export function DoctorDashboard() {
               const Icon = s.icon;
               return (
                 <div key={s.label} className="flex-1 rounded-2xl p-4 flex flex-col items-center justify-center transition-transform hover:-translate-y-1 duration-300"
-                  style={{ background: '#FEFFFF', boxShadow: '0 8px 24px rgba(23, 37, 42, 0.08)', border: '1px solid #DEF2F1' }}>
-                  <div className="rounded-xl flex items-center justify-center mb-2" style={{ width: '40px', height: '40px', background: '#DEF2F1' }}>
-                    <Icon size={20} color="#3AAFA9" />
+                  style={{ background: '#FEFFFF', boxShadow: '0 8px 24px rgba(23, 37, 42, 0.08)', border: '1px solid #E8E9F1' }}>
+                  <div className="rounded-xl flex items-center justify-center mb-2" style={{ width: '40px', height: '40px', background: '#E8E9F1' }}>
+                    <Icon size={20} color="#3B3E66" />
                   </div>
                   <span style={{ fontSize: '24px', fontWeight: 700, color: '#17252A', lineHeight: 1 }}>{s.value}</span>
-                  <span style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 500, marginTop: '6px', textAlign: 'center' }}>{s.label}</span>
+                  <span style={{ fontSize: '12px', color: '#262842', fontWeight: 500, marginTop: '6px', textAlign: 'center' }}>{s.label}</span>
                 </div>
               );
             })}
@@ -196,14 +196,14 @@ export function DoctorDashboard() {
           {/* Recovery insight banner */}
           <div
             className="flex items-center gap-4 p-5 rounded-2xl mb-8"
-            style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}
+            style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
           >
             <div className="flex items-center justify-center rounded-xl shrink-0"
-              style={{ width: '48px', height: '48px', background: '#2B7A78', boxShadow: '0 4px 12px rgba(43,122,120,0.3)' }}>
+              style={{ width: '48px', height: '48px', background: '#262842', boxShadow: '0 4px 12px rgba(43,122,120,0.3)' }}>
               <Activity size={24} color="#FEFFFF" />
             </div>
             <div className="flex-1">
-              <p style={{ fontSize: '12px', color: '#3AAFA9', fontWeight: 600, letterSpacing: '0.5px' }}>TODAY'S INSIGHT</p>
+              <p style={{ fontSize: '12px', color: '#3B3E66', fontWeight: 600, letterSpacing: '0.5px' }}>TODAY'S INSIGHT</p>
               <p style={{ fontSize: '15px', fontWeight: 600, color: '#17252A', marginTop: '2px' }}>
                 {completed > 0 
                   ? `${completed} patients successfully completed their session today`
@@ -212,8 +212,8 @@ export function DoctorDashboard() {
                     : `Ready for your first patient of the day`}
               </p>
             </div>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-              <Activity size={18} color="#2B7A78" />
+            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+              <Activity size={18} color="#262842" />
             </div>
           </div>
 
@@ -222,27 +222,27 @@ export function DoctorDashboard() {
             <button
               onClick={() => navigate('/doctor/daily-report')}
               className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md"
-              style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}
+              style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
             >
-              <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#DEF2F1' }}>
-                <BarChart2 size={18} color="#2B7A78" />
+              <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#E8E9F1' }}>
+                <BarChart2 size={18} color="#262842" />
               </div>
               <div className="text-left">
                 <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }}>Daily Reports</p>
-                <p style={{ fontSize: '10px', color: '#2B7A78' }}>Revenue & stats by date</p>
+                <p style={{ fontSize: '10px', color: '#262842' }}>Revenue & stats by date</p>
               </div>
             </button>
             <button
               onClick={() => navigate('/doctor/therapists')}
               className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md"
-              style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}
+              style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}
             >
-              <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#DEF2F1' }}>
-                <UserCog size={18} color="#2B7A78" />
+              <div className="rounded-xl flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', background: '#E8E9F1' }}>
+                <UserCog size={18} color="#262842" />
               </div>
               <div className="text-left">
                 <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }}>Therapists</p>
-                <p style={{ fontSize: '10px', color: '#2B7A78' }}>Assign & manage</p>
+                <p style={{ fontSize: '10px', color: '#262842' }}>Assign & manage</p>
               </div>
             </button>
           </div>
@@ -251,9 +251,9 @@ export function DoctorDashboard() {
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div
               className="flex items-center gap-3 px-4 flex-1 rounded-2xl"
-              style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}
+              style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}
             >
-              <Search size={18} color="#2B7A78" />
+              <Search size={18} color="#262842" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -263,7 +263,7 @@ export function DoctorDashboard() {
               />
             </div>
 
-            <div className="flex gap-2 p-1 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}>
+            <div className="flex gap-2 p-1 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}>
               {[
                 { key: 'all', label: `All (${patientsData?.total ?? 0})` },
                 { key: 'waiting', label: `Wait (${waiting})` },
@@ -276,8 +276,8 @@ export function DoctorDashboard() {
                   className="px-4 py-2.5 rounded-xl transition-all duration-200"
                   style={{
                     fontSize: '13px', fontWeight: 600,
-                    background: activeTab === tab.key ? '#2B7A78' : 'transparent',
-                    color: activeTab === tab.key ? '#FEFFFF' : '#2B7A78',
+                    background: activeTab === tab.key ? '#262842' : 'transparent',
+                    color: activeTab === tab.key ? '#FEFFFF' : '#262842',
                   }}
                 >
                   {tab.label}
@@ -289,7 +289,7 @@ export function DoctorDashboard() {
           {/* Section header */}
           <div className="flex items-center justify-between mb-4">
             <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#17252A' }}>Patient Queue</h3>
-            <span className="px-3 py-1 rounded-full" style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600, background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+            <span className="px-3 py-1 rounded-full" style={{ fontSize: '12px', color: '#262842', fontWeight: 600, background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
               {isLoading ? '…' : `${patients.length} patients`}
             </span>
           </div>
@@ -298,12 +298,12 @@ export function DoctorDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Loading skeleton */}
             {isLoading && Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="rounded-2xl p-5 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+              <div key={i} className="rounded-2xl p-5 animate-pulse" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
                 <div className="flex gap-4">
-                  <div className="w-14 h-14 rounded-2xl" style={{ background: '#DEF2F1' }} />
+                  <div className="w-14 h-14 rounded-2xl" style={{ background: '#E8E9F1' }} />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 rounded" style={{ background: '#DEF2F1', width: '60%' }} />
-                    <div className="h-3 rounded" style={{ background: '#DEF2F1', width: '40%' }} />
+                    <div className="h-4 rounded" style={{ background: '#E8E9F1', width: '60%' }} />
+                    <div className="h-3 rounded" style={{ background: '#E8E9F1', width: '40%' }} />
                   </div>
                 </div>
               </div>
@@ -317,10 +317,10 @@ export function DoctorDashboard() {
             )}
 
             {!isLoading && !isError && patients.length === 0 && (
-              <div className="col-span-full text-center py-10 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-                <Users className="w-10 h-10 mx-auto mb-3" style={{ color: '#DEF2F1' }} />
+              <div className="col-span-full text-center py-10 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                <Users className="w-10 h-10 mx-auto mb-3" style={{ color: '#E8E9F1' }} />
                 <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>No patients found</p>
-                <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '4px' }}>Try adjusting your search or filters</p>
+                <p style={{ fontSize: '12px', color: '#262842', marginTop: '4px' }}>Try adjusting your search or filters</p>
               </div>
             )}
 
@@ -333,24 +333,24 @@ export function DoctorDashboard() {
                   style={{
                     background: '#FEFFFF',
                     boxShadow: '0 4px 20px rgba(23, 37, 42, 0.04)',
-                    border: `1px solid ${patient.status === 'in-session' ? '#3AAFA9' : '#DEF2F1'}`,
+                    border: `1px solid ${patient.status === 'in-session' ? '#3B3E66' : '#E8E9F1'}`,
                   }}
                 >
                   {/* Patient header */}
                   <div className="flex items-center gap-4 p-5 pb-4">
                     <div className="rounded-2xl flex items-center justify-center shrink-0 relative"
-                      style={{ width: '56px', height: '56px', background: '#DEF2F1' }}>
-                      <span style={{ fontSize: '18px', fontWeight: 700, color: '#2B7A78' }}>{getInitials(patient.name)}</span>
+                      style={{ width: '56px', height: '56px', background: '#E8E9F1' }}>
+                      <span style={{ fontSize: '18px', fontWeight: 700, color: '#262842' }}>{getInitials(patient.name)}</span>
                       {patient.status === 'in-session' && (
                         <div className="absolute -top-1 -right-1 rounded-full"
-                          style={{ width: '14px', height: '14px', background: '#3AAFA9', border: '2px solid #FEFFFF' }} />
+                          style={{ width: '14px', height: '14px', background: '#3B3E66', border: '2px solid #FEFFFF' }} />
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div>
                           <p style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>{patient.name}</p>
-                          <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '2px' }}>{patient.condition ?? '—'} · {patient.age} yrs</p>
+                          <p style={{ fontSize: '13px', color: '#262842', marginTop: '2px' }}>{patient.condition ?? '—'} · {patient.age} yrs</p>
                         </div>
                         <span className="px-3 py-1 rounded-full flex items-center gap-1.5"
                           style={{ background: config.bg, color: config.color, fontSize: '12px', fontWeight: 600 }}>
@@ -363,44 +363,44 @@ export function DoctorDashboard() {
 
                   {/* Info row */}
                   <div className="flex gap-3 px-5 pb-5">
-                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
                         <span style={{ fontSize: '14px' }}>🆔</span>
                       </div>
                       <div>
-                        <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600, marginBottom: '2px' }}>ID</p>
+                        <p style={{ fontSize: '11px', color: '#262842', fontWeight: 600, marginBottom: '2px' }}>ID</p>
                         <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{patient.displayId}</p>
                       </div>
                     </div>
-                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                    <div className="flex-1 flex items-center gap-3 p-3 rounded-xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
                         <span style={{ fontSize: '14px' }}>📞</span>
                       </div>
                       <div>
-                        <p style={{ fontSize: '11px', color: '#2B7A78', fontWeight: 600, marginBottom: '2px' }}>Phone</p>
+                        <p style={{ fontSize: '11px', color: '#262842', fontWeight: 600, marginBottom: '2px' }}>Phone</p>
                         <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>{patient.phone}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
+                  <div style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
                     {patient.status === 'in-session' ? (
                       <button
                         onClick={() => handleCompleteSession(patient.id)}
                         disabled={updatePatient.isPending}
                         className="w-full flex items-center justify-center gap-2 py-4 transition-colors disabled:opacity-50"
-                        style={{ color: '#FEFFFF', fontSize: '13px', fontWeight: 700, background: '#2B7A78' }}
+                        style={{ color: '#FEFFFF', fontSize: '13px', fontWeight: 700, background: '#262842' }}
                       >
                         <CheckCircle size={16} />
                         COMPLETE SESSION
                       </button>
                     ) : (
-                      <div className="flex divide-x divide-slate-100" style={{ borderTop: '1px solid #DEF2F1' }}>
+                      <div className="flex divide-x divide-slate-100" style={{ borderTop: '1px solid #E8E9F1' }}>
                         <button
                           onClick={() => navigate(`/doctor/patient/${patient.id}`)}
                           className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
-                          style={{ color: '#2B7A78', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #DEF2F1' }}
+                          style={{ color: '#262842', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #E8E9F1' }}
                         >
                           <Eye size={16} />
                           View
@@ -408,7 +408,7 @@ export function DoctorDashboard() {
                         <button
                           onClick={() => navigate(`/doctor/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
                           className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors"
-                          style={{ color: '#3AAFA9', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #DEF2F1' }}
+                          style={{ color: '#3B3E66', fontSize: '13px', fontWeight: 600, borderRight: '1px solid #E8E9F1' }}
                         >
                           <ClipboardList size={16} />
                           Intake
@@ -430,19 +430,19 @@ export function DoctorDashboard() {
           </div>
 
           {!isLoading && patients.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 rounded-2xl shadow-sm mt-4" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+            <div className="flex flex-col items-center justify-center py-16 rounded-2xl shadow-sm mt-4" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
               <div className="flex items-center justify-center rounded-full mb-4"
-                style={{ width: '72px', height: '72px', background: '#DEF2F1' }}>
-                <Users size={32} color="#3AAFA9" />
+                style={{ width: '72px', height: '72px', background: '#E8E9F1' }}>
+                <Users size={32} color="#3B3E66" />
               </div>
               <p style={{ fontSize: '18px', fontWeight: 600, color: '#17252A' }}>No patients found</p>
-              <p style={{ fontSize: '14px', color: '#2B7A78', marginTop: '6px' }}>Try adjusting your search or filter</p>
+              <p style={{ fontSize: '14px', color: '#262842', marginTop: '6px' }}>Try adjusting your search or filter</p>
             </div>
           )}
         </div>
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
+      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
         <BottomNav role="doctor" />
       </div>
     </div>

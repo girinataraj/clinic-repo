@@ -5,19 +5,19 @@ import { useNotifications } from '../../hooks/useNotifications';
 
 const themeConfig = {
   doctor: {
-    headerBg: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)',
-    pageBg: '#DEF2F1',
-    headerShadow: '0 4px 24px rgba(43, 122, 120, 0.15)',
-    accentColor: 'text-teal-600',
-    iconBg: 'bg-teal-50',
+    headerBg: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
+    pageBg: '#E8E9F1',
+    headerShadow: '0 4px 24px rgba(38, 40, 66, 0.15)',
+    accentColor: 'text-indigo-900',
+    iconBg: 'bg-indigo-50',
     textColor: '#FEFFFF'
   },
   nurse: {
     headerBg: 'linear-gradient(135deg, #0d2b27 0%, #0f766e 100%)',
     pageBg: '#f8fafc',
     headerShadow: '0 4px 24px rgba(15, 118, 110, 0.15)',
-    accentColor: 'text-teal-600',
-    iconBg: 'bg-teal-50',
+    accentColor: 'text-indigo-900',
+    iconBg: 'bg-indigo-50',
     textColor: '#ffffff'
   },
   patient: {

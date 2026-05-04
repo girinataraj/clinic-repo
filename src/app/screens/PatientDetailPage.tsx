@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 
 const funcLabels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
-const funcColors: Record<number, string> = { 0: '#3AAFA9', 1: '#3AAFA9', 2: '#2B7A78', 3: '#2B7A78', 4: '#17252A' };
-const painColors = ['#3AAFA9', '#3AAFA9', '#3AAFA9', '#2B7A78', '#2B7A78', '#2B7A78', '#17252A', '#17252A', '#17252A', '#17252A', '#17252A'];
+const funcColors: Record<number, string> = { 0: '#3B3E66', 1: '#3B3E66', 2: '#262842', 3: '#262842', 4: '#17252A' };
+const painColors = ['#3B3E66', '#3B3E66', '#3B3E66', '#262842', '#262842', '#262842', '#17252A', '#17252A', '#17252A', '#17252A', '#17252A'];
 
 const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes', 'History'];
 
@@ -90,11 +90,11 @@ export function PatientDetailPage() {
     ? new Date(evaluation.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
     : '';
   const vitalsCards = [
-    { icon: '💓', label: 'Blood Pressure', value: evaluation?.bp ?? '-', color: '#3AAFA9' },
-    { icon: '❤️', label: 'Pulse Rate', value: evaluation?.pr != null ? `${evaluation.pr} bpm` : '-', color: '#2B7A78' },
-    { icon: '🫁', label: 'SpO2', value: evaluation?.spo2 != null ? `${evaluation.spo2}%` : '-', color: '#3AAFA9' },
-    { icon: '🌡️', label: 'Temperature', value: evaluation?.temperature != null ? `${evaluation.temperature}°F` : '-', color: '#2B7A78' },
-    { icon: '⚡', label: 'Ejection Fraction', value: evaluation?.ef != null ? `${evaluation.ef}%` : '-', color: '#3AAFA9' },
+    { icon: '💓', label: 'Blood Pressure', value: evaluation?.bp ?? '-', color: '#3B3E66' },
+    { icon: '❤️', label: 'Pulse Rate', value: evaluation?.pr != null ? `${evaluation.pr} bpm` : '-', color: '#262842' },
+    { icon: '🫁', label: 'SpO2', value: evaluation?.spo2 != null ? `${evaluation.spo2}%` : '-', color: '#3B3E66' },
+    { icon: '🌡️', label: 'Temperature', value: evaluation?.temperature != null ? `${evaluation.temperature}°F` : '-', color: '#262842' },
+    { icon: '⚡', label: 'Ejection Fraction', value: evaluation?.ef != null ? `${evaluation.ef}%` : '-', color: '#3B3E66' },
   ];
   const isLoading = patientLoading || evaluationLoading;
 
@@ -107,14 +107,14 @@ export function PatientDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1' }}>
+    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1' }}>
       {/* Header */}
       <div
         className="px-6 pb-6 shrink-0 rounded-b-3xl relative overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)',
+          background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
           paddingTop: '32px',
-          boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)',
+          boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)',
         }}
       >
         <div className="absolute -right-16 -top-16 rounded-full opacity-10"
@@ -158,11 +158,11 @@ export function PatientDetailPage() {
             </p>
             <div className="flex gap-2 mt-2">
               <span className="px-3 py-1 rounded-full"
-                style={{ background: '#DEF2F1', color: '#3AAFA9', fontSize: '11px', fontWeight: 700 }}>
+                style={{ background: '#E8E9F1', color: '#3B3E66', fontSize: '11px', fontWeight: 700 }}>
                 {patient?.displayId ?? '-'}
               </span>
               <span className="px-3 py-1 rounded-full"
-                style={{ background: '#3AAFA9', color: '#FEFFFF', fontSize: '11px', fontWeight: 700 }}>
+                style={{ background: '#3B3E66', color: '#FEFFFF', fontSize: '11px', fontWeight: 700 }}>
                 Status: {patient?.status ?? '-'}
               </span>
             </div>
@@ -171,7 +171,7 @@ export function PatientDetailPage() {
       </div>
 
       {/* Tab navigation */}
-      <div className="flex shrink-0 px-4 pt-4 pb-0" style={{ background: '#FEFFFF', borderBottom: '1px solid #DEF2F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}>
+      <div className="flex shrink-0 px-4 pt-4 pb-0" style={{ background: '#FEFFFF', borderBottom: '1px solid #E8E9F1', boxShadow: '0 2px 8px rgba(23,37,42,0.02)' }}>
         {tabs.map((tab) => (
           <button
             key={tab}
@@ -179,8 +179,8 @@ export function PatientDetailPage() {
             className="flex-1 py-3 text-center transition-all duration-300"
             style={{
               fontSize: '13px', fontWeight: 600,
-              color: activeTab === tab ? '#3AAFA9' : '#2B7A78',
-              borderBottom: `2px solid ${activeTab === tab ? '#3AAFA9' : 'transparent'}`,
+              color: activeTab === tab ? '#3B3E66' : '#262842',
+              borderBottom: `2px solid ${activeTab === tab ? '#3B3E66' : 'transparent'}`,
             }}
           >
             {tab}
@@ -195,8 +195,8 @@ export function PatientDetailPage() {
         )}
 
         {isLoading && (
-          <div className="rounded-2xl p-6 text-center" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
-            <p style={{ fontSize: '14px', color: '#2B7A78' }}>Loading patient details...</p>
+          <div className="rounded-2xl p-6 text-center" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
+            <p style={{ fontSize: '14px', color: '#262842' }}>Loading patient details...</p>
           </div>
         )}
 
@@ -204,34 +204,34 @@ export function PatientDetailPage() {
         {activeTab === 'Overview' && (
           <div className="flex flex-col gap-4">
             {/* Condition */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                  <Stethoscope size={16} color="#3AAFA9" />
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                  <Stethoscope size={16} color="#3B3E66" />
                 </div>
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Primary Condition</h3>
               </div>
-              <p style={{ fontSize: '15px', fontWeight: 600, color: '#3AAFA9' }}>{patient?.condition ?? '-'}</p>
-              <p style={{ fontSize: '13px', color: '#2B7A78', marginTop: '4px' }}>
+              <p style={{ fontSize: '15px', fontWeight: 600, color: '#3B3E66' }}>{patient?.condition ?? '-'}</p>
+              <p style={{ fontSize: '13px', color: '#262842', marginTop: '4px' }}>
                 Consultation with {consultationName || '-'} on {consultationDate || '-'}
               </p>
             </div>
 
             {/* Symptoms */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                  <Activity size={16} color="#3AAFA9" />
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                  <Activity size={16} color="#3B3E66" />
                 </div>
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Reported Symptoms</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {symptoms.length === 0 && (
-                  <span style={{ fontSize: '13px', color: '#2B7A78' }}>No symptoms recorded</span>
+                  <span style={{ fontSize: '13px', color: '#262842' }}>No symptoms recorded</span>
                 )}
                 {symptoms.map((symptom) => (
                   <span key={symptom} className="px-3 py-1.5 rounded-xl"
-                    style={{ background: '#DEF2F1', color: '#3AAFA9', fontSize: '13px', fontWeight: 600, border: '1px solid #DEF2F1' }}>
+                    style={{ background: '#E8E9F1', color: '#3B3E66', fontSize: '13px', fontWeight: 600, border: '1px solid #E8E9F1' }}>
                     {symptom}
                   </span>
                 ))}
@@ -239,20 +239,20 @@ export function PatientDetailPage() {
             </div>
 
             {/* Medical History */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                  <StickyNote size={16} color="#3AAFA9" />
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                  <StickyNote size={16} color="#3B3E66" />
                 </div>
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Medical History</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {(evaluation?.medicalHistory ?? []).length === 0 && (
-                  <span style={{ fontSize: '13px', color: '#2B7A78' }}>No medical history recorded</span>
+                  <span style={{ fontSize: '13px', color: '#262842' }}>No medical history recorded</span>
                 )}
                 {(evaluation?.medicalHistory ?? []).map((history) => (
                   <span key={history} className="px-3 py-1.5 rounded-xl"
-                    style={{ background: '#DEF2F1', color: '#2B7A78', fontSize: '13px', fontWeight: 600, border: '1px solid #DEF2F1' }}>
+                    style={{ background: '#E8E9F1', color: '#262842', fontSize: '13px', fontWeight: 600, border: '1px solid #E8E9F1' }}>
                     {history}
                   </span>
                 ))}
@@ -260,16 +260,16 @@ export function PatientDetailPage() {
             </div>
 
             {/* Pain level */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
                     <span style={{ fontSize: '16px' }}>🔴</span>
                   </div>
                   <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Pain Level</h3>
                 </div>
                 {painLevel == null ? (
-                  <span style={{ fontSize: '16px', fontWeight: 700, color: '#2B7A78' }}>-</span>
+                  <span style={{ fontSize: '16px', fontWeight: 700, color: '#262842' }}>-</span>
                 ) : (
                   <span style={{ fontSize: '20px', fontWeight: 800, color: painColors[painLevel] }}>
                     {painLevel}/10
@@ -289,24 +289,24 @@ export function PatientDetailPage() {
             </div>
 
             {/* Functional Activities */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                  <CheckSquare size={16} color="#3AAFA9" />
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                  <CheckSquare size={16} color="#3B3E66" />
                 </div>
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Functional Activities</h3>
               </div>
               <div className="flex flex-col gap-3">
                 {functionalEntries.length === 0 && (
-                  <span style={{ fontSize: '13px', color: '#2B7A78' }}>No functional scores recorded</span>
+                  <span style={{ fontSize: '13px', color: '#262842' }}>No functional scores recorded</span>
                 )}
                 {functionalEntries.map(({ key, value }) => (
-                  <div key={key} className="flex items-center justify-between py-1 border-b last:border-0" style={{ borderColor: '#DEF2F1' }}>
-                    <span style={{ fontSize: '14px', color: '#2B7A78', fontWeight: 500, textTransform: 'capitalize' }}>
+                  <div key={key} className="flex items-center justify-between py-1 border-b last:border-0" style={{ borderColor: '#E8E9F1' }}>
+                    <span style={{ fontSize: '14px', color: '#262842', fontWeight: 500, textTransform: 'capitalize' }}>
                       {key === 'stairs' ? 'Climbing Stairs' : key}
                     </span>
                     <span className="px-3 py-1 rounded-xl"
-                      style={{ background: `${funcColors[value] ?? '#3AAFA9'}15`, color: funcColors[value] ?? '#3AAFA9', fontSize: '12px', fontWeight: 600 }}>
+                      style={{ background: `${funcColors[value] ?? '#3B3E66'}15`, color: funcColors[value] ?? '#3B3E66', fontSize: '12px', fontWeight: 600 }}>
                       {value} - {funcLabels[value] ?? 'Recorded'}
                     </span>
                   </div>
@@ -315,11 +315,11 @@ export function PatientDetailPage() {
             </div>
 
             {/* Complaints */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '10px' }}>
                 Chief Complaints
               </h3>
-              <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6 }}>
+              <p style={{ fontSize: '14px', color: '#262842', lineHeight: 1.6 }}>
                 {complaintText || 'No chief complaints recorded'}
               </p>
             </div>
@@ -329,19 +329,19 @@ export function PatientDetailPage() {
         {/* Vitals Tab */}
         {activeTab === 'Vitals' && (
           <div className="flex flex-col gap-4">
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                  <Heart size={16} color="#3AAFA9" />
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                  <Heart size={16} color="#3B3E66" />
                 </div>
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Vital Signs</h3>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 {vitalsCards.map((vital) => (
                   <div key={vital.label} className="p-4 rounded-2xl transition-transform hover:-translate-y-1"
-                    style={{ background: '#FEFFFF', border: '1px solid #DEF2F1' }}>
+                    style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
                     <span style={{ fontSize: '24px' }}>{vital.icon}</span>
-                    <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600, marginTop: '8px' }}>{vital.label}</p>
+                    <p style={{ fontSize: '12px', color: '#262842', fontWeight: 600, marginTop: '8px' }}>{vital.label}</p>
                     <p style={{ fontSize: '16px', fontWeight: 700, color: vital.color }}>{vital.value}</p>
                   </div>
                 ))}
@@ -353,39 +353,39 @@ export function PatientDetailPage() {
         {/* Diagnosis Tab */}
         {activeTab === 'Diagnosis' && (
           <div className="flex flex-col gap-4">
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                    <Stethoscope size={16} color="#3AAFA9" />
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                    <Stethoscope size={16} color="#3B3E66" />
                   </div>
                   <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Diagnosis</h3>
                 </div>
-                {editMode && <span className="px-2 py-1 rounded-md text-amber-600" style={{ background: '#DEF2F1', fontSize: '11px', fontWeight: 700 }}>✏️ Edit Mode</span>}
+                {editMode && <span className="px-2 py-1 rounded-md text-amber-600" style={{ background: '#E8E9F1', fontSize: '11px', fontWeight: 700 }}>✏️ Edit Mode</span>}
               </div>
               {editMode ? (
                 <textarea
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
                   className="w-full outline-none resize-none"
-                  style={{ padding: '16px', borderRadius: '16px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '100px' }}
+                  style={{ padding: '16px', borderRadius: '16px', border: '1px solid #E8E9F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '100px' }}
                 />
               ) : (
-                <p style={{ fontSize: '15px', fontWeight: 600, color: '#3AAFA9', lineHeight: 1.6 }}>{diagnosis || 'No diagnosis recorded'}</p>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: '#3B3E66', lineHeight: 1.6 }}>{diagnosis || 'No diagnosis recorded'}</p>
               )}
             </div>
 
             {/* Treatment Protocol */}
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '16px' }}>
                 Treatment Protocol
               </h3>
               {evaluation?.plan ? (
-                <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                <p style={{ fontSize: '14px', color: '#262842', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
                   {evaluation.plan}
                 </p>
               ) : (
-                <p style={{ fontSize: '13px', color: '#2B7A78' }}>No treatment plan recorded</p>
+                <p style={{ fontSize: '13px', color: '#262842' }}>No treatment plan recorded</p>
               )}
             </div>
 
@@ -394,7 +394,7 @@ export function PatientDetailPage() {
                 onClick={handleSaveDiagnosis}
                 disabled={updateEvaluation.isPending}
                 className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1 disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(43, 122, 120, 0.3)' }}>
+                style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(38, 40, 66, 0.3)' }}>
                 <Save size={18} />
                 {updateEvaluation.isPending ? 'Saving…' : 'Save Diagnosis'}
               </button>
@@ -405,42 +405,42 @@ export function PatientDetailPage() {
         {/* Notes Tab */}
         {activeTab === 'Notes' && (
           <div className="flex flex-col gap-4">
-            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#DEF2F1' }}>
-                    <StickyNote size={16} color="#2B7A78" />
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#E8E9F1' }}>
+                    <StickyNote size={16} color="#262842" />
                   </div>
                   <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Doctor's Notes</h3>
                 </div>
-                {editMode && <span className="px-2 py-1 rounded-md text-amber-600" style={{ background: '#DEF2F1', fontSize: '11px', fontWeight: 700 }}>✏️ Edit Mode</span>}
+                {editMode && <span className="px-2 py-1 rounded-md text-amber-600" style={{ background: '#E8E9F1', fontSize: '11px', fontWeight: 700 }}>✏️ Edit Mode</span>}
               </div>
               {editMode ? (
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="w-full outline-none resize-none"
-                  style={{ padding: '16px', borderRadius: '16px', border: '1px solid #DEF2F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '140px' }}
+                  style={{ padding: '16px', borderRadius: '16px', border: '1px solid #E8E9F1', background: '#FEFFFF', color: '#17252A', fontSize: '14px', minHeight: '140px' }}
                 />
               ) : (
-                <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.7 }}>{notes || 'No notes recorded'}</p>
+                <p style={{ fontSize: '14px', color: '#262842', lineHeight: 1.7 }}>{notes || 'No notes recorded'}</p>
               )}
             </div>
 
-            <div className="p-5 rounded-2xl" style={{ background: '#DEF2F1', border: '1px solid #DEF2F1' }}>
+            <div className="p-5 rounded-2xl" style={{ background: '#E8E9F1', border: '1px solid #E8E9F1' }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#FEFFFF' }}>
-                  <Dumbbell size={16} color="#3AAFA9" />
+                  <Dumbbell size={16} color="#3B3E66" />
                 </div>
                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#17252A' }}>Exercise Recommendation</span>
               </div>
-              <p style={{ fontSize: '14px', color: '#2B7A78', marginBottom: '16px' }}>
+              <p style={{ fontSize: '14px', color: '#262842', marginBottom: '16px' }}>
                 {evaluation?.plan || 'No exercise recommendation recorded'}
               </p>
               <button
                 onClick={() => id && navigate(`/doctor/patient/${id}/exercise`)}
                 className="px-5 py-2.5 rounded-xl transition-colors"
-                style={{ background: '#3AAFA9', color: '#FEFFFF', fontSize: '13px', fontWeight: 600 }}>
+                style={{ background: '#3B3E66', color: '#FEFFFF', fontSize: '13px', fontWeight: 600 }}>
                 View Exercise Plan
               </button>
             </div>
@@ -450,7 +450,7 @@ export function PatientDetailPage() {
                 onClick={handleSaveNotes}
                 disabled={updateEvaluation.isPending}
                 className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 mt-2 transition-transform hover:-translate-y-1 disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #2B7A78, #3AAFA9)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(43, 122, 120, 0.3)' }}>
+                style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)', color: '#FEFFFF', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 16px rgba(38, 40, 66, 0.3)' }}>
                 <Save size={18} />
                 {updateEvaluation.isPending ? 'Saving…' : 'Save Notes'}
               </button>
@@ -460,13 +460,13 @@ export function PatientDetailPage() {
 
         {/* History Tab */}
         {activeTab === 'History' && patientId && (
-          <div className="rounded-2xl p-5" style={{ background: '#FEFFFF', border: '1px solid #DEF2F1', boxShadow: '0 2px 12px rgba(23,37,42,0.04)' }}>
+          <div className="rounded-2xl p-5" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(23,37,42,0.04)' }}>
             <PatientHistoryUpload patientId={patientId} patientName={patient?.name} />
           </div>
         )}
       </div>
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
+      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
         <BottomNav role="doctor" />
       </div>
     </div>

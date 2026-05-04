@@ -32,8 +32,8 @@ const specializations: string[] = [];
 const education: { degree: string; institution: string; year: string }[] = [];
 
 const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
-  'in-session': { color: '#3AAFA9', bg: '#DEF2F1', label: 'Active' },
-  'waiting': { color: '#2B7A78', bg: '#DEF2F1', label: 'Waiting' },
+  'in-session': { color: '#3B3E66', bg: '#E8E9F1', label: 'Active' },
+  'waiting': { color: '#262842', bg: '#E8E9F1', label: 'Waiting' },
   'completed': { color: '#10B981', bg: '#ECFDF5', label: 'Done' },
 };
 
@@ -72,14 +72,14 @@ export function DoctorProfile() {
   };
 
   return (
-    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#DEF2F1', position: 'relative' }}>
+    <div className="flex flex-col h-full saai-page" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1', position: 'relative' }}>
       <div className="flex-1 overflow-y-auto">
         {/* Header */}
         <div
           className="relative overflow-hidden rounded-b-3xl"
           style={{ 
-            background: 'linear-gradient(135deg, #2B7A78 0%, #3AAFA9 100%)',
-            boxShadow: '0 4px 24px rgba(43, 122, 120, 0.15)'
+            background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
+            boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)'
           }}
         >
           <div className="absolute -right-16 -top-16 rounded-full opacity-10"
@@ -159,7 +159,7 @@ export function DoctorProfile() {
                 onClick={handleSaveProfile}
                 disabled={updateProfile.isPending}
                 className="px-6 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
-                style={{ background: '#FEFFFF', color: '#2B7A78' }}
+                style={{ background: '#FEFFFF', color: '#262842' }}
               >
                 {updateProfile.isPending ? 'Saving…' : 'Save Profile'}
               </button>
@@ -172,20 +172,20 @@ export function DoctorProfile() {
 
         {/* Stats bar */}
         <div className="mx-5 -mt-6 rounded-2xl p-4 flex relative z-10 bg-white/95 backdrop-blur-md"
-          style={{ background: '#FEFFFF', boxShadow: '0 8px 32px rgba(43, 122, 120, 0.12)', border: '1px solid #DEF2F1' }}>
+          style={{ background: '#FEFFFF', boxShadow: '0 8px 32px rgba(38, 40, 66, 0.12)', border: '1px solid #E8E9F1' }}>
           {[
-            { label: 'Patients', value: patientsData?.total ?? '—', icon: Users, color: '#3AAFA9' },
-            { label: 'Today', value: '—', icon: Clock, color: '#2B7A78' },
+            { label: 'Patients', value: patientsData?.total ?? '—', icon: Users, color: '#3B3E66' },
+            { label: 'Today', value: '—', icon: Clock, color: '#262842' },
             { label: 'Satisfaction', value: '—', icon: TrendingUp, color: '#17252A' },
           ].map((s, i) => {
             const Icon = s.icon;
             return (
-              <div key={s.label} className={`flex-1 flex flex-col items-center ${i !== 0 ? 'border-l border-slate-100' : ''}`} style={{ borderColor: '#DEF2F1' }}>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1" style={{ background: '#DEF2F1' }}>
+              <div key={s.label} className={`flex-1 flex flex-col items-center ${i !== 0 ? 'border-l border-slate-100' : ''}`} style={{ borderColor: '#E8E9F1' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1" style={{ background: '#E8E9F1' }}>
                   <Icon size={16} color={s.color} />
                 </div>
                 <span style={{ fontSize: '20px', fontWeight: 800, color: '#17252A', lineHeight: 1.2 }}>{s.value}</span>
-                <span style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 500 }}>{s.label}</span>
+                <span style={{ fontSize: '12px', color: '#262842', fontWeight: 500 }}>{s.label}</span>
               </div>
             );
           })}
@@ -194,13 +194,13 @@ export function DoctorProfile() {
         <div className="px-5 pt-6 pb-6 flex flex-col gap-5">
           {/* About */}
           <div className="p-5 rounded-2xl"
-            style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #DEF2F1' }}>
+            style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #E8E9F1' }}>
             <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '8px' }}>About</p>
-            <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6, marginBottom: '12px' }}>
+            <p style={{ fontSize: '14px', color: '#262842', lineHeight: 1.6, marginBottom: '12px' }}>
               <strong>Qualifications:</strong> MPT (Cardio-Resp), PGDFM, DYT, CDNT<br/>
               <strong>Consultant Physiotherapist</strong>
             </p>
-            <ul style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6, listStyleType: 'disc', paddingLeft: '20px' }}>
+            <ul style={{ fontSize: '14px', color: '#262842', lineHeight: 1.6, listStyleType: 'disc', paddingLeft: '20px' }}>
               <li>16 years of clinical experience</li>
               <li>16 years as HOD at Erode Sudha Hospitals</li>
               <li>Strong professional network</li>
@@ -211,10 +211,10 @@ export function DoctorProfile() {
 
           {/* Clinic Info */}
           <div className="p-5 rounded-2xl"
-            style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #DEF2F1' }}>
+            style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #E8E9F1' }}>
             <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '4px' }}>Saai Physiotherapy Clinic</p>
-            <p style={{ fontSize: '13px', fontStyle: 'italic', color: '#3AAFA9', marginBottom: '12px' }}>“Getting better every day”</p>
-            <p style={{ fontSize: '14px', color: '#2B7A78', lineHeight: 1.6 }}>
+            <p style={{ fontSize: '13px', fontStyle: 'italic', color: '#3B3E66', marginBottom: '12px' }}>“Getting better every day”</p>
+            <p style={{ fontSize: '14px', color: '#262842', lineHeight: 1.6 }}>
               20A/10, Sakthi Nagar, Sengodapalayam,<br/>
               Thindal, Erode Dt – 638012<br/>
               Tamil Nadu, India
@@ -229,9 +229,9 @@ export function DoctorProfile() {
                 <span
                   key={s}
                   className="px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-colors"
-                  style={{ background: '#DEF2F1', border: '1px solid #DEF2F1', color: '#3AAFA9', fontSize: '13px', fontWeight: 600 }}
+                  style={{ background: '#E8E9F1', border: '1px solid #E8E9F1', color: '#3B3E66', fontSize: '13px', fontWeight: 600 }}
                 >
-                  <CheckCircle size={14} color="#3AAFA9" />
+                  <CheckCircle size={14} color="#3B3E66" />
                   {s}
                 </span>
               ))}
@@ -245,7 +245,7 @@ export function DoctorProfile() {
               <button
                 onClick={() => navigate('/doctor')}
                 className="transition-colors"
-                style={{ fontSize: '13px', fontWeight: 600, color: '#3AAFA9' }}
+                style={{ fontSize: '13px', fontWeight: 600, color: '#3B3E66' }}
               >
                 View All
               </button>
@@ -260,15 +260,15 @@ export function DoctorProfile() {
                     style={{
                       background: '#FEFFFF',
                       boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)',
-                      border: `1px solid ${patient.status === 'in-session' ? '#3AAFA9' : '#DEF2F1'}`,
+                      border: `1px solid ${patient.status === 'in-session' ? '#3B3E66' : '#E8E9F1'}`,
                     }}
                   >
                     <div>
-                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#3AAFA9' }}>Today</p>
+                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#3B3E66' }}>Today</p>
                     </div>
                     <div className="flex-1">
                       <p style={{ fontSize: '14px', fontWeight: 600, color: '#17252A' }}>{patient.name}</p>
-                      <p style={{ fontSize: '12px', color: '#2B7A78' }}>{patient.condition || 'Consultation'}</p>
+                      <p style={{ fontSize: '12px', color: '#262842' }}>{patient.condition || 'Consultation'}</p>
                     </div>
                     <span className="px-3 py-1 rounded-xl"
                       style={{ background: s.bg, color: s.color, fontSize: '11px', fontWeight: 700 }}>
@@ -278,7 +278,7 @@ export function DoctorProfile() {
                 );
               })}
               {(!patientsData?.data || patientsData.data.length === 0) && (
-                <div className="text-center py-4" style={{ color: '#2B7A78', fontSize: '13px', fontWeight: 500 }}>
+                <div className="text-center py-4" style={{ color: '#262842', fontSize: '13px', fontWeight: 500 }}>
                   No patients in queue today.
                 </div>
               )}
@@ -289,22 +289,22 @@ export function DoctorProfile() {
           <div>
             <p style={{ fontSize: '15px', fontWeight: 700, color: '#17252A', marginBottom: '12px' }}>Education & Training</p>
             <div className="flex flex-col gap-0 rounded-2xl overflow-hidden"
-              style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #DEF2F1' }}>
+              style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #E8E9F1' }}>
               {education.map((edu, i) => (
                 <div
                   key={edu.degree}
                   className="flex items-center gap-4 px-4 py-4"
-                  style={{ borderBottom: i < education.length - 1 ? '1px solid #DEF2F1' : 'none' }}
+                  style={{ borderBottom: i < education.length - 1 ? '1px solid #E8E9F1' : 'none' }}
                 >
                   <div className="flex items-center justify-center rounded-2xl shrink-0"
-                    style={{ width: '40px', height: '40px', background: '#DEF2F1' }}>
-                    <GraduationCap size={20} color="#3AAFA9" />
+                    style={{ width: '40px', height: '40px', background: '#E8E9F1' }}>
+                    <GraduationCap size={20} color="#3B3E66" />
                   </div>
                   <div className="flex-1">
                     <p style={{ fontSize: '14px', fontWeight: 600, color: '#17252A' }}>{edu.degree}</p>
-                    <p style={{ fontSize: '12px', color: '#2B7A78', marginTop: '2px' }}>{edu.institution} · {edu.year}</p>
+                    <p style={{ fontSize: '12px', color: '#262842', marginTop: '2px' }}>{edu.institution} · {edu.year}</p>
                   </div>
-                  <Award size={18} color="#2B7A78" />
+                  <Award size={18} color="#262842" />
                 </div>
               ))}
             </div>
@@ -312,15 +312,15 @@ export function DoctorProfile() {
 
           {/* Contact */}
           <div className="flex items-center gap-4 p-5 rounded-2xl"
-            style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #DEF2F1' }}>
+            style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23, 37, 42, 0.03)', border: '1px solid #E8E9F1' }}>
             <div className="flex items-center justify-center rounded-2xl shrink-0"
-              style={{ width: '48px', height: '48px', background: '#DEF2F1' }}>
-              <Phone size={24} color="#3AAFA9" />
+              style={{ width: '48px', height: '48px', background: '#E8E9F1' }}>
+              <Phone size={24} color="#3B3E66" />
             </div>
             <div className="flex-1">
-              <p style={{ fontSize: '12px', color: '#2B7A78', fontWeight: 600, letterSpacing: '0.5px' }}>CLINIC CONTACT</p>
+              <p style={{ fontSize: '12px', color: '#262842', fontWeight: 600, letterSpacing: '0.5px' }}>CLINIC CONTACT</p>
               <p style={{ fontSize: '18px', fontWeight: 700, color: '#17252A' }}>+91 044-4567 8900</p>
-              <p style={{ fontSize: '13px', color: '#2B7A78' }}>Extn: 101 · Consultation Room 3</p>
+              <p style={{ fontSize: '13px', color: '#262842' }}>Extn: 101 · Consultation Room 3</p>
             </div>
           </div>
 
@@ -332,7 +332,7 @@ export function DoctorProfile() {
             className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl transition-colors mt-2"
             style={{
               background: '#FEFFFF',
-              border: '1px solid #DEF2F1',
+              border: '1px solid #E8E9F1',
               color: '#17252A',
               fontSize: '15px',
               fontWeight: 600,
@@ -342,7 +342,7 @@ export function DoctorProfile() {
             Sign Out
           </button>
 
-          <p style={{ textAlign: 'center', fontSize: '12px', color: '#2B7A78', marginTop: '8px' }}>
+          <p style={{ textAlign: 'center', fontSize: '12px', color: '#262842', marginTop: '8px' }}>
             SAAI Physiotherapy v2.0 · Secure Health Platform
           </p>
         </div>
@@ -361,19 +361,19 @@ export function DoctorProfile() {
           >
             <div className="flex justify-center mb-5">
               <div className="flex items-center justify-center rounded-3xl"
-                style={{ width: '64px', height: '64px', background: '#DEF2F1' }}>
+                style={{ width: '64px', height: '64px', background: '#E8E9F1' }}>
                 <LogOut size={28} color="#17252A" />
               </div>
             </div>
             <p style={{ textAlign: 'center', fontSize: '20px', fontWeight: 700, color: '#17252A', marginBottom: '8px' }}>Sign Out?</p>
-            <p style={{ textAlign: 'center', fontSize: '14px', color: '#2B7A78', marginBottom: '32px' }}>
+            <p style={{ textAlign: 'center', fontSize: '14px', color: '#262842', marginBottom: '32px' }}>
               Your clinical session will end. All data is safely stored.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowLogoutConfirm(false)}
                 className="flex-1 py-4 rounded-2xl transition-colors"
-                style={{ background: '#DEF2F1', border: '1px solid #DEF2F1', color: '#17252A', fontSize: '15px', fontWeight: 600 }}
+                style={{ background: '#E8E9F1', border: '1px solid #E8E9F1', color: '#17252A', fontSize: '15px', fontWeight: 600 }}
               >
                 Cancel
               </button>
@@ -389,7 +389,7 @@ export function DoctorProfile() {
         </div>
       )}
 
-      <div className="md:hidden" style={{ borderTop: '1px solid #DEF2F1', background: '#FEFFFF' }}>
+      <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
         <BottomNav role="doctor" />
       </div>
     </div>
