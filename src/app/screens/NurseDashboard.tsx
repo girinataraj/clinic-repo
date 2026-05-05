@@ -45,15 +45,11 @@ export function NurseDashboard() {
 
   const updatePatient = useUpdatePatient();
 
-  const handleCompleteSession = async (patientId: string) => {
-    try {
-      await updatePatient.mutateAsync({ id: patientId, status: 'completed', checkOutTime: new Date().toISOString() });
-    } catch (err) {
-      console.error('Failed to complete session', err);
-    }
-  };
-
   const handleCheckIn = async (patientId: string) => {
+    if (inProgress >= 2) {
+      alert('Therapist capacity exceeded! You cannot have more than 2 active patients at a time.');
+      return;
+    }
     try {
       await updatePatient.mutateAsync({ id: patientId, status: 'in-session', checkInTime: new Date().toISOString() });
     } catch (err) {
@@ -319,12 +315,11 @@ export function NurseDashboard() {
                       )}
                       {patient.status === 'in-session' && (
                         <button
-                          onClick={() => handleCompleteSession(patient.id)}
-                          disabled={updatePatient.isPending}
-                          className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 disabled:opacity-50"
+                          onClick={() => navigate(`/nurse/session/${patient.id}`)}
+                          className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
                         >
-                          <LogOut className="w-3.5 h-3.5" />
-                          CHECK OUT
+                          <ClipboardList className="w-3.5 h-3.5" />
+                          SESSION
                           <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
                         </button>
                       )}

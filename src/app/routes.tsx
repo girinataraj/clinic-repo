@@ -20,6 +20,7 @@ import { ExercisePrescription } from './screens/ExercisePrescription';
 import { ExerciseLibrary } from './screens/ExerciseLibrary';
 import { ReportGeneration } from './screens/ReportGeneration';
 import { TreatmentDetailPage } from '../features/patients/pages/TreatmentDetailPage';
+import { SessionPage } from './screens/SessionPage';
 
 import { PatientForm } from './screens/PatientForm';
 import { TherapistHierarchy } from './screens/TherapistHierarchy';
@@ -77,6 +78,7 @@ export const router = createBrowserRouter([
               { path: 'nurse/patient-form', Component: PatientForm },
               { path: 'nurse/patient/:id', Component: PatientDetailPage },
               { path: 'nurse/patient/:patientId/exercise', Component: ExercisePrescription },
+              { path: 'nurse/session/:patientId', Component: SessionPage },
               { path: 'nurse/exercise', Component: ExercisePrescription },
               { path: 'nurse/exercise-library', Component: ExerciseLibrary },
               { path: 'nurse/profile', Component: NurseProfile },
@@ -98,6 +100,7 @@ export const router = createBrowserRouter([
               { path: 'doctor/patient/:id', Component: PatientDetailPage },
               { path: 'doctor/patient/:patientId/treatment', Component: TreatmentDetailPage },
               { path: 'doctor/patient/:patientId/exercise', Component: ExercisePrescription },
+              { path: 'doctor/session/:patientId', Component: SessionPage },
               { path: 'doctor/exercise', Component: ExercisePrescription },
               { path: 'doctor/exercise-library', Component: ExerciseLibrary },
               { path: 'doctor/report', Component: ReportGeneration },

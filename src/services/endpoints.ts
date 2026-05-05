@@ -26,6 +26,7 @@ export const ENDPOINTS = {
     CREATE: '/patients',
     DETAIL: (id: string) => `/patients/${id}`,
     UPDATE: (id: string) => `/patients/${id}`,
+    CHECKOUT: (id: string) => `/patients/${id}/checkout`,
     RECORDS: (id: string) => `/patients/${id}/records`,
     EXERCISE_PLANS: (patientId: string) => `/patients/${patientId}/exercise-plans`,
     HISTORY: (patientId: string) => `/patients/${patientId}/history`,

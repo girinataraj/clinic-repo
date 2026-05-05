@@ -129,7 +129,7 @@ export function AssessmentForm() {
         anthropometrics: hasAnthro ? anthropometrics : undefined,
       });
       setSaved(true);
-      setTimeout(() => navigate(`/${currentRole}`), 2000);
+      setTimeout(() => navigate(`/${currentRole}/session/${patientId}`), 2000);
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to save.'); }
   };
 

@@ -140,6 +140,23 @@ export function useUpdatePatient() {
   });
 }
 
+/** Checkout patient session (increment count, mark completed). */
+export function useCheckoutPatient() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.post<{ success: boolean; data: Patient }>(
+        ENDPOINTS.PATIENTS.CHECKOUT(id)
+      );
+      return data.data;
+    },
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.setQueryData(['patient', updated.id], updated);
+    },
+  });
+}
+
 /** Upload patient history photos (multi-file). */
 export function useUploadPatientHistory() {
   const queryClient = useQueryClient();

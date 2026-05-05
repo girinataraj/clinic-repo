@@ -296,12 +296,11 @@ export function DoctorDashboard() {
                   <div className="border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                     {patient.status === 'in-session' ? (
                       <button
-                        onClick={() => handleCompleteSession(patient.id)}
-                        disabled={updatePatient.isPending}
-                        className="w-full flex items-center justify-center gap-2 py-4 transition-colors disabled:opacity-50 text-[13px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                        onClick={() => navigate(`/doctor/session/${patient.id}`)}
+                        className="w-full flex items-center justify-center gap-2 py-4 transition-colors text-[13px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
                       >
-                        <CheckCircle size={16} />
-                        COMPLETE SESSION
+                        <ClipboardList size={16} />
+                        SESSION
                       </button>
                     ) : (
                       <div className="flex divide-x divide-slate-200 dark:divide-slate-700">

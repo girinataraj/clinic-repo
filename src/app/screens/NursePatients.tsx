@@ -234,7 +234,7 @@ export function NursePatients() {
                   const actionLabel = patient.status === 'completed'
                     ? 'Review notes'
                     : patient.status === 'in-session'
-                      ? 'Continue assessment'
+                      ? 'Session'
                       : 'Start assessment';
 
                   return (
@@ -278,7 +278,14 @@ export function NursePatients() {
 
                       <div className="flex gap-2 mt-3">
                         <button
-                          onClick={(e) => { e.stopPropagation(); navigate(getIntakePath(patient)); }}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            if (patient.status === 'in-session') {
+                              navigate(`/nurse/session/${patient.id}`);
+                            } else {
+                              navigate(getIntakePath(patient));
+                            }
+                          }}
                           className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-colors ${
                             patient.status === 'completed'
                               ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-600'

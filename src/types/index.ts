@@ -32,6 +32,7 @@ export interface Patient {
   visitType?: VisitType;
   checkInTime?: string;
   checkOutTime?: string;
+  sessionCount?: number;
   createdAt: string;
   updatedAt?: string;
 }
