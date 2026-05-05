@@ -230,7 +230,8 @@ function PatientExercisePlanView() {
 function DoctorExerciseAssignments() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const canAssign = user?.role === 'nurse'; // Only therapists can assign exercises
+  const canAssign = user?.role === 'nurse' || user?.role === 'doctor'; // Both therapists and doctors can assign exercises
+  const rolePrefix = user?.role === 'nurse' ? '/nurse' : '/doctor';
   const { patientId: routePatientId } = useParams<{ patientId?: string }>();
   const [searchParams] = useSearchParams();
   const queryPatientId = searchParams.get('patientId') ?? undefined;
@@ -250,14 +251,15 @@ function DoctorExerciseAssignments() {
 
   useEffect(() => {
     if (!routePatientId && queryPatientId) {
-      navigate(`/doctor/patient/${queryPatientId}/exercise`, { replace: true });
+      navigate(`${rolePrefix}/patient/${queryPatientId}/exercise`, { replace: true });
     }
-  }, [routePatientId, queryPatientId, navigate]);
+  }, [routePatientId, queryPatientId, navigate, rolePrefix]);
 
   useEffect(() => {
-    setSelectedTemplateIds([]);
     setAssignError(null);
   }, [selectedPatientId]);
+
+
 
   const patientFilters = useMemo(
     () => ({
@@ -302,6 +304,15 @@ function DoctorExerciseAssignments() {
     error: assignmentsErrorObj,
   } = usePatientAssignments(selectedPatientId);
 
+  // Sync selected checkboxes with current assignments whenever they load/change
+  useEffect(() => {
+    if (assignments) {
+      setSelectedTemplateIds(assignments.map((a) => a.templateId));
+    } else {
+      setSelectedTemplateIds([]);
+    }
+  }, [assignments]);
+
   const assignMutation = useAssignExercisesToPatient(selectedPatientId ?? '');
   const removeMutation = useRemoveExerciseAssignment(selectedPatientId ?? '');
 
@@ -311,7 +322,7 @@ function DoctorExerciseAssignments() {
 
   const handleSelectPatient = (id: string) => {
     setSelectedPatientId(id);
-    navigate(`/doctor/patient/${id}/exercise`);
+    navigate(`${rolePrefix}/patient/${id}/exercise`);
   };
 
   const toggleTemplate = (id: string, checked: boolean) => {
@@ -329,16 +340,29 @@ function DoctorExerciseAssignments() {
       setAssignError('Select a patient before assigning exercises.');
       return;
     }
-    if (selectedTemplateIds.length === 0) {
-      setAssignError('Select at least one exercise template.');
-      return;
-    }
 
     try {
-      await assignMutation.mutateAsync({ templateIds: selectedTemplateIds });
-      setSelectedTemplateIds([]);
+      // Find newly selected templates to assign
+      const toAssign = selectedTemplateIds.filter((id) => !assignedTemplateIds.has(id));
+      // Find previously assigned templates that were unchecked — need to remove
+      const toRemove = [...assignedTemplateIds].filter((id) => !selectedTemplateIds.includes(id));
+
+      if (toAssign.length === 0 && toRemove.length === 0) {
+        setAssignError('No changes to save.');
+        return;
+      }
+
+      // Remove unchecked assignments
+      for (const templateId of toRemove) {
+        await removeMutation.mutateAsync(templateId);
+      }
+
+      // Assign newly checked templates
+      if (toAssign.length > 0) {
+        await assignMutation.mutateAsync({ templateIds: toAssign });
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.message || 'Failed to assign exercises.';
+      const message = err?.response?.data?.message || 'Failed to save exercise assignments.';
       setAssignError(message);
     }
   };
@@ -384,7 +408,7 @@ function DoctorExerciseAssignments() {
                 <Button 
                   variant="outline" 
                   className="bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white"
-                  onClick={() => navigate(user?.role === 'doctor' ? '/doctor/exercise-library' : '/nurse/intake')}
+                  onClick={() => navigate(user?.role === 'doctor' ? '/doctor/exercise-library' : '/nurse/exercise-library')}
                 >
                   {canAssign ? 'Manage library' : 'View library'}
                 </Button>
@@ -392,10 +416,10 @@ function DoctorExerciseAssignments() {
                   <Button 
                     className="bg-white text-slate-900 hover:bg-slate-100"
                     onClick={handleAssign} 
-                    disabled={assignMutation.isPending}
+                    disabled={assignMutation.isPending || removeMutation.isPending}
                   >
-                    {assignMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin text-slate-900" /> : <Save className="h-4 w-4 mr-2" />}
-                    Assign selected
+                    {(assignMutation.isPending || removeMutation.isPending) ? <Loader2 className="h-4 w-4 animate-spin text-slate-900" /> : <Save className="h-4 w-4 mr-2" />}
+                    Save assignments
                   </Button>
                 )}
               </div>
@@ -435,7 +459,7 @@ function DoctorExerciseAssignments() {
                               size="sm"
                               onClick={() => {
                                 setSelectedPatientId(null);
-                                navigate('/doctor/exercise');
+                                navigate(`${rolePrefix}/exercise`);
                               }}
                             >
                               Clear
@@ -638,12 +662,11 @@ function DoctorExerciseAssignments() {
                               <Checkbox
                                 checked={isChecked}
                                 onCheckedChange={(checked) => toggleTemplate(template.id, checked === true)}
-                                disabled={isAssigned || !canAssign}
+                                disabled={!canAssign}
                               />
                               <div className="flex-1">
                                 <div className="flex items-center justify-between gap-2">
                                   <p className="text-sm font-semibold text-slate-900 dark:text-white">{template.name}</p>
-                                  {isAssigned && <Badge variant="secondary">Assigned</Badge>}
                                 </div>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">
                                   {template.category} · {template.difficulty}
@@ -677,7 +700,7 @@ function DoctorExerciseAssignments() {
       </div>
 
       <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <BottomNav role="doctor" />
+        <BottomNav role={user?.role === 'nurse' ? 'nurse' : 'doctor'} />
       </div>
     </div>
   );
