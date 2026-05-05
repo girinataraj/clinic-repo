@@ -57,7 +57,7 @@ export function useCreateAppointment() {
   return useMutation({
     mutationFn: async (payload: {
       patientId: string;
-      doctorId: string;
+      doctorId?: string;
       datetime: string;
       reason?: string;
       notes?: string;
