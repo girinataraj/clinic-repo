@@ -19,6 +19,7 @@ import {
   Search,
   ShieldCheck,
   User,
+  UserPlus,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -136,7 +137,7 @@ export function NursePatients() {
 
         <div className="px-6 max-w-5xl mx-auto w-full -mt-6 relative z-10">
           {/* Start new assessment CTA */}
-          <div className="mb-5">
+          <div className="mb-5 flex flex-wrap gap-3">
             <button
               onClick={() => navigate('/nurse/intake')}
               className="flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-lg shadow-teal-600/20 group w-full sm:w-auto"
@@ -146,6 +147,16 @@ export function NursePatients() {
                 <Plus className="w-4 h-4" />
               </div>
               Start new assessment
+            </button>
+            <button
+              onClick={() => navigate('/nurse/patient-form')}
+              className="flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-sm group w-full sm:w-auto transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
+              style={{ background: 'white', color: '#0f766e', fontWeight: 700, border: '1px solid #ccfbf1' }}
+            >
+              <div className="flex items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-900/30 w-8 h-8">
+                <UserPlus className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+              </div>
+              Add patient
             </button>
           </div>
 
