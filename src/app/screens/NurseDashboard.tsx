@@ -139,7 +139,7 @@ export function NurseDashboard() {
 
             {/* Add Patient */}
             <button
-              onClick={() => navigate('/nurse/intake')}
+              onClick={() => navigate('/nurse/patient-form')}
               className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-900/40 flex items-center justify-center shrink-0">
