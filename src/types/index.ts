@@ -33,6 +33,7 @@ export interface Patient {
   checkInTime?: string;
   checkOutTime?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface PatientsListResponse {
@@ -109,8 +110,15 @@ export interface UpdateEvaluationPayload {
   painLevel?: number;
   chiefComplaints?: string;
   associatedSymptoms?: string[];
+  associatedPains?: string[];
   medicalHistory?: string[];
   referredBy?: string;
+  paymentMode?: string;
+  billAmount?: number;
+  visitType?: VisitType;
+  musclePowerRom?: Record<string, unknown>;
+  anthropometrics?: Record<string, unknown>;
+  status?: 'draft' | 'submitted' | 'reviewed';
 }
 
 export interface CreateEvaluationPayload {

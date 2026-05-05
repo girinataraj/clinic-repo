@@ -1,9 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
-import { useAllEvaluations } from '../../hooks/useEvaluations';
-import { useStaffUsers } from '../../hooks/useStaff';
-import { usePatients } from '../../hooks/usePatients';
+import { useDailyReport } from '../../hooks/useDailyReport';
 import {
   ArrowLeft, Calendar, Download, Users, IndianRupee,
   Activity, Loader2, ChevronLeft, ChevronRight, UserCog,
@@ -39,56 +37,22 @@ export function DailyReportPage() {
 
   const calendarDays = getCalendarDays(viewYear, viewMonth);
 
-  // ── Data fetching ────────────────────────────────────────────────────────
-  const { data: therapists = [], isLoading: therapistsLoading } = useStaffUsers({ role: 'nurse' });
-  const { data: evaluationsData, isLoading: evalsLoading } = useAllEvaluations({
-    limit: 500,
-  });
-  const { data: patientsData } = usePatients({ limit: 500 });
+  // ── Data fetching — now uses server-side aggregation ────────────────────
+  const { data: reportData, isLoading } = useDailyReport(selectedDate);
 
-  const allEvaluations = evaluationsData?.data ?? [];
-  const allPatients = patientsData?.data ?? [];
-
-  // ── Filter evaluations for selected date ─────────────────────────────────
-  const dailyEvals = useMemo(() => {
-    return allEvaluations.filter((e) => {
-      const evalDate = new Date(e.createdAt).toISOString().slice(0, 10);
-      return evalDate === selectedDate;
-    });
-  }, [allEvaluations, selectedDate]);
-
-  // ── Revenue by therapist ─────────────────────────────────────────────────
   const revenueByTherapist = useMemo(() => {
-    const map: Record<string, { name: string; revenue: number; count: number }> = {};
-    therapists.forEach((t) => {
-      map[t.id] = { name: t.name, revenue: 0, count: 0 };
-    });
+    if (!reportData?.therapists) return [];
+    return reportData.therapists.map((t) => ({
+      id: t.therapistId,
+      name: t.therapistName,
+      revenue: t.revenue,
+      count: t.patientCount,
+    }));
+  }, [reportData]);
 
-    dailyEvals.forEach((ev) => {
-      // Find the patient to get therapistId
-      const patient = allPatients.find((p) => p.id === ev.patientId);
-      const therapistId = patient?.therapistId;
-      if (therapistId && map[therapistId]) {
-        map[therapistId].revenue += ev.billAmount ?? 0;
-        map[therapistId].count += 1;
-      } else {
-        // Unassigned
-        if (!map['unassigned']) map['unassigned'] = { name: 'Unassigned', revenue: 0, count: 0 };
-        map['unassigned'].revenue += ev.billAmount ?? 0;
-        map['unassigned'].count += 1;
-      }
-    });
+  const totalRevenue = reportData?.totals?.revenue ?? 0;
+  const totalPatientsSeen = reportData?.totals?.patientCount ?? 0;
 
-    return Object.entries(map)
-      .map(([id, data]) => ({ id, ...data }))
-      .filter((r) => r.count > 0 || r.revenue > 0)
-      .sort((a, b) => b.revenue - a.revenue);
-  }, [dailyEvals, therapists, allPatients]);
-
-  const totalRevenue = revenueByTherapist.reduce((sum, r) => sum + r.revenue, 0);
-  const totalPatientsSeen = revenueByTherapist.reduce((sum, r) => sum + r.count, 0);
-
-  const isLoading = therapistsLoading || evalsLoading;
   const selectedDateObj = new Date(selectedDate + 'T00:00:00');
   const selectedLabel = selectedDateObj.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const isToday = selectedDate === formatDateParam(today.getFullYear(), today.getMonth(), today.getDate());
@@ -259,7 +223,7 @@ export function DailyReportPage() {
         {/* Report data */}
         {!isLoading && revenueByTherapist.length > 0 && (
           <div className="flex flex-col gap-2.5">
-            {revenueByTherapist.map((row, i) => {
+            {revenueByTherapist.map((row) => {
               const maxVal = reportTab === 'revenue'
                 ? Math.max(...revenueByTherapist.map((r) => r.revenue), 1)
                 : Math.max(...revenueByTherapist.map((r) => r.count), 1);

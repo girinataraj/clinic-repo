@@ -166,8 +166,15 @@ export function usePatientHistory(patientId: string | null | undefined) {
     queryKey: ['patient-history', patientId],
     queryFn: async () => {
       const { data } = await api.get(ENDPOINTS.PATIENTS.HISTORY(patientId!));
-      return (data as any).data ?? [];
+      const items = (data as any).data ?? [];
+      // Construct full URL for uploaded files (backend serves /uploads/ statically)
+      const backendBase = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+      return items.map((item: any) => ({
+        ...item,
+        url: item.url?.startsWith('http') ? item.url : `${backendBase}${item.url}`,
+      }));
     },
     enabled: Boolean(patientId),
   });
 }
+
