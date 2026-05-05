@@ -5,7 +5,7 @@ import { BottomNav } from '../../components/BottomNav';
 import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEvaluations';
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
 import { useStaffUsers } from '../../../hooks/useStaff';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics } from './clinicalConfig';
 import { SectionCard, FormField, inputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainFunction, StepHistory } from './StepRenderers';
@@ -138,129 +138,143 @@ export function AssessmentForm() {
 
   if (saved) {
     return (
-      <div className="h-full flex flex-col items-center justify-center" style={{background:'#DEF2F1'}}>
-        <div className="flex flex-col items-center p-8 rounded-3xl mx-6 bg-white shadow-xl border border-slate-100">
-          <div className="rounded-full flex items-center justify-center mb-4 w-20 h-20 bg-emerald-50"><Check className="w-11 h-11 text-emerald-500" /></div>
-          <h2 className="text-xl font-extrabold text-slate-900 text-center">Assessment Saved!</h2>
-          <p className="text-[13px] text-slate-500 text-center mt-2">Assessment saved and session started.</p>
+      <div className="h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-col items-center p-8 rounded-[32px] mx-6 bg-white dark:bg-slate-900 shadow-xl shadow-emerald-500/10 border border-slate-100 dark:border-slate-800">
+          <div className="rounded-full flex items-center justify-center mb-5 w-20 h-20 bg-emerald-50 dark:bg-emerald-900/30">
+            <Check className="w-11 h-11 text-emerald-500" />
+          </div>
+          <h2 className="text-[22px] font-black text-slate-900 dark:text-white text-center tracking-tight">Assessment Saved!</h2>
+          <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 text-center mt-2 leading-relaxed">
+            Assessment saved and session started.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full" style={{fontFamily:"'Inter','Poppins',sans-serif",backgroundColor:'#DEF2F1'}}>
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Header */}
-      <div className="px-5 pb-4 shrink-0 pt-5 rounded-b-3xl" style={{background:'linear-gradient(135deg,#2B7A78 0%,#3AAFA9 100%)',boxShadow:'0 4px 24px rgba(43,122,120,0.15)'}}>
-        <div className="flex items-center gap-3 mb-3">
-          <button onClick={()=>{setSubmitError(null);step>0?setStep(step-1):navigate(`/${currentRole}`);}} className="flex items-center justify-center rounded-xl w-9 h-9" style={{background:'rgba(254,255,255,0.15)'}}><ArrowLeft size={18} color="#FEFFFF" /></button>
+      <div className="px-5 pb-5 shrink-0 pt-8 rounded-b-[2rem] bg-gradient-to-br from-[#0f766e] to-[#14b8a6] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="flex items-center gap-4 mb-4 relative z-10">
+          <button onClick={()=>{setSubmitError(null);step>0?setStep(step-1):navigate(`/${currentRole}`);}} className="flex items-center justify-center rounded-[14px] w-10 h-10 bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md border border-white/20">
+            <ArrowLeft size={20} className="text-white" />
+          </button>
           <div>
-            <h1 style={{fontSize:'17px',fontWeight:800,color:'#FEFFFF',letterSpacing:'-0.5px'}}>Assessment Form</h1>
-            <p style={{fontSize:'11px',color:'rgba(254,255,255,0.7)'}}>Step {step+1} of {totalSteps} — {ASSESSMENT_STEPS[step]?.label}</p>
+            <h1 className="text-[18px] font-black text-white tracking-tight">Assessment Form</h1>
+            <p className="text-[12px] font-medium text-teal-100/80 mt-0.5">Step {step+1} of {totalSteps} — {ASSESSMENT_STEPS[step]?.label}</p>
           </div>
         </div>
-        <div className="rounded-full h-1.5" style={{background:'rgba(254,255,255,0.2)'}}><div className="rounded-full h-full transition-all duration-300" style={{width:`${((step+1)/totalSteps)*100}%`,background:'#FEFFFF'}} /></div>
-        <div className="flex justify-center gap-1.5 mt-2.5">{ASSESSMENT_STEPS.map((_,i)=>(<div key={i} className={`rounded-full transition-all h-1.5 ${i<=step?'bg-white':'bg-white/30'} ${i===step?'w-5':'w-1.5'}`} />))}</div>
+        <div className="rounded-full h-1.5 bg-black/10 dark:bg-white/10 relative z-10 overflow-hidden">
+          <div className="h-full bg-white transition-all duration-500 rounded-full" style={{width:`${((step+1)/totalSteps)*100}%`}} />
+        </div>
+        <div className="flex justify-center gap-1.5 mt-3 relative z-10">
+          {ASSESSMENT_STEPS.map((_,i)=>(<div key={i} className={`rounded-full transition-all duration-300 h-1.5 ${i<=step?'bg-white':'bg-white/20'} ${i===step?'w-6':'w-1.5'}`} />))}
+        </div>
       </div>
 
       {/* Phone Lookup */}
-      <div className="px-4 pt-3 pb-1 bg-white border-b border-slate-100 shrink-0">
-        <div className="flex gap-2 items-center">
-          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200">
-            <input type="tel" inputMode="numeric" value={phoneInput} onChange={e=>setPhoneInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handlePhoneLookup()} placeholder="Patient mobile number" className="flex-1 bg-transparent outline-none text-[13px] text-slate-800 placeholder:text-slate-400" />
+      <div className="px-4 pt-4 pb-2 bg-slate-50 dark:bg-slate-950 shrink-0 z-0 -mt-2">
+        <div className="flex gap-2 items-center bg-white dark:bg-slate-900 p-2 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
+          <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-transparent">
+            <Search className="w-4 h-4 text-slate-400" />
+            <input type="tel" inputMode="numeric" value={phoneInput} onChange={e=>setPhoneInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handlePhoneLookup()} placeholder="Patient mobile number" className="flex-1 bg-transparent outline-none text-[14px] font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400" />
           </div>
-          <button onClick={handlePhoneLookup} disabled={phoneInput.trim().length<7} className="px-3 py-2 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{background:'linear-gradient(135deg,#2B7A78,#3AAFA9)'}}>Lookup</button>
+          <button onClick={handlePhoneLookup} disabled={phoneInput.trim().length<7} className="px-5 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-50 transition-transform active:scale-95 shadow-md shadow-teal-500/20 bg-teal-600 hover:bg-teal-700">Lookup</button>
         </div>
-        {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-2 px-2 py-1.5"><Loader2 size={14} className="animate-spin text-teal-600" /><span className="text-[12px] text-slate-500">Looking up…</span></div>}
+        {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-3 px-3 py-2 bg-white dark:bg-slate-900 rounded-xl"><Loader2 size={16} className="animate-spin text-teal-600 dark:text-teal-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory…</span></div>}
         {lookupDone&&!lookingUp&&foundPatient&&!resolvedPatientId&&(
-          <div className="mt-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
-            <div><p className="text-[12px] font-extrabold text-emerald-800">{foundPatient.name}</p><p className="text-[11px] text-emerald-600">{foundPatient.phone} · {foundPatient.gender} · Age {foundPatient.age}</p></div>
-            <button onClick={handleUseFoundPatient} className="px-3 py-1.5 rounded-lg text-[12px] font-bold text-white" style={{background:'#059669'}}>Use Patient</button>
+          <div className="mt-3 p-4 rounded-[18px] bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-between shadow-sm">
+            <div><p className="text-[14px] font-black text-emerald-900 dark:text-emerald-100">{foundPatient.name}</p><p className="text-[12px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">{foundPatient.phone} · {foundPatient.gender} · Age {foundPatient.age}</p></div>
+            <button onClick={handleUseFoundPatient} className="px-4 py-2.5 rounded-xl text-[12px] font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-transform active:scale-95">Use Record</button>
           </div>
         )}
-        {lookupDone&&!lookingUp&&foundPatient&&resolvedPatientId&&<div className="mt-2 px-2 py-1.5 flex items-center gap-2"><Check size={13} className="text-emerald-500" /><span className="text-[12px] font-bold text-emerald-700">{foundPatient.name} · {foundPatient.phone}</span></div>}
+        {lookupDone&&!lookingUp&&foundPatient&&resolvedPatientId&&<div className="mt-3 px-4 py-3 flex items-center gap-2 bg-white dark:bg-slate-900 rounded-[18px] border border-slate-100 dark:border-slate-800 shadow-sm"><div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><Check size={14} className="text-emerald-600 dark:text-emerald-400" /></div><span className="text-[13px] font-extrabold text-emerald-800 dark:text-emerald-400">{foundPatient.name} · {foundPatient.phone}</span></div>}
         {lookupDone&&!lookingUp&&foundPatient===null&&!showNewPatientForm&&(
-          <div className="mt-2 p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between">
-            <div className="flex items-center gap-2"><AlertTriangle size={14} className="text-amber-600" /><span className="text-[12px] font-bold text-amber-700">No patient found</span></div>
-            <button onClick={()=>setShowNewPatientForm(true)} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white" style={{background:'#2B7A78'}}>New Patient</button>
+          <div className="mt-3 p-4 rounded-[18px] bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/50 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><AlertTriangle size={16} className="text-amber-600 dark:text-amber-400" /></div><span className="text-[13px] font-extrabold text-amber-800 dark:text-amber-400">Unregistered patient</span></div>
+            <button onClick={()=>setShowNewPatientForm(true)} className="px-4 py-2.5 rounded-xl text-[12px] font-black text-white bg-teal-600 hover:bg-teal-700 shadow-sm transition-transform active:scale-95">Register</button>
           </div>
         )}
         {showNewPatientForm&&(
-          <div className="mt-2 p-3 rounded-xl bg-white border border-slate-200 flex flex-col gap-2">
-            <p className="text-[12px] font-extrabold text-slate-700">Register New Patient — {phoneInput}</p>
-            <div className="grid grid-cols-2 gap-2">
-              <input placeholder="Full Name *" value={newPatient.name} onChange={e=>setNewPatient(p=>({...p,name:e.target.value}))} className="col-span-2 px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-[13px] outline-none" />
-              <input placeholder="Age *" type="number" value={newPatient.age} onChange={e=>setNewPatient(p=>({...p,age:e.target.value}))} className="px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-[13px] outline-none" />
-              <select value={newPatient.gender} onChange={e=>setNewPatient(p=>({...p,gender:e.target.value as any}))} className="px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-[13px] outline-none"><option>Male</option><option>Female</option><option>Other</option></select>
+          <div className="mt-3 p-5 rounded-[22px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex flex-col gap-4 shadow-sm">
+            <p className="text-[14px] font-black text-slate-800 dark:text-white">Register Patient — <span className="text-teal-600 dark:text-teal-400">{phoneInput}</span></p>
+            <div className="grid grid-cols-2 gap-3">
+              <input placeholder="Full Name *" value={newPatient.name} onChange={e=>setNewPatient(p=>({...p,name:e.target.value}))} className="col-span-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[14px] font-medium outline-none text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors" />
+              <input placeholder="Age *" type="number" value={newPatient.age} onChange={e=>setNewPatient(p=>({...p,age:e.target.value}))} className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[14px] font-medium outline-none text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors" />
+              <select value={newPatient.gender} onChange={e=>setNewPatient(p=>({...p,gender:e.target.value as any}))} className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[14px] font-medium outline-none text-slate-900 dark:text-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors"><option>Male</option><option>Female</option><option>Other</option></select>
             </div>
-            <div className="flex gap-2">
-              <button onClick={()=>setShowNewPatientForm(false)} className="flex-1 py-2 rounded-lg border border-slate-200 text-[12px] font-bold text-slate-500">Cancel</button>
-              <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-2 rounded-lg text-white text-[12px] font-bold disabled:opacity-60" style={{background:'#2B7A78'}}>{createPatientMutation.isPending?'Creating…':'Create & Continue'}</button>
+            <div className="flex gap-3 mt-1">
+              <button onClick={()=>setShowNewPatientForm(false)} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-[13px] font-extrabold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+              <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-60 bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creating…':'Save & Continue'}</button>
             </div>
           </div>
         )}
       </div>
 
       {/* Form content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full pb-20">
         {/* Follow-up banner */}
         {resolvedPatientId&&isFollowUp&&previousEval&&(
-          <div className="mb-4 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-            <div className="flex items-center gap-2 mb-2"><ClipboardList size={16} className="text-blue-600" /><span className="text-[13px] font-extrabold text-blue-800">Follow-up Assessment</span><span className="ml-auto text-[10px] font-bold text-blue-500 bg-blue-100 px-2 py-0.5 rounded-full">Previous: {new Date(previousEval.createdAt).toLocaleDateString()}</span></div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-              {previousEval.bp&&<p className="text-slate-600"><span className="font-bold">BP:</span> {previousEval.bp}</p>}
-              {previousEval.painLevel!==undefined&&<p className="text-slate-600"><span className="font-bold">Pain:</span> {previousEval.painLevel}/10</p>}
-              {previousEval.chiefComplaints&&<p className="col-span-2 text-slate-600"><span className="font-bold">Complaints:</span> {previousEval.chiefComplaints}</p>}
-              {previousEval.diagnosis&&<p className="col-span-2 text-slate-600"><span className="font-bold">Diagnosis:</span> {previousEval.diagnosis}</p>}
+          <div className="mb-5 p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
+            <div className="flex items-center gap-2 mb-3"><ClipboardList size={18} className="text-indigo-600 dark:text-indigo-400" /><span className="text-[14px] font-black text-indigo-900 dark:text-indigo-100">Follow-up Assessment</span><span className="ml-auto text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-1 rounded-md">Last: {new Date(previousEval.createdAt).toLocaleDateString()}</span></div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[12px]">
+              {previousEval.bp&&<p className="text-slate-700 dark:text-slate-300"><span className="font-bold text-slate-900 dark:text-white">BP:</span> {previousEval.bp}</p>}
+              {previousEval.painLevel!==undefined&&<p className="text-slate-700 dark:text-slate-300"><span className="font-bold text-slate-900 dark:text-white">Pain:</span> {previousEval.painLevel}/10</p>}
+              {previousEval.chiefComplaints&&<p className="col-span-2 text-slate-700 dark:text-slate-300"><span className="font-bold text-slate-900 dark:text-white">Complaints:</span> {previousEval.chiefComplaints}</p>}
+              {previousEval.diagnosis&&<p className="col-span-2 text-slate-700 dark:text-slate-300"><span className="font-bold text-slate-900 dark:text-white">Diagnosis:</span> {previousEval.diagnosis}</p>}
             </div>
           </div>
         )}
 
-        {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} selectedTherapistId={selectedTherapistId} setSelectedTherapistId={setSelectedTherapistId} therapistsList={therapistsList} therapistsLoading={therapistsLoading} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
-        {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} />}
-        {step===2&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} />}
-        {step===3&&<StepPainFunction painLevel={painLevel} setPainLevel={setPainLevel} funcRatings={funcRatings} setFuncRatings={setFuncRatings} />}
-        {step===4&&<RomMatrix data={romData} onChange={setRomData} />}
-        {step===5&&<AnthropometricSection data={anthropometrics} onChange={setAnthropometrics} />}
-        {step===6&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} />}
+        <div className="transition-all duration-300">
+          {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} selectedTherapistId={selectedTherapistId} setSelectedTherapistId={setSelectedTherapistId} therapistsList={therapistsList} therapistsLoading={therapistsLoading} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
+          {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} />}
+          {step===2&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} />}
+          {step===3&&<StepPainFunction painLevel={painLevel} setPainLevel={setPainLevel} funcRatings={funcRatings} setFuncRatings={setFuncRatings} />}
+          {step===4&&<RomMatrix data={romData} onChange={setRomData} />}
+          {step===5&&<AnthropometricSection data={anthropometrics} onChange={setAnthropometrics} />}
+          {step===6&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} />}
 
-        {/* Step 7: Review & Payment */}
-        {step===7&&(
-          <div className="flex flex-col gap-3">
-            <SectionCard icon={<Save size={18} className="text-teal-700 dark:text-teal-400" />} title="Review & Save" accent="teal">
-              <FormField label="Visit Type">
-                <div className="grid grid-cols-2 gap-2">{['Clinic','Home Visit','IP','Day Care'].map(v=><button key={v} onClick={()=>setVisitType(v as any)} className={`py-2 rounded-xl text-[12px] font-bold border-2 transition-all ${visitType===v?'border-teal-600 bg-teal-50 text-teal-700':'border-slate-100 bg-slate-50/50 text-slate-500'}`}>{v}</button>)}</div>
-              </FormField>
-              <div className="flex flex-col gap-0">{[
-                {l:'Patient',v:patientInfo.name||'—'},{l:'Age',v:patientInfo.age||'—'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'—'},
-                {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'—'},{l:'Symptoms',v:associatedSymptoms.length>0?`${associatedSymptoms.length} selected`:'—'},
-              ].map(r=><div key={r.l} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"><span className="text-[12px] text-slate-500 font-bold">{r.l}</span><span className="text-[12px] text-slate-900 font-extrabold">{r.v}</span></div>)}</div>
-            </SectionCard>
-            <SectionCard icon={<CreditCard size={18} className="text-amber-600 dark:text-amber-400" />} title="Payment Details" subtitle="Required to submit" accent="amber">
-              <FormField label="Mode of Payment">
-                <div className="flex gap-2">{['Cash','UPI'].map(m=><button key={m} onClick={()=>{setPaymentMode(m as any);setSubmitError(null);}} className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold border-2 transition-colors ${paymentMode===m?'border-amber-600 bg-amber-50 text-amber-700':'border-slate-200 bg-slate-50 text-slate-500'}`}>{m}</button>)}</div>
-              </FormField>
-              <FormField label="Bill Amount">
-                <div className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border bg-slate-50 ${!paymentMode&&submitError?'border-red-300':'border-slate-200'}`}>
-                  <span className="text-[13px] font-bold text-slate-500">₹</span>
-                  <input type="text" inputMode="numeric" value={billAmountInput} onChange={e=>handleBillAmountChange(e.target.value)} placeholder="0" className="flex-1 bg-transparent outline-none text-sm text-slate-900 placeholder:text-slate-400" />
-                </div>
-              </FormField>
-            </SectionCard>
-            <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-white text-[15px] font-extrabold shadow-lg disabled:opacity-60" style={{background:'linear-gradient(135deg,#2B7A78,#3AAFA9)'}}>
-              {createEvaluation.isPending?<><Loader2 size={18} className="animate-spin" /> Submitting…</>:<><Save size={18} /> Save Assessment</>}
-            </button>
-          </div>
-        )}
+          {/* Step 7: Review & Payment */}
+          {step===7&&(
+            <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
+              <SectionCard icon={<Save size={20} className="text-teal-600 dark:text-teal-400" />} title="Final Review" accent="teal">
+                <FormField label="Visit Type">
+                  <div className="grid grid-cols-2 gap-2">{['Clinic','Home Visit','IP','Day Care'].map(v=><button key={v} onClick={()=>setVisitType(v as any)} className={`py-3 rounded-[14px] text-[13px] font-black border-2 transition-all active:scale-95 ${visitType===v?'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300':'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>{v}</button>)}</div>
+                </FormField>
+                <div className="flex flex-col gap-0 mt-2 bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-1 border border-slate-100 dark:border-slate-800">{[
+                  {l:'Patient',v:patientInfo.name||'—'},{l:'Age',v:patientInfo.age||'—'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'—'},
+                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'—'},{l:'Symptoms',v:associatedSymptoms.length>0?`${associatedSymptoms.length} selected`:'—'},
+                ].map(r=><div key={r.l} className="flex items-center justify-between py-3 px-3 border-b border-slate-100 dark:border-slate-800/50 last:border-0"><span className="text-[13px] text-slate-500 dark:text-slate-400 font-bold">{r.l}</span><span className="text-[13px] text-slate-900 dark:text-white font-extrabold">{r.v}</span></div>)}</div>
+              </SectionCard>
+              <SectionCard icon={<CreditCard size={20} className="text-amber-600 dark:text-amber-400" />} title="Payment Details" subtitle="Required to submit" accent="amber">
+                <FormField label="Mode of Payment">
+                  <div className="flex gap-2">{['Cash','UPI'].map(m=><button key={m} onClick={()=>{setPaymentMode(m as any);setSubmitError(null);}} className={`flex-1 py-3 rounded-[14px] text-[13px] font-black border-2 transition-transform active:scale-95 ${paymentMode===m?'border-amber-600 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300':'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>{m}</button>)}</div>
+                </FormField>
+                <FormField label="Bill Amount">
+                  <div className={`flex items-center gap-3 px-4 py-3 rounded-[14px] border bg-slate-50 dark:bg-slate-900 transition-colors ${!paymentMode&&submitError?'border-red-400':'border-slate-200 dark:border-slate-700 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500'}`}>
+                    <span className="text-[16px] font-black text-slate-400 dark:text-slate-500">₹</span>
+                    <input type="text" inputMode="numeric" value={billAmountInput} onChange={e=>handleBillAmountChange(e.target.value)} placeholder="0" className="flex-1 bg-transparent outline-none text-[16px] font-extrabold text-slate-900 dark:text-white placeholder:text-slate-300" />
+                  </div>
+                </FormField>
+              </SectionCard>
+              <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-4 rounded-[18px] flex items-center justify-center gap-2 text-white text-[15px] font-black shadow-lg shadow-teal-600/20 disabled:opacity-60 bg-teal-600 hover:bg-teal-700 transition-transform active:scale-[0.98]">
+                {createEvaluation.isPending?<><Loader2 size={20} className="animate-spin" /> Submitting…</>:<><Save size={20} /> Finalize & Start Session</>}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Navigation */}
-      <div className="px-4 py-3 shrink-0 flex flex-col gap-2 bg-white border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
-        {submitError&&<div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-[12px] text-red-700 font-bold flex items-center gap-2"><AlertTriangle size={14} />{submitError}</div>}
-        <div className="flex gap-3">
-          {step>0&&<button onClick={()=>{setSubmitError(null);setStep(step-1);}} className="flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-extrabold"><ChevronLeft size={16} />Back</button>}
-          {isPhotoUploaded&&step<totalSteps-1&&<button onClick={()=>{setSubmitError(null);setStep(totalSteps-1);}} className="px-3 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-extrabold">Skip to Payment</button>}
-          {step<totalSteps-1&&<button onClick={()=>{setSubmitError(null);setStep(step+1);}} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-white text-sm font-extrabold" style={{background:'linear-gradient(135deg,#2B7A78,#3AAFA9)'}}>Next<ChevronRight size={16} /></button>}
+      {/* Navigation Footer */}
+      <div className="fixed bottom-0 left-0 right-0 px-4 py-4 shrink-0 flex flex-col gap-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-50">
+        {submitError&&<div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2 shadow-sm"><AlertTriangle size={16} className="shrink-0" />{submitError}</div>}
+        <div className="flex gap-3 max-w-3xl mx-auto w-full">
+          {step>0&&<button onClick={()=>{setSubmitError(null);setStep(step-1);}} className="flex items-center justify-center gap-1.5 px-5 py-3.5 rounded-[16px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[14px] font-black transition-transform active:scale-95"><ChevronLeft size={18} strokeWidth={3} />Back</button>}
+          {isPhotoUploaded&&step<totalSteps-1&&<button onClick={()=>{setSubmitError(null);setStep(totalSteps-1);}} className="px-4 py-3.5 rounded-[16px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-[13px] font-extrabold transition-colors hover:bg-slate-50 dark:hover:bg-slate-800">Skip to End</button>}
+          {step<totalSteps-1&&<button onClick={()=>{setSubmitError(null);setStep(step+1);}} className="flex-1 flex items-center justify-center gap-1.5 py-3.5 rounded-[16px] text-white text-[14px] font-black shadow-md shadow-teal-600/20 bg-teal-600 hover:bg-teal-700 transition-transform active:scale-[0.98]">Next Step<ChevronRight size={18} strokeWidth={3} /></button>}
         </div>
       </div>
       <div className="md:hidden"><BottomNav role={currentRole} /></div>

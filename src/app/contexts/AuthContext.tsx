@@ -39,18 +39,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        const { data } = await axios.post<{
-          success: boolean;
-          data: { accessToken: string; user: AuthUser };
-        }>(
+        const response = await axios.post(
           `${BASE_URL}/auth/refresh`,
           {},
-          { withCredentials: true }
+          { 
+            withCredentials: true,
+            validateStatus: (status) => status < 500 // prevent throwing on 401
+          }
         );
-        setAccessToken(data.data.accessToken);
-        setUser(data.data.user);
-      } catch {
-        // No valid refresh token — user needs to log in
+        
+        if (response.status === 200 && response.data?.success) {
+          setAccessToken(response.data.data.accessToken);
+          setUser(response.data.data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        // Network errors or 500s
         setUser(null);
       } finally {
         setIsInitializing(false);
