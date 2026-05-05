@@ -7,13 +7,27 @@ import axios, {
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // ─── In-memory token store ─────────────────────────────────────────────────────
-let _accessToken: string | null = null; 
+let _accessToken: string | null = null;
+let _refreshToken: string | null = null;
 
 export const setAccessToken = (token: string | null): void => {
   _accessToken = token;
 };
 
+export const setRefreshToken = (token: string | null): void => {
+  _refreshToken = token;
+  if (token) {
+    localStorage.setItem('refreshToken', token);
+  } else {
+    localStorage.removeItem('refreshToken');
+  }
+};
+
 export const getAccessToken = (): string | null => _accessToken;
+
+export const getRefreshToken = (): string | null => {
+  return _refreshToken || localStorage.getItem('refreshToken');
+};
 
 // ─── Axios instance ────────────────────────────────────────────────────────────
 const api: AxiosInstance = axios.create({
@@ -75,9 +89,10 @@ api.interceptors.response.use(
       _isRefreshing = true;
 
       try {
+        const refreshToken = getRefreshToken();
         const { data } = await axios.post<{ success: boolean; data: { accessToken: string } }>(
           `${BASE_URL}/auth/refresh`,
-          {},
+          { refreshToken },
           { withCredentials: true }
         );
         const newToken = data.data.accessToken;
@@ -88,6 +103,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         setAccessToken(null);
+        setRefreshToken(null);
         // Let AuthContext handle the redirect — don't force window.location here
         return Promise.reject(refreshError);
       } finally {

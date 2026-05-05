@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import api, { setAccessToken } from '../../services/api';
+import api, { setAccessToken, setRefreshToken, getRefreshToken } from '../../services/api';
 import { ENDPOINTS } from '../../services/endpoints';
 import { queryClient } from '../../services/queryClient';
 
@@ -35,23 +35,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  // ── Restore session on mount via refresh-token cookie ─────────────────────
+  // ── Restore session on mount via refresh-token cookie or localStorage ──────
   useEffect(() => {
     const restoreSession = async () => {
       try {
+        const refreshToken = getRefreshToken();
         const { data } = await axios.post<{
           success: boolean;
           data: { accessToken: string; user: AuthUser };
         }>(
           `${BASE_URL}/auth/refresh`,
-          {},
+          { refreshToken },
           { withCredentials: true }
         );
-        setAccessToken(data.data.accessToken);
-        setUser(data.data.user);
-      } catch {
-        // No valid refresh token — user needs to log in
+        
+        if (response.status === 200 && response.data?.success) {
+          setAccessToken(response.data.data.accessToken);
+          setUser(response.data.data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        // Network errors or 500s
         setUser(null);
+        setRefreshToken(null);
       } finally {
         setIsInitializing(false);
       }
@@ -72,10 +79,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const { data } = await api.post<{
         success: boolean;
-        data: { accessToken: string; user: AuthUser };
+        data: { accessToken: string; refreshToken: string; user: AuthUser };
       }>(ENDPOINTS.AUTH.LOGIN, body);
 
       setAccessToken(data.data.accessToken);
+      setRefreshToken(data.data.refreshToken);
       setUser(data.data.user);
     } catch (err: unknown) {
       const msg =
@@ -90,11 +98,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await api.post(ENDPOINTS.AUTH.LOGOUT);
+      const refreshToken = getRefreshToken();
+      await api.post(ENDPOINTS.AUTH.LOGOUT, { refreshToken });
     } catch {
       // ignore logout API errors; clear local state regardless
     } finally {
       setAccessToken(null);
+      setRefreshToken(null);
       setUser(null);
       queryClient.clear();
     }

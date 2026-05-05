@@ -10,7 +10,7 @@ import { useExercisePlans } from '../../hooks/useExercisePlans';
 import {
   Calendar, FileText, Activity, ChevronRight,
   Clock, CheckCircle, Dumbbell, TrendingUp, User,
-  Zap, Heart, ArrowRight
+  Zap, Heart, ArrowRight, MapPin, Bell
 } from 'lucide-react';
 
 const quickActions = [
@@ -19,15 +19,14 @@ const quickActions = [
   { label: 'Profile', icon: User, path: '/patient/profile', color: 'text-orange-600', bg: 'bg-orange-100', gradient: 'from-orange-50 to-white' },
 ];
 
-// ── Skeleton block ─────────────────────────────────────────────────────────────
 function CardSkeleton() {
   return (
-    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm animate-pulse">
-      <div className="flex gap-3">
-        <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-700 shrink-0" />
-        <div className="flex-1 space-y-2">
-          <div className="h-3.5 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
-          <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded w-1/2" />
+    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[22px] p-5 shadow-sm animate-pulse">
+      <div className="flex gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 shrink-0" />
+        <div className="flex-1 space-y-2 py-1">
+          <div className="h-3.5 bg-slate-100 dark:bg-slate-800 rounded w-3/4" />
+          <div className="h-3 bg-slate-50 dark:bg-slate-800/50 rounded w-1/2" />
         </div>
       </div>
     </div>
@@ -35,17 +34,11 @@ function CardSkeleton() {
 }
 
 export function PatientDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-
-  // Patient ID — the logged-in user's ID is also their patient record ID
   const patientId = user?.patient_id ?? null;
 
-
-
-  // ── Live backend data ─────────────────────────────────────────────────────
   const { data: apptData, isLoading: apptLoading } = usePatientAppointments(patientId);
   const { data: evalData, isLoading: evalLoading } = useEvaluations({ patientId: patientId ?? undefined, limit: 10 });
   const { data: planData, isLoading: planLoading } = useExercisePlans(patientId);
@@ -54,339 +47,207 @@ export function PatientDashboard() {
   const evaluations = evalData?.data ?? [];
   const exercisePlans = planData?.data ?? [];
 
-  // ── Derived stats ─────────────────────────────────────────────────────────
   const upcomingAppointments = appointments.filter(
     (a) => a.status === 'pending' || a.status === 'confirmed'
   );
   const completedAppointments = appointments.filter((a) => a.status === 'completed').length;
   const totalEvaluations = evaluations.length;
-  const totalPlans = exercisePlans.length;
 
-  // Active plan exercises
-  const activePlan = exercisePlans[0]; // Most recent plan
+  const activePlan = exercisePlans[0];
   const exerciseItems = activePlan?.items ?? [];
 
   const stats = [
-    { label: 'Appointments', value: upcomingAppointments.length, icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50' },
-    { label: 'Reports', value: totalEvaluations, icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-    { label: 'Exercises', value: exerciseItems.length, icon: Activity, color: 'text-amber-500', bg: 'bg-amber-50' },
+    { label: 'Appointments', value: upcomingAppointments.length, icon: Calendar, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30' },
+    { label: 'Reports', value: totalEvaluations, icon: FileText, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30' },
+    { label: 'Exercises', value: exerciseItems.length, icon: Activity, color: 'text-amber-500 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/30' },
   ];
 
   const isLoading = apptLoading || evalLoading || planLoading;
-
   const firstName = user?.name?.split(' ')[0] || 'there';
-  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
-      <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
-        {/* Header Section */}
-        <div 
-          className="relative shrink-0 bg-gradient-to-br from-blue-900 to-blue-600 dark:from-slate-900 dark:to-slate-800"
-        >
-          {/* Subtle background decoration */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+      <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
+        
+        {/* ── Mobile-First Header ── */}
+        <div className="px-5 pt-10 pb-12 relative bg-gradient-to-br from-blue-700 to-indigo-600 dark:from-slate-900 dark:to-slate-800 rounded-b-[2rem] shadow-md z-10">
+          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+            <Activity size={140} className="text-white transform rotate-12" />
           </div>
           
-          <div className="px-6 pt-8 pb-12 max-w-5xl mx-auto relative z-30">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[11px] font-bold text-blue-100/80 mb-1 uppercase tracking-wider">{today}</p>
-                <h1 className="text-2xl font-extrabold text-white tracking-tight drop-shadow-sm">
-                  Hi, {firstName}! 👋
-                </h1>
-                <p className="text-sm text-blue-100 mt-1 font-medium">
-                  Your recovery is on track
-                </p>
-              </div>
-
+          <div className="flex items-center justify-between relative z-10 mb-6">
+            <div>
+              <p className="text-[12px] font-bold text-blue-200/80 mb-1 tracking-wider uppercase">My Recovery</p>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">
+                Hi, {firstName}! 👋
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md flex items-center justify-center transition-colors border border-white/20 shadow-sm"
+              >
+                <Bell size={20} className="text-white" />
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="px-6 max-w-5xl mx-auto w-full space-y-6 -mt-6 relative z-10">
-          {/* Recovery Progress - dynamic from evaluations */}
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 dark:text-white">Recovery Progress</span>
+        {/* ── Main Content Area ── */}
+        <div className="px-4 -mt-8 relative z-20 flex flex-col gap-5">
+          
+          {/* Recovery Progress Card */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg shadow-blue-900/5 border border-slate-100 dark:border-slate-800 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                </div>
+                <span className="text-[15px] font-extrabold text-slate-800 dark:text-slate-100">Recovery Progress</span>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 dark:bg-slate-700/50 rounded-full border border-slate-100 dark:border-slate-600">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                  {completedAppointments} session{completedAppointments !== 1 ? 's' : ''} completed
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 rounded-full">
+                <TrendingUp className="w-3 h-3 text-emerald-500" />
+                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                  {completedAppointments} session{completedAppointments !== 1 ? 's' : ''} done
                 </span>
               </div>
             </div>
-            <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-3">
+            <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-3">
               <div
                 className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-700"
                 style={{ width: `${Math.min((completedAppointments / Math.max(appointments.length, 1)) * 100, 100)}%` }}
               />
             </div>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500">
+            <p className="text-[12px] font-bold text-slate-400 dark:text-slate-500">
               {isLoading ? 'Loading...' : `${completedAppointments} of ${appointments.length} total sessions completed`}
             </p>
-          </div>
-
-          {/* Quick Actions & Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* Stats Row */}
-            <div className="flex gap-3">
-              {isLoading
-                ? Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 shadow-sm animate-pulse">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 mb-2 mx-auto" />
-                      <div className="h-5 bg-slate-100 dark:bg-slate-700 rounded w-1/2 mx-auto mb-1" />
-                      <div className="h-3 bg-slate-50 rounded w-3/4 mx-auto" />
-                    </div>
-                  ))
-                : stats.map((stat) => {
-                    const Icon = stat.icon;
-                    return (
-                      <div key={stat.label} className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center justify-center text-center">
-                        <div className={`p-2.5 rounded-xl ${stat.bg.replace('50', '50 dark:bg-slate-700')} mb-2`}>
-                          <Icon className={`w-5 h-5 ${stat.color}`} />
-                        </div>
-                        <span className="text-xl font-bold text-slate-900 dark:text-white">{stat.value}</span>
-                        <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">{stat.label}</span>
-                      </div>
-                    );
-                  })}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="flex gap-3">
-              {quickActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <button
-                    key={action.label}
-                    onClick={() => navigate(action.path)}
-                    className={`flex-1 flex flex-col items-center justify-center p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm bg-gradient-to-br ${action.gradient} dark:from-slate-800 dark:to-slate-800 hover:shadow-md transition-shadow`}
-                  >
-                    <div className={`p-2.5 rounded-xl ${action.bg} dark:bg-slate-700 mb-2`}>
-                      <Icon className={`w-5 h-5 ${action.color}`} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{action.label}</span>
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           {/* Book Appointment CTA */}
           <button
             onClick={() => navigate('/patient/appointment')}
-            className="w-full relative overflow-hidden bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors rounded-2xl p-5 shadow-lg shadow-emerald-600/20 flex items-center justify-between group"
+            className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-500 to-emerald-400 dark:from-emerald-700 dark:to-emerald-600 rounded-[22px] p-5 shadow-lg shadow-emerald-500/20 flex items-center justify-between active:scale-[0.98] transition-transform"
           >
-            <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+            <div className="absolute right-0 top-0 w-48 h-48 bg-white opacity-10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4" />
             <div className="flex items-center gap-4 relative z-10">
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+              <div className="w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-sm flex items-center justify-center">
                 <Calendar className="w-6 h-6 text-white" />
               </div>
               <div className="text-left">
-                <h3 className="text-lg font-bold text-white mb-0.5">Book Appointment</h3>
-                <p className="text-emerald-100 text-sm font-medium">Find & schedule a specialist</p>
+                <h3 className="text-[16px] font-black text-white mb-0.5 tracking-wide">Book Visit</h3>
+                <p className="text-emerald-50 text-[12px] font-semibold">Schedule next session</p>
               </div>
             </div>
-            <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm group-hover:translate-x-1 transition-transform relative z-10">
-              <ArrowRight className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-white/20 rounded-full backdrop-blur-sm flex items-center justify-center relative z-10">
+              <ChevronRight className="w-5 h-5 text-white" strokeWidth={3} />
             </div>
           </button>
 
-          {/* Two-column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {/* LEFT COLUMN */}
-            <div className="space-y-6">
-              
-              {/* Upcoming Appointments */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Upcoming Appointments</h3>
-                  <button onClick={() => navigate('/patient/appointment')} className="text-sm font-semibold text-blue-600 hover:text-blue-700">See All</button>
-                </div>
-                <div className="space-y-3">
-                  {apptLoading && <CardSkeleton />}
-                  {!apptLoading && upcomingAppointments.length === 0 && (
-                    <div className="text-center py-6">
-                      <Calendar className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">No upcoming appointments</p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Book one to get started</p>
-                    </div>
-                  )}
-                  {upcomingAppointments.slice(0, 3).map((appt) => (
-                    <div key={appt.id} className={`flex items-start gap-4 p-4 rounded-xl border ${appt.status === 'confirmed' ? 'border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-900/20' : 'border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50'}`}>
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                        <Calendar className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{appt.doctorName ?? 'Doctor'}</p>
-                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{appt.reason ?? 'Appointment'}</p>
-                        <div className="flex items-center gap-3 mt-3">
-                          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                              {new Date(appt.datetime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                              {new Date(appt.datetime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex shrink-0 items-center gap-1 ${appt.status === 'confirmed' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}>
-                        {appt.status === 'confirmed' ? '✓ Confirmed' : '⏳ Pending'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Quick Actions */}
+          <div className="grid grid-cols-3 gap-3">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={action.label}
+                  onClick={() => navigate(action.path)}
+                  className="flex flex-col items-center justify-center p-4 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 active:scale-95 transition-transform"
+                >
+                  <div className={`p-3 rounded-2xl ${action.bg} dark:bg-slate-800 mb-2`}>
+                    <Icon className={`w-5 h-5 ${action.color}`} />
+                  </div>
+                  <span className="text-[11px] font-extrabold text-slate-700 dark:text-slate-300">{action.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-              {/* Recent Evaluations (replaces fake "reports") */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Reports</h3>
-                  <button onClick={() => navigate('/patient/records')} className="text-sm font-semibold text-blue-600 hover:text-blue-700">See All</button>
-                </div>
-                <div className="space-y-3">
-                  {evalLoading && <CardSkeleton />}
-                  {!evalLoading && evaluations.length === 0 && (
-                    <div className="text-center py-6">
-                      <FileText className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">No evaluations yet</p>
-                    </div>
-                  )}
-                  {evaluations.slice(0, 3).map((evaluation) => {
-                    const typeColors: Record<string, { bg: string; color: string }> = {
-                      submitted: { bg: 'bg-blue-50 dark:bg-blue-900/30', color: 'text-blue-600 dark:text-blue-400' },
-                      reviewed: { bg: 'bg-teal-50 dark:bg-teal-900/30', color: 'text-teal-600 dark:text-teal-400' },
-                      draft: { bg: 'bg-purple-50 dark:bg-purple-900/30', color: 'text-purple-600 dark:text-purple-400' },
-                    };
-                    const tc = typeColors[evaluation.status] ?? typeColors.draft;
-                    return (
-                      <div key={evaluation.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-600 cursor-pointer">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tc.bg}`}>
-                          <FileText className={`w-5 h-5 ${tc.color}`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                            {evaluation.diagnosis ?? evaluation.chiefComplaints ?? 'Evaluation'}
-                          </p>
-                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-                            {new Date(evaluation.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </p>
-                        </div>
-                        <div className={`px-2.5 py-1 rounded-md text-[10px] font-bold ${tc.bg} ${tc.color} capitalize`}>
-                          {evaluation.status}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
+          {/* Active Exercise Plan */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-5 mt-2">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[15px] font-extrabold text-slate-900 dark:text-white">Today's Exercises</h3>
+              <button
+                onClick={() => navigate('/patient/exercise')}
+                className="text-[12px] font-bold text-blue-600 dark:text-blue-400"
+              >
+                View All
+              </button>
             </div>
 
-            {/* RIGHT COLUMN */}
-            <div className="space-y-6">
-              
-              {/* Active Exercise Plan */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Exercise Plan</h3>
-                  <button
-                    onClick={() => navigate('/patient/exercise')}
-                    className="text-sm font-semibold text-blue-600 hover:text-blue-700"
-                  >
-                    View Plan
-                  </button>
+            {planLoading && <CardSkeleton />}
+
+            {!planLoading && !activePlan && (
+              <div className="text-center py-6">
+                <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+                  <Dumbbell className="w-6 h-6 text-slate-300 dark:text-slate-600" />
                 </div>
+                <p className="text-[13px] font-bold text-slate-500 dark:text-slate-400">No plan assigned yet</p>
+              </div>
+            )}
 
-                {planLoading && (
-                  <div className="animate-pulse space-y-3">
-                    <div className="h-16 bg-slate-100 dark:bg-slate-700 rounded-xl" />
-                    <div className="h-8 bg-slate-100 dark:bg-slate-700 rounded-lg" />
-                    <div className="h-8 bg-slate-100 dark:bg-slate-700 rounded-lg" />
+            {!planLoading && activePlan && (
+              <div className="space-y-3">
+                {exerciseItems.slice(0, 3).map((ex) => (
+                  <div key={ex.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-[16px] border border-slate-100 dark:border-slate-800">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                      <CheckCircle className="w-4 h-4 text-slate-300 dark:text-slate-600" />
+                    </div>
+                    <span className="text-[14px] flex-1 text-slate-800 dark:text-slate-200 font-bold truncate">
+                      {ex.name}
+                    </span>
+                    <span className="px-2.5 py-1 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-[10px] font-black rounded-lg shadow-sm border border-slate-100 dark:border-slate-800">
+                      {ex.sets && ex.reps ? `${ex.sets} × ${ex.reps}` : ex.duration ?? '—'}
+                    </span>
                   </div>
-                )}
+                ))}
+              </div>
+            )}
+          </div>
 
-                {!planLoading && !activePlan && (
-                  <div className="text-center py-6">
-                    <Dumbbell className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">No exercise plan assigned</p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Your doctor will create one for you</p>
+          {/* Upcoming Appointments */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[15px] font-extrabold text-slate-900 dark:text-white">Upcoming Visits</h3>
+            </div>
+            
+            <div className="space-y-3">
+              {apptLoading && <CardSkeleton />}
+              
+              {!apptLoading && upcomingAppointments.length === 0 && (
+                <div className="text-center py-6">
+                  <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+                    <Calendar className="w-6 h-6 text-slate-300 dark:text-slate-600" />
                   </div>
-                )}
+                  <p className="text-[13px] font-bold text-slate-500 dark:text-slate-400">No upcoming visits</p>
+                </div>
+              )}
 
-                {!planLoading && activePlan && (
-                  <>
-                    <div className="mb-5 bg-purple-50/50 dark:bg-purple-900/10 rounded-xl p-4 border border-purple-100 dark:border-purple-900/50">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                            <Dumbbell className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-slate-900 dark:text-white">{activePlan.title}</p>
-                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-                              {activePlan.notes ?? `${exerciseItems.length} exercises`}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 bg-white dark:bg-slate-800 px-2 py-1 rounded-full border border-purple-100 dark:border-purple-900/50 shadow-sm">
-                          <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
-                          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{exerciseItems.length} items</span>
-                        </div>
+              {upcomingAppointments.slice(0, 3).map((appt) => (
+                <div key={appt.id} className="flex items-start gap-4 p-4 rounded-[20px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-blue-100/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-extrabold text-slate-900 dark:text-white truncate">{appt.doctorName ?? 'Consultation'}</p>
+                    <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">{appt.reason ?? 'General'}</p>
+                    <div className="flex items-center gap-2 mt-2.5">
+                      <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 px-2 py-1 rounded-md shadow-sm border border-slate-100 dark:border-slate-800">
+                        <Clock className="w-3 h-3 text-slate-400" />
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-300">
+                          {new Date(appt.datetime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                        </span>
                       </div>
                     </div>
-
-                    <div className="space-y-3">
-                      {exerciseItems.map((ex) => (
-                        <div key={ex.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 border-2 bg-white border-slate-300">
-                            <CheckCircle className="w-4 h-4 text-slate-300 dark:text-slate-600" />
-                          </div>
-                          <span className="text-sm flex-1 text-slate-700 dark:text-slate-200 font-semibold">
-                            {ex.name}
-                          </span>
-                          <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-bold rounded-md border border-slate-200 dark:border-slate-700">
-                            {ex.sets && ex.reps ? `${ex.sets} × ${ex.reps}` : ex.duration ?? '—'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Health Tip */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-slate-800 dark:to-slate-900/50 rounded-2xl border border-blue-100 dark:border-slate-700 p-5 relative overflow-hidden">
-                <div className="absolute right-0 top-0 w-24 h-24 bg-blue-500/5 dark:bg-blue-400/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3" />
-                <div className="flex items-center gap-2 mb-3 relative z-10">
-                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                    <Heart className="w-4 h-4 text-blue-600 dark:text-blue-400 fill-blue-600 dark:fill-blue-400" />
                   </div>
-                  <span className="text-xs font-bold tracking-wider text-blue-800 dark:text-blue-300">DAILY TIP</span>
                 </div>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed relative z-10">
-                  Stay consistent with your exercise plan. Even on low-energy days, light movement accelerates recovery significantly.
-                </p>
-              </div>
-
+              ))}
             </div>
           </div>
+
         </div>
       </div>
 
-      <div className="md:hidden shrink-0 border-t border-slate-200 bg-white">
+      <div className="md:hidden shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role="patient" />
       </div>
     </div>

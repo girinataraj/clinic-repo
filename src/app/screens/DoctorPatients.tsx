@@ -7,32 +7,23 @@ import { usePatients, useUpdatePatient } from '../../hooks/usePatients';
 import { useStaffUsers } from '../../hooks/useStaff';
 import { TreatmentDetailModal } from '../../features/patients/components/TreatmentDetailModal';
 import {
-  Activity,
-  ChevronRight,
-  FileText,
-  Flame,
-  HeartPulse,
-  Search,
-  Stethoscope,
-  Users,
-  UserPlus,
-  UserCog,
-  RefreshCw,
-  X,
+  Activity, ChevronRight, FileText, Flame, HeartPulse,
+  Search, Stethoscope, Users, UserPlus, UserCog,
+  RefreshCw, X, Eye
 } from 'lucide-react';
 
-const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  waiting:      { label: 'Waiting',     color: '#262842', bg: '#E8E9F1', dot: '#262842' },
-  'in-session': { label: 'In Session',  color: '#17252A', bg: '#E8E9F1', dot: '#3B3E66' },
-  completed:    { label: 'Completed',   color: '#FEFFFF', bg: '#3B3E66', dot: '#FEFFFF' },
+const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string; border: string }> = {
+  waiting:      { label: 'Waiting',     color: 'text-amber-700 dark:text-amber-300', bg: 'bg-amber-50 dark:bg-amber-900/30', dot: 'bg-amber-500', border: 'border-amber-100 dark:border-amber-900/40' },
+  'in-session': { label: 'In Session',  color: 'text-indigo-700 dark:text-indigo-300', bg: 'bg-indigo-50 dark:bg-indigo-900/30', dot: 'bg-indigo-500', border: 'border-indigo-100 dark:border-indigo-900/40' },
+  completed:    { label: 'Completed',   color: 'text-emerald-700 dark:text-emerald-300', bg: 'bg-emerald-50 dark:bg-emerald-900/30', dot: 'bg-emerald-500', border: 'border-emerald-100 dark:border-emerald-900/40' },
 };
 
 const avatarPalette = [
-  { bg: '#E0F2F1', color: '#004D40' },
-  { bg: '#E3F2FD', color: '#0D47A1' },
-  { bg: '#F3E5F5', color: '#4A148C' },
-  { bg: '#FFF3E0', color: '#E65100' },
-  { bg: '#F1F8E9', color: '#1B5E20' },
+  { bg: 'bg-cyan-100 dark:bg-cyan-900/40',   color: 'text-cyan-800 dark:text-cyan-300' },
+  { bg: 'bg-teal-100 dark:bg-teal-900/40',   color: 'text-teal-800 dark:text-teal-300' },
+  { bg: 'bg-indigo-100 dark:bg-indigo-900/40', color: 'text-indigo-800 dark:text-indigo-300' },
+  { bg: 'bg-blue-100 dark:bg-blue-900/40',   color: 'text-blue-800 dark:text-blue-300' },
+  { bg: 'bg-violet-100 dark:bg-violet-900/40', color: 'text-violet-800 dark:text-violet-300' },
 ];
 
 const getInitials = (name: string) => name.split(' ').map(p => p[0]).join('');
@@ -47,7 +38,6 @@ export function DoctorPatients() {
   const [assignPatient, setAssignPatient] = useState<{ id: string; name: string; therapistId?: string } | null>(null);
   const [assignTarget, setAssignTarget] = useState<string | null>(null);
 
-  // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
@@ -62,7 +52,7 @@ export function DoctorPatients() {
     if (isDesktop) {
       setSelectedPatientId(patientId);
     } else {
-      navigate(`/doctor/patient/${patientId}/treatment`);
+      navigate(`/doctor/patient/${patientId}`);
     }
   };
 
@@ -80,355 +70,209 @@ export function DoctorPatients() {
     return therapists.find((t) => t.id === therapistId)?.name ?? null;
   };
 
-  const firstName = (user?.name || 'Doctor').replace('Dr. ', '').split(' ')[0];
-  const today = new Date().toLocaleDateString('en-IN', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-  });
-
+  const actualName = user?.name === 'Dr. Rajesh Kumar' ? 'Dr. SV. Sathish Kumar' : (user?.name || 'Doctor');
+  const firstName = actualName.replace('Dr. ', '');
   const stats = {
     total: patientsData?.total ?? 0,
     active: patients.filter((p) => p.status === 'in-session').length,
     waiting: patients.filter((p) => p.status === 'waiting').length,
   };
 
-
   return (
-    <div className="flex flex-col h-full saai-page bg-[#E8E9F1] dark:bg-slate-950 font-sans">
-      <div className="flex-1 overflow-y-auto">
-        <div
-          className="relative z-50 overflow-visible rounded-b-3xl"
-          style={{
-            background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
-            color: 'white',
-            boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)',
-          }}
-        >
-
-          <div className="absolute inset-0 overflow-hidden rounded-b-3xl pointer-events-none">
-            <div className="absolute -right-16 -top-16 rounded-full opacity-10 bg-white w-[200px] h-[200px]" />
-            <div className="absolute left-10 bottom-10 rounded-full opacity-10 bg-white w-[100px] h-[100px]" />
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
+      <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
+        
+        {/* ── Mobile-First Header ── */}
+        <div className="px-5 pt-10 pb-12 relative bg-gradient-to-br from-[#1e1b4b] to-[#312e81] dark:from-slate-900 dark:to-slate-800 rounded-b-[2rem] shadow-md z-10">
+          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+            <Users size={120} className="text-white transform rotate-12" />
           </div>
-
-          <div className="max-w-6xl mx-auto px-5 pt-6 pb-10 saai-fade-up relative z-30">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="saai-kicker" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                  Doctor Console
-                </p>
-                <h1
-                  className="display-font"
-                  style={{ fontSize: '28px', fontWeight: 700, color: 'white', marginTop: '6px' }}
-                >
-                  Patient care board for Dr. {firstName}
-                </h1>
-                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '6px' }}>
-                  {today} - Sports physiotherapy
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <ThemeToggle />
-                <button
-                  onClick={() => navigate('/doctor/patient-form')}
-                  className="flex items-center gap-3 rounded-2xl px-4 py-3"
-                  style={{
-                    background: 'rgba(254,255,255,0.12)',
-                    color: '#FEFFFF',
-                    fontWeight: 700,
-                    border: '1px solid rgba(254,255,255,0.2)',
-                  }}
-                >
-                  <div
-                    className="flex items-center justify-center rounded-xl"
-                    style={{ width: '34px', height: '34px', background: 'rgba(254,255,255,0.2)' }}
-                  >
-                    <UserPlus size={18} />
-                  </div>
-                  Add patient
-                </button>
-                <button
-                  onClick={() => navigate('/doctor/exercise')}
-                  className="flex items-center gap-3 rounded-2xl px-4 py-3"
-                  style={{
-                    background: 'rgba(254,255,255,0.12)',
-                    color: '#FEFFFF',
-                    fontWeight: 700,
-                    border: '1px solid rgba(254,255,255,0.2)',
-                  }}
-                >
-                  <div
-                    className="flex items-center justify-center rounded-xl"
-                    style={{ width: '34px', height: '34px', background: 'rgba(254,255,255,0.2)' }}
-                  >
-                    <Stethoscope size={18} />
-                  </div>
-                  Create exercise plan
-                </button>
-              </div>
+          
+          <div className="flex items-center justify-between relative z-10 mb-6">
+            <div>
+              <p className="text-[12px] font-bold text-indigo-200/80 mb-1 tracking-wider uppercase">Patient Directory</p>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">
+                All Patients
+              </h1>
             </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
-              {[
-                { label: 'Total Patients', value: stats.total, icon: Users, theme: { bg: 'bg-blue-400/20', text: 'text-blue-100', icon: 'text-blue-200' } },
-                { label: 'In Session', value: stats.active, icon: Activity, theme: { bg: 'bg-indigo-400/20', text: 'text-indigo-100', icon: 'text-indigo-200' } },
-                { label: 'Waiting', value: stats.waiting, icon: HeartPulse, theme: { bg: 'bg-amber-400/20', text: 'text-amber-100', icon: 'text-amber-200' } },
-              ].map((card) => {
-                const Icon = card.icon;
-                return (
-                  <div
-                    key={card.label}
-                    className={`rounded-2xl px-4 py-3 border border-white/10 ${card.theme.bg}`}
-                  >
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <Icon size={16} className={card.theme.icon} />
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">{card.label}</p>
-                    </div>
-                    <p className={`text-2xl font-black ${card.theme.text}`}>{card.value}</p>
-                  </div>
-                );
-              })}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/doctor/patient-form')}
+                className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md flex items-center justify-center transition-colors border border-white/20 shadow-sm"
+              >
+                <UserPlus size={20} className="text-white" />
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 pb-8" style={{ marginTop: '-18px' }}>
-          <div className="grid grid-cols-1 xl:grid-cols-[2fr,1fr] gap-4">
-            <div className="flex flex-col gap-4">
-              <div className="saai-panel rounded-2xl p-4 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center">
-                  <div
-                    className="flex items-center gap-2 flex-1 rounded-2xl px-3 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800"
-                  >
-                    <Search size={16} color="#262842" />
-                    <input
-                      value={search}
-                      onChange={(event) => setSearch(event.target.value)}
-                      placeholder="Search patients or conditions"
-                      className="flex-1 outline-none bg-transparent py-2.5 text-[13px] text-[#17252A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    {([
-                      { key: 'all', label: 'All' },
-                      { key: 'waiting', label: 'Waiting' },
-                      { key: 'in-session', label: 'In session' },
-                      { key: 'completed', label: 'Completed' },
-                    ] as const).map((item) => (
-                      <button
-                        key={item.key}
-                        onClick={() => setStatusFilter(item.key)}
-                        className="rounded-xl px-3 py-2 transition-all duration-200"
-                        style={{
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          background: statusFilter === item.key ? '#3B3E66' : '#FEFFFF',
-                          color: statusFilter === item.key ? '#FEFFFF' : '#262842',
-                          border: `1px solid ${statusFilter === item.key ? '#3B3E66' : '#E8E9F1'}`,
-                        }}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+        {/* ── Main Content Area ── */}
+        <div className="px-4 -mt-8 relative z-20 flex flex-col gap-5">
 
-              <div className="flex items-center justify-between">
-                <h2 className="display-font text-[18px] font-bold text-[#17252A] dark:text-white">
-                  Patient list
-                </h2>
-                <p className="text-[12px] font-semibold text-[#262842] dark:text-slate-400">
-                  {isLoading ? '…' : `${patients.length} results`}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                {/* Loading skeleton */}
-                {isLoading && Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="saai-panel rounded-2xl p-4 animate-pulse bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
-                    <div className="flex gap-3">
-                      <div className="w-12 h-12 rounded-2xl shrink-0" style={{ background: '#E8E9F1' }} />
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 rounded" style={{ background: '#E8E9F1', width: '60%' }} />
-                        <div className="h-3 rounded" style={{ background: '#E8E9F1', width: '40%' }} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Error state */}
-                {isError && !isLoading && (
-                  <div className="col-span-2 rounded-2xl p-6 text-center bg-[#fff5f5] dark:bg-red-900/20 border border-[#fed7d7] dark:border-red-900/50">
-                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#c53030' }}>Failed to load patients</p>
-                    <p style={{ fontSize: '12px', color: '#e53e3e', marginTop: '6px' }}>Check your connection and try again.</p>
-                  </div>
-                )}
-
-                {/* Patient cards */}
-                {!isLoading && patients.map((patient, index) => {
-                  const status = statusConfig[patient.status] ?? statusConfig['waiting'];
-                  const avatar = avatarPalette[index % avatarPalette.length];
-
-                  return (
-                    <div
-                      key={patient.id}
-                      className="saai-panel rounded-2xl p-4 saai-stagger cursor-pointer hover:ring-2 hover:ring-teal-400/40 transition-all bg-white dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700"
-                      style={{ animationDelay: `${index * 70}ms` }}
-                      onClick={() => handlePatientClick(patient.id)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => e.key === 'Enter' && handlePatientClick(patient.id)}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className="flex items-center justify-center rounded-2xl shrink-0"
-                          style={{ width: '48px', height: '48px', background: avatar.bg, color: avatar.color, fontWeight: 800 }}
-                        >
-                          {getInitials(patient.name)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <div>
-                              <p className="display-font text-[15px] font-bold text-[#17252A] dark:text-white">
-                                {patient.name}
-                              </p>
-                              <p className="text-[12px] text-[#262842] dark:text-slate-400 mt-[2px]">
-                                {patient.condition ?? '—'} · {patient.age} yrs
-                              </p>
-                            </div>
-                            <span
-                              className="flex items-center gap-1 rounded-full px-2 py-0.5"
-                              style={{ background: status.bg, color: status.color, fontSize: '10px', fontWeight: 700 }}
-                            >
-                              <span style={{ width: '6px', height: '6px', borderRadius: '999px', background: status.dot }} />
-                              {status.label}
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            <span
-                              className="rounded-lg px-2 py-1 bg-[#E8E9F1] dark:bg-slate-800 text-[#17252A] dark:text-slate-200 text-[11px] font-bold"
-                            >
-                              {patient.displayId}
-                            </span>
-                            {patient.city && (
-                              <span
-                                className="rounded-lg px-2 py-1 bg-[#E8E9F1] dark:bg-slate-800 text-[#262842] dark:text-slate-300 text-[11px] font-semibold"
-                              >
-                                {patient.city}
-                              </span>
-                            )}
-                            {/* Therapist badge */}
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setAssignPatient({ id: patient.id, name: patient.name, therapistId: patient.therapistId }); setAssignTarget(null); }}
-                              className="flex items-center gap-1 rounded-lg px-2 py-1 transition-colors hover:opacity-80"
-                              style={{
-                                background: patient.therapistId ? '#e0f2fe' : '#fef3c7',
-                                color: patient.therapistId ? '#0369a1' : '#92400e',
-                                fontSize: '11px',
-                                fontWeight: 600,
-                                border: `1px solid ${patient.therapistId ? '#bae6fd' : '#fde68a'}`,
-                              }}
-                            >
-                              <UserCog size={11} />
-                              {getTherapistName(patient.therapistId) ?? 'Unassigned'}
-                              <RefreshCw size={9} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 mt-4">
-                        <button
-                          onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-colors bg-[#E8E9F1] dark:bg-slate-800 text-[#262842] dark:text-slate-200 text-[13px] font-semibold hover:bg-slate-200 dark:hover:bg-slate-700"
-                        >
-                          <FileText size={16} />
-                          View chart
-                        </button>
-                        <button
-                          onClick={() => navigate(`/doctor/patient/${patient.id}/exercise`)}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-shadow hover:shadow-md"
-                          style={{
-                            background: 'linear-gradient(135deg, #262842, #3B3E66)',
-                            color: '#FEFFFF',
-                            fontSize: '13px',
-                            fontWeight: 600,
-                          }}
-                        >
-                          <ChevronRight size={16} />
-                          Write Rx
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {!isLoading && !isError && patients.length === 0 && (
-                <div className="saai-panel rounded-2xl p-6 text-center bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
-                  <p className="display-font" style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>
-                    No patients found
-                  </p>
-                  <p style={{ fontSize: '12px', color: '#262842', marginTop: '6px' }}>
-                    Try adjusting your search or status filters.
-                  </p>
-                </div>
-              )}
+          {/* Search & Filter */}
+          <div className="bg-white dark:bg-slate-900 rounded-[22px] border border-slate-100 dark:border-slate-800 shadow-sm p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+              <Search className="w-5 h-5 text-slate-400 shrink-0" />
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search patients..."
+                className="flex-1 outline-none bg-transparent text-[14px] font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
+              />
             </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="saai-panel rounded-2xl p-4 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
-                <p className="saai-kicker text-[#262842] dark:text-slate-400">Care insights</p>
-                <p className="display-font text-[16px] font-bold text-[#17252A] dark:text-white mt-[6px]">
-                  Focus today
-                </p>
-                <div className="mt-4 flex flex-col gap-3">
-                  {[
-                    'Two patients need post session notes',
-                    'Review progress on gait training plans',
-                  ].map((item) => (
-                    <div
-                      key={item}
-                      className="rounded-xl px-3 py-2 bg-white dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700 text-[12px] font-semibold text-[#17252A] dark:text-white"
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="saai-panel rounded-2xl p-4 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
-                <p className="saai-kicker text-[#262842] dark:text-slate-400">Vitals overview</p>
-                <p className="display-font text-[16px] font-bold text-[#17252A] dark:text-white mt-[6px]">
-                  Session readiness
-                </p>
-                <div className="mt-4 flex flex-col gap-3">
-                  {[
-                    { label: 'In session now', value: `${stats.active} patient${stats.active !== 1 ? 's' : ''}`, color: '#3B3E66' },
-                    { label: 'Waiting', value: `${stats.waiting} patient${stats.waiting !== 1 ? 's' : ''}`, color: '#262842' },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="flex items-center justify-between rounded-xl px-3 py-2 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800"
-                    >
-                      <span className="text-[12px] font-semibold text-[#17252A] dark:text-white">{item.label}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: item.color }}>{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="flex overflow-x-auto gap-2 no-scrollbar">
+              {[
+                { key: 'all', label: `All (${stats.total})` },
+                { key: 'waiting', label: 'Waiting' },
+                { key: 'in-session', label: 'Active' },
+                { key: 'completed', label: 'Done' },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => setStatusFilter(item.key)}
+                  className={`whitespace-nowrap rounded-xl px-4 py-2 text-[12px] font-extrabold transition-all ${
+                    statusFilter === item.key
+                      ? 'bg-slate-900 dark:bg-indigo-500 text-white shadow-sm'
+                      : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-700'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
+          </div>
+
+          {/* Patient List Heading */}
+          <div className="flex items-center justify-between px-1">
+             <h3 className="text-[15px] font-extrabold text-slate-900 dark:text-white">Active Queue</h3>
+             <span className="text-[11px] font-bold text-slate-400 bg-slate-200/50 dark:bg-slate-800 px-2 py-1 rounded-lg">
+               {isLoading ? '…' : `${patients.length} listed`}
+             </span>
+          </div>
+
+          {/* Patient Cards */}
+          <div className="flex flex-col gap-3 pb-6">
+            {isLoading && Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-slate-900 rounded-[22px] border border-slate-100 dark:border-slate-800 shadow-sm p-4 animate-pulse">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 shrink-0" />
+                  <div className="flex-1 space-y-2 py-1">
+                    <div className="h-3.5 bg-slate-100 dark:bg-slate-800 rounded w-2/3" />
+                    <div className="h-3 bg-slate-50 dark:bg-slate-800/50 rounded w-1/3" />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {isError && !isLoading && (
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-[22px] border border-red-100 dark:border-red-900/50 p-6 text-center">
+                <p className="text-[14px] font-bold text-red-700 dark:text-red-400">Failed to load patients</p>
+                <p className="text-[12px] text-red-500 dark:text-red-500 mt-1">Check connection and try again.</p>
+              </div>
+            )}
+
+            {!isLoading && !isError && patients.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 bg-white dark:bg-slate-900 rounded-[22px] border border-slate-100 dark:border-slate-800 text-center px-6">
+                <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-4">
+                   <Users className="w-8 h-8 text-slate-300 dark:text-slate-600" />
+                </div>
+                <p className="text-[15px] font-extrabold text-slate-800 dark:text-slate-200">No patients found</p>
+                <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1.5">Adjust search or filters.</p>
+              </div>
+            )}
+
+            {!isLoading && patients.map((patient, index) => {
+              const status = statusConfig[patient.status] ?? statusConfig['waiting'];
+              const avatar = avatarPalette[index % avatarPalette.length];
+              const tName = getTherapistName(patient.therapistId);
+
+              return (
+                <div
+                  key={patient.id}
+                  className={`bg-white dark:bg-slate-900 rounded-[22px] border shadow-sm overflow-hidden flex flex-col active:scale-[0.99] transition-transform ${patient.status === 'in-session' ? 'border-indigo-500 dark:border-indigo-400 shadow-indigo-500/10' : 'border-slate-100 dark:border-slate-800'}`}
+                  onClick={() => handlePatientClick(patient.id)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div className="p-4 flex items-start gap-3.5">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 relative font-extrabold text-[15px] ${avatar.bg} ${avatar.color}`}>
+                      {getInitials(patient.name)}
+                      {patient.status === 'in-session' && (
+                        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-indigo-500 border-[2.5px] border-white dark:border-slate-900" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-[15px] font-extrabold text-slate-900 dark:text-white truncate pr-2">{patient.name}</p>
+                        <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider shrink-0 ${status.bg} ${status.color}`}>
+                          {status.label}
+                        </span>
+                      </div>
+                      <p className="text-[13px] text-slate-500 dark:text-slate-400 font-medium truncate">
+                        {patient.condition ?? '—'} · {patient.age} yrs
+                      </p>
+                      
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                        <span className="px-2 py-1 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg border border-slate-100 dark:border-slate-700">
+                          {patient.displayId}
+                        </span>
+                        {tName ? (
+                          <span className="flex items-center gap-1 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-[11px] font-bold rounded-lg border border-indigo-100 dark:border-indigo-800">
+                            <Stethoscope className="w-3 h-3" />
+                            {tName.split(' ')[0]}
+                          </span>
+                        ) : (
+                           <span className="flex items-center gap-1 px-2 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[11px] font-bold rounded-lg border border-amber-100 dark:border-amber-800">
+                            Unassigned
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-50 dark:border-slate-800 flex divide-x divide-slate-50 dark:divide-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                    <button
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setAssignPatient({ id: patient.id, name: patient.name, therapistId: patient.therapistId });
+                      }}
+                      className="flex-1 py-3.5 flex items-center justify-center gap-2 text-[12px] font-extrabold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      <UserCog size={15} />
+                      ASSIGN
+                    </button>
+                    <button
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        navigate(`/doctor/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`);
+                      }}
+                      className="flex-1 py-3.5 flex items-center justify-center gap-2 text-[12px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                    >
+                      <FileText size={15} />
+                      ASSESS
+                    </button>
+                    <button
+                      onClick={(e) => {
+                         e.stopPropagation();
+                         navigate(`/doctor/patient/${patient.id}`);
+                      }}
+                      className="w-16 py-3.5 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      <Eye size={16} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      <div className="md:hidden border-t border-[#E8E9F1] dark:border-slate-800 bg-white dark:bg-slate-900">
+      <div className="md:hidden shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role="doctor" />
       </div>
 
-      {/* Desktop Treatment Detail Modal */}
-      {selectedPatientId && (
+      {isDesktop && selectedPatientId && (
         <TreatmentDetailModal
           patientId={selectedPatientId}
           viewerRole={user?.role ?? 'doctor'}
@@ -436,85 +280,47 @@ export function DoctorPatients() {
         />
       )}
 
-      {/* Therapist Assignment Modal */}
       {assignPatient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-          <div className="w-full max-w-sm rounded-3xl p-5 bg-white dark:bg-slate-900 shadow-2xl dark:shadow-none border dark:border-slate-800">
-            <div className="flex items-center justify-between mb-3">
-              <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#17252A' }}>
-                {assignPatient.therapistId ? 'Reassign' : 'Assign'} Therapist
-              </h3>
-              <button onClick={() => { setAssignPatient(null); setAssignTarget(null); }} className="p-1 rounded-lg hover:bg-slate-100">
-                <X size={16} color="#64748b" />
-              </button>
-            </div>
-            <p style={{ fontSize: '11px', color: '#262842', marginBottom: '12px' }}>
-              Patient: <strong>{assignPatient.name}</strong>
-            </p>
-
-            {/* Current */}
-            {assignPatient.therapistId && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 bg-[#E8E9F1] dark:bg-teal-900/30 border border-[#b2dfdb] dark:border-teal-900/50">
-                <UserCog size={13} color="#262842" />
-                <span style={{ fontSize: '11px', fontWeight: 600, color: '#262842' }}>
-                  Current: {getTherapistName(assignPatient.therapistId) ?? 'Unknown'}
-                </span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={() => setAssignPatient(null)}>
+          <div className="bg-white dark:bg-slate-900 rounded-[28px] w-full max-w-sm overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white">Assign Therapist</h3>
+                <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1">{assignPatient.name}</p>
               </div>
-            )}
-
-            {/* Therapist list */}
-            <div className="flex flex-col gap-1.5 max-h-52 overflow-y-auto mb-4">
-              {therapists.length === 0 && (
-                <p className="text-center py-4 text-[11px] text-slate-400 font-semibold">No therapists found.</p>
-              )}
-              {therapists.map((t) => {
-                const isCurrent = assignPatient.therapistId === t.id;
-                const isSelected = assignTarget === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => !isCurrent && setAssignTarget(t.id)}
-                    disabled={isCurrent}
-                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors"
-                    style={{
-                      background: isSelected ? '#E8E9F1' : '#FEFFFF',
-                      border: isSelected ? '2px solid #3B3E66' : '1px solid #E8E9F1',
-                      opacity: isCurrent ? 0.4 : 1,
-                      cursor: isCurrent ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    <div className="rounded-lg flex items-center justify-center shrink-0" style={{ width: '30px', height: '30px', background: isSelected ? '#3B3E66' : '#E8E9F1' }}>
-                      <UserCog size={13} color={isSelected ? '#FEFFFF' : '#262842'} />
-                    </div>
-                    <div className="flex-1">
-                      <p style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{t.name}</p>
-                      <p style={{ fontSize: '10px', color: '#262842' }}>
-                        {isCurrent ? 'Currently assigned' : t.displayId}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex gap-2.5">
-              <button
-                onClick={() => { setAssignPatient(null); setAssignTarget(null); }}
-                className="flex-1 py-2.5 rounded-xl text-xs font-bold"
-                style={{ background: '#E8E9F1', color: '#262842' }}
-              >
-                Cancel
+              <button onClick={() => setAssignPatient(null)} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                <X size={20} className="text-slate-500" />
               </button>
+            </div>
+            <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
+              {therapists.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setAssignTarget(t.id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-2xl border transition-all ${assignTarget === t.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${assignTarget === t.id ? 'bg-indigo-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}`}>
+                    {getInitials(t.name)}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="text-[14px] font-bold text-slate-900 dark:text-white">{t.name}</p>
+                    <p className="text-[12px] text-slate-500 dark:text-slate-400">Therapist</p>
+                  </div>
+                </button>
+              ))}
+              {therapists.length === 0 && (
+                 <p className="text-center text-sm text-slate-500 py-4">No therapists found.</p>
+              )}
+            </div>
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
               <button
                 onClick={handleAssign}
-                disabled={!assignTarget || updatePatient.isPending}
-                className="flex-1 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50"
-                style={{ background: '#262842', color: '#FEFFFF' }}
+                disabled={!assignTarget || assignTarget === assignPatient.therapistId || updatePatient.isPending}
+                className="w-full py-3.5 rounded-[16px] font-bold text-[14px] bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 transition-colors"
               >
-                {updatePatient.isPending ? 'Saving…' : 'Confirm'}
+                {updatePatient.isPending ? 'Saving...' : 'Confirm Assignment'}
               </button>
             </div>
-            {updatePatient.isError && <p className="text-[11px] font-semibold text-red-600 text-center mt-2">Failed to assign. Try again.</p>}
           </div>
         </div>
       )}
