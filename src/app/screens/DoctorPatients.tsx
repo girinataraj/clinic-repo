@@ -98,7 +98,7 @@ export function DoctorPatients() {
     <div className="flex flex-col h-full saai-page bg-[#E8E9F1] dark:bg-slate-950 font-sans">
       <div className="flex-1 overflow-y-auto">
         <div
-          className="relative overflow-hidden rounded-b-3xl"
+          className="relative z-50 overflow-visible rounded-b-3xl"
           style={{
             background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
             color: 'white',
@@ -106,7 +106,12 @@ export function DoctorPatients() {
           }}
         >
 
-          <div className="max-w-6xl mx-auto px-5 pt-6 pb-10 saai-fade-up">
+          <div className="absolute inset-0 overflow-hidden rounded-b-3xl pointer-events-none">
+            <div className="absolute -right-16 -top-16 rounded-full opacity-10 bg-white w-[200px] h-[200px]" />
+            <div className="absolute left-10 bottom-10 rounded-full opacity-10 bg-white w-[100px] h-[100px]" />
+          </div>
+
+          <div className="max-w-6xl mx-auto px-5 pt-6 pb-10 saai-fade-up relative z-30">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="saai-kicker" style={{ color: 'rgba(255,255,255,0.6)' }}>
@@ -122,7 +127,8 @@ export function DoctorPatients() {
                   {today} - Sports physiotherapy
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <ThemeToggle />
                 <button
                   onClick={() => navigate('/doctor/patient-form')}
                   className="flex items-center gap-3 rounded-2xl px-4 py-3"
@@ -164,24 +170,21 @@ export function DoctorPatients() {
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
               {[
-                { label: 'Total patients', value: stats.total, icon: Users },
-                { label: 'In session', value: stats.active, icon: Activity },
-                { label: 'Waiting', value: stats.waiting, icon: HeartPulse },
+                { label: 'Total Patients', value: stats.total, icon: Users, theme: { bg: 'bg-blue-400/20', text: 'text-blue-100', icon: 'text-blue-200' } },
+                { label: 'In Session', value: stats.active, icon: Activity, theme: { bg: 'bg-indigo-400/20', text: 'text-indigo-100', icon: 'text-indigo-200' } },
+                { label: 'Waiting', value: stats.waiting, icon: HeartPulse, theme: { bg: 'bg-amber-400/20', text: 'text-amber-100', icon: 'text-amber-200' } },
               ].map((card) => {
                 const Icon = card.icon;
                 return (
                   <div
                     key={card.label}
-                    className="rounded-2xl px-4 py-3"
-                    style={{ background: 'rgba(254,255,255,0.12)', border: '1px solid rgba(254,255,255,0.12)' }}
+                    className={`rounded-2xl px-4 py-3 border border-white/10 ${card.theme.bg}`}
                   >
-                    <div className="flex items-center gap-2">
-                      <Icon size={16} color="#E8E9F1" />
-                      <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(254,255,255,0.7)' }}>{card.label}</p>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Icon size={16} className={card.theme.icon} />
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">{card.label}</p>
                     </div>
-                    <p className="display-font" style={{ fontSize: '24px', fontWeight: 700, color: '#FEFFFF', marginTop: '6px' }}>
-                      {card.value}
-                    </p>
+                    <p className={`text-2xl font-black ${card.theme.text}`}>{card.value}</p>
                   </div>
                 );
               })}

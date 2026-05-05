@@ -62,7 +62,7 @@ export function DoctorDashboard() {
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
       <div className="flex-1 overflow-y-auto">
         {/* Header */}
-        <div className="relative rounded-b-3xl bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-slate-900/10">
+        <div className="relative z-50 rounded-b-3xl bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-slate-900/10 overflow-visible">
           <div className="absolute inset-0 overflow-hidden rounded-b-3xl pointer-events-none">
             <div className="absolute -right-16 -top-16 rounded-full opacity-10 bg-white/10 w-[200px] h-[200px]" />
             <div className="absolute right-10 top-20 rounded-full opacity-20 bg-white/20 w-[80px] h-[80px]" />
@@ -83,6 +83,7 @@ export function DoctorDashboard() {
                 </p>
               </div>
               <div className="flex items-center gap-3 relative z-50">
+                <ThemeToggle />
 
                 {/* Profile Button */}
                 <div className="relative">
@@ -108,22 +109,29 @@ export function DoctorDashboard() {
         </div>
         </div>
 
-        <div className="px-5 pb-8 max-w-6xl mx-auto w-full relative z-10 -mt-10">
+        <div className="px-5 pb-8 max-w-6xl mx-auto w-full relative z-10 mt-6">
           {/* Stats */}
           <div className="flex gap-4 mb-6">
             {[
-              { label: "Today's Patients", value: patientsData?.total ?? 0, icon: Users },
-              { label: 'In Session', value: inSession, icon: Zap },
-              { label: 'Completed', value: completed, icon: CheckCircle },
+              { label: "Today's Patients", value: patientsData?.total ?? 0, icon: Users, color: 'indigo' },
+              { label: 'In Session', value: inSession, icon: Zap, color: 'blue' },
+              { label: 'Completed', value: completed, icon: CheckCircle, color: 'emerald' },
             ].map((s, i) => {
               const Icon = s.icon;
+              const colorClasses: Record<string, { icon: string; bg: string; text: string; darkBg: string }> = {
+                indigo: { icon: 'text-indigo-600', bg: 'bg-indigo-50', darkBg: 'dark:bg-indigo-900/30', text: 'text-indigo-600' },
+                blue: { icon: 'text-blue-600', bg: 'bg-blue-50', darkBg: 'dark:bg-blue-900/30', text: 'text-blue-600' },
+                emerald: { icon: 'text-emerald-600', bg: 'bg-emerald-50', darkBg: 'dark:bg-emerald-900/30', text: 'text-emerald-600' },
+              };
+              const theme = colorClasses[s.color];
+              
               return (
-                <div key={s.label} className="flex-1 rounded-2xl p-4 flex flex-col items-center justify-center transition-transform hover:-translate-y-1 duration-300 bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700">
-                  <div className="rounded-xl flex items-center justify-center mb-2 w-10 h-10 bg-slate-100 dark:bg-slate-700">
-                    <Icon size={20} className="text-slate-600 dark:text-slate-300" />
+                <div key={s.label} className="flex-1 rounded-2xl p-4 flex flex-col items-center justify-center transition-all hover:-translate-y-1 duration-300 bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className={`rounded-xl flex items-center justify-center mb-2.5 w-10 h-10 ${theme.bg} ${theme.darkBg}`}>
+                    <Icon size={20} className={theme.icon} />
                   </div>
-                  <span className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{s.value}</span>
-                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-1.5 text-center">{s.label}</span>
+                  <span className={`text-2xl font-black leading-none ${theme.text}`}>{s.value}</span>
+                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-2 uppercase tracking-wider text-center">{s.label}</span>
                 </div>
               );
             })}

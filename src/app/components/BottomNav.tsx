@@ -49,8 +49,8 @@ export function BottomNav({ role }: BottomNavProps) {
 
   return (
     <div
-      className="shrink-0 flex items-center bg-white dark:bg-slate-900 relative border-t border-slate-100 dark:border-slate-800 shadow-[0_-8px_24px_rgba(0,0,0,0.07)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.2)]"
-      style={{ height: '68px' }}
+      className="fixed bottom-0 left-0 right-0 z-[100] w-full flex items-center bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shadow-[0_-8px_24px_rgba(0,0,0,0.07)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.2)] pb-[env(safe-area-inset-bottom)]"
+      style={{ height: 'calc(68px + env(safe-area-inset-bottom))' }}
     >
       {items.map((item) => {
         const isDoctorPatientDetail =

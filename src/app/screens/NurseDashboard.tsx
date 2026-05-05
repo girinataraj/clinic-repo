@@ -72,9 +72,11 @@ export function NurseDashboard() {
 
         {/* ── Header ── */}
         <div
-          className="px-6 pt-8 pb-12 relative overflow-hidden bg-gradient-to-br from-teal-900 to-teal-600 dark:from-slate-900 dark:to-slate-800"
+          className="px-6 pt-8 pb-12 relative z-20 overflow-visible bg-gradient-to-br from-teal-900 to-teal-600 dark:from-slate-900 dark:to-slate-800"
         >
-          <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+          </div>
 
           <div className="max-w-5xl mx-auto relative z-10">
             {/* Top bar */}
