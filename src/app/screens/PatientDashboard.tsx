@@ -247,7 +247,7 @@ export function PatientDashboard() {
         </div>
       </div>
 
-      <div className="md:hidden shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <div className="md:hidden shrink-0 mt-auto sticky bottom-0 z-50 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <BottomNav role="patient" />
       </div>
     </div>
