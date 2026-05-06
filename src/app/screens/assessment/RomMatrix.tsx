@@ -6,21 +6,23 @@ import { Activity, ChevronDown, ChevronUp } from 'lucide-react';
 interface RomMatrixProps {
   data: RomData;
   onChange: (data: RomData) => void;
+  isDoctorRole?: boolean;
 }
 
-function RomInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+function RomInput({ value, onChange, placeholder, isDoctorRole }: { value: string; onChange: (v: string) => void; placeholder: string; isDoctorRole?: boolean }) {
+  const focusRing = isDoctorRole ? "focus:border-[#262842] focus:ring-[#262842]" : "focus:border-teal-500 focus:ring-1 focus:ring-teal-500";
   return (
     <input
       type="text"
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full text-center outline-none px-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors"
+      className={`w-full text-center outline-none px-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusRing} transition-colors`}
     />
   );
 }
 
-export function RomMatrix({ data, onChange }: RomMatrixProps) {
+export function RomMatrix({ data, onChange, isDoctorRole }: RomMatrixProps) {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [expandedJoint, setExpandedJoint] = useState<string | null>(null);
 
@@ -43,12 +45,19 @@ export function RomMatrix({ data, onChange }: RomMatrixProps) {
     setExpandedJoint(expandedJoint === label ? null : label);
   };
 
+  const accent = isDoctorRole ? "doctor" : "emerald";
+  const sectionActiveBg = isDoctorRole ? "bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-900/50" : "bg-emerald-50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/50";
+  const sectionActiveDot = isDoctorRole ? "bg-[#262842]" : "bg-emerald-500";
+  const sectionActiveText = isDoctorRole ? "text-[#262842] dark:text-indigo-400" : "text-emerald-800 dark:text-emerald-400";
+  const sectionActiveIcon = isDoctorRole ? "text-[#262842] dark:text-indigo-400" : "text-emerald-600 dark:text-emerald-500";
+  const chipBg = isDoctorRole ? "bg-indigo-100 dark:bg-indigo-900/30 text-[#262842] dark:text-indigo-400" : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400";
+
   return (
     <SectionCard
-      icon={<Activity size={20} className="text-emerald-600 dark:text-emerald-400" />}
+      icon={<Activity size={20} className={isDoctorRole ? "text-[#262842]" : "text-emerald-600 dark:text-emerald-400"} />}
       title="Muscle Power & ROM"
       subtitle="Range of Motion & Power assessment"
-      accent="emerald"
+      accent={accent}
     >
       <div className="flex flex-col gap-3">
         {ROM_CONFIG.map(section => {
@@ -61,18 +70,18 @@ export function RomMatrix({ data, onChange }: RomMatrixProps) {
                 onClick={() => toggleSection(section.label)}
                 className={`w-full px-4 py-3.5 flex items-center justify-between transition-colors ${
                   isSectionExpanded 
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-900/50' 
+                    ? sectionActiveBg 
                     : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <span className={`w-2 h-2 rounded-full ${isSectionExpanded ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
-                  <span className={`text-[14px] font-extrabold ${isSectionExpanded ? 'text-emerald-800 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                  <span className={`w-2 h-2 rounded-full ${isSectionExpanded ? sectionActiveDot : 'bg-slate-300 dark:bg-slate-600'}`} />
+                  <span className={`text-[14px] font-extrabold ${isSectionExpanded ? sectionActiveText : 'text-slate-800 dark:text-slate-200'}`}>
                     {section.label}
                   </span>
                 </div>
                 {isSectionExpanded ? (
-                  <ChevronUp size={18} className="text-emerald-600 dark:text-emerald-500" />
+                  <ChevronUp size={18} className={sectionActiveIcon} />
                 ) : (
                   <ChevronDown size={18} className="text-slate-400" />
                 )}
@@ -112,7 +121,7 @@ export function RomMatrix({ data, onChange }: RomMatrixProps) {
                           <span className="text-[13px] font-bold text-slate-800 dark:text-white">{joint.label}</span>
                           <div className="flex items-center gap-2">
                             {completed > 0 && (
-                              <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-black">
+                              <span className={`px-2 py-0.5 rounded-full ${chipBg} text-[10px] font-black`}>
                                 {completed}/{total}
                               </span>
                             )}
@@ -136,19 +145,19 @@ export function RomMatrix({ data, onChange }: RomMatrixProps) {
                                   <div className="grid grid-cols-4 gap-2">
                                     <div className="flex flex-col gap-1">
                                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">Pwr RT</span>
-                                      <RomInput value={entry.powerRt ?? ''} onChange={v => updateEntry(key, 'powerRt', v)} placeholder="—" />
+                                      <RomInput value={entry.powerRt ?? ''} onChange={v => updateEntry(key, 'powerRt', v)} placeholder="—" isDoctorRole={isDoctorRole} />
                                     </div>
                                     <div className="flex flex-col gap-1">
                                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">Pwr LT</span>
-                                      <RomInput value={entry.powerLt ?? ''} onChange={v => updateEntry(key, 'powerLt', v)} placeholder="—" />
+                                      <RomInput value={entry.powerLt ?? ''} onChange={v => updateEntry(key, 'powerLt', v)} placeholder="—" isDoctorRole={isDoctorRole} />
                                     </div>
                                     <div className="flex flex-col gap-1">
                                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">ROM RT</span>
-                                      <RomInput value={entry.romRt ?? ''} onChange={v => updateEntry(key, 'romRt', v)} placeholder="—" />
+                                      <RomInput value={entry.romRt ?? ''} onChange={v => updateEntry(key, 'romRt', v)} placeholder="—" isDoctorRole={isDoctorRole} />
                                     </div>
                                     <div className="flex flex-col gap-1">
                                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">ROM LT</span>
-                                      <RomInput value={entry.romLt ?? ''} onChange={v => updateEntry(key, 'romLt', v)} placeholder="—" />
+                                      <RomInput value={entry.romLt ?? ''} onChange={v => updateEntry(key, 'romLt', v)} placeholder="—" isDoctorRole={isDoctorRole} />
                                     </div>
                                   </div>
                                 </div>

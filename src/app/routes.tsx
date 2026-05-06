@@ -7,7 +7,8 @@ import { PatientDashboard } from './screens/PatientDashboard';
 import { PatientProfile } from './screens/PatientProfile';
 import { PatientRecords } from './screens/PatientRecords';
 import { AppointmentBooking } from './screens/AppointmentBooking';
-import { AssessmentForm } from './screens/assessment/AssessmentForm';
+import { TherapistAssessmentForm } from './screens/assessment/TherapistAssessmentForm';
+import { DoctorAssessmentForm } from './screens/assessment/DoctorAssessmentForm';
 import { NurseDashboard } from './screens/NurseDashboard';
 import { NursePatients } from './screens/NursePatients';
 import { NurseProfile } from './screens/NurseProfile';
@@ -73,7 +74,7 @@ export const router = createBrowserRouter([
             element: <RoleGuard allowed={['nurse']} />,
             children: [
               { path: 'nurse', Component: NurseDashboard },
-              { path: 'nurse/intake', Component: AssessmentForm },
+              { path: 'nurse/intake', Component: TherapistAssessmentForm },
               { path: 'nurse/patients', Component: NursePatients },
               { path: 'nurse/patient-form', Component: PatientForm },
               { path: 'nurse/patient/:id', Component: PatientDetailPage },
@@ -96,7 +97,7 @@ export const router = createBrowserRouter([
               { path: 'doctor/therapists', Component: TherapistHierarchy },
               { path: 'doctor/therapist/:id', Component: TherapistDetailPage },
               { path: 'doctor/patient-form', Component: PatientForm },
-              { path: 'doctor/intake', Component: AssessmentForm },
+              { path: 'doctor/intake', Component: DoctorAssessmentForm },
               { path: 'doctor/patient/:id', Component: PatientDetailPage },
               { path: 'doctor/patient/:patientId/treatment', Component: TreatmentDetailPage },
               { path: 'doctor/patient/:patientId/exercise', Component: ExercisePrescription },

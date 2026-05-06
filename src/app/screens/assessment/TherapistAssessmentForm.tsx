@@ -3,8 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
 import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEvaluations';
-import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
-import { useStaffUsers } from '../../../hooks/useStaff';
+import { usePatientByPhone, useCreatePatient, usePatient } from '../../../hooks/usePatients';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics } from './clinicalConfig';
 import { SectionCard, FormField, inputClass } from './FormComponents';
@@ -12,12 +11,12 @@ import { StepPatient, StepVitals, StepComplaints, StepPainFunction, StepHistory 
 import { RomMatrix } from './RomMatrix';
 import { AnthropometricSection } from './AnthropometricSection';
 
-export function AssessmentForm() {
+export function TherapistAssessmentForm() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const currentRole = (user?.role === 'doctor' ? 'doctor' : 'nurse') as 'nurse' | 'doctor';
+  const currentRole = 'nurse';
   const [searchParams] = useSearchParams();
-  const isDoctorRole = currentRole === 'doctor';
+  const isDoctorRole = false;
 
   // Phone lookup
   const [phoneInput, setPhoneInput] = useState(searchParams.get('phone') ?? '');
@@ -27,11 +26,8 @@ export function AssessmentForm() {
   const [showNewPatientForm, setShowNewPatientForm] = useState(false);
   const [newPatient, setNewPatient] = useState<{name:string;age:string;gender:'Male'|'Female'|'Other';condition:string}>({name:'',age:'',gender:'Male',condition:''});
 
-  const { data: foundPatient, isLoading: lookingUp, isError: lookupError } = usePatientByPhone(phoneToFetch.trim().length >= 7 ? phoneToFetch.trim() : null);
+  const { data: foundPatient, isLoading: lookingUp } = usePatientByPhone(phoneToFetch.trim().length >= 7 ? phoneToFetch.trim() : null);
   const createPatientMutation = useCreatePatient();
-  const updatePatientMutation = useUpdatePatient();
-  const { data: therapistsList = [], isLoading: therapistsLoading } = useStaffUsers({ role: 'nurse' });
-  const [selectedTherapistId, setSelectedTherapistId] = useState('');
   const { data: patientById } = usePatient(resolvedPatientId && !foundPatient ? resolvedPatientId : null);
 
   // Form state
@@ -61,22 +57,19 @@ export function AssessmentForm() {
   const [visitType, setVisitType] = useState<'Clinic'|'Home Visit'|'IP'|'Day Care'>('Clinic');
 
   // Follow-up
-  const { data: previousEval, isLoading: loadingPrevEval } = useLatestEvaluation(resolvedPatientId || null);
+  const { data: previousEval } = useLatestEvaluation(resolvedPatientId || null);
   const isFollowUp = Boolean(previousEval);
 
-  // Auto-fill effects
   useEffect(() => {
     if (patientById && !foundPatient && resolvedPatientId) {
       setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??''});
       setPhoneInput(patientById.phone??phoneToFetch);
-      if (patientById.therapistId) setSelectedTherapistId(patientById.therapistId);
     }
   }, [patientById, foundPatient, resolvedPatientId, phoneToFetch]);
 
   useEffect(() => {
     if (foundPatient && resolvedPatientId && resolvedPatientId === foundPatient.id) {
       setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??''});
-      if (foundPatient.therapistId) setSelectedTherapistId(foundPatient.therapistId);
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);
 
@@ -88,7 +81,7 @@ export function AssessmentForm() {
   const handleCreateNewPatient = async () => {
     if (!newPatient.name||!newPatient.age) return;
     try {
-      const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),condition:newPatient.condition||undefined,therapistId:isDoctorRole?(selectedTherapistId||undefined):(user?.id||undefined)});
+      const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),condition:newPatient.condition||undefined,therapistId:user?.id||undefined});
       setResolvedPatientId(created.id);
       setPatientInfo({name:created.name,age:String(created.age),phone:created.phone??phoneInput.trim(),gender:created.gender as any,address:created.city??''});
       setShowNewPatientForm(false); setStep(1);
@@ -98,6 +91,7 @@ export function AssessmentForm() {
   const handlePhotoChange = (e:ChangeEvent<HTMLInputElement>) => { const f=e.target.files?.[0]; if (!f) return; if (!f.type.startsWith('image/')) { setSubmitError('Please upload an image.'); return; } setSubmitError(null); setIntakePhoto(f); };
   const handlePhotoRemove = () => { setIntakePhoto(null); setPhotoInputKey(p=>p+1); };
   const formatRupees = (n:number) => new Intl.NumberFormat('en-IN').format(n);
+
   const handleBillAmountChange = (v:string) => { setSubmitError(null); const d=v.replace(/[^\d]/g,''); if (!d) { setBillAmount(null); setBillAmountInput(''); return; } const n=Number(d); setBillAmount(n); setBillAmountInput(formatRupees(n)); };
 
   const handleSave = async () => {
@@ -129,7 +123,7 @@ export function AssessmentForm() {
         anthropometrics: hasAnthro ? anthropometrics : undefined,
       });
       setSaved(true);
-      setTimeout(() => navigate(`/${currentRole}/session/${patientId}`), 2000);
+      setTimeout(() => navigate(`/${currentRole}/session/${resolvedPatientId}`), 2000);
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to save.'); }
   };
 
@@ -214,28 +208,15 @@ export function AssessmentForm() {
       </div>
 
       {/* Form content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full pb-20">
-        {/* Follow-up banner */}
-        {resolvedPatientId&&isFollowUp&&previousEval&&(
-          <div className="mb-5 p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
-            <div className="flex items-center gap-2 mb-3"><ClipboardList size={18} className="text-indigo-600 dark:text-indigo-400" /><span className="text-[14px] font-black text-indigo-900 dark:text-indigo-100">Follow-up Assessment</span><span className="ml-auto text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-1 rounded-md">Last: {new Date(previousEval.createdAt).toLocaleDateString()}</span></div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[12px]">
-              {previousEval.bp&&<p className="text-slate-700 dark:text-slate-300"><span className="font-bold text-slate-900 dark:text-white">BP:</span> {previousEval.bp}</p>}
-              {previousEval.painLevel!==undefined&&<p className="text-slate-700 dark:text-slate-300"><span className="font-bold text-slate-900 dark:text-white">Pain:</span> {previousEval.painLevel}/10</p>}
-              {previousEval.chiefComplaints&&<p className="col-span-2 text-slate-700 dark:text-slate-300"><span className="font-bold text-slate-900 dark:text-white">Complaints:</span> {previousEval.chiefComplaints}</p>}
-              {previousEval.diagnosis&&<p className="col-span-2 text-slate-700 dark:text-slate-300"><span className="font-bold text-slate-900 dark:text-white">Diagnosis:</span> {previousEval.diagnosis}</p>}
-            </div>
-          </div>
-        )}
-
+      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full pb-8">
         <div className="transition-all duration-300">
-          {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} selectedTherapistId={selectedTherapistId} setSelectedTherapistId={setSelectedTherapistId} therapistsList={therapistsList} therapistsLoading={therapistsLoading} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
-          {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} />}
-          {step===2&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} />}
-          {step===3&&<StepPainFunction painLevel={painLevel} setPainLevel={setPainLevel} funcRatings={funcRatings} setFuncRatings={setFuncRatings} />}
-          {step===4&&<RomMatrix data={romData} onChange={setRomData} />}
-          {step===5&&<AnthropometricSection data={anthropometrics} onChange={setAnthropometrics} />}
-          {step===6&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} />}
+          {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} resolvedPatientId={resolvedPatientId} user={user} />}
+          {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
+          {step===2&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} isDoctorRole={isDoctorRole} />}
+          {step===3&&<StepPainFunction painLevel={painLevel} setPainLevel={setPainLevel} funcRatings={funcRatings} setFuncRatings={setFuncRatings} isDoctorRole={isDoctorRole} />}
+          {step===4&&<RomMatrix data={romData} onChange={setRomData} isDoctorRole={isDoctorRole} />}
+          {step===5&&<AnthropometricSection data={anthropometrics} onChange={setAnthropometrics} isDoctorRole={isDoctorRole} />}
+          {step===6&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} />}
 
           {/* Step 7: Review & Payment */}
           {step===7&&(
@@ -256,7 +237,7 @@ export function AssessmentForm() {
                 <FormField label="Bill Amount">
                   <div className={`flex items-center gap-3 px-4 py-3 rounded-[14px] border bg-slate-50 dark:bg-slate-900 transition-colors ${!paymentMode&&submitError?'border-red-400':'border-slate-200 dark:border-slate-700 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500'}`}>
                     <span className="text-[16px] font-black text-slate-400 dark:text-slate-500">₹</span>
-                    <input type="text" inputMode="numeric" value={billAmountInput} onChange={e=>handleBillAmountChange(e.target.value)} placeholder="0" className="flex-1 bg-transparent outline-none text-[16px] font-extrabold text-slate-900 dark:text-white placeholder:text-slate-300" />
+                    <input type="text" inputMode="numeric" value={billAmountInput} onChange={e=>handleBillAmountChange(e.target.value)} placeholder="0" className="flex-1 bg-transparent outline-none text-[16px] font-extrabold text-slate-900 dark:text-white placeholder:text-slate-400" />
                   </div>
                 </FormField>
               </SectionCard>
@@ -266,17 +247,46 @@ export function AssessmentForm() {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Navigation Footer */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 py-4 shrink-0 flex flex-col gap-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-50">
-        {submitError&&<div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2 shadow-sm"><AlertTriangle size={16} className="shrink-0" />{submitError}</div>}
-        <div className="flex gap-3 max-w-3xl mx-auto w-full">
-          {step>0&&<button onClick={()=>{setSubmitError(null);setStep(step-1);}} className="flex items-center justify-center gap-1.5 px-5 py-3.5 rounded-[16px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[14px] font-black transition-transform active:scale-95"><ChevronLeft size={18} strokeWidth={3} />Back</button>}
-          {isPhotoUploaded&&step<totalSteps-1&&<button onClick={()=>{setSubmitError(null);setStep(totalSteps-1);}} className="px-4 py-3.5 rounded-[16px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-[13px] font-extrabold transition-colors hover:bg-slate-50 dark:hover:bg-slate-800">Skip to End</button>}
-          {step<totalSteps-1&&<button onClick={()=>{setSubmitError(null);setStep(step+1);}} className="flex-1 flex items-center justify-center gap-1.5 py-3.5 rounded-[16px] text-white text-[14px] font-black shadow-md shadow-teal-600/20 bg-teal-600 hover:bg-teal-700 transition-transform active:scale-[0.98]">Next Step<ChevronRight size={18} strokeWidth={3} /></button>}
+        {/* Navigation Buttons (Integrated) */}
+        <div className="mt-8 mb-6 flex flex-col gap-3">
+          {submitError && (
+            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2 shadow-sm">
+              <AlertTriangle size={16} className="shrink-0" />
+              {submitError}
+            </div>
+          )}
+          <div className="flex gap-3">
+            {step > 0 && (
+              <button
+                onClick={() => { setSubmitError(null); setStep(step - 1); }}
+                className="flex items-center justify-center gap-1.5 px-5 py-3.5 rounded-[16px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[14px] font-black transition-transform active:scale-95"
+              >
+                <ChevronLeft size={18} strokeWidth={3} />
+                Back
+              </button>
+            )}
+            {isPhotoUploaded && step < totalSteps - 1 && (
+              <button
+                onClick={() => { setSubmitError(null); setStep(totalSteps - 1); }}
+                className="px-4 py-3.5 rounded-[16px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-[13px] font-extrabold transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Skip to End
+              </button>
+            )}
+            {step < totalSteps - 1 && (
+              <button
+                onClick={() => { setSubmitError(null); setStep(step + 1); }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-3.5 rounded-[16px] text-white text-[14px] font-black shadow-md shadow-teal-600/20 bg-teal-600 hover:bg-teal-700 transition-transform active:scale-[0.98]"
+              >
+                Next Step
+                <ChevronRight size={18} strokeWidth={3} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
       <div className="md:hidden"><BottomNav role={currentRole} /></div>
     </div>
   );
