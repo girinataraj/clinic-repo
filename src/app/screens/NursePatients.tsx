@@ -88,14 +88,13 @@ export function NursePatients() {
 
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
-      <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
-        {/* Header */}
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden">
+
         <div
           className="px-6 pt-8 pb-12 relative z-20 shrink-0"
           style={{ background: 'linear-gradient(135deg, #0d2b27, #0f766e)' }}
         >
-          <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl pointer-events-none" />
 
           <div className="max-w-5xl mx-auto relative z-10">
             <div className="flex items-center justify-between">
@@ -135,6 +134,8 @@ export function NursePatients() {
           </div>
         </div>
 
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto min-h-0 pb-20 md:pb-6" style={{ scrollbarGutter: 'stable' }}>
         <div className="px-6 max-w-5xl mx-auto w-full mt-6">
           {/* Start new assessment CTA */}
           <div className="mb-5 flex flex-wrap gap-3">
@@ -240,7 +241,7 @@ export function NursePatients() {
                   return (
                     <div
                       key={patient.id}
-                      className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 cursor-pointer hover:ring-2 hover:ring-teal-400/40 dark:hover:ring-teal-500/40 transition-all"
+                      className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 cursor-pointer"
                       onClick={() => handlePatientClick(patient.id)}
                       role="button"
                       tabIndex={0}
@@ -397,12 +398,12 @@ export function NursePatients() {
                   </button>
                 </div>
               </div>
-            </div>
           </div>
+        </div>
         </div>
       </div>
 
-      <div className="md:hidden shrink-0 mt-auto sticky bottom-0 z-50 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+      <div className="md:hidden shrink-0 fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <BottomNav role="nurse" />
       </div>
 
