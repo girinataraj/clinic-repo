@@ -63,12 +63,12 @@ export function PatientProfile() {
       <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
         
         {/* ── Mobile-First Header ── */}
-        <div className="px-5 pt-10 pb-12 relative bg-gradient-to-br from-blue-700 to-indigo-600 dark:from-slate-900 dark:to-slate-800 rounded-b-[2rem] shadow-md z-10">
+        <div className="px-5 pt-10 pb-12 relative bg-gradient-to-br from-blue-700 to-indigo-600 dark:from-slate-900 dark:to-slate-800 rounded-b-[2rem] shadow-md z-30">
           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
             <User size={140} className="text-white transform rotate-12" />
           </div>
           
-          <div className="flex items-center justify-between relative z-10 mb-6">
+          <div className="flex items-center justify-between relative z-50 mb-6">
             <button
               onClick={() => navigate('/patient')}
               className="flex items-center justify-center rounded-xl w-11 h-11 bg-white/20 hover:bg-white/30 backdrop-blur-md transition-colors border border-white/20 shadow-sm"
@@ -134,18 +134,18 @@ export function PatientProfile() {
         </div>
 
         {/* ── Main Content Area ── */}
-        <div className="px-4 -mt-8 relative z-20 flex flex-col gap-5">
+        <div className="px-5 -mt-12 relative z-40 flex flex-col gap-5">
           
           {/* Stats bar */}
-          <div className="bg-white dark:bg-slate-900 rounded-[22px] border border-slate-100 dark:border-slate-800 p-4 flex gap-2 shadow-lg shadow-blue-900/5">
+          <div className="bg-white dark:bg-slate-900 rounded-[28px] p-2.5 flex gap-2.5 shadow-xl shadow-blue-900/5 border border-slate-100 dark:border-slate-800">
             {[
-              { label: 'Sessions', value: completedSessions, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-              { label: 'Reports', value: totalReports, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/20' },
-              { label: 'Exercises', value: exerciseCount, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+              { label: 'Sessions', value: completedSessions },
+              { label: 'Reports', value: totalReports },
+              { label: 'Exercises', value: exerciseCount },
             ].map((s) => (
-              <div key={s.label} className={`flex-1 flex flex-col items-center justify-center p-3 rounded-[16px] ${s.bg}`}>
-                <span className={`text-[20px] font-black ${s.color} leading-none mb-1`}>{s.value}</span>
-                <span className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{s.label}</span>
+              <div key={s.label} className="flex-1 flex flex-col items-center justify-center py-5 rounded-[22px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100/50 dark:border-slate-700/50">
+                <span className="text-[22px] font-black text-slate-900 dark:text-white leading-none mb-1.5">{s.value}</span>
+                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{s.label}</span>
               </div>
             ))}
           </div>

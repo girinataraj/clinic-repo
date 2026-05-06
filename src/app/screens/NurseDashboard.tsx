@@ -87,8 +87,7 @@ export function NurseDashboard() {
                 <p className="text-sm text-teal-100/80 mt-1">Physiotherapy Unit B · Morning Shift</p>
               </div>
               <div className="flex items-center gap-2 relative z-50">
-                {/* Theme toggle */}
-                <ThemeToggle />
+                {/* Profile Button */}
 
                 {/* Profile Button */}
                 <div className="relative">

@@ -61,7 +61,7 @@ export function NurseProfile() {
       <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
         {/* Header */}
         <div
-          className="relative overflow-hidden shrink-0 bg-gradient-to-br from-[#0d2b27] to-[#0f766e] dark:from-slate-900 dark:to-teal-950"
+          className="relative shrink-0 bg-gradient-to-br from-[#0d2b27] to-[#0f766e] dark:from-slate-900 dark:to-teal-950 z-30"
         >
           <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
@@ -69,7 +69,7 @@ export function NurseProfile() {
           <div className="flex items-center justify-between px-6 pt-6 pb-2 max-w-5xl mx-auto relative">
             <button
               onClick={() => navigate('/nurse')}
-              className="flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors w-9 h-9"
+              className="flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors w-11 h-11"
             >
               <ChevronLeft className="w-5 h-5 text-white" />
             </button>
@@ -78,7 +78,7 @@ export function NurseProfile() {
               <ThemeToggle />
               <button
                 onClick={handleEditToggle}
-                className={`flex items-center justify-center rounded-xl transition-colors w-9 h-9 ${editMode ? 'bg-amber-400/30' : 'bg-white/20 hover:bg-white/30'}`}
+                className={`flex items-center justify-center rounded-xl transition-colors w-11 h-11 ${editMode ? 'bg-amber-400/30' : 'bg-white/20 hover:bg-white/30'}`}
               >
                 <Edit3 className="w-4 h-4 text-white" />
               </button>
@@ -128,7 +128,7 @@ export function NurseProfile() {
           )}
         </div>
 
-        <div className="px-6 max-w-5xl mx-auto w-full space-y-5 -mt-4 relative z-10 pb-6">
+        <div className="px-6 max-w-5xl mx-auto w-full space-y-5 mt-4 relative z-10 pb-6">
           {/* Stats bar */}
           <div className="bg-white dark:bg-slate-800 border border-teal-100 dark:border-slate-700/60 rounded-2xl p-4 flex shadow-[0_8px_32px_rgba(15,118,110,0.1)] dark:shadow-none">
             {[

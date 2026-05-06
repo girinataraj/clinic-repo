@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useAuth } from './AuthContext';
 
 type Theme = 'light' | 'dark';
 
@@ -15,13 +16,23 @@ const ThemeContext = createContext<ThemeContextValue>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const role = user?.role || 'default';
+  const storageKey = `saai-theme-${role}`;
+
   const [theme, setThemeState] = useState<Theme>(() => {
     try {
-      return (localStorage.getItem('saai-theme') as Theme) || 'light';
+      return (localStorage.getItem(storageKey) as Theme) || 'light';
     } catch {
       return 'light';
     }
   });
+
+  // Sync theme with role changes
+  useEffect(() => {
+    const saved = localStorage.getItem(storageKey) as Theme;
+    setThemeState(saved || 'light');
+  }, [role, storageKey]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -30,8 +41,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('saai-theme', theme);
-  }, [theme]);
+    localStorage.setItem(storageKey, theme);
+  }, [theme, storageKey]);
 
   const setTheme = (t: Theme) => setThemeState(t);
   const toggleTheme = () => setThemeState(prev => prev === 'light' ? 'dark' : 'light');

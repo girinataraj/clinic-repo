@@ -83,7 +83,6 @@ export function DoctorDashboard() {
                 </p>
               </div>
               <div className="flex items-center gap-3 relative z-50">
-                <ThemeToggle />
                 {/* Profile Button */}
                 <div className="relative">
                   <button

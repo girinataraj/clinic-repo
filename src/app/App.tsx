@@ -9,13 +9,13 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <ThemeProvider>
           <ErrorBoundary>
             <RouterProvider router={router} />
           </ErrorBoundary>
-        </AuthProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

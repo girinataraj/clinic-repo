@@ -154,8 +154,8 @@ export function DoctorAssessmentForm() {
 
   return (
     <div className="flex flex-col h-full bg-[#E8E9F1] dark:bg-slate-950 font-sans">
-      {/* Header — Design based on user image but with Doctor theme */}
-      <div className="px-6 pb-8 shrink-0 pt-8 rounded-b-[2.5rem] bg-[#262842] dark:from-slate-900 dark:to-slate-800 shadow-xl shadow-indigo-950/20 z-10 relative overflow-hidden">
+      {/* Header — Design based on user image with Doctor Gradient */}
+      <div className="px-6 pb-8 shrink-0 pt-8 rounded-b-[2.5rem] bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-xl shadow-indigo-950/20 z-10 relative overflow-hidden">
         {/* Abstract background shapes for premium feel */}
         <div className="absolute right-0 top-0 w-80 h-80 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="absolute left-0 bottom-0 w-40 h-40 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />

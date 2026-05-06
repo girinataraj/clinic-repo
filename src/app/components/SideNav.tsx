@@ -164,11 +164,13 @@ export function SideNav() {
 
       {/* User Profile & Logout */}
       <div className="border-t border-slate-100 dark:border-slate-800 p-3">
-        {/* Theme toggle */}
-        <div className="flex items-center justify-between px-2 mb-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Theme</p>
-          <ThemeToggle />
-        </div>
+        {/* Theme toggle — Hidden for therapists and patients, only available on Profile */}
+        {role === 'admin' && (
+          <div className="flex items-center justify-between px-2 mb-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Theme</p>
+            <ThemeToggle />
+          </div>
+        )}
 
         <div className={`flex items-center gap-3 p-3 rounded-xl mb-2 border ${rc.activeBg} ${rc.activeBorder}`}>
           <div

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { BottomNav } from '../components/BottomNav';
 import { useAppConfigScope } from '../../hooks/useAppConfig';
 import { useCreateAppointment, useSlotAvailability } from '../../hooks/useAppointments';
@@ -61,17 +62,33 @@ function getNextFullHour(): number {
 }
 
 /** Background + text colors for slot status */
-function getSlotColors(status: string, isSelected: boolean) {
+function getSlotColors(status: string, isSelected: boolean, isDark: boolean) {
   if (isSelected) return { bg: '#2563eb', text: 'white', border: '#2563eb' };
   switch (status) {
     case 'green':
-      return { bg: '#dcfce7', text: '#166534', border: '#86efac' };
+      return { 
+        bg: isDark ? '#064e3b' : '#dcfce7', 
+        text: isDark ? '#34d399' : '#166534', 
+        border: isDark ? '#065f46' : '#86efac' 
+      };
     case 'orange':
-      return { bg: '#fff7ed', text: '#9a3412', border: '#fdba74' };
+      return { 
+        bg: isDark ? '#78350f' : '#fff7ed', 
+        text: isDark ? '#fbbf24' : '#9a3412', 
+        border: isDark ? '#92400e' : '#fdba74' 
+      };
     case 'red':
-      return { bg: '#fef2f2', text: '#991b1b', border: '#fca5a5' };
+      return { 
+        bg: isDark ? '#7f1d1d' : '#fef2f2', 
+        text: isDark ? '#f87171' : '#991b1b', 
+        border: isDark ? '#991b1b' : '#fca5a5' 
+      };
     default:
-      return { bg: 'white', text: '#475569', border: '#e2e8f0' };
+      return { 
+        bg: isDark ? '#1e293b' : 'white', 
+        text: isDark ? '#94a3b8' : '#475569', 
+        border: isDark ? '#334155' : '#e2e8f0' 
+      };
   }
 }
 
@@ -89,6 +106,8 @@ export function AppointmentBooking() {
   const { user } = useAuth();
   const { data: appointmentConfig } = useAppConfigScope('appointment');
   const createAppointment = useCreateAppointment();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -266,7 +285,7 @@ export function AppointmentBooking() {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full" style={{ background: '#f0f4ff' }}>
+      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full bg-blue-50/30 dark:bg-slate-900/40">
 
         {/* Loading patient */}
         {patientLoading && (
@@ -407,7 +426,7 @@ export function AppointmentBooking() {
                         const isFull = slot.status === 'red';
                         const disabled = pastSlot || isFull;
                         const isSelected = selectedSlot === slot.time;
-                        const colors = getSlotColors(slot.status, isSelected);
+                        const colors = getSlotColors(slot.status, isSelected, isDark);
 
                         return (
                           <button

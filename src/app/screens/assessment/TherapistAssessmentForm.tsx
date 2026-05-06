@@ -148,8 +148,8 @@ export function TherapistAssessmentForm() {
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
-      {/* Header */}
-      <div className="px-5 pb-5 shrink-0 pt-8 rounded-b-[2rem] bg-gradient-to-br from-[#0f766e] to-[#14b8a6] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden">
+      {/* Header — Design based on Dashboard Gradient */}
+      <div className="px-5 pb-5 shrink-0 pt-8 rounded-b-[2.5rem] bg-gradient-to-br from-[#134e4a] to-[#0d9488] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden">
         <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="flex items-center gap-4 mb-4 relative z-10">
           <button onClick={()=>{setSubmitError(null);step>0?setStep(step-1):navigate(`/${currentRole}`);}} className="flex items-center justify-center rounded-[14px] w-10 h-10 bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md border border-white/20">

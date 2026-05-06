@@ -88,7 +88,7 @@ export function DoctorProfile() {
           <div className="flex items-center justify-between px-6 pb-2 pt-8 relative z-30">
             <button
               onClick={() => navigate('/doctor')}
-              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 bg-white/15"
+              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-11 h-11 bg-white/15"
             >
               <ChevronLeft size={20} className="text-white" />
             </button>
@@ -97,7 +97,7 @@ export function DoctorProfile() {
               <ThemeToggle />
               <button
                 onClick={handleEditToggle}
-                className={`flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 ${editMode ? 'bg-amber-400/30' : 'bg-white/15'}`}
+                className={`flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-11 h-11 ${editMode ? 'bg-amber-400/30' : 'bg-white/15'}`}
               >
                 <Edit3 size={18} color={editMode ? '#fbbf24' : '#FEFFFF'} />
               </button>
@@ -165,7 +165,7 @@ export function DoctorProfile() {
         </div>
 
         {/* Stats bar */}
-        <div className="mx-5 -mt-6 rounded-2xl p-4 flex relative z-10 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md shadow-[0_8px_32px_rgba(38,40,66,0.12)] dark:shadow-none border border-slate-100 dark:border-slate-700">
+        <div className="mx-5 mt-4 rounded-2xl p-4 flex relative z-10 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md shadow-[0_8px_32px_rgba(38,40,66,0.12)] dark:shadow-none border border-slate-100 dark:border-slate-700">
           {[
             { label: 'Patients', value: patientsData?.total ?? '—', icon: Users, color: '#3B3E66' },
             { label: 'Today', value: '—', icon: Clock, color: '#262842' },

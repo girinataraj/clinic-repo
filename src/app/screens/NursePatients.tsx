@@ -108,7 +108,6 @@ export function NursePatients() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <ThemeToggle />
                 <button
                   onClick={() => navigate('/nurse/profile')}
                   className="p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 backdrop-blur-sm shadow-sm"
