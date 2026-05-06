@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const restoreSession = async () => {
       try {
         const refreshToken = getRefreshToken();
-        const { data } = await axios.post<{
+        const response = await axios.post<{
           success: boolean;
           data: { accessToken: string; user: AuthUser };
         }>(
