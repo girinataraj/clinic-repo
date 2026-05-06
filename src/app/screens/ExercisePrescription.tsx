@@ -414,7 +414,7 @@ function DoctorExerciseAssignments() {
                 </Button>
                 {canAssign && (
                   <Button 
-                    className="bg-white text-slate-900 hover:bg-slate-100"
+                    className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700"
                     onClick={handleAssign} 
                     disabled={assignMutation.isPending || removeMutation.isPending}
                   >

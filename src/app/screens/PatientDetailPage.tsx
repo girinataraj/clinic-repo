@@ -20,9 +20,7 @@ import {
 } from 'lucide-react';
 
 const funcLabels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
-const funcColors: Record<number, string> = { 0: '#3B3E66', 1: '#3B3E66', 2: '#262842', 3: '#262842', 4: '#17252A' };
-const painColors = ['#3B3E66', '#3B3E66', '#3B3E66', '#262842', '#262842', '#262842', '#17252A', '#17252A', '#17252A', '#17252A', '#17252A'];
-
+// Colors are now handled by classes, these are kept for reference or fallback logic if needed
 const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes', 'History'];
 
 export function PatientDetailPage() {
@@ -90,11 +88,11 @@ export function PatientDetailPage() {
     ? new Date(evaluation.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
     : '';
   const vitalsCards = [
-    { icon: '💓', label: 'Blood Pressure', value: evaluation?.bp ?? '-', color: '#3B3E66' },
-    { icon: '❤️', label: 'Pulse Rate', value: evaluation?.pr != null ? `${evaluation.pr} bpm` : '-', color: '#262842' },
-    { icon: '🫁', label: 'SpO2', value: evaluation?.spo2 != null ? `${evaluation.spo2}%` : '-', color: '#3B3E66' },
-    { icon: '🌡️', label: 'Temperature', value: evaluation?.temperature != null ? `${evaluation.temperature}°F` : '-', color: '#262842' },
-    { icon: '⚡', label: 'Ejection Fraction', value: evaluation?.ef != null ? `${evaluation.ef}%` : '-', color: '#3B3E66' },
+    { icon: '💓', label: 'Blood Pressure', value: evaluation?.bp ?? '-', color: 'text-[#3B3E66] dark:text-teal-400' },
+    { icon: '❤️', label: 'Pulse Rate', value: evaluation?.pr != null ? `${evaluation.pr} bpm` : '-', color: 'text-[#262842] dark:text-rose-400' },
+    { icon: '🫁', label: 'SpO2', value: evaluation?.spo2 != null ? `${evaluation.spo2}%` : '-', color: 'text-[#3B3E66] dark:text-blue-400' },
+    { icon: '🌡️', label: 'Temperature', value: evaluation?.temperature != null ? `${evaluation.temperature}°F` : '-', color: 'text-[#262842] dark:text-amber-400' },
+    { icon: '⚡', label: 'Ejection Fraction', value: evaluation?.ef != null ? `${evaluation.ef}%` : '-', color: 'text-[#3B3E66] dark:text-indigo-400' },
   ];
   const isLoading = patientLoading || evaluationLoading;
 

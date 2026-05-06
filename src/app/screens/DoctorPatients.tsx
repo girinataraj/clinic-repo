@@ -215,14 +215,10 @@ export function DoctorPatients() {
                       <button
                         key={item.key}
                         onClick={() => setStatusFilter(item.key)}
-                        className="rounded-xl px-3 py-2 transition-all duration-200"
-                        style={{
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          background: statusFilter === item.key ? '#3B3E66' : '#FEFFFF',
-                          color: statusFilter === item.key ? '#FEFFFF' : '#262842',
-                          border: `1px solid ${statusFilter === item.key ? '#3B3E66' : '#E8E9F1'}`,
-                        }}
+                        className={`rounded-xl px-3 py-2 transition-all duration-200 text-[12px] font-semibold border
+                          ${statusFilter === item.key 
+                            ? 'bg-[#3B3E66] text-white border-[#3B3E66]' 
+                            : 'bg-white dark:bg-slate-800 text-[#262842] dark:text-slate-300 border-[#E8E9F1] dark:border-slate-700'}`}
                       >
                         {item.label}
                       </button>
@@ -245,9 +241,9 @@ export function DoctorPatients() {
                 {isLoading && Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="saai-panel rounded-2xl p-4 animate-pulse bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
                     <div className="flex gap-3">
-                      <div className="w-12 h-12 rounded-2xl shrink-0" style={{ background: '#E8E9F1' }} />
+                      <div className="w-12 h-12 rounded-2xl shrink-0 bg-slate-100 dark:bg-slate-800" />
                       <div className="flex-1 space-y-2">
-                        <div className="h-4 rounded" style={{ background: '#E8E9F1', width: '60%' }} />
+                        <div className="h-4 rounded bg-slate-100 dark:bg-slate-800 w-[60%]" />
                         <div className="h-3 rounded" style={{ background: '#E8E9F1', width: '40%' }} />
                       </div>
                     </div>

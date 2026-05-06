@@ -150,8 +150,7 @@ export function NursePatients() {
             </button>
             <button
               onClick={() => navigate('/nurse/patient-form')}
-              className="flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-sm group w-full sm:w-auto transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
-              style={{ background: 'white', color: '#0f766e', fontWeight: 700, border: '1px solid #ccfbf1' }}
+              className="flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-sm group w-full sm:w-auto transition-colors bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-[#0f766e] dark:text-teal-400 font-bold border border-[#ccfbf1] dark:border-teal-900"
             >
               <div className="flex items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-900/30 w-8 h-8">
                 <UserPlus className="w-4 h-4 text-teal-600 dark:text-teal-400" />

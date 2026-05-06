@@ -66,7 +66,7 @@ export function NurseProfile() {
           <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
           {/* Top bar */}
-          <div className="flex items-center justify-between px-6 pt-6 pb-2 max-w-5xl mx-auto relative">
+          <div className="flex items-center justify-between px-6 pt-6 pb-2 max-w-5xl mx-auto relative z-50">
             <button
               onClick={() => navigate('/nurse')}
               className="flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors w-11 h-11"

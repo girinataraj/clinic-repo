@@ -218,12 +218,11 @@ export function TherapistHierarchy() {
                         <UserCog size={15} className={isExpanded ? 'text-white' : 'text-[#262842] dark:text-slate-300'} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#17252A' }} className="truncate">{node.name}</p>
-                        <p style={{ fontSize: '10px', color: '#262842' }}>{node.displayId} · {node.patients.length} patient{node.patients.length !== 1 ? 's' : ''}</p>
+                        <p className="text-[13px] font-bold text-[#17252A] dark:text-white truncate">{node.name}</p>
+                        <p className="text-[10px] text-[#262842] dark:text-slate-400">{node.displayId} · {node.patients.length} patient{node.patients.length !== 1 ? 's' : ''}</p>
                         <span
                           onClick={(e) => { e.stopPropagation(); navigate(`/doctor/therapist/${node.id}`); }}
-                          className="inline-block mt-1 cursor-pointer hover:underline"
-                          style={{ fontSize: '11px', fontWeight: 700, color: '#3B3E66' }}
+                          className="inline-block mt-1 cursor-pointer hover:underline text-[11px] font-bold text-[#3B3E66] dark:text-blue-400"
                         >
                           View Profile →
                         </span>
@@ -329,8 +328,8 @@ export function TherapistHierarchy() {
                       <UserCog size={13} className={isSelected ? 'text-white' : 'text-[#262842] dark:text-slate-300'} />
                     </div>
                     <div className="flex-1">
-                      <p style={{ fontSize: '12px', fontWeight: 600, color: '#17252A' }}>{t.name}</p>
-                      <p style={{ fontSize: '10px', color: isFull ? '#dc2626' : '#262842' }}>
+                      <p className="text-[12px] font-semibold text-[#17252A] dark:text-white">{t.name}</p>
+                      <p className={`text-[10px] ${isFull ? 'text-red-600' : 'text-[#262842] dark:text-slate-400'}`}>
                         {isCurrent ? 'Currently assigned' : `${node?.activeCount ?? 0} active`}
                       </p>
                     </div>

@@ -8,10 +8,10 @@ import {
   Phone, Clock, Eye, ClipboardList, FileText, Loader2,
 } from 'lucide-react';
 
-const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  waiting:      { label: 'Waiting',    color: '#262842', bg: '#E8E9F1', dot: '#262842' },
-  'in-session': { label: 'In Session', color: '#17252A', bg: '#E8E9F1', dot: '#3B3E66' },
-  completed:    { label: 'Completed',  color: '#FEFFFF', bg: '#3B3E66', dot: '#FEFFFF' },
+const statusConfig: Record<string, { label: string; color: string; darkColor: string; bg: string; darkBg: string; dot: string }> = {
+  waiting:      { label: 'Waiting',    color: 'text-[#262842]', darkColor: 'dark:text-amber-300',   bg: 'bg-[#E8E9F1]', darkBg: 'dark:bg-amber-900/30', dot: 'bg-[#262842]' },
+  'in-session': { label: 'In Session', color: 'text-[#17252A]', darkColor: 'dark:text-blue-300',    bg: 'bg-[#E8E9F1]', darkBg: 'dark:bg-blue-900/30',  dot: 'bg-[#3B3E66]' },
+  completed:    { label: 'Completed',  color: 'text-[#FEFFFF]', darkColor: 'dark:text-emerald-300', bg: 'bg-[#3B3E66]', darkBg: 'dark:bg-emerald-900/30', dot: 'bg-[#FEFFFF]' },
 };
 
 const getInitials = (name: string) => name.split(' ').map(p => p[0]).join('').toUpperCase();
@@ -66,7 +66,7 @@ export function TherapistDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ fontFamily: "'Inter', 'Poppins', sans-serif", backgroundColor: '#E8E9F1' }}>
+    <div className="flex flex-col h-full bg-[#E8E9F1] dark:bg-slate-950 font-sans">
       {/* Header */}
       <div
         className="px-5 pb-8 shrink-0 relative overflow-hidden"
@@ -115,23 +115,23 @@ export function TherapistDetailPage() {
         {/* Stats */}
         <div className="flex gap-3 mb-5">
           {[
-            { label: 'Patients', value: assignedPatients.length, icon: Users, bg: '#E8E9F1', iconColor: '#3B3E66' },
-            { label: 'Active', value: inSession, icon: Zap, bg: '#E8E9F1', iconColor: '#3B3E66' },
-            { label: 'Waiting', value: waiting, icon: Clock, bg: '#E8E9F1', iconColor: '#3B3E66' },
-            { label: 'Done', value: completed, icon: CheckCircle, bg: '#E8E9F1', iconColor: '#3B3E66' },
+            { label: 'Patients', value: assignedPatients.length, icon: Users },
+            { label: 'Active', value: inSession, icon: Zap },
+            { label: 'Waiting', value: waiting, icon: Clock },
+            { label: 'Done', value: completed, icon: CheckCircle },
           ].map(s => {
             const Icon = s.icon;
             return (
               <div
                 key={s.label}
-                className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center"
-                style={{ background: '#FEFFFF', boxShadow: '0 4px 16px rgba(23,37,42,0.06)', border: '1px solid #E8E9F1' }}
+                className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800"
+                style={{ boxShadow: '0 4px 16px rgba(23,37,42,0.06)' }}
               >
-                <div className="rounded-lg flex items-center justify-center mb-1.5" style={{ width: '32px', height: '32px', background: s.bg }}>
-                  <Icon size={16} color={s.iconColor} />
+                <div className="rounded-lg flex items-center justify-center mb-1.5 w-8 h-8 bg-[#E8E9F1] dark:bg-slate-800">
+                  <Icon size={16} className="text-[#3B3E66] dark:text-teal-400" />
                 </div>
-                <span style={{ fontSize: '20px', fontWeight: 800, color: '#17252A', lineHeight: 1 }}>{s.value}</span>
-                <span style={{ fontSize: '10px', color: '#262842', fontWeight: 600, marginTop: '4px' }}>{s.label}</span>
+                <span className="text-[20px] font-extrabold text-[#17252A] dark:text-white leading-none">{s.value}</span>
+                <span className="text-[10px] text-[#262842] dark:text-slate-400 font-bold mt-1">{s.label}</span>
               </div>
             );
           })}
@@ -139,20 +139,19 @@ export function TherapistDetailPage() {
 
         {/* Assigned patients */}
         <div className="flex items-center justify-between mb-3 px-1">
-          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#17252A' }}>Assigned Patients</h3>
+          <h3 className="text-[16px] font-bold text-[#17252A] dark:text-white">Assigned Patients</h3>
           <span
-            className="px-3 py-1 rounded-full"
-            style={{ fontSize: '11px', color: '#262842', fontWeight: 600, background: '#FEFFFF', border: '1px solid #E8E9F1' }}
+            className="px-3 py-1 rounded-full text-[11px] font-bold text-[#262842] dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800"
           >
             {assignedPatients.length} patient{assignedPatients.length !== 1 ? 's' : ''}
           </span>
         </div>
 
         {assignedPatients.length === 0 ? (
-          <div className="rounded-2xl p-8 text-center" style={{ background: '#FEFFFF', border: '1px solid #E8E9F1' }}>
-            <Users size={36} color="#E8E9F1" className="mx-auto mb-3" />
-            <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }}>No patients assigned</p>
-            <p style={{ fontSize: '12px', color: '#262842', marginTop: '4px' }}>
+          <div className="rounded-2xl p-8 text-center bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
+            <Users size={36} className="mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+            <p className="text-[14px] font-bold text-[#17252A] dark:text-white">No patients assigned</p>
+            <p className="text-[12px] text-[#262842] dark:text-slate-400 mt-[4px]">
               Assign patients from the Therapist Hierarchy page.
             </p>
           </div>
@@ -163,32 +162,25 @@ export function TherapistDetailPage() {
               return (
                 <div
                   key={patient.id}
-                  className="rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-                  style={{
-                    background: '#FEFFFF',
-                    boxShadow: '0 2px 12px rgba(23, 37, 42, 0.04)',
-                    border: `1px solid ${patient.status === 'in-session' ? '#3B3E66' : '#E8E9F1'}`,
-                  }}
+                  className={`rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md bg-white dark:bg-slate-900 border 
+                    ${patient.status === 'in-session' ? 'border-[#3B3E66] dark:border-slate-500 shadow-indigo-900/5' : 'border-[#E8E9F1] dark:border-slate-800'}`}
+                  style={{ boxShadow: '0 2px 12px rgba(23, 37, 42, 0.04)' }}
                 >
                   {/* Patient info */}
                   <div className="flex items-center gap-3 p-4">
-                    <div
-                      className="rounded-xl flex items-center justify-center shrink-0"
-                      style={{ width: '44px', height: '44px', background: '#E8E9F1' }}
-                    >
-                      <span style={{ fontSize: '15px', fontWeight: 700, color: '#262842' }}>{getInitials(patient.name)}</span>
+                    <div className="rounded-xl flex items-center justify-center shrink-0 w-11 h-11 bg-[#E8E9F1] dark:bg-slate-800">
+                      <span className="text-[15px] font-bold text-[#262842] dark:text-slate-300">{getInitials(patient.name)}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p style={{ fontSize: '14px', fontWeight: 700, color: '#17252A' }} className="truncate">{patient.name}</p>
-                          <p style={{ fontSize: '12px', color: '#262842', marginTop: '1px' }}>{patient.condition ?? '—'} · {patient.age} yrs</p>
+                          <p className="text-[14px] font-bold text-[#17252A] dark:text-white truncate">{patient.name}</p>
+                          <p className="text-[12px] text-[#262842] dark:text-slate-400 mt-[1px]">{patient.condition ?? '—'} · {patient.age} yrs</p>
                         </div>
                         <span
-                          className="px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shrink-0"
-                          style={{ background: config.bg, color: config.color, fontSize: '11px', fontWeight: 600 }}
+                          className={`px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shrink-0 text-[11px] font-semibold ${config.bg} ${config.darkBg} ${config.color} ${config.darkColor}`}
                         >
-                          <div className="rounded-full" style={{ width: '5px', height: '5px', background: config.dot }} />
+                          <div className={`rounded-full w-[5px] h-[5px] ${config.dot}`} />
                           {config.label}
                         </span>
                       </div>
@@ -197,37 +189,34 @@ export function TherapistDetailPage() {
 
                   {/* Info chips */}
                   <div className="flex gap-2 px-4 pb-3">
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg" style={{ background: '#E8E9F1' }}>
-                      <span style={{ fontSize: '10px', fontWeight: 600, color: '#262842' }}>🆔 {patient.displayId}</span>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#E8E9F1] dark:bg-slate-800">
+                      <span className="text-[10px] font-semibold text-[#262842] dark:text-slate-300">🆔 {patient.displayId}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg" style={{ background: '#E8E9F1' }}>
-                      <Phone size={10} color="#262842" />
-                      <span style={{ fontSize: '10px', fontWeight: 600, color: '#262842' }}>{patient.phone}</span>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#E8E9F1] dark:bg-slate-800">
+                      <Phone size={10} className="text-[#262842] dark:text-slate-400" />
+                      <span className="text-[10px] font-semibold text-[#262842] dark:text-slate-300">{patient.phone}</span>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex divide-x" style={{ borderTop: '1px solid #E8E9F1' }}>
+                  <div className="flex divide-x border-t border-[#E8E9F1] dark:border-slate-800">
                     <button
                       onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 transition-colors hover:bg-slate-50"
-                      style={{ color: '#262842', fontSize: '12px', fontWeight: 600 }}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 text-[12px] font-semibold text-slate-700 dark:text-slate-300"
                     >
                       <Eye size={14} />
                       View
                     </button>
                     <button
                       onClick={() => navigate(`/doctor/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 transition-colors hover:bg-slate-50"
-                      style={{ color: '#3B3E66', fontSize: '12px', fontWeight: 600 }}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-[12px] font-semibold text-indigo-600 dark:text-indigo-400"
                     >
                       <ClipboardList size={14} />
                       Assess
                     </button>
                     <button
                       onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 transition-colors hover:bg-slate-50"
-                      style={{ color: '#17252A', fontSize: '12px', fontWeight: 600 }}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 text-[12px] font-semibold text-[#17252A] dark:text-white"
                     >
                       <FileText size={14} />
                       Report

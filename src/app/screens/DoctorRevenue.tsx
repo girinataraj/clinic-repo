@@ -122,34 +122,16 @@ export function DoctorRevenue() {
                   onClick={() => setShowDropdown(false)}
                 />
                 <div
-                  style={{
-                    position: 'absolute', right: 0, top: 'calc(100% + 8px)',
-                    width: '180px', background: 'var(--tw-bg-opacity, #fff)' /* tailwind fallback */, borderRadius: '12px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                    border: '1px solid #e2e8f0', overflow: 'hidden', zIndex: 999,
-                  }}
+                  className="absolute right-0 top-[calc(100%+8px)] w-[180px] bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-[999]"
                 >
                   {FILTER_OPTIONS.map(opt => (
                     <button
                       key={opt.key}
                       onClick={() => { setActiveFilter(opt.key); setShowDropdown(false); }}
-                      style={{
-                        display: 'block', width: '100%', textAlign: 'left',
-                        padding: '11px 16px', border: 'none', cursor: 'pointer',
-                        fontSize: '13px',
-                        fontWeight: activeFilter === opt.key ? 700 : 500,
-                        color: activeFilter === opt.key ? '#262842' : '#334155',
-                        background: activeFilter === opt.key ? '#E8E9F1' : '#fff',
-                        transition: 'background 0.15s',
-                      }}
-                      onMouseEnter={e => {
-                        if (activeFilter !== opt.key)
-                          (e.currentTarget as HTMLButtonElement).style.background = '#f8fafc';
-                      }}
-                      onMouseLeave={e => {
-                        if (activeFilter !== opt.key)
-                          (e.currentTarget as HTMLButtonElement).style.background = '#fff';
-                      }}
+                      className={`block w-full text-left px-4 py-3 text-[13px] transition-colors
+                        ${activeFilter === opt.key 
+                          ? 'font-bold bg-slate-100 dark:bg-slate-700 text-[#262842] dark:text-white' 
+                          : 'font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
                     >
                       {opt.label}
                     </button>
@@ -204,18 +186,18 @@ export function DoctorRevenue() {
             </div>
 
             {/* Total Visits */}
-            <div style={{ borderRadius: '14px', padding: '20px', background: 'var(--tw-bg-opacity, #fff)' /* tailwind fallback */, border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
+            <div className="rounded-[14px] p-5 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-sm min-w-0">
               <div className="w-[38px] h-[38px] rounded-[10px] bg-[#E8E9F1] dark:bg-slate-800 flex items-center justify-center mb-3">
-                <Users size={18} color="#3B3E66" />
+                <Users size={18} className="text-[#3B3E66] dark:text-teal-400" />
               </div>
               <p className="text-[26px] font-bold text-[#17252A] dark:text-white leading-none">{totalVisits}</p>
               <p className="text-[12px] font-medium text-[#262842] dark:text-slate-400 mt-[6px]">Total Visits</p>
             </div>
 
             {/* Avg / Visit */}
-            <div style={{ borderRadius: '14px', padding: '20px', background: 'var(--tw-bg-opacity, #fff)' /* tailwind fallback */, border: '1px solid #E8E9F1', boxShadow: '0 2px 12px rgba(23,37,42,0.06)', minWidth: 0 }}>
+            <div className="rounded-[14px] p-5 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-sm min-w-0">
               <div className="w-[38px] h-[38px] rounded-[10px] bg-[#E8E9F1] dark:bg-slate-800 flex items-center justify-center mb-3">
-                <TrendingUp size={18} color="#3B3E66" />
+                <TrendingUp size={18} className="text-[#3B3E66] dark:text-teal-400" />
               </div>
               <p className="text-[26px] font-bold text-[#17252A] dark:text-white leading-none">
                 ₹{totalVisits > 0 ? Math.round(totalRevenue / totalVisits).toLocaleString('en-IN') : 0}
@@ -249,7 +231,7 @@ export function DoctorRevenue() {
                         </span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-[#E8E9F1] dark:bg-slate-800 overflow-hidden">
-                        <div style={{ height: '100%', borderRadius: '99px', width: `${pct}%`, background: 'linear-gradient(90deg, #262842, #3B3E66)', transition: 'width 0.6s ease' }} />
+                        <div style={{ height: '100%', borderRadius: '99px', width: `${pct}%`, background: 'linear-gradient(90deg, #262842, #3B3E66)', transition: 'width 0.6s ease' }} className="dark:from-teal-600 dark:to-teal-400" />
                       </div>
                     </div>
                   );
@@ -321,7 +303,12 @@ export function DoctorRevenue() {
                         <p className="text-[15px] font-extrabold text-[#262842] dark:text-white">
                           ₹{visit.amount.toLocaleString('en-IN')}
                         </p>
-                        <span style={{ fontSize: '10px', fontWeight: 700, background: mc.bg, color: mc.text, borderRadius: '99px', padding: '2px 8px', marginTop: '4px', display: 'inline-block' }}>
+                        <span 
+                          className={`text-[10px] font-bold rounded-full px-2 py-0.5 mt-1 inline-block
+                            ${visit.mode === 'UPI' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 
+                              visit.mode === 'Cash' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 
+                              'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'}`}
+                        >
                           {visit.mode}
                         </span>
                       </div>
