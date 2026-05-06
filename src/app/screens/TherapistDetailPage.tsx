@@ -66,7 +66,7 @@ export function TherapistDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#E8E9F1] dark:bg-slate-950 font-sans">
+    <div className="flex flex-col h-full w-full overflow-x-hidden bg-[#E8E9F1] dark:bg-slate-950 font-sans">
       {/* Header */}
       <div
         className="px-5 pb-8 shrink-0 relative overflow-hidden"
@@ -111,7 +111,7 @@ export function TherapistDetailPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-5 pb-8" style={{ marginTop: '-16px', position: 'relative', zIndex: 10 }}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 pb-8" style={{ marginTop: '-16px', position: 'relative', zIndex: 10 }}>
         {/* Stats */}
         <div className="flex gap-3 mb-5">
           {[

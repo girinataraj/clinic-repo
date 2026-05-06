@@ -57,11 +57,11 @@ export function NurseProfile() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans relative">
-      <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
+    <div className="flex flex-col h-full w-full overflow-x-hidden bg-slate-50 dark:bg-slate-950 font-sans relative">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-6">
         {/* Header */}
         <div
-          className="relative shrink-0 bg-gradient-to-br from-[#0d2b27] to-[#0f766e] dark:from-slate-900 dark:to-teal-950 z-30"
+          className="relative overflow-hidden shrink-0 bg-gradient-to-br from-[#0d2b27] to-[#0f766e] dark:from-slate-900 dark:to-teal-950 z-30"
         >
           <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
