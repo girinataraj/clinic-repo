@@ -48,6 +48,7 @@ export const ENDPOINTS = {
     DETAIL: (id: string) => `/appointments/${id}`,
     BY_PATIENT: (patientId: string) =>
       `/appointments?patientId=${patientId}&sort=datetime:asc`,
+    SLOT_AVAILABILITY: '/appointments/slot-availability',
   },
 
   EXERCISE_PLANS: {

@@ -3,6 +3,19 @@ import api from '../services/api';
 import { ENDPOINTS } from '../services/endpoints';
 import type { Appointment, AppointmentsListResponse } from '../types';
 
+// ─── Slot availability types ────────────────────────────────────────────────
+export interface SlotInfo {
+  time: string;
+  count: number;
+  status: 'green' | 'orange' | 'red';
+}
+
+export interface SlotAvailabilityResponse {
+  date: string;
+  therapistId: string;
+  slots: SlotInfo[];
+}
+
 type ApiEnvelope<T> = { success: boolean; data: T; meta?: { total: number; page: number; limit: number } };
 
 interface AppointmentsFilter {
@@ -92,5 +105,24 @@ export function useUpdateAppointment(appointmentId: string) {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       queryClient.invalidateQueries({ queryKey: ['appointments', 'patient', updated.patientId] });
     },
+  });
+}
+
+/**
+ * Fetch slot availability for a specific therapist on a given date.
+ * Returns the backend-computed slots with booking counts and green/orange/red status.
+ */
+export function useSlotAvailability(therapistId: string | null | undefined, date: string | null) {
+  return useQuery<SlotAvailabilityResponse>({
+    queryKey: ['slot-availability', therapistId, date],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<SlotAvailabilityResponse>>(
+        ENDPOINTS.APPOINTMENTS.SLOT_AVAILABILITY,
+        { params: { therapistId, date } }
+      );
+      return data.data;
+    },
+    enabled: Boolean(therapistId && date),
+    staleTime: 30_000, // refresh every 30s to pick up new bookings
   });
 }
