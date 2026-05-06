@@ -67,14 +67,14 @@ export function NurseDashboard() {
   const done = patients.filter((p) => p.status === 'completed').length;
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
-      <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden">
+
 
         {/* ── Header ── */}
         <div
-          className="px-6 pt-8 pb-12 relative z-20 bg-gradient-to-br from-teal-900 to-teal-600 dark:from-slate-900 dark:to-slate-800"
+          className="px-6 pt-8 pb-12 relative z-20 bg-gradient-to-br from-teal-900 to-teal-600 dark:from-slate-900 dark:to-slate-800 shrink-0"
         >
-          <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl pointer-events-none" />
 
           <div className="max-w-5xl mx-auto relative z-10">
             {/* Top bar */}
@@ -117,7 +117,8 @@ export function NurseDashboard() {
           </div>
         </div>
 
-        {/* ── Main content ── */}
+        {/* ── Main content ── scrollable area */}
+        <div className="flex-1 overflow-y-auto min-h-0 pb-20 md:pb-6" style={{ scrollbarGutter: 'stable' }}>
         <div className="px-6 max-w-5xl mx-auto w-full mt-6 space-y-5">
 
           {/* Quick Actions */}
@@ -134,13 +135,13 @@ export function NurseDashboard() {
                 <p className="text-sm font-extrabold text-white">New Intake</p>
                 <p className="text-xs text-white/70 mt-0.5">Start patient form</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/70 group-hover:translate-x-0.5 transition-transform shrink-0" />
+              <ChevronRight className="w-4 h-4 text-white/70 shrink-0" />
             </button>
 
             {/* Add Patient */}
             <button
               onClick={() => navigate('/nurse/patient-form')}
-              className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow"
+              className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
             >
               <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-900/40 flex items-center justify-center shrink-0">
                 <UserPlus className="w-5 h-5 text-teal-700 dark:text-teal-400" />
@@ -340,9 +341,9 @@ export function NurseDashboard() {
             </div>
           )}
         </div>
-      </div>
+        </div>
 
-      <div className="md:hidden shrink-0 mt-auto sticky bottom-0 z-50 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+      <div className="md:hidden shrink-0 fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <BottomNav role="nurse" />
       </div>
     </div>

@@ -143,16 +143,14 @@ export function SideNav() {
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
-              className={`flex items-center gap-3 w-full text-left transition-all rounded-xl px-3 py-2.5 border ${
-                active
+              className={`flex items-center gap-3 w-full text-left transition-all rounded-xl px-3 py-2.5 border ${active
                   ? `${rc.activeBg} ${rc.activeBorder}`
                   : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/60'
-              }`}
+                }`}
             >
               <div
-                className={`flex items-center justify-center rounded-xl shrink-0 transition-all ${
-                  !active ? 'bg-slate-100 dark:bg-slate-800' : ''
-                }`}
+                className={`flex items-center justify-center rounded-xl shrink-0 transition-all ${!active ? 'bg-slate-100 dark:bg-slate-800' : ''
+                  }`}
                 style={{ width: '34px', height: '34px', background: active ? rc.iconColor : undefined }}
               >
                 <Icon size={17} color={active ? '#FEFFFF' : '#64748b'} strokeWidth={active ? 2.5 : 1.8} />
@@ -203,4 +201,4 @@ export function SideNav() {
       </div>
     </div>
   );
-}
+}
