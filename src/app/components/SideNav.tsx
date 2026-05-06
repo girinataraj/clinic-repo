@@ -202,5 +202,4 @@ export function SideNav() {
         </p>
       </div>
     </div>
-  );
-}
+  )
