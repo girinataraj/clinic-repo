@@ -4,7 +4,7 @@ import type { UserRole } from '../contexts/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import {
   Home, Calendar, FileText, User, Users, ClipboardList, BarChart2,
-  Activity, LogOut, Sparkles, ChevronRight, IndianRupee, UserCog,
+  Activity, LogOut, ChevronRight, IndianRupee, UserCog,
 } from 'lucide-react';
 
 interface NavItem {
@@ -114,16 +114,14 @@ export function SideNav() {
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-100 dark:border-slate-800">
         <div
-          className="flex items-center justify-center relative shrink-0"
-          style={{ width: '40px', height: '40px', borderRadius: '12px', background: rc.gradient, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+          className="shrink-0 overflow-hidden"
+          style={{ width: '42px', height: '42px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
         >
-          <Activity size={20} color="#FEFFFF" strokeWidth={2.5} />
-          <div
-            className="absolute -bottom-1 -right-1 flex items-center justify-center rounded-full"
-            style={{ width: '14px', height: '14px', background: '#10b981', border: '2px solid white' }}
-          >
-            <Sparkles size={7} color="#FEFFFF" />
-          </div>
+          <img
+            src="/SAAI-logo.png"
+            alt="SAAI Physiotherapy Clinic"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
         </div>
         <div>
           <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">SAAI Physio</p>

@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import type { UserRole } from '../contexts/AuthContext';
 import {
-  Eye, EyeOff, Mail, Lock, Activity, Phone,
+  Eye, EyeOff, Mail, Lock, Phone,
   ChevronRight, UserCheck, HeartPulse, Stethoscope,
-  Sparkles, CheckCircle, Shield, Users, Star, AlertCircle,
+  CheckCircle, Shield, Users, Star, AlertCircle,
 } from 'lucide-react';
 
 interface RoleOption {
@@ -120,21 +120,18 @@ export function LoginScreen() {
         <div className="px-10 pt-12">
           <div className="flex items-center gap-4 mb-10">
             <div
-              className="flex items-center justify-center relative"
+              className="overflow-hidden shrink-0"
               style={{
                 width: '56px', height: '56px',
                 borderRadius: '18px',
-                background: 'white',
                 boxShadow: '0 16px 40px rgba(0,0,0,0.3)',
               }}
             >
-              <Activity size={28} color="#2563eb" strokeWidth={2.5} />
-              <div
-                className="absolute -bottom-1.5 -right-1.5 flex items-center justify-center rounded-full"
-                style={{ width: '20px', height: '20px', background: '#10b981', border: '2px solid white' }}
-              >
-                <Sparkles size={10} color="white" />
-              </div>
+              <img
+                src="/SAAI-logo.png"
+                alt="SAAI Physiotherapy Clinic"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             </div>
             <div>
               <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>
@@ -218,19 +215,17 @@ export function LoginScreen() {
           <div className="absolute -right-12 -top-12 rounded-full opacity-10"
             style={{ width: '140px', height: '140px', background: 'white' }} />
           <div
-            className="flex items-center justify-center mb-4 relative"
+            className="overflow-hidden mb-4"
             style={{
-              width: '72px', height: '72px', background: 'white',
+              width: '72px', height: '72px',
               borderRadius: '22px', boxShadow: '0 16px 40px rgba(0,0,0,0.3)',
             }}
           >
-            <Activity size={36} color="#2563eb" strokeWidth={2.5} />
-            <div
-              className="absolute -bottom-1.5 -right-1.5 flex items-center justify-center rounded-full"
-              style={{ width: '22px', height: '22px', background: '#10b981', border: '2px solid white' }}
-            >
-              <Sparkles size={11} color="white" />
-            </div>
+            <img
+              src="/SAAI-logo.png"
+              alt="SAAI Physiotherapy Clinic"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
           </div>
           <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'white', textAlign: 'center', letterSpacing: '-0.5px' }}>
             SAAI Physiotherapy
