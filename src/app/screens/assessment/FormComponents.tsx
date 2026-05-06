@@ -11,7 +11,7 @@ export function SectionCard({ icon, title, subtitle, children, accent = 'teal' }
 }) {
   const bg = accent === 'teal' ? 'bg-teal-50 dark:bg-teal-900/30' : accent === 'rose' ? 'bg-rose-50 dark:bg-rose-900/30' : accent === 'blue' ? 'bg-blue-50 dark:bg-blue-900/30' : accent === 'amber' ? 'bg-amber-50 dark:bg-amber-900/30' : accent === 'fuchsia' ? 'bg-fuchsia-50 dark:bg-fuchsia-900/30' : accent === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-900/30' : accent === 'orange' ? 'bg-orange-50 dark:bg-orange-900/30' : 'bg-slate-50 dark:bg-slate-900/30';
   return (
-    <div className="rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+    <div className="rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
       <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-800">
         <div className={`rounded-xl flex items-center justify-center w-9 h-9 ${bg} shrink-0`}>{icon}</div>
         <div>
@@ -61,7 +61,7 @@ export function MultiSelectDropdown({ options, selected, onChange, placeholder, 
   const hoverBg = accent === 'fuchsia' ? 'hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/20' : accent === 'blue' ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'hover:bg-teal-50 dark:hover:bg-teal-900/20';
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref}>
       {selected.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-2">
           {selected.map(item => (
@@ -72,13 +72,14 @@ export function MultiSelectDropdown({ options, selected, onChange, placeholder, 
           ))}
         </div>
       )}
-      <div onClick={() => setOpen(!open)} className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 cursor-pointer ${open ? 'border-teal-400 ring-1 ring-teal-400' : 'hover:border-slate-300'} transition-colors`}>
+      <div className="relative">
+        <div onClick={() => setOpen(!open)} className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 cursor-pointer ${open ? 'border-teal-400 ring-1 ring-teal-400' : 'hover:border-slate-300'} transition-colors`}>
         <Search size={13} className="text-slate-400 shrink-0" />
-        <input value={search} onChange={e => { setSearch(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)} placeholder={placeholder ?? `Search… (${selected.length} selected)`} className="flex-1 bg-transparent outline-none text-[12px] text-slate-800 dark:text-white placeholder:text-slate-400" />
+        <input value={search} onChange={e => { setSearch(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)} onClick={e => e.stopPropagation()} placeholder={placeholder ?? `Search… (${selected.length} selected)`} className="flex-1 bg-transparent outline-none text-[12px] text-slate-800 dark:text-white placeholder:text-slate-400" />
         <ChevronDown size={12} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </div>
-      {open && (
-        <div className="absolute z-30 left-0 right-0 mt-1 max-h-44 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl">
+        {open && (
+          <div className="absolute z-30 left-0 right-0 bottom-full mb-1 max-h-44 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl">
           {filtered.length === 0 && <p className="px-3 py-3 text-[11px] text-slate-400 text-center font-semibold">No results</p>}
           {filtered.map(item => {
             const isSelected = selected.includes(item);
@@ -93,7 +94,8 @@ export function MultiSelectDropdown({ options, selected, onChange, placeholder, 
             );
           })}
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
