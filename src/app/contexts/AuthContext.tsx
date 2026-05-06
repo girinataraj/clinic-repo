@@ -52,6 +52,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (response.status === 200 && response.data?.success) {
           setAccessToken(response.data.data.accessToken);
           setUser(response.data.data.user);
+          // ── Capture and save the rotated refresh token for cross-domain resilience ──
+          if ((response.data.data as any).refreshToken) {
+            setRefreshToken((response.data.data as any).refreshToken);
+          }
         } else {
           setUser(null);
         }

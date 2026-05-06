@@ -90,13 +90,19 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = getRefreshToken();
-        const { data } = await axios.post<{ success: boolean; data: { accessToken: string } }>(
+        const { data } = await axios.post<{ success: boolean; data: { accessToken: string; refreshToken?: string } }>(
           `${BASE_URL}/auth/refresh`,
           { refreshToken },
           { withCredentials: true }
         );
         const newToken = data.data.accessToken;
+        const newRefreshToken = data.data.refreshToken;
+
         setAccessToken(newToken);
+        if (newRefreshToken) {
+          setRefreshToken(newRefreshToken);
+        }
+
         processQueue(null, newToken);
         original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
