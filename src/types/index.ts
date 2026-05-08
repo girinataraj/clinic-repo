@@ -75,6 +75,7 @@ export interface Evaluation {
   functionalScores?: Record<string, unknown>;
   // Clinical text
   diagnosis?: string;
+  diagnosisList?: string[];
   plan?: string;
   management?: string;
   chiefComplaints?: string;
@@ -101,6 +102,7 @@ export interface EvaluationsListResponse {
 
 export interface UpdateEvaluationPayload {
   diagnosis?: string;
+  diagnosisList?: string[];
   plan?: string;
   management?: string;
   bp?: string;
@@ -134,6 +136,7 @@ export interface CreateEvaluationPayload {
   };
   painLevel?: number;
   diagnosis?: string;
+  diagnosisList?: string[];
   plan?: string;
   management?: string;
   chiefComplaints?: string;

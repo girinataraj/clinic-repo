@@ -147,6 +147,87 @@ export function calcWHRatio(waist: string, hip: string): string {
   return (w / h).toFixed(2);
 }
 
+// ── Diagnosis Options ─────────────────────────────────────────────────────────
+
+export const DIAGNOSIS_OPTIONS: string[] = [
+  'Cervical spondylosis',
+  'Cervical disc disease',
+  'Cervical facet joint arthritis',
+  'Cervical root radiculopathy',
+  'Trapezitis',
+  'Rhomboids trigger',
+  'Shoulder impingement syndrome',
+  'Post traumatic shoulder',
+  'Sub-acromial bursitis',
+  'Sub-deltoid bursitis',
+  'Supraspinatus tendinitis',
+  'Rotator cuff tendinitis',
+  'Tennis elbow',
+  "Golfer's elbow",
+  'Carpal tunnel syndrome',
+  'Trigger finger',
+  "De Quervain's disease",
+  'Mechanical back pain',
+  'Sacroiliac syndrome / strain',
+  'Piriformis syndrome',
+  'Quadratus lumborum syndrome',
+  'Lumbar spondylosis',
+  'Lumbar disc disease',
+  'Lumbar radiculopathy (sciatica)',
+  'Lumbar canal stenosis',
+  'IT band syndrome',
+  'Hip osteoarthritis',
+  'Osteoarthritis (knee)',
+  'Ligament injuries – ACL / PCL / meniscal / LCL / MCL',
+  'Patellofemoral arthritis',
+  'Ankle sprain',
+  'Plantar fasciitis',
+  'Metatarsalgia',
+];
+
+/**
+ * Maps a Chief Complaint keyword to relevant diagnosis indices (0-based)
+ * within DIAGNOSIS_OPTIONS. Used to sort related diagnoses to the top.
+ */
+export const COMPLAINT_DIAGNOSIS_RELEVANCE: Record<string, number[]> = {
+  'NECK':        [0, 1, 2, 3, 4, 5],
+  'SHOULDER':    [6, 7, 8, 9, 10, 11],
+  'ELBOW':       [12, 13],
+  'WRIST':       [14, 15, 16],
+  'UPPER BACK':  [4, 5],
+  'LOWER BACK':  [17, 18, 19, 20, 21, 22, 23, 24],
+  'HIP':         [19, 25, 26],
+  'GLUTEALS':    [19, 18],
+  'THIGH':       [25],
+  'KNEE':        [27, 28, 29],
+  'ANKLE':       [30],
+  'FOOT':        [31, 32],
+};
+
+/**
+ * Returns diagnosis options sorted so that complaint-relevant items appear first.
+ */
+export function getSortedDiagnoses(chiefComplaints: string[]): string[] {
+  if (chiefComplaints.length === 0) return DIAGNOSIS_OPTIONS;
+
+  const relevantIndices = new Set<number>();
+  for (const cc of chiefComplaints) {
+    const indices = COMPLAINT_DIAGNOSIS_RELEVANCE[cc];
+    if (indices) indices.forEach(i => relevantIndices.add(i));
+  }
+
+  if (relevantIndices.size === 0) return DIAGNOSIS_OPTIONS;
+
+  const relevant: string[] = [];
+  const rest: string[] = [];
+  DIAGNOSIS_OPTIONS.forEach((d, i) => {
+    if (relevantIndices.has(i)) relevant.push(d);
+    else rest.push(d);
+  });
+
+  return [...relevant, ...rest];
+}
+
 // ── Clinical Examination — complaint-driven tests ─────────────────────────────
 
 export type TestResult = 'Positive' | 'Negative' | 'Not Tested';

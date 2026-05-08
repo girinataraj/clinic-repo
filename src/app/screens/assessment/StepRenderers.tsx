@@ -1,6 +1,6 @@
 import { type ChangeEvent } from 'react';
 import { SectionCard, FormField, inputClass, doctorInputClass, MultiSelectDropdown, ToggleChip } from './FormComponents';
-import { CHIEF_COMPLAINT_OPTIONS, ASSOCIATED_SYMPTOM_OPTIONS, MEDICAL_HISTORY_OPTIONS, FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS } from './clinicalConfig';
+import { CHIEF_COMPLAINT_OPTIONS, ASSOCIATED_SYMPTOM_OPTIONS, MEDICAL_HISTORY_OPTIONS, FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS, DIAGNOSIS_OPTIONS, COMPLAINT_DIAGNOSIS_RELEVANCE, getSortedDiagnoses } from './clinicalConfig';
 import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown, Stethoscope, FileSearch, PenTool } from 'lucide-react';
 import { ClinicalExamination } from './ClinicalExamination';
 
@@ -243,19 +243,51 @@ export function StepExamination({ examination, setExamination, isDoctorRole, chi
 
 
 // ── Step 6: Diagnosis ─────────────────────────────────────────────────────────
-export function StepDiagnosis({ diagnosis, setDiagnosis, isDoctorRole }: any) {
+export function StepDiagnosis({ diagnosis, setDiagnosis, isDoctorRole, selectedDiagnoses, setSelectedDiagnoses, chiefComplaints }: any) {
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const accent = isDoctorRole ? 'doctor' : 'fuchsia';
   const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-fuchsia-600';
 
+  // Sort diagnosis options: complaint-relevant first
+  const sortedOptions = getSortedDiagnoses(chiefComplaints ?? []);
+  const complaints: string[] = chiefComplaints ?? [];
+
+  // Compute which options are "relevant" to highlight the divider
+  const relevantSet = new Set<string>();
+  if (complaints.length > 0) {
+    for (const cc of complaints) {
+      const indices = COMPLAINT_DIAGNOSIS_RELEVANCE[cc];
+      if (indices) indices.forEach(i => { if (DIAGNOSIS_OPTIONS[i]) relevantSet.add(DIAGNOSIS_OPTIONS[i]); });
+    }
+  }
+
   return (
     <SectionCard icon={<FileSearch size={18} className={`${iconColor} dark:text-fuchsia-400`} />} title="Diagnosis" subtitle="Clinical diagnosis & codes" accent={accent}>
-      <FormField label="Diagnosis Notes">
+      <FormField label="Select Diagnoses">
+        <MultiSelectDropdown
+          options={sortedOptions}
+          selected={selectedDiagnoses ?? []}
+          onChange={setSelectedDiagnoses ?? (() => {})}
+          placeholder={`Search diagnoses… (${(selectedDiagnoses ?? []).length} selected)`}
+          accent={accent}
+        />
+      </FormField>
+
+      {/* Relevance hint */}
+      {relevantSet.size > 0 && (selectedDiagnoses ?? []).length === 0 && (
+        <div className="mb-3 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
+          <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400">
+            💡 Related diagnoses for <span className="font-extrabold">{complaints.join(', ')}</span> are shown first.
+          </p>
+        </div>
+      )}
+
+      <FormField label="Additional Diagnosis Notes">
         <textarea
           value={diagnosis}
           onChange={(e: any) => setDiagnosis(e.target.value)}
-          placeholder="Enter primary and differential diagnosis…"
-          className={`${ic} h-[150px] resize-none`}
+          placeholder="Enter any additional diagnosis details, differential diagnosis, clinical notes…"
+          className={`${ic} h-[120px] resize-none`}
         />
       </FormField>
     </SectionCard>
