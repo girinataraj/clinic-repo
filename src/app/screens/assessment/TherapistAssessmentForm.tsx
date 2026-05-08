@@ -7,7 +7,7 @@ import { usePatientByPhone, useCreatePatient, usePatient } from '../../../hooks/
 import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics } from './clinicalConfig';
 import { SectionCard, FormField, inputClass } from './FormComponents';
-import { StepPatient, StepVitals, StepComplaints, StepPainFunction, StepHistory } from './StepRenderers';
+import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
 import { RomMatrix } from './RomMatrix';
 import { AnthropometricSection } from './AnthropometricSection';
 
@@ -40,11 +40,15 @@ export function TherapistAssessmentForm() {
   const [vitals, setVitals] = useState({bp_sys:'',bp_dia:'',pr:'',spo2:'',temp:'',ef:''});
   const [chiefComplaints, setChiefComplaints] = useState<string[]>([]);
   const [complaintsText, setComplaintsText] = useState('');
+  const [specificProblems, setSpecificProblems] = useState<Record<string, any>>({});
   const [associatedSymptoms, setAssociatedSymptoms] = useState<string[]>([]);
   const [selectedMedicalHistory, setSelectedMedicalHistory] = useState<string[]>([]);
   const [otherMedicalHistory, setOtherMedicalHistory] = useState('');
   const [showOtherMedicalHistory, setShowOtherMedicalHistory] = useState(false);
   const [painLevel, setPainLevel] = useState(0);
+  const [examinationNotes, setExaminationNotes] = useState('');
+  const [diagnosisNotes, setDiagnosisNotes] = useState('');
+  const [treatmentNotes, setTreatmentNotes] = useState('');
   const [funcRatings, setFuncRatings] = useState<Record<string,number>>({});
   const [romData, setRomData] = useState<RomData>({});
   const [anthropometrics, setAnthropometrics] = useState<Anthropometrics>({height:'',weight:'',bmi:'',excessWeight:'',excessCalorie:'',duration:'',waist:'',hip:'',whRatio:''});
@@ -116,9 +120,13 @@ export function TherapistAssessmentForm() {
         chiefComplaints: allComplaints || undefined,
         associatedSymptoms: associatedSymptoms.length>0 ? associatedSymptoms : undefined,
         medicalHistory: finalHistory.length>0 ? finalHistory : undefined,
+        diagnosis: diagnosisNotes.trim() || undefined,
+        plan: treatmentNotes.trim() || undefined,
+        management: examinationNotes.trim() || undefined,
         status: 'submitted',
         paymentMode, billAmount, visitType,
         associatedPains: chiefComplaints.length>0 ? chiefComplaints : undefined,
+        functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
         anthropometrics: hasAnthro ? anthropometrics : undefined,
       });
@@ -212,14 +220,15 @@ export function TherapistAssessmentForm() {
         <div className="transition-all duration-300">
           {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} resolvedPatientId={resolvedPatientId} user={user} />}
           {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
-          {step===2&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} isDoctorRole={isDoctorRole} />}
-          {step===3&&<StepPainFunction painLevel={painLevel} setPainLevel={setPainLevel} funcRatings={funcRatings} setFuncRatings={setFuncRatings} isDoctorRole={isDoctorRole} />}
-          {step===4&&<RomMatrix data={romData} onChange={setRomData} isDoctorRole={isDoctorRole} />}
-          {step===5&&<AnthropometricSection data={anthropometrics} onChange={setAnthropometrics} isDoctorRole={isDoctorRole} />}
-          {step===6&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} />}
+          {step===2&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} />}
+          {step===3&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} />}
+          {step===4&&<StepPainScale painLevel={painLevel} setPainLevel={setPainLevel} isDoctorRole={isDoctorRole} />}
+          {step===5&&<StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} />}
+          {step===6&&<StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} />}
+          {step===7&&<StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} />}
 
-          {/* Step 7: Review & Payment */}
-          {step===7&&(
+          {/* Step 8: Review & Payment */}
+          {step===8&&(
             <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
               <SectionCard icon={<Save size={20} className="text-teal-600 dark:text-teal-400" />} title="Final Review" accent="teal">
                 <FormField label="Visit Type">
@@ -227,7 +236,8 @@ export function TherapistAssessmentForm() {
                 </FormField>
                 <div className="flex flex-col gap-0 mt-2 bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-1 border border-slate-100 dark:border-slate-800">{[
                   {l:'Patient',v:patientInfo.name||'—'},{l:'Age',v:patientInfo.age||'—'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'—'},
-                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'—'},{l:'Symptoms',v:associatedSymptoms.length>0?`${associatedSymptoms.length} selected`:'—'},
+                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'—'},
+                  {l:'Diagnosis',v:diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : '—'},
                 ].map(r=><div key={r.l} className="flex items-center justify-between py-3 px-3 border-b border-slate-100 dark:border-slate-800/50 last:border-0"><span className="text-[13px] text-slate-500 dark:text-slate-400 font-bold">{r.l}</span><span className="text-[13px] text-slate-900 dark:text-white font-extrabold">{r.v}</span></div>)}</div>
               </SectionCard>
               <SectionCard icon={<CreditCard size={20} className="text-amber-600 dark:text-amber-400" />} title="Payment Details" subtitle="Required to submit" accent="amber">

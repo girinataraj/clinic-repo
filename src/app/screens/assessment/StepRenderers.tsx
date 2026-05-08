@@ -1,7 +1,7 @@
 import { type ChangeEvent } from 'react';
 import { SectionCard, FormField, inputClass, doctorInputClass, MultiSelectDropdown, ToggleChip } from './FormComponents';
-import { CHIEF_COMPLAINT_OPTIONS, ASSOCIATED_SYMPTOM_OPTIONS, MEDICAL_HISTORY_OPTIONS, FUNCTIONAL_ACTIVITIES, RATING_LABELS } from './clinicalConfig';
-import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown } from 'lucide-react';
+import { CHIEF_COMPLAINT_OPTIONS, ASSOCIATED_SYMPTOM_OPTIONS, MEDICAL_HISTORY_OPTIONS, FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS } from './clinicalConfig';
+import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown, Stethoscope, FileSearch, PenTool } from 'lucide-react';
 
 // ── Step 0: Patient Info ──────────────────────────────────────────────────────
 export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handlePhotoChange, handlePhotoRemove, photoInputKey, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user }: any) {
@@ -103,19 +103,87 @@ export function StepVitals({ vitals, setVitals, isDoctorRole }: { vitals: any; s
 }
 
 // ── Step 2: Chief Complaints & Associated Symptoms ────────────────────────────
-export function StepComplaints({ chiefComplaints, setChiefComplaints, associatedSymptoms, setAssociatedSymptoms, complaintsText, setComplaintsText, isDoctorRole }: any) {
+export function StepComplaints({ chiefComplaints, setChiefComplaints, associatedSymptoms, setAssociatedSymptoms, complaintsText, setComplaintsText, specificProblems, setSpecificProblems, isDoctorRole }: any) {
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const accent1 = isDoctorRole ? 'doctor' : 'fuchsia';
-  const accent2 = isDoctorRole ? 'doctor' : 'blue';
   const iconColor1 = isDoctorRole ? 'text-[#262842]' : 'text-fuchsia-600';
+  const accent2 = isDoctorRole ? 'doctor' : 'blue';
   const iconColor2 = isDoctorRole ? 'text-[#262842]' : 'text-blue-600';
 
+  const toggleCC = (item: string) => {
+    setChiefComplaints((prev: string[]) => prev.includes(item) ? prev.filter(x => x !== item) : [...prev, item]);
+  };
+
+  const handleProblemChange = (key: string, value: any) => {
+    setSpecificProblems((prev: any) => ({ ...prev, [key]: value }));
+  };
+
+  const dynamicOptions = chiefComplaints.filter((c: string) => c !== 'Another');
+
   return (
-    <div className="flex flex-col gap-3">
-      <SectionCard icon={<CheckSquare size={18} className={`${iconColor1} dark:text-fuchsia-400`} />} title="Chief Complaints" subtitle="Select or type primary complaints" accent={accent1}>
-        <MultiSelectDropdown options={CHIEF_COMPLAINT_OPTIONS} selected={chiefComplaints} onChange={setChiefComplaints} placeholder="Search complaints…" accent={accent1} />
-        <textarea value={complaintsText} onChange={(e: any) => setComplaintsText(e.target.value)} placeholder="Additional complaint details or free-text notes…" className={`${ic} h-[70px] resize-none mt-3`} />
+    <div className="flex flex-col gap-4">
+      <SectionCard icon={<CheckSquare size={18} className={`${iconColor1} dark:text-fuchsia-400`} />} title="Chief Complaints" subtitle="Select affected body parts" accent={accent1}>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+          {CHIEF_COMPLAINT_OPTIONS.map(item => (
+            <ToggleChip key={item} label={item} checked={chiefComplaints.includes(item)} onChange={() => toggleCC(item)} accent={accent1} />
+          ))}
+        </div>
+        <textarea value={complaintsText} onChange={(e: any) => setComplaintsText(e.target.value)} placeholder="Additional complaint details or free-text notes…" className={`${ic} h-[70px] resize-none`} />
       </SectionCard>
+
+      {chiefComplaints.length > 0 && (
+        <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Specific Problems" subtitle="Provide details about complaints" accent={accent2}>
+          <div className="flex flex-col gap-4">
+            {SPECIFIC_PROBLEM_OPTIONS.map(opt => {
+              const isEnabled = specificProblems[opt.key]?.enabled;
+              const options = opt.options === 'dynamic' ? dynamicOptions : opt.options;
+              
+              return (
+                <div key={opt.key} className="flex flex-col gap-2 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleProblemChange(opt.key, { ...specificProblems[opt.key], enabled: !isEnabled })}
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${isEnabled ? 'bg-blue-600 border-blue-600' : 'bg-white dark:bg-slate-800 border-slate-300'}`}
+                    >
+                      {isEnabled && <Check size={12} strokeWidth={3} className="text-white" />}
+                    </button>
+                    <span className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{opt.label}</span>
+                    
+                    {isEnabled && opt.type === 'dropdown' && options.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2 ml-8">
+                        {options.map((o: string) => {
+                          const isSelected = (specificProblems[opt.key]?.values || []).includes(o);
+                          return (
+                            <button
+                              key={o}
+                              type="button"
+                              onClick={() => {
+                                const current = specificProblems[opt.key]?.values || [];
+                                const next = isSelected ? current.filter((x: string) => x !== o) : [...current, o];
+                                handleProblemChange(opt.key, { ...specificProblems[opt.key], values: next });
+                              }}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all ${
+                                isSelected
+                                  ? 'border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-500/20'
+                                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:border-slate-300'
+                              }`}
+                            >
+                              {isSelected && <Check size={12} strokeWidth={4} />}
+                              {o}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </SectionCard>
+      )}
+
       <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Associated Symptoms" subtitle="Select all that apply" accent={accent2}>
         <MultiSelectDropdown options={ASSOCIATED_SYMPTOM_OPTIONS} selected={associatedSymptoms} onChange={setAssociatedSymptoms} placeholder="Search symptoms…" accent={accent2} />
       </SectionCard>
@@ -123,8 +191,8 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
   );
 }
 
-// ── Step 3: Pain Scale & Functional ───────────────────────────────────────────
-export function StepPainFunction({ painLevel, setPainLevel, funcRatings, setFuncRatings, isDoctorRole }: any) {
+// ── Step 4: Pain Scale ────────────────────────────────────────────────────────
+export function StepPainScale({ painLevel, setPainLevel, isDoctorRole }: any) {
   const painColors = ['bg-green-500','bg-lime-500','bg-lime-400','bg-yellow-400','bg-orange-400','bg-orange-500','bg-red-500','bg-red-600','bg-red-700','bg-red-800','bg-red-900'];
   const painLabel = painLevel === 0 ? 'No Pain' : painLevel <= 2 ? 'Mild' : painLevel <= 4 ? 'Moderate' : painLevel <= 6 ? 'Significant' : painLevel <= 8 ? 'Severe' : 'Worst';
   const funcColors = ['bg-green-500 border-green-500','bg-lime-500 border-lime-500','bg-yellow-400 border-yellow-400','bg-orange-500 border-orange-500','bg-red-500 border-red-500'];
@@ -152,22 +220,67 @@ export function StepPainFunction({ painLevel, setPainLevel, funcRatings, setFunc
           ))}
         </div>
       </SectionCard>
-      <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-emerald-400`} />} title="Functional Activities" subtitle="Rate difficulty 0–4" accent={accentEmerald}>
-        <div className="flex gap-1 mb-3">{RATING_LABELS.map((l, i) => <span key={l} className="flex-1 text-center text-[9px] text-slate-400 font-bold">{i}: {l}</span>)}</div>
-        <div className="flex flex-col gap-3">
-          {FUNCTIONAL_ACTIVITIES.map(act => (
-            <div key={act.key}>
-              <p className="text-[12px] font-bold text-slate-900 dark:text-white mb-1.5">{act.label}</p>
-              <div className="flex gap-1.5">
-                {[0,1,2,3,4].map(val => (
-                  <button key={val} onClick={() => setFuncRatings({ ...funcRatings, [act.key]: val })} className={`flex-1 py-2 rounded-xl text-[12px] font-extrabold border-2 transition-colors ${funcRatings[act.key] === val ? `${funcColors[val]} text-white` : 'bg-slate-100 dark:bg-slate-800 border-transparent text-slate-400'}`}>{val}</button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </SectionCard>
     </div>
+  );
+}
+
+// ── Step 5: Examination ───────────────────────────────────────────────────────
+export function StepExamination({ examination, setExamination, isDoctorRole }: any) {
+  const ic = isDoctorRole ? doctorInputClass : inputClass;
+  const accent = isDoctorRole ? 'doctor' : 'blue';
+  const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-blue-600';
+
+  return (
+    <SectionCard icon={<Stethoscope size={18} className={`${iconColor} dark:text-blue-400`} />} title="Clinical Examination" subtitle="Observations & physical findings" accent={accent}>
+      <FormField label="Examination Notes">
+        <textarea
+          value={examination}
+          onChange={(e: any) => setExamination(e.target.value)}
+          placeholder="Enter clinical examination findings, ROM, muscle power, etc…"
+          className={`${ic} h-[200px] resize-none`}
+        />
+      </FormField>
+    </SectionCard>
+  );
+}
+
+// ── Step 6: Diagnosis ─────────────────────────────────────────────────────────
+export function StepDiagnosis({ diagnosis, setDiagnosis, isDoctorRole }: any) {
+  const ic = isDoctorRole ? doctorInputClass : inputClass;
+  const accent = isDoctorRole ? 'doctor' : 'fuchsia';
+  const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-fuchsia-600';
+
+  return (
+    <SectionCard icon={<FileSearch size={18} className={`${iconColor} dark:text-fuchsia-400`} />} title="Diagnosis" subtitle="Clinical diagnosis & codes" accent={accent}>
+      <FormField label="Diagnosis Notes">
+        <textarea
+          value={diagnosis}
+          onChange={(e: any) => setDiagnosis(e.target.value)}
+          placeholder="Enter primary and differential diagnosis…"
+          className={`${ic} h-[150px] resize-none`}
+        />
+      </FormField>
+    </SectionCard>
+  );
+}
+
+// ── Step 7: Treatment Plan ────────────────────────────────────────────────────
+export function StepTreatment({ treatment, setTreatment, isDoctorRole }: any) {
+  const ic = isDoctorRole ? doctorInputClass : inputClass;
+  const accent = isDoctorRole ? 'doctor' : 'emerald';
+  const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-emerald-600';
+
+  return (
+    <SectionCard icon={<PenTool size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Treatment Plan" subtitle="Management & follow-up" accent={accent}>
+      <FormField label="Treatment Details">
+        <textarea
+          value={treatment}
+          onChange={(e: any) => setTreatment(e.target.value)}
+          placeholder="Enter exercises, modalities, frequency, and management plan…"
+          className={`${ic} h-[200px] resize-none`}
+        />
+      </FormField>
+    </SectionCard>
   );
 }
 

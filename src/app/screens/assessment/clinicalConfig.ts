@@ -31,12 +31,20 @@ export const ROM_CONFIG: RomSection[] = [
 
 // ── Chief Complaints & Associated Symptoms ────────────────────────────────────
 export const CHIEF_COMPLAINT_OPTIONS = [
-  'Breathlessness (SOB)',
-  'Cough With Expectoration',
-  'Cough Without Expectoration',
-  'Chest Pain',
-  'Noisy Breathing – Wheezing',
-  'Noisy Breathing – Stridor',
+  'NECK', 'SHOULDER', 'ARM', 'ELBOW', 'WRIST',
+  'UPPER BACK', 'LOWER BACK', 'GLUTEALS', 'THIGH',
+  'KNEE', 'ANKLE', 'FOOT', 'Another'
+];
+
+export const SPECIFIC_PROBLEM_OPTIONS = [
+  { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: 'dynamic' },
+  { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['nape of neck', 'lateral arm', 'elbow'] },
+  { label: 'Unable to take a glass of water', key: 'glass_water', type: 'checkbox' },
+  { label: 'Feeling weakness / heaviness / prickling sense', key: 'weakness_sense', type: 'checkbox' },
+  { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['elbow', 'wrist'] },
+  { label: 'Unable to hang the arm', key: 'hang_arm', type: 'checkbox' },
+  { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['driving', 'sleeping', 'picking objects', 'work situations'] },
+  { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'sleeping'] }
 ];
 
 export const ASSOCIATED_SYMPTOM_OPTIONS = [
@@ -88,11 +96,12 @@ export const RATING_LABELS = ['No Difficulty', 'Mild', 'Moderate', 'Severe', 'Un
 export const ASSESSMENT_STEPS = [
   { label: 'Patient', key: 'patient' },
   { label: 'Vitals', key: 'vitals' },
-  { label: 'Complaints', key: 'complaints' },
-  { label: 'Pain & Function', key: 'pain' },
-  { label: 'Power & ROM', key: 'rom' },
-  { label: 'Anthropometrics', key: 'anthropometrics' },
   { label: 'History', key: 'history' },
+  { label: 'Complaints', key: 'complaints' },
+  { label: 'Pain Scale', key: 'pain' },
+  { label: 'Examination', key: 'examination' },
+  { label: 'Diagnosis', key: 'diagnosis' },
+  { label: 'Treatment', key: 'treatment' },
   { label: 'Review & Pay', key: 'review' },
 ];
 
