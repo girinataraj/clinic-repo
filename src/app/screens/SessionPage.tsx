@@ -4,7 +4,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { usePatient, useCheckoutPatient } from '../../hooks/usePatients';
 import { useExercisePlans } from '../../hooks/useExercisePlans';
-import { useCreateEvaluation } from '../../hooks/useEvaluations';
+import { useCreateEvaluation, useLatestEvaluation } from '../../hooks/useEvaluations';
+import { FollowUpSection } from './FollowUpSection';
+import {
+  type FollowUpSessionData,
+  getEmptyFollowUp,
+} from './assessment/clinicalConfig';
 import {
   ArrowLeft,
   CheckCircle,
@@ -23,6 +28,7 @@ export function SessionPage() {
 
   const { data: patient, isLoading: loadingPatient } = usePatient(patientId);
   const { data: plansData, isLoading: loadingPlans } = useExercisePlans(patientId);
+  const { data: latestEvaluation } = useLatestEvaluation(patientId);
   const checkoutPatient = useCheckoutPatient();
   const createEvaluation = useCreateEvaluation();
 
@@ -31,6 +37,7 @@ export function SessionPage() {
   const [billAmountInput, setBillAmountInput] = useState('');
   const [submitError, setSubmitError] = useState<string|null>(null);
   const [checkedOut, setCheckedOut] = useState(false);
+  const [followUp, setFollowUp] = useState<FollowUpSessionData>(getEmptyFollowUp());
 
   const formatRupees = (n: number) => new Intl.NumberFormat('en-IN').format(n);
   const handleBillAmountChange = (v: string) => {
@@ -62,12 +69,25 @@ export function SessionPage() {
         return;
       }
       try {
+        // Build follow-up payload
+        const followUpPayload = followUp.followUpModes.length > 0 ? {
+          followUpModes: followUp.followUpModes,
+          sameAsTodayPreview: followUp.followUpModes.includes('same_as_today') && latestEvaluation?.treatmentPlan
+            ? latestEvaluation.treatmentPlan
+            : undefined,
+          assignedExerciseSelection: followUp.followUpModes.includes('assigned_exercise') && exercises.length > 0
+            ? exercises.map((ex: any) => ex.title)
+            : undefined,
+          otherTreatments: followUp.otherTreatments.length > 0 ? followUp.otherTreatments : undefined,
+        } : undefined;
+
         await createEvaluation.mutateAsync({
           patientId,
           status: 'submitted',
           paymentMode,
           billAmount,
-        });
+          ...(followUpPayload ? { followUpSession: followUpPayload } : {}),
+        } as any);
       } catch (err: any) {
         setSubmitError(err?.response?.data?.message ?? 'Failed to save payment details.');
         return;
@@ -101,6 +121,7 @@ export function SessionPage() {
   }
 
   const exercises = plansData?.data?.[0]?.items ?? [];
+  const previousTreatmentPlan = (latestEvaluation as any)?.treatmentPlan ?? null;
 
   return (
     <div className="flex flex-col h-full bg-slate-50/50 font-sans">
@@ -175,6 +196,16 @@ export function SessionPage() {
           )}
         </div>
 
+        {/* Follow-up Treatment Section */}
+        <div className="mb-4">
+          <FollowUpSection
+            followUp={followUp}
+            onChange={setFollowUp}
+            previousTreatmentPlan={previousTreatmentPlan}
+            exercises={exercises}
+          />
+        </div>
+
         {/* Payment Form */}
         <div className="mb-6 bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
           <h3 className="flex items-center gap-1.5 text-[14px] font-extrabold text-slate-900 mb-1">
@@ -238,3 +269,4 @@ export function SessionPage() {
     </div>
   );
 }
+

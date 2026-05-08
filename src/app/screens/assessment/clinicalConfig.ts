@@ -199,6 +199,32 @@ export function getTreatmentSelectionCount(tp: TreatmentPlanData): number {
   return tp.modalities.length + tp.manualTherapy.length + tp.rehabilitation.length;
 }
 
+/**
+ * Combined master list of all treatment options.
+ * Used as autocomplete suggestions in the Session follow-up "Others" mode.
+ */
+export const ALL_TREATMENT_OPTIONS: string[] = [
+  ...TREATMENT_MODALITIES,
+  ...TREATMENT_MANUAL_THERAPY,
+  ...TREATMENT_REHABILITATION,
+];
+
+// ── Follow-up Session Data ────────────────────────────────────────────────────
+
+export type FollowUpMode = 'same_as_today' | 'assigned_exercise' | 'others';
+
+export interface FollowUpSessionData {
+  followUpModes: FollowUpMode[];
+  otherTreatments: string[];        // custom/selected items from "Others" mode
+}
+
+export function getEmptyFollowUp(): FollowUpSessionData {
+  return {
+    followUpModes: [],
+    otherTreatments: [],
+  };
+}
+
 // ── Diagnosis Options ─────────────────────────────────────────────────────────
 
 export const DIAGNOSIS_OPTIONS: string[] = [
