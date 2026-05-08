@@ -88,6 +88,7 @@ export interface Evaluation {
   associatedPains?: string[];
   musclePowerRom?: Record<string, unknown> | null;
   anthropometrics?: Record<string, unknown> | null;
+  treatmentPlan?: Record<string, unknown> | null;
   // Meta
   createdBy: EvaluationCreatedBy;
   updatedBy?: EvaluationCreatedBy;
@@ -122,6 +123,7 @@ export interface UpdateEvaluationPayload {
   musclePowerRom?: Record<string, unknown>;
   anthropometrics?: Record<string, unknown>;
   clinicalExamination?: Record<string, unknown>;
+  treatmentPlan?: Record<string, unknown>;
   status?: 'draft' | 'submitted' | 'reviewed';
 }
 
@@ -151,6 +153,7 @@ export interface CreateEvaluationPayload {
   musclePowerRom?: Record<string, unknown>;
   anthropometrics?: Record<string, unknown>;
   clinicalExamination?: Record<string, unknown>;
+  treatmentPlan?: Record<string, unknown>;
 }
 
 // ─── Appointment ───────────────────────────────────────────────────────────────

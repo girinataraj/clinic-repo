@@ -1,7 +1,7 @@
 import { type ChangeEvent } from 'react';
 import { SectionCard, FormField, inputClass, doctorInputClass, MultiSelectDropdown, ToggleChip } from './FormComponents';
-import { CHIEF_COMPLAINT_OPTIONS, ASSOCIATED_SYMPTOM_OPTIONS, MEDICAL_HISTORY_OPTIONS, FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS, DIAGNOSIS_OPTIONS, COMPLAINT_DIAGNOSIS_RELEVANCE, getSortedDiagnoses } from './clinicalConfig';
-import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown, Stethoscope, FileSearch, PenTool } from 'lucide-react';
+import { CHIEF_COMPLAINT_OPTIONS, ASSOCIATED_SYMPTOM_OPTIONS, MEDICAL_HISTORY_OPTIONS, FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS, DIAGNOSIS_OPTIONS, COMPLAINT_DIAGNOSIS_RELEVANCE, getSortedDiagnoses, TREATMENT_MODALITIES, TREATMENT_MANUAL_THERAPY, TREATMENT_REHABILITATION, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
+import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown, Stethoscope, FileSearch, PenTool, CalendarDays } from 'lucide-react';
 import { ClinicalExamination } from './ClinicalExamination';
 
 // ── Step 0: Patient Info ──────────────────────────────────────────────────────
@@ -295,22 +295,101 @@ export function StepDiagnosis({ diagnosis, setDiagnosis, isDoctorRole, selectedD
 }
 
 // ── Step 7: Treatment Plan ────────────────────────────────────────────────────
-export function StepTreatment({ treatment, setTreatment, isDoctorRole }: any) {
+export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatmentPlan, setTreatmentPlan }: any) {
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const accent = isDoctorRole ? 'doctor' : 'emerald';
   const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-emerald-600';
 
+  const tp: TreatmentPlanData = treatmentPlan ?? getEmptyTreatmentPlan();
+  const update = (patch: Partial<TreatmentPlanData>) => {
+    if (setTreatmentPlan) setTreatmentPlan({ ...tp, ...patch });
+  };
+
+  const toggleItem = (field: 'modalities' | 'manualTherapy' | 'rehabilitation', item: string) => {
+    const current = tp[field];
+    update({ [field]: current.includes(item) ? current.filter((x: string) => x !== item) : [...current, item] });
+  };
+
+  const ChipGroup = ({ label, items, field }: { label: string; items: string[]; field: 'modalities' | 'manualTherapy' | 'rehabilitation' }) => (
+    <div className="mb-4">
+      <p className="text-[11px] font-black text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {items.map(item => (
+          <ToggleChip key={item} label={item} checked={tp[field].includes(item)} onChange={() => toggleItem(field, item)} accent={accent} />
+        ))}
+      </div>
+    </div>
+  );
+
   return (
-    <SectionCard icon={<PenTool size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Treatment Plan" subtitle="Management & follow-up" accent={accent}>
-      <FormField label="Treatment Details">
-        <textarea
-          value={treatment}
-          onChange={(e: any) => setTreatment(e.target.value)}
-          placeholder="Enter exercises, modalities, frequency, and management plan…"
-          className={`${ic} h-[200px] resize-none`}
-        />
-      </FormField>
-    </SectionCard>
+    <div className="flex flex-col gap-4">
+      <SectionCard icon={<PenTool size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Treatment Plan" subtitle="Management & follow-up" accent={accent}>
+        <ChipGroup label="Modalities / Treatment Given" items={TREATMENT_MODALITIES} field="modalities" />
+        <ChipGroup label="Manual Therapy" items={TREATMENT_MANUAL_THERAPY} field="manualTherapy" />
+        <ChipGroup label="Rehabilitation" items={TREATMENT_REHABILITATION} field="rehabilitation" />
+      </SectionCard>
+
+      <SectionCard icon={<CalendarDays size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Schedule & Follow-up" subtitle="Visits, frequency & planning" accent={accent}>
+        <div className="grid grid-cols-2 gap-3 mb-3.5">
+          <FormField label="Visits Required">
+            <input
+              type="text"
+              inputMode="numeric"
+              value={tp.visitsRequired}
+              onChange={e => update({ visitsRequired: e.target.value.replace(/[^0-9]/g, '') })}
+              placeholder="e.g. 12"
+              className={ic}
+            />
+          </FormField>
+          <FormField label="Gap Days (Frequency)">
+            <input
+              type="text"
+              inputMode="numeric"
+              value={tp.frequencyGapDays}
+              onChange={e => update({ frequencyGapDays: e.target.value.replace(/[^0-9]/g, '') })}
+              placeholder="e.g. 2"
+              className={ic}
+            />
+          </FormField>
+        </div>
+
+        {tp.frequencyGapDays && Number(tp.frequencyGapDays) > 0 && (
+          <div className={`mb-3.5 px-3 py-2 rounded-xl border ${
+            isDoctorRole
+              ? 'bg-indigo-50/50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-900/30'
+              : 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30'
+          }`}>
+            <p className={`text-[11px] font-bold ${isDoctorRole ? 'text-[#262842] dark:text-indigo-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+              📅 Every <span className="font-extrabold">{tp.frequencyGapDays}</span> day{Number(tp.frequencyGapDays) !== 1 ? 's' : ''}
+              {tp.visitsRequired && Number(tp.visitsRequired) > 0 ? ` × ${tp.visitsRequired} visits` : ''}
+            </p>
+          </div>
+        )}
+
+        <FormField label="Suggested Start Date (Optional)">
+          <input
+            type="date"
+            value={tp.suggestedStartDate}
+            onChange={e => update({ suggestedStartDate: e.target.value })}
+            className={ic}
+          />
+        </FormField>
+      </SectionCard>
+
+      <SectionCard icon={<ClipboardList size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Additional Notes" subtitle="Follow-up & management remarks" accent={accent}>
+        <FormField label="Management / Follow-up Notes">
+          <textarea
+            value={tp.notes || treatment}
+            onChange={e => {
+              update({ notes: e.target.value });
+              setTreatment(e.target.value);
+            }}
+            placeholder="Additional treatment management, follow-up instructions, precautions…"
+            className={`${ic} h-[120px] resize-none`}
+          />
+        </FormField>
+      </SectionCard>
+    </div>
   );
 }
 

@@ -147,6 +147,58 @@ export function calcWHRatio(waist: string, hip: string): string {
   return (w / h).toFixed(2);
 }
 
+// ── Treatment Plan Options ────────────────────────────────────────────────────
+
+export const TREATMENT_MODALITIES: string[] = [
+  'UST (Ultrasound Therapy)',
+  'IFT (Interferential Therapy)',
+  'SWD (Short Wave Diathermy)',
+  'Traction',
+  'Wax bath',
+  'EST (Electrical Stimulation Therapy)',
+  'SHT',
+  'LASER',
+];
+
+export const TREATMENT_MANUAL_THERAPY: string[] = [
+  'Mobilisation',
+  'Dry needling',
+];
+
+export const TREATMENT_REHABILITATION: string[] = [
+  'Exercise',
+  'Stretching',
+  'ROM Exercises',
+  'Strengthening',
+];
+
+export interface TreatmentPlanData {
+  modalities: string[];
+  manualTherapy: string[];
+  rehabilitation: string[];
+  visitsRequired: string;           // stored as string for input control; parsed to number on save
+  frequencyGapDays: string;         // same approach
+  suggestedStartDate: string;       // ISO date string or ''
+  notes: string;
+}
+
+export function getEmptyTreatmentPlan(): TreatmentPlanData {
+  return {
+    modalities: [],
+    manualTherapy: [],
+    rehabilitation: [],
+    visitsRequired: '',
+    frequencyGapDays: '',
+    suggestedStartDate: '',
+    notes: '',
+  };
+}
+
+/** Count how many treatment items have been selected across all groups */
+export function getTreatmentSelectionCount(tp: TreatmentPlanData): number {
+  return tp.modalities.length + tp.manualTherapy.length + tp.rehabilitation.length;
+}
+
 // ── Diagnosis Options ─────────────────────────────────────────────────────────
 
 export const DIAGNOSIS_OPTIONS: string[] = [

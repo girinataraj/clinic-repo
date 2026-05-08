@@ -5,7 +5,7 @@ import { BottomNav } from '../../components/BottomNav';
 import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEvaluations';
 import { usePatientByPhone, useCreatePatient, usePatient } from '../../../hooks/usePatients';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search } from 'lucide-react';
-import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam } from './clinicalConfig';
+import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { SectionCard, FormField, inputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
 import { RomMatrix } from './RomMatrix';
@@ -50,6 +50,7 @@ export function TherapistAssessmentForm() {
   const [diagnosisNotes, setDiagnosisNotes] = useState('');
   const [selectedDiagnoses, setSelectedDiagnoses] = useState<string[]>([]);
   const [treatmentNotes, setTreatmentNotes] = useState('');
+  const [treatmentPlanData, setTreatmentPlanData] = useState<TreatmentPlanData>(getEmptyTreatmentPlan());
   const [funcRatings, setFuncRatings] = useState<Record<string,number>>({});
   const [romData, setRomData] = useState<RomData>({});
   const [anthropometrics, setAnthropometrics] = useState<Anthropometrics>({height:'',weight:'',bmi:'',excessWeight:'',excessCalorie:'',duration:'',waist:'',hip:'',whRatio:''});
@@ -125,6 +126,14 @@ export function TherapistAssessmentForm() {
         diagnosis: diagnosisNotes.trim() || undefined,
         diagnosisList: selectedDiagnoses.length > 0 ? selectedDiagnoses : undefined,
         plan: treatmentNotes.trim() || undefined,
+        treatmentPlan: getTreatmentSelectionCount(treatmentPlanData) > 0 || treatmentPlanData.visitsRequired || treatmentPlanData.frequencyGapDays || treatmentPlanData.suggestedStartDate ? {
+          modalities: treatmentPlanData.modalities.length > 0 ? treatmentPlanData.modalities : undefined,
+          manualTherapy: treatmentPlanData.manualTherapy.length > 0 ? treatmentPlanData.manualTherapy : undefined,
+          rehabilitation: treatmentPlanData.rehabilitation.length > 0 ? treatmentPlanData.rehabilitation : undefined,
+          visitsRequired: treatmentPlanData.visitsRequired ? Number(treatmentPlanData.visitsRequired) : undefined,
+          frequencyGapDays: treatmentPlanData.frequencyGapDays ? Number(treatmentPlanData.frequencyGapDays) : undefined,
+          suggestedStartDate: treatmentPlanData.suggestedStartDate || undefined,
+        } : undefined,
         management: examinationNotes.trim() || undefined,
         status: 'submitted',
         paymentMode, billAmount, visitType,
@@ -229,7 +238,7 @@ export function TherapistAssessmentForm() {
           {step===4&&<StepPainScale painLevel={painLevel} setPainLevel={setPainLevel} isDoctorRole={isDoctorRole} />}
           {step===5&&<StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} chiefComplaints={chiefComplaints} clinicalExamData={clinicalExamData} onClinicalExamChange={setClinicalExamData} />}
           {step===6&&<StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} selectedDiagnoses={selectedDiagnoses} setSelectedDiagnoses={setSelectedDiagnoses} chiefComplaints={chiefComplaints} />}
-          {step===7&&<StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} />}
+          {step===7&&<StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} />}
 
           {/* Step 8: Review & Payment */}
           {step===8&&(
@@ -243,6 +252,7 @@ export function TherapistAssessmentForm() {
                   {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'—'},
                   {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : '—'; })()},
                   {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : '—')},
+                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : '—'},
                 ].map(r=><div key={r.l} className="flex items-center justify-between py-3 px-3 border-b border-slate-100 dark:border-slate-800/50 last:border-0"><span className="text-[13px] text-slate-500 dark:text-slate-400 font-bold">{r.l}</span><span className="text-[13px] text-slate-900 dark:text-white font-extrabold">{r.v}</span></div>)}</div>
               </SectionCard>
               <SectionCard icon={<CreditCard size={20} className="text-amber-600 dark:text-amber-400" />} title="Payment Details" subtitle="Required to submit" accent="amber">
