@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { BottomNav } from '../components/BottomNav';
 import {
   IndianRupee, TrendingUp, Filter, Calendar, User,
-  ChevronDown, ArrowUpRight, Users,
+  ChevronDown, Users,
 } from 'lucide-react';
 import { useRevenueVisits } from '../../hooks/useRevenue';
 
@@ -180,8 +180,9 @@ export function DoctorRevenue() {
                 ₹{totalRevenue.toLocaleString('en-IN')}
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px' }}>
-                <ArrowUpRight size={13} color="#86EFAC" />
-                <span style={{ fontSize: '11px', color: '#86EFAC', fontWeight: 600 }}>+12.5% from previous period</span>
+                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>
+                  {activeLabel} · {filteredVisits.length} visit{filteredVisits.length !== 1 ? 's' : ''}
+                </span>
               </div>
             </div>
 

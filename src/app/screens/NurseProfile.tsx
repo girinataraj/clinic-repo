@@ -4,11 +4,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
+import { useAppConfigScope } from '../../hooks/useAppConfig';
 import {
-  ChevronRight, LogOut, Bell, Shield, HelpCircle,
-  Edit3, Award, Clock, Users,
+  LogOut, Edit3, Award, Clock, Users,
   ClipboardList, ChevronLeft, MapPin, Phone, CheckCircle,
-  Star, Calendar,
 } from 'lucide-react';
 
 // NOTE: certifications & shiftInfo are kept as UI structure placeholders.
@@ -35,6 +34,13 @@ export function NurseProfile() {
 
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
+  const { data: clinicConfig } = useAppConfigScope('clinic');
+
+  // Build profile-driven tags from backend fields (show only when available)
+  const profileTags: string[] = [];
+  if (profile?.experience) profileTags.push(profile.experience);
+  if (profile?.specialization) profileTags.push(profile.specialization);
+  if (profile?.city) profileTags.push(profile.city);
 
   const handleEditToggle = () => {
     if (!editMode && profile) {
@@ -87,18 +93,20 @@ export function NurseProfile() {
 
           {/* Profile hero */}
           <div className="relative z-10 flex flex-col items-center text-center mt-2 pb-10 px-5">
-            <h2 className="text-3xl font-extrabold text-white tracking-tight">{user?.name || 'Therapist'}</h2>
-            <p className="text-sm text-white/75 mt-0.5">Therapist</p>
-            <div className="flex items-center gap-2 mt-3">
-              {[{ text: '6 yrs Exp' }, { text: 'RN Certified' }, { text: 'Physio Unit' }].map((tag) => (
-                <span
-                  key={tag.text}
-                  className="px-3 py-1 rounded-full bg-white/20 text-[11px] font-bold text-white"
-                >
-                  {tag.text}
-                </span>
-              ))}
-            </div>
+            <h2 className="text-3xl font-extrabold text-white tracking-tight">{profile?.name || user?.name || 'Therapist'}</h2>
+            <p className="text-sm text-white/75 mt-0.5">{profile?.specialization || 'Therapist'}</p>
+            {profileTags.length > 0 && (
+              <div className="flex items-center flex-wrap justify-center gap-2 mt-3">
+                {profileTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 rounded-full bg-white/20 text-[11px] font-bold text-white"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           {editMode && (
             <div className="relative z-10 flex flex-col items-center px-5 pb-6 gap-3">
@@ -211,9 +219,13 @@ export function NurseProfile() {
               <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Hospital Extension</p>
-              <p className="text-base font-extrabold text-slate-900 dark:text-white">+91 044-4567 8901</p>
-              <p className="text-xs text-slate-400 dark:text-slate-500">Extn: 204 · Ward B Station</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Contact</p>
+              <p className="text-base font-extrabold text-slate-900 dark:text-white">
+                {clinicConfig?.contact?.phone || profile?.phone || '—'}
+              </p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                {clinicConfig?.contact?.email || profile?.email || 'Not provided'}
+              </p>
             </div>
           </div>
 

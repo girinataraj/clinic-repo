@@ -5,25 +5,20 @@ import { ThemeToggle } from '../components/ThemeToggle';
 import { BottomNav } from '../components/BottomNav';
 import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
 import { usePatients } from '../../hooks/usePatients';
+import { useAppConfigScope } from '../../hooks/useAppConfig';
 import {
-  ChevronRight,
   LogOut,
-  Bell,
-  Shield,
-  HelpCircle,
   Edit3,
   Award,
-  Star,
   Users,
   Clock,
   ChevronLeft,
   Phone,
-  FileText,
   Stethoscope,
   CheckCircle,
-  Calendar,
   TrendingUp,
   GraduationCap,
+  MapPin,
 } from 'lucide-react';
 
 // NOTE: These are UI structure placeholders.
@@ -51,6 +46,13 @@ export function DoctorProfile() {
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
   const { data: patientsData } = usePatients({ limit: 5 });
+  const { data: clinicConfig } = useAppConfigScope('clinic');
+
+  // Build profile-driven tags from backend fields (show only when available)
+  const profileTags: string[] = [];
+  if (profile?.experience) profileTags.push(profile.experience);
+  if (profile?.specialization) profileTags.push(profile.specialization);
+  if (profile?.city) profileTags.push(profile.city);
 
   const handleEditToggle = () => {
     if (!editMode && profile) {
@@ -107,34 +109,23 @@ export function DoctorProfile() {
           {/* Profile hero */}
           <div className="relative z-30 flex flex-col items-center text-center mt-4 pb-12 px-6">
             <h2 className="text-[32px] font-extrabold text-white tracking-tight leading-tight">
-              {user?.name === 'Dr. Rajesh Kumar' ? 'Dr. SV. Sathish Kumar' : (user?.name || 'Doctor')}
+              {profile?.name || user?.name || 'Doctor'}
             </h2>
             <p className="text-[14px] text-white/90 mt-1">
-              Physiotherapist
+              {profile?.specialization || profile?.role || 'Physiotherapist'}
             </p>
-            {/* Star rating */}
-            <div className="flex items-center gap-1.5 mt-3">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <Star
-                  key={n}
-                  size={16}
-                  color="#FEFFFF"
-                  fill={n <= 4 ? '#FEFFFF' : 'none'}
-                />
-              ))}
-              <span className="text-[14px] font-bold text-white ml-1">4.8</span>
-              <span className="text-[12px] text-white/70 ml-0.5">(246 reviews)</span>
-            </div>
-            <div className="flex items-center gap-2 mt-4">
-              {[{ text: '16 yrs Exp' }, { text: 'MPT (Cardio-Resp)' }, { text: 'SAAI Clinic' }].map((tag) => (
-                <span
-                  key={tag.text}
-                  className="px-3 py-1.5 rounded-xl backdrop-blur-sm bg-white/20 border border-white/30 text-[12px] font-semibold text-white"
-                >
-                  {tag.text}
-                </span>
-              ))}
-            </div>
+            {profileTags.length > 0 && (
+              <div className="flex items-center flex-wrap justify-center gap-2 mt-4">
+                {profileTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1.5 rounded-xl backdrop-blur-sm bg-white/20 border border-white/30 text-[12px] font-semibold text-white"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           {editMode && (
             <div className="relative z-30 flex flex-col items-center px-6 pb-6 gap-3">
@@ -188,27 +179,31 @@ export function DoctorProfile() {
           {/* About */}
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
             <p className="text-[15px] font-bold text-slate-900 dark:text-white mb-2">About</p>
-            <p className="text-[14px] text-slate-700 dark:text-slate-300 leading-relaxed mb-3">
-              <strong>Qualifications:</strong> MPT (Cardio-Resp), PGDFM, DYT, CDNT<br/>
-              <strong>Consultant Physiotherapist</strong>
-            </p>
-            <ul className="text-[14px] text-slate-700 dark:text-slate-300 leading-relaxed list-disc pl-5">
-              <li>16 years of clinical experience</li>
-              <li>16 years as HOD at Erode Sudha Hospitals</li>
-              <li>Strong professional network</li>
-              <li>Author of 3 awareness books</li>
-              <li>6000+ pain cases treated</li>
-            </ul>
+            {profile?.specialization || profile?.experience ? (
+              <div className="flex flex-col gap-2 text-[14px] text-slate-700 dark:text-slate-300 leading-relaxed">
+                {profile?.specialization && (
+                  <p><strong>Specialization:</strong> {profile.specialization}</p>
+                )}
+                {profile?.experience && (
+                  <p><strong>Experience:</strong> {profile.experience}</p>
+                )}
+                {profile?.city && (
+                  <p><strong>Location:</strong> {profile.city}</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-[13px] text-slate-400 dark:text-slate-500 italic">Profile details not provided yet.</p>
+            )}
           </div>
 
           {/* Clinic Info */}
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
-            <p className="text-[15px] font-bold text-slate-900 dark:text-white mb-1">Saai Physiotherapy Clinic</p>
-            <p className="text-[13px] italic text-slate-600 dark:text-slate-400 mb-3">“Getting better every day”</p>
-            <p className="text-[14px] text-slate-700 dark:text-slate-300 leading-relaxed">
-              20A/10, Sakthi Nagar, Sengodapalayam,<br/>
-              Thindal, Erode Dt – 638012<br/>
-              Tamil Nadu, India
+            <div className="flex items-center gap-2 mb-3">
+              <MapPin size={16} className="text-indigo-500 dark:text-indigo-400" />
+              <p className="text-[15px] font-bold text-slate-900 dark:text-white">Clinic Info</p>
+            </div>
+            <p className="text-[13px] text-slate-500 dark:text-slate-400 italic">
+              Clinic address will be available from admin settings.
             </p>
           </div>
 
@@ -297,8 +292,12 @@ export function DoctorProfile() {
             </div>
             <div className="flex-1">
               <p className="text-[12px] text-slate-600 dark:text-slate-400 font-semibold tracking-wide">CLINIC CONTACT</p>
-              <p className="text-[18px] font-bold text-slate-900 dark:text-white">+91 044-4567 8900</p>
-              <p className="text-[13px] text-slate-600 dark:text-slate-400">Extn: 101 · Consultation Room 3</p>
+              <p className="text-[18px] font-bold text-slate-900 dark:text-white">
+                {clinicConfig?.contact?.phone || profile?.phone || '—'}
+              </p>
+              <p className="text-[13px] text-slate-600 dark:text-slate-400">
+                {clinicConfig?.contact?.email || profile?.email || 'Not provided'}
+              </p>
             </div>
           </div>
 
