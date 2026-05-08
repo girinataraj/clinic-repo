@@ -119,6 +119,7 @@ export interface UpdateEvaluationPayload {
   visitType?: VisitType;
   musclePowerRom?: Record<string, unknown>;
   anthropometrics?: Record<string, unknown>;
+  clinicalExamination?: Record<string, unknown>;
   status?: 'draft' | 'submitted' | 'reviewed';
 }
 
@@ -146,6 +147,7 @@ export interface CreateEvaluationPayload {
   associatedPains?: string[];
   musclePowerRom?: Record<string, unknown>;
   anthropometrics?: Record<string, unknown>;
+  clinicalExamination?: Record<string, unknown>;
 }
 
 // ─── Appointment ───────────────────────────────────────────────────────────────

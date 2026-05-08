@@ -2,6 +2,7 @@ import { type ChangeEvent } from 'react';
 import { SectionCard, FormField, inputClass, doctorInputClass, MultiSelectDropdown, ToggleChip } from './FormComponents';
 import { CHIEF_COMPLAINT_OPTIONS, ASSOCIATED_SYMPTOM_OPTIONS, MEDICAL_HISTORY_OPTIONS, FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS } from './clinicalConfig';
 import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown, Stethoscope, FileSearch, PenTool } from 'lucide-react';
+import { ClinicalExamination } from './ClinicalExamination';
 
 // ── Step 0: Patient Info ──────────────────────────────────────────────────────
 export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handlePhotoChange, handlePhotoRemove, photoInputKey, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user }: any) {
@@ -225,24 +226,21 @@ export function StepPainScale({ painLevel, setPainLevel, isDoctorRole }: any) {
 }
 
 // ── Step 5: Examination ───────────────────────────────────────────────────────
-export function StepExamination({ examination, setExamination, isDoctorRole }: any) {
-  const ic = isDoctorRole ? doctorInputClass : inputClass;
-  const accent = isDoctorRole ? 'doctor' : 'blue';
-  const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-blue-600';
-
+export function StepExamination({ examination, setExamination, isDoctorRole, chiefComplaints, clinicalExamData, onClinicalExamChange }: any) {
   return (
-    <SectionCard icon={<Stethoscope size={18} className={`${iconColor} dark:text-blue-400`} />} title="Clinical Examination" subtitle="Observations & physical findings" accent={accent}>
-      <FormField label="Examination Notes">
-        <textarea
-          value={examination}
-          onChange={(e: any) => setExamination(e.target.value)}
-          placeholder="Enter clinical examination findings, ROM, muscle power, etc…"
-          className={`${ic} h-[200px] resize-none`}
-        />
-      </FormField>
-    </SectionCard>
+    <ClinicalExamination
+      chiefComplaints={chiefComplaints ?? []}
+      clinicalExamData={clinicalExamData ?? { tests: {}, imaging: {} }}
+      onChange={onClinicalExamChange ?? (() => {})}
+      examinationNotes={examination}
+      onExaminationNotesChange={setExamination}
+      isDoctorRole={isDoctorRole}
+    />
   );
 }
+
+
+
 
 // ── Step 6: Diagnosis ─────────────────────────────────────────────────────────
 export function StepDiagnosis({ diagnosis, setDiagnosis, isDoctorRole }: any) {

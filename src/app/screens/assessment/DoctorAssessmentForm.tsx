@@ -6,7 +6,7 @@ import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEval
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
 import { useStaffUsers } from '../../../hooks/useStaff';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search } from 'lucide-react';
-import { ASSESSMENT_STEPS, type RomData, type Anthropometrics } from './clinicalConfig';
+import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam } from './clinicalConfig';
 import { SectionCard, FormField, doctorInputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
 import { RomMatrix } from './RomMatrix';
@@ -56,6 +56,7 @@ export function DoctorAssessmentForm() {
   const [funcRatings, setFuncRatings] = useState<Record<string,number>>({});
   const [romData, setRomData] = useState<RomData>({});
   const [anthropometrics, setAnthropometrics] = useState<Anthropometrics>({height:'',weight:'',bmi:'',excessWeight:'',excessCalorie:'',duration:'',waist:'',hip:'',whRatio:''});
+  const [clinicalExamData, setClinicalExamData] = useState<ClinicalExamData>(getEmptyClinicalExam());
   const [intakePhoto, setIntakePhoto] = useState<File|null>(null);
   const [intakePhotoUrl, setIntakePhotoUrl] = useState<string|null>(null);
   const [photoInputKey, setPhotoInputKey] = useState(0);
@@ -135,6 +136,7 @@ export function DoctorAssessmentForm() {
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
         anthropometrics: hasAnthro ? anthropometrics : undefined,
+        clinicalExamination: (Object.keys(clinicalExamData.tests).length > 0 || Object.keys(clinicalExamData.imaging).length > 0) ? clinicalExamData : undefined,
       });
       setSaved(true);
       setTimeout(() => navigate(`/${currentRole}/session/${resolvedPatientId}`), 2000);
@@ -271,7 +273,7 @@ export function DoctorAssessmentForm() {
           {step===2&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} />}
           {step===3&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} />}
           {step===4&&<StepPainScale painLevel={painLevel} setPainLevel={setPainLevel} isDoctorRole={isDoctorRole} />}
-          {step===5&&<StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} />}
+          {step===5&&<StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} chiefComplaints={chiefComplaints} clinicalExamData={clinicalExamData} onClinicalExamChange={setClinicalExamData} />}
           {step===6&&<StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} />}
           {step===7&&<StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} />}
 
@@ -285,6 +287,7 @@ export function DoctorAssessmentForm() {
                 <div className="flex flex-col gap-0 mt-3 bg-slate-50 dark:bg-slate-800/50 rounded-[20px] p-2 border border-slate-100 dark:border-slate-800">{[
                   {l:'Patient',v:patientInfo.name||'—'},{l:'Age',v:patientInfo.age||'—'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'—'},
                   {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'—'},
+                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : '—'; })()},
                   {l:'Diagnosis',v:diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : '—'},
                 ].map(r=><div key={r.l} className="flex items-center justify-between py-4 px-4 border-b border-slate-100 dark:border-slate-800/50 last:border-0"><span className="text-[14px] text-slate-500 dark:text-slate-400 font-bold">{r.l}</span><span className="text-[14px] text-slate-900 dark:text-white font-extrabold">{r.v}</span></div>)}</div>
               </SectionCard>

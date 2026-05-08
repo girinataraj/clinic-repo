@@ -32,7 +32,7 @@ export const ROM_CONFIG: RomSection[] = [
 // ── Chief Complaints & Associated Symptoms ────────────────────────────────────
 export const CHIEF_COMPLAINT_OPTIONS = [
   'NECK', 'SHOULDER', 'ARM', 'ELBOW', 'WRIST',
-  'UPPER BACK', 'LOWER BACK', 'GLUTEALS', 'THIGH',
+  'UPPER BACK', 'LOWER BACK', 'HIP', 'GLUTEALS', 'THIGH',
   'KNEE', 'ANKLE', 'FOOT', 'Another'
 ];
 
@@ -145,4 +145,102 @@ export function calcWHRatio(waist: string, hip: string): string {
   const h = parseFloat(hip);
   if (!w || !h || h <= 0) return '';
   return (w / h).toFixed(2);
+}
+
+// ── Clinical Examination — complaint-driven tests ─────────────────────────────
+
+export type TestResult = 'Positive' | 'Negative' | 'Not Tested';
+
+export interface ClinicalTestDef {
+  name: string;
+}
+
+export interface RegionTestGroup {
+  region: string;                // display label, e.g. "Neck"
+  complaint: string;             // matched against CHIEF_COMPLAINT_OPTIONS value
+  tests: ClinicalTestDef[];
+}
+
+/**
+ * Mapping from Chief Complaint → clinical tests.
+ * When a complaint is selected, the corresponding tests become visible.
+ */
+export const CLINICAL_TEST_MAP: RegionTestGroup[] = [
+  {
+    region: 'Neck',
+    complaint: 'NECK',
+    tests: [
+      { name: 'Spurling Test' },
+    ],
+  },
+  {
+    region: 'Shoulder',
+    complaint: 'SHOULDER',
+    tests: [
+      { name: 'Neer Impingement Test' },
+      { name: 'Empty Can Test' },
+      { name: 'Full Can Test' },
+      { name: 'Crank Test' },
+      { name: 'Cross-over Test' },
+    ],
+  },
+  {
+    region: 'Elbow',
+    complaint: 'ELBOW',
+    tests: [
+      { name: 'Cozen Test' },
+      { name: 'Reverse Cozen Test' },
+    ],
+  },
+  {
+    region: 'Wrist',
+    complaint: 'WRIST',
+    tests: [
+      { name: "Phalen's Test" },
+      { name: "Finkelstein's Test" },
+    ],
+  },
+  {
+    region: 'Hip',
+    complaint: 'HIP',
+    tests: [
+      { name: 'SLR (Straight Leg Raise)' },
+      { name: 'FABER' },
+      { name: 'FADDIR' },
+    ],
+  },
+  {
+    region: 'Knee',
+    complaint: 'KNEE',
+    tests: [
+      { name: 'Anterior Drawer Test' },
+      { name: 'Posterior Drawer Test' },
+      { name: "McMurray's Test" },
+    ],
+  },
+];
+
+/** Per-test result keyed by "Region_TestName" */
+export interface ClinicalExamEntry {
+  result: TestResult;
+}
+
+/** Per-region imaging findings */
+export interface ImagingFindings {
+  xray: string;
+  mri: string;
+}
+
+/** Complete clinical examination data shape */
+export interface ClinicalExamData {
+  tests: Record<string, ClinicalExamEntry>;    // key: "Neck_Spurling Test"
+  imaging: Record<string, ImagingFindings>;     // key: region name e.g. "Neck"
+}
+
+export function getClinicalTestKey(region: string, testName: string): string {
+  return `${region}_${testName}`;
+}
+
+export function getEmptyClinicalExam(): ClinicalExamData {
+  return { tests: {}, imaging: {} };
 }
