@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
 import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEvaluations';
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
+import { useTreatments } from '../../../hooks/useTreatments';
 import { useStaffUsers } from '../../../hooks/useStaff';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
@@ -71,6 +72,16 @@ export function DoctorAssessmentForm() {
   const { data: previousEval } = useLatestEvaluation(resolvedPatientId || null);
   const isFollowUp = Boolean(previousEval);
 
+  // Billing calculation
+  const { data: treatments = [] } = useTreatments();
+  const selectedTreatmentNames = [
+    ...treatmentPlanData.modalities,
+    ...treatmentPlanData.manualTherapy,
+    ...treatmentPlanData.rehabilitation
+  ];
+  const matchedTreatments = treatments.filter(t => selectedTreatmentNames.includes(t.treatmentName));
+  const billTotal = matchedTreatments.reduce((sum, t) => sum + t.charge, 0);
+
   useEffect(() => {
     if (patientById && !foundPatient && resolvedPatientId) {
       setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??''});
@@ -110,7 +121,7 @@ export function DoctorAssessmentForm() {
   const handleSave = async () => {
     setSubmitError(null);
     if (!resolvedPatientId) { setSubmitError('No patient resolved.'); return; }
-    if (!paymentMode||!billAmount||billAmount<=0) { setSubmitError('Payment details required.'); return; }
+    if (!paymentMode || billTotal <= 0) { setSubmitError('Please select treatments and a payment mode.'); return; }
     const vitalsPayload: Record<string,unknown> = {};
     if (vitals.bp_sys&&vitals.bp_dia) vitalsPayload.bp=`${vitals.bp_sys}/${vitals.bp_dia}`;
     if (vitals.pr) vitalsPayload.pr=Number(vitals.pr);
@@ -142,7 +153,7 @@ export function DoctorAssessmentForm() {
         } : undefined,
         management: examinationNotes.trim() || undefined,
         status: 'submitted',
-        paymentMode, billAmount, visitType,
+        paymentMode, billAmount: billTotal, visitType,
         associatedPains: chiefComplaints.length>0 ? chiefComplaints : undefined,
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
@@ -304,14 +315,38 @@ export function DoctorAssessmentForm() {
                 ].map(r=><div key={r.l} className="flex items-center justify-between py-4 px-4 border-b border-slate-100 dark:border-slate-800/50 last:border-0"><span className="text-[14px] text-slate-500 dark:text-slate-400 font-bold">{r.l}</span><span className="text-[14px] text-slate-900 dark:text-white font-extrabold">{r.v}</span></div>)}</div>
               </SectionCard>
               <SectionCard icon={<CreditCard size={20} className="text-amber-600 dark:text-amber-400" />} title="Payment Details" subtitle="Required to submit" accent="amber">
+                
+                {/* Auto-calculated total */}
+                {matchedTreatments.length > 0 && (
+                  <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 border border-teal-200 dark:border-teal-800">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wider">Auto-calculated Total</span>
+                      <span className="text-[18px] font-black text-teal-800 dark:text-teal-300">₹{formatRupees(billTotal)}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {matchedTreatments.map((t) => (
+                        <span key={t.id} className="text-[10px] font-bold text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-900/40 px-1.5 py-0.5 rounded">
+                          {t.treatmentName} · ₹{t.charge}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <FormField label="Mode of Payment">
                   <div className="flex gap-3">{['Cash','UPI'].map(m=><button key={m} onClick={()=>{setPaymentMode(m as any);setSubmitError(null);}} className={`flex-1 py-4 rounded-[18px] text-[14px] font-black border-2 transition-transform active:scale-95 ${paymentMode===m?'border-amber-600 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300':'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>{m}</button>)}</div>
                 </FormField>
+                
                 <FormField label="Bill Amount">
-                  <div className={`flex items-center gap-4 px-5 py-4 rounded-[18px] border bg-slate-50 dark:bg-slate-900 transition-all ${!paymentMode&&submitError?'border-red-400 bg-red-50':'border-slate-200 dark:border-slate-700 focus-within:border-[#262842] focus-within:ring-2 focus-within:ring-indigo-500/20'}`}>
-                    <span className="text-[18px] font-black text-slate-400 dark:text-slate-500">₹</span>
-                    <input type="text" inputMode="numeric" value={billAmountInput} onChange={e=>handleBillAmountChange(e.target.value)} placeholder="0" className="flex-1 bg-transparent outline-none text-[18px] font-extrabold text-slate-900 dark:text-white placeholder:text-slate-400" />
+                  <div className="flex items-center gap-4 px-5 py-4 rounded-[18px] border border-[#262842] dark:border-indigo-700 bg-slate-50 dark:bg-slate-900">
+                    <span className="text-[18px] font-black text-slate-500 dark:text-slate-400">₹</span>
+                    <span className="flex-1 text-[18px] font-extrabold text-slate-900 dark:text-white">
+                      {billTotal > 0 ? formatRupees(billTotal) : '—'}
+                    </span>
                   </div>
+                  <p className="text-[12px] text-[#262842] dark:text-indigo-400 font-semibold mt-1.5">
+                    {billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7.' : 'Select treatments in Step 7 to auto-fill.'}
+                  </p>
                 </FormField>
               </SectionCard>
               <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-5 rounded-[22px] flex items-center justify-center gap-3 text-white text-[16px] font-black shadow-xl shadow-indigo-600/30 disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] transition-all active:scale-[0.98]">
