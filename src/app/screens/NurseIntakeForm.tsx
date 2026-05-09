@@ -6,6 +6,8 @@ import { useCreateEvaluation, useLatestEvaluation } from '../../hooks/useEvaluat
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../hooks/usePatients';
 import { useStaffUsers } from '../../hooks/useStaff';
 import { useAppConfigScope } from '../../hooks/useAppConfig';
+import { useTreatments } from '../../hooks/useTreatments';
+import type { Treatment } from '../../hooks/useTreatments';
 import type { AppConfigScopes } from '../../hooks/useAppConfig';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, User, Heart, Phone, Search, UserPlus,
@@ -293,9 +295,34 @@ export function NurseIntakeForm() {
   const [intakePhotoUrl, setIntakePhotoUrl] = useState<string | null>(null);
   const [photoInputKey, setPhotoInputKey] = useState(0);
   const [paymentMode, setPaymentMode] = useState<'Cash' | 'UPI' | ''>('');
-  const [billAmount, setBillAmount] = useState<number | null>(null);
-  const [billAmountInput, setBillAmountInput] = useState('');
   const [visitType, setVisitType] = useState<'Clinic' | 'Home Visit' | 'IP' | 'Day Care'>('Clinic');
+  const [selectedTreatmentIds, setSelectedTreatmentIds] = useState<string[]>([]);
+
+  // Fetch treatment prices from DB
+  const { data: treatments = [] } = useTreatments();
+
+  // Compute bill total directly from selected treatments (instant, no useEffect lag)
+  const billTotal = selectedTreatmentIds.length === 0
+    ? 0
+    : treatments
+        .filter((t) => selectedTreatmentIds.includes(String(t.id)))
+        .reduce((sum, t) => sum + t.charge, 0);
+
+
+  const toggleTreatment = (id: string) => {
+    setSubmitError(null);
+    setSelectedTreatmentIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+
+  // Group treatments by category
+  const treatmentsByCategory = treatments.reduce<Record<string, Treatment[]>>((acc, t) => {
+    if (!acc[t.category]) acc[t.category] = [];
+    acc[t.category].push({ ...t, id: String(t.id) });
+    return acc;
+  }, {});
 
   // Associated pains options
   const associatedPainOptions = [
@@ -356,29 +383,12 @@ export function NurseIntakeForm() {
   }, [intakePhoto]);
 
   const isPhotoUploaded = Boolean(intakePhoto);
-  const isPaymentComplete = Boolean(paymentMode && billAmount && billAmount > 0);
+  const isPaymentComplete = Boolean(paymentMode && billTotal > 0);
 
   const formatRupees = (amount: number) => new Intl.NumberFormat('en-IN').format(amount);
 
-  const handleBillAmountChange = (value: string) => {
-    setSubmitError(null);
-    const digits = value.replace(/[^\d]/g, '');
-    if (!digits) {
-      setBillAmount(null);
-      setBillAmountInput('');
-      return;
-    }
 
-    const normalized = Number(digits);
-    if (Number.isNaN(normalized)) {
-      setBillAmount(null);
-      setBillAmountInput('');
-      return;
-    }
 
-    setBillAmount(normalized);
-    setBillAmountInput(formatRupees(normalized));
-  };
 
   const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -410,8 +420,8 @@ export function NurseIntakeForm() {
       return;
     }
 
-    if (!paymentMode || !billAmount || billAmount <= 0) {
-      setSubmitError('Payment mode and bill amount are required before submission.');
+    if (!paymentMode || billTotal <= 0) {
+      setSubmitError('Please select at least one treatment and choose a payment mode.');
       return;
     }
 
@@ -440,7 +450,7 @@ export function NurseIntakeForm() {
         medicalHistory: finalHistory.length > 0 ? finalHistory : undefined,
         status: 'submitted',
         paymentMode,
-        billAmount,
+        billAmount: billTotal,
         visitType,
         associatedPains: associatedPains.length > 0 ? associatedPains : undefined,
       });
@@ -1300,8 +1310,8 @@ export function NurseIntakeForm() {
                   { label: 'Intake Photo', value: isPhotoUploaded ? 'Uploaded' : 'Not uploaded' },
                   {
                     label: 'Payment',
-                    value: paymentMode && billAmount
-                      ? `${paymentMode} · ₹${formatRupees(billAmount)}`
+                    value: paymentMode && billTotal > 0
+                      ? `${paymentMode} · ₹${formatRupees(billTotal)}`
                       : 'Required',
                   },
                 ].map((item) => (
@@ -1313,6 +1323,80 @@ export function NurseIntakeForm() {
               </div>
             </div>
 
+            {/* Treatment Selection */}
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="rounded-xl flex items-center justify-center w-9 h-9 bg-teal-50 dark:bg-teal-900/30">
+                  <Activity size={18} className="text-teal-600 dark:text-teal-400" />
+                </div>
+                <div>
+                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Select Treatments</h2>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                    {selectedTreatmentIds.length > 0
+                      ? `${selectedTreatmentIds.length} treatment${selectedTreatmentIds.length > 1 ? 's' : ''} selected`
+                      : 'Choose the treatments provided today'}
+                  </p>
+                </div>
+              </div>
+
+              {Object.entries(treatmentsByCategory).map(([category, items]) => (
+                <div key={category} className="mb-4 last:mb-0">
+                  <p className="text-[11px] font-black text-indigo-900 dark:text-indigo-400 mb-2 uppercase tracking-widest">
+                    {category}
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {items.map((t) => {
+                      const isSelected = selectedTreatmentIds.includes(t.id);
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => toggleTreatment(t.id)}
+                          className={`flex items-center gap-3 p-3 rounded-xl text-left border-[1.5px] transition-colors ${
+                            isSelected
+                              ? 'border-teal-600 dark:border-teal-500 bg-teal-50 dark:bg-teal-900/20'
+                              : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                          }`}
+                        >
+                          <div
+                            className={`rounded-lg flex items-center justify-center shrink-0 w-[22px] h-[22px] border-2 ${
+                              isSelected
+                                ? 'bg-teal-600 border-teal-600 dark:bg-teal-500 dark:border-teal-500'
+                                : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600'
+                            }`}
+                          >
+                            {isSelected && <Check size={13} strokeWidth={3} color="white" />}
+                          </div>
+                          <span className={`flex-1 text-[13px] ${
+                            isSelected
+                              ? 'font-bold text-teal-800 dark:text-teal-300'
+                              : 'font-semibold text-slate-600 dark:text-slate-300'
+                          }`}>
+                            {t.treatmentName}
+                          </span>
+                          <span className={`text-[12px] font-extrabold ${
+                            isSelected
+                              ? 'text-teal-700 dark:text-teal-300'
+                              : 'text-slate-400 dark:text-slate-500'
+                          }`}>
+                            ₹{formatRupees(t.charge)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              {treatments.length === 0 && (
+                <div className="flex items-center gap-2 py-4 justify-center">
+                  <Loader2 size={14} className="animate-spin text-slate-400" />
+                  <span className="text-[12px] text-slate-400 font-semibold">Loading treatments…</span>
+                </div>
+              )}
+            </div>
+
+            {/* Payment Details */}
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 mb-4">
                 <div className="rounded-xl flex items-center justify-center w-9 h-9 bg-amber-50 dark:bg-amber-900/30">
@@ -1325,6 +1409,25 @@ export function NurseIntakeForm() {
                   </p>
                 </div>
               </div>
+
+              {/* Auto-calculated total */}
+              {selectedTreatmentIds.length > 0 && (
+                <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 border border-teal-200 dark:border-teal-800">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wider">Auto-calculated Total</span>
+                    <span className="text-[18px] font-black text-teal-800 dark:text-teal-300">₹{formatRupees(billTotal)}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {treatments
+                      .filter((t) => selectedTreatmentIds.includes(t.id))
+                      .map((t) => (
+                        <span key={t.id} className="text-[10px] font-bold text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-900/40 px-1.5 py-0.5 rounded">
+                          {t.treatmentName} · ₹{t.charge}
+                        </span>
+                      ))}
+                  </div>
+                </div>
+              )}
 
               <div className="mb-3">
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
@@ -1355,27 +1458,16 @@ export function NurseIntakeForm() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
-                  Bill Amount
+                  Bill Amount {selectedTreatmentIds.length > 0 && <span className="text-teal-600 dark:text-teal-400">(auto-filled)</span>}
                 </label>
-                <div
-                  className={`flex items-center gap-2 px-3.5 py-3 rounded-xl border bg-slate-50 dark:bg-slate-800 transition-colors ${
-                    !isPaymentComplete && submitError
-                      ? 'border-red-300 dark:border-red-500'
-                      : 'border-slate-200 dark:border-slate-700'
-                  }`}
-                >
+                <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-teal-300 dark:border-teal-700">
                   <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">₹</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={billAmountInput}
-                    onChange={(e) => handleBillAmountChange(e.target.value)}
-                    placeholder="0"
-                    className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
-                  />
+                  <span className="flex-1 text-sm font-bold text-slate-900 dark:text-white">
+                    {billTotal > 0 ? formatRupees(billTotal) : '—'}
+                  </span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-1">
-                  Enter the total amount for today's intake.
+                <p className="text-[11px] text-teal-600 dark:text-teal-400 font-semibold mt-1">
+                  {billTotal > 0 ? 'Auto-calculated from selected treatments.' : 'Select treatments above to auto-fill.'}
                 </p>
               </div>
             </div>

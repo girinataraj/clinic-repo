@@ -84,4 +84,8 @@ export const ENDPOINTS = {
     MARK_ALL_READ: '/notifications/mark-all-read',
     UNREAD_COUNT: '/notifications/unread-count',
   },
+
+  TREATMENTS: {
+    LIST: '/treatments',
+  },
 } as const;
