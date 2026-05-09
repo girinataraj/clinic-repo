@@ -100,7 +100,7 @@ export function MultiSelectDropdown({ options, selected, onChange, placeholder, 
         <ChevronDown size={12} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </div>
         {open && (
-          <div className="absolute z-30 left-0 right-0 bottom-full mb-1 max-h-44 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl">
+          <div className="absolute z-30 left-0 right-0 top-full mt-1 max-h-44 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl">
           {filtered.length === 0 && <p className="px-3 py-3 text-[11px] text-slate-400 text-center font-semibold">No results</p>}
           {filtered.map(item => {
             const isSelected = selected.includes(item);
