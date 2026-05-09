@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import {
-  ALL_TREATMENT_OPTIONS,
   type FollowUpMode,
   type FollowUpSessionData,
 } from './assessment/clinicalConfig';
@@ -24,6 +23,7 @@ interface FollowUpSectionProps {
   previousTreatmentPlan?: Record<string, unknown> | null;
   /** Assigned exercises from the patient's exercise plan */
   exercises: { title: string; sets?: number; reps?: number }[];
+  allTreatments?: any[];
 }
 
 const MODE_CONFIG: { key: FollowUpMode; label: string; icon: typeof RefreshCw; desc: string }[] = [
@@ -33,7 +33,7 @@ const MODE_CONFIG: { key: FollowUpMode; label: string; icon: typeof RefreshCw; d
 ];
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export function FollowUpSection({ followUp, onChange, previousTreatmentPlan, exercises }: FollowUpSectionProps) {
+export function FollowUpSection({ followUp, onChange, previousTreatmentPlan, exercises, allTreatments }: FollowUpSectionProps) {
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestRef = useRef<HTMLDivElement>(null);
@@ -76,15 +76,16 @@ export function FollowUpSection({ followUp, onChange, previousTreatmentPlan, exe
   };
 
   // Filter suggestions: exclude already-selected, match search
-  const filteredSuggestions = ALL_TREATMENT_OPTIONS.filter(
-    opt =>
+  const ALL_TREATMENT_NAMES = (allTreatments || []).map((t: any) => t.treatmentName);
+  const filteredSuggestions = ALL_TREATMENT_NAMES.filter(
+    (opt: string) =>
       !followUp.otherTreatments.includes(opt) &&
       opt.toLowerCase().includes(search.toLowerCase())
   );
-  const showCustomAdd = search.trim() && !ALL_TREATMENT_OPTIONS.some(
-    o => o.toLowerCase() === search.trim().toLowerCase()
+  const showCustomAdd = search.trim() && !ALL_TREATMENT_NAMES.some(
+    (o: string) => o.toLowerCase() === search.trim().toLowerCase()
   ) && !followUp.otherTreatments.some(
-    o => o.toLowerCase() === search.trim().toLowerCase()
+    (o: string) => o.toLowerCase() === search.trim().toLowerCase()
   );
 
   // Extract previous plan items for preview

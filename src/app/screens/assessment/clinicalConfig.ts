@@ -30,11 +30,7 @@ export const ROM_CONFIG: RomSection[] = [
 ];
 
 // ── Chief Complaints & Associated Symptoms ────────────────────────────────────
-export const CHIEF_COMPLAINT_OPTIONS = [
-  'NECK', 'SHOULDER', 'ARM', 'ELBOW', 'WRIST',
-  'UPPER BACK', 'LOWER BACK', 'HIP', 'GLUTEALS', 'THIGH',
-  'KNEE', 'ANKLE', 'FOOT', 'Another'
-];
+
 
 export const SPECIFIC_PROBLEM_OPTIONS = [
   { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: 'dynamic' },
@@ -47,38 +43,7 @@ export const SPECIFIC_PROBLEM_OPTIONS = [
   { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'sleeping'] }
 ];
 
-export const ASSOCIATED_SYMPTOM_OPTIONS = [
-  'Haemoptysis',
-  'Hoarseness',
-  'Voice Change',
-  'Dizziness',
-  'Headache',
-  'Altered Sensorium',
-  'Ankle Swelling',
-  'Cyanosis',
-  'Excessive Sweating',
-  'Nausea',
-  'Vomiting',
-  'Weight Loss',
-  'Fatigue',
-  'Weakness',
-  'Exercise Intolerance',
-  'Altered Sleep Pattern',
-];
 
-// ── Medical History Options ───────────────────────────────────────────────────
-export const MEDICAL_HISTORY_OPTIONS = [
-  'Diabetes',
-  'Hypertension',
-  'Heart Disease',
-  'Previous Surgery',
-  'Allergies',
-  'Asthma / COPD',
-  'Thyroid Disorder',
-  'Neurological Condition',
-  'Renal Disorder',
-  'Liver Disorder',
-];
 
 // ── Functional Activities ─────────────────────────────────────────────────────
 export const FUNCTIONAL_ACTIVITIES = [
@@ -149,28 +114,7 @@ export function calcWHRatio(waist: string, hip: string): string {
 
 // ── Treatment Plan Options ────────────────────────────────────────────────────
 
-export const TREATMENT_MODALITIES: string[] = [
-  'UST (Ultrasound Therapy)',
-  'IFT (Interferential Therapy)',
-  'SWD (Short Wave Diathermy)',
-  'Traction',
-  'Wax bath',
-  'EST (Electrical Stimulation Therapy)',
-  'SHT',
-  'LASER',
-];
 
-export const TREATMENT_MANUAL_THERAPY: string[] = [
-  'Mobilisation',
-  'Dry needling',
-];
-
-export const TREATMENT_REHABILITATION: string[] = [
-  'Exercise',
-  'Stretching',
-  'ROM Exercises',
-  'Strengthening',
-];
 
 export interface TreatmentPlanData {
   modalities: string[];
@@ -199,15 +143,7 @@ export function getTreatmentSelectionCount(tp: TreatmentPlanData): number {
   return tp.modalities.length + tp.manualTherapy.length + tp.rehabilitation.length;
 }
 
-/**
- * Combined master list of all treatment options.
- * Used as autocomplete suggestions in the Session follow-up "Others" mode.
- */
-export const ALL_TREATMENT_OPTIONS: string[] = [
-  ...TREATMENT_MODALITIES,
-  ...TREATMENT_MANUAL_THERAPY,
-  ...TREATMENT_REHABILITATION,
-];
+
 
 // ── Follow-up Session Data ────────────────────────────────────────────────────
 
@@ -227,78 +163,20 @@ export function getEmptyFollowUp(): FollowUpSessionData {
 
 // ── Diagnosis Options ─────────────────────────────────────────────────────────
 
-export const DIAGNOSIS_OPTIONS: string[] = [
-  'Cervical spondylosis',
-  'Cervical disc disease',
-  'Cervical facet joint arthritis',
-  'Cervical root radiculopathy',
-  'Trapezitis',
-  'Rhomboids trigger',
-  'Shoulder impingement syndrome',
-  'Post traumatic shoulder',
-  'Sub-acromial bursitis',
-  'Sub-deltoid bursitis',
-  'Supraspinatus tendinitis',
-  'Rotator cuff tendinitis',
-  'Tennis elbow',
-  "Golfer's elbow",
-  'Carpal tunnel syndrome',
-  'Trigger finger',
-  "De Quervain's disease",
-  'Mechanical back pain',
-  'Sacroiliac syndrome / strain',
-  'Piriformis syndrome',
-  'Quadratus lumborum syndrome',
-  'Lumbar spondylosis',
-  'Lumbar disc disease',
-  'Lumbar radiculopathy (sciatica)',
-  'Lumbar canal stenosis',
-  'IT band syndrome',
-  'Hip osteoarthritis',
-  'Osteoarthritis (knee)',
-  'Ligament injuries – ACL / PCL / meniscal / LCL / MCL',
-  'Patellofemoral arthritis',
-  'Ankle sprain',
-  'Plantar fasciitis',
-  'Metatarsalgia',
-];
-
-/**
- * Maps a Chief Complaint keyword to relevant diagnosis indices (0-based)
- * within DIAGNOSIS_OPTIONS. Used to sort related diagnoses to the top.
- */
-export const COMPLAINT_DIAGNOSIS_RELEVANCE: Record<string, number[]> = {
-  'NECK':        [0, 1, 2, 3, 4, 5],
-  'SHOULDER':    [6, 7, 8, 9, 10, 11],
-  'ELBOW':       [12, 13],
-  'WRIST':       [14, 15, 16],
-  'UPPER BACK':  [4, 5],
-  'LOWER BACK':  [17, 18, 19, 20, 21, 22, 23, 24],
-  'HIP':         [19, 25, 26],
-  'GLUTEALS':    [19, 18],
-  'THIGH':       [25],
-  'KNEE':        [27, 28, 29],
-  'ANKLE':       [30],
-  'FOOT':        [31, 32],
-};
-
-/**
- * Returns diagnosis options sorted so that complaint-relevant items appear first.
- */
-export function getSortedDiagnoses(chiefComplaints: string[]): string[] {
-  if (chiefComplaints.length === 0) return DIAGNOSIS_OPTIONS;
+export function getSortedDiagnoses(chiefComplaints: string[], diagnosisOptions: string[], relevanceMap: Record<string, number[]>): string[] {
+  if (chiefComplaints.length === 0) return diagnosisOptions;
 
   const relevantIndices = new Set<number>();
   for (const cc of chiefComplaints) {
-    const indices = COMPLAINT_DIAGNOSIS_RELEVANCE[cc];
+    const indices = relevanceMap[cc];
     if (indices) indices.forEach(i => relevantIndices.add(i));
   }
 
-  if (relevantIndices.size === 0) return DIAGNOSIS_OPTIONS;
+  if (relevantIndices.size === 0) return diagnosisOptions;
 
   const relevant: string[] = [];
   const rest: string[] = [];
-  DIAGNOSIS_OPTIONS.forEach((d, i) => {
+  diagnosisOptions.forEach((d, i) => {
     if (relevantIndices.has(i)) relevant.push(d);
     else rest.push(d);
   });
@@ -320,64 +198,7 @@ export interface RegionTestGroup {
   tests: ClinicalTestDef[];
 }
 
-/**
- * Mapping from Chief Complaint → clinical tests.
- * When a complaint is selected, the corresponding tests become visible.
- */
-export const CLINICAL_TEST_MAP: RegionTestGroup[] = [
-  {
-    region: 'Neck',
-    complaint: 'NECK',
-    tests: [
-      { name: 'Spurling Test' },
-    ],
-  },
-  {
-    region: 'Shoulder',
-    complaint: 'SHOULDER',
-    tests: [
-      { name: 'Neer Impingement Test' },
-      { name: 'Empty Can Test' },
-      { name: 'Full Can Test' },
-      { name: 'Crank Test' },
-      { name: 'Cross-over Test' },
-    ],
-  },
-  {
-    region: 'Elbow',
-    complaint: 'ELBOW',
-    tests: [
-      { name: 'Cozen Test' },
-      { name: 'Reverse Cozen Test' },
-    ],
-  },
-  {
-    region: 'Wrist',
-    complaint: 'WRIST',
-    tests: [
-      { name: "Phalen's Test" },
-      { name: "Finkelstein's Test" },
-    ],
-  },
-  {
-    region: 'Hip',
-    complaint: 'HIP',
-    tests: [
-      { name: 'SLR (Straight Leg Raise)' },
-      { name: 'FABER' },
-      { name: 'FADDIR' },
-    ],
-  },
-  {
-    region: 'Knee',
-    complaint: 'KNEE',
-    tests: [
-      { name: 'Anterior Drawer Test' },
-      { name: 'Posterior Drawer Test' },
-      { name: "McMurray's Test" },
-    ],
-  },
-];
+
 
 /** Per-test result keyed by "Region_TestName" */
 export interface ClinicalExamEntry {

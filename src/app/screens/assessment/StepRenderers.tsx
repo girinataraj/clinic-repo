@@ -1,6 +1,6 @@
 import { type ChangeEvent } from 'react';
 import { SectionCard, FormField, inputClass, doctorInputClass, MultiSelectDropdown, ToggleChip } from './FormComponents';
-import { CHIEF_COMPLAINT_OPTIONS, ASSOCIATED_SYMPTOM_OPTIONS, MEDICAL_HISTORY_OPTIONS, FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS, DIAGNOSIS_OPTIONS, COMPLAINT_DIAGNOSIS_RELEVANCE, getSortedDiagnoses, TREATMENT_MODALITIES, TREATMENT_MANUAL_THERAPY, TREATMENT_REHABILITATION, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
+import { FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS, getSortedDiagnoses, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown, Stethoscope, FileSearch, PenTool, CalendarDays } from 'lucide-react';
 import { ClinicalExamination } from './ClinicalExamination';
 
@@ -104,7 +104,7 @@ export function StepVitals({ vitals, setVitals, isDoctorRole }: { vitals: any; s
 }
 
 // ── Step 2: Chief Complaints & Associated Symptoms ────────────────────────────
-export function StepComplaints({ chiefComplaints, setChiefComplaints, associatedSymptoms, setAssociatedSymptoms, complaintsText, setComplaintsText, specificProblems, setSpecificProblems, isDoctorRole }: any) {
+export function StepComplaints({ chiefComplaints, setChiefComplaints, associatedSymptoms, setAssociatedSymptoms, complaintsText, setComplaintsText, specificProblems, setSpecificProblems, isDoctorRole, chiefComplaintsList, associatedSymptomsList }: any) {
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const accent1 = isDoctorRole ? 'doctor' : 'fuchsia';
   const iconColor1 = isDoctorRole ? 'text-[#262842]' : 'text-fuchsia-600';
@@ -125,7 +125,7 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
     <div className="flex flex-col gap-4">
       <SectionCard icon={<CheckSquare size={18} className={`${iconColor1} dark:text-fuchsia-400`} />} title="Chief Complaints" subtitle="Select affected body parts" accent={accent1}>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
-          {CHIEF_COMPLAINT_OPTIONS.map(item => (
+          {(chiefComplaintsList || []).map((item: string) => (
             <ToggleChip key={item} label={item} checked={chiefComplaints.includes(item)} onChange={() => toggleCC(item)} accent={accent1} />
           ))}
         </div>
@@ -186,7 +186,7 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
       )}
 
       <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Associated Symptoms" subtitle="Select all that apply" accent={accent2}>
-        <MultiSelectDropdown options={ASSOCIATED_SYMPTOM_OPTIONS} selected={associatedSymptoms} onChange={setAssociatedSymptoms} placeholder="Search symptoms…" accent={accent2} />
+        <MultiSelectDropdown options={associatedSymptomsList || []} selected={associatedSymptoms} onChange={setAssociatedSymptoms} placeholder="Search symptoms…" accent={accent2} />
       </SectionCard>
     </div>
   );
@@ -226,7 +226,7 @@ export function StepPainScale({ painLevel, setPainLevel, isDoctorRole }: any) {
 }
 
 // ── Step 5: Examination ───────────────────────────────────────────────────────
-export function StepExamination({ examination, setExamination, isDoctorRole, chiefComplaints, clinicalExamData, onClinicalExamChange }: any) {
+export function StepExamination({ examination, setExamination, isDoctorRole, chiefComplaints, clinicalExamData, onClinicalExamChange, testMap }: any) {
   return (
     <ClinicalExamination
       chiefComplaints={chiefComplaints ?? []}
@@ -235,29 +235,28 @@ export function StepExamination({ examination, setExamination, isDoctorRole, chi
       examinationNotes={examination}
       onExaminationNotesChange={setExamination}
       isDoctorRole={isDoctorRole}
+      testMap={testMap || []}
     />
   );
 }
 
 
-
-
 // ── Step 6: Diagnosis ─────────────────────────────────────────────────────────
-export function StepDiagnosis({ diagnosis, setDiagnosis, isDoctorRole, selectedDiagnoses, setSelectedDiagnoses, chiefComplaints }: any) {
+export function StepDiagnosis({ diagnosis, setDiagnosis, isDoctorRole, selectedDiagnoses, setSelectedDiagnoses, chiefComplaints, diagnosisList, relevanceMap }: any) {
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const accent = isDoctorRole ? 'doctor' : 'fuchsia';
   const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-fuchsia-600';
 
   // Sort diagnosis options: complaint-relevant first
-  const sortedOptions = getSortedDiagnoses(chiefComplaints ?? []);
+  const sortedOptions = getSortedDiagnoses(chiefComplaints ?? [], diagnosisList || [], relevanceMap || {});
   const complaints: string[] = chiefComplaints ?? [];
 
   // Compute which options are "relevant" to highlight the divider
   const relevantSet = new Set<string>();
-  if (complaints.length > 0) {
+  if (complaints.length > 0 && relevanceMap && diagnosisList) {
     for (const cc of complaints) {
-      const indices = COMPLAINT_DIAGNOSIS_RELEVANCE[cc];
-      if (indices) indices.forEach(i => { if (DIAGNOSIS_OPTIONS[i]) relevantSet.add(DIAGNOSIS_OPTIONS[i]); });
+      const indices = relevanceMap[cc];
+      if (indices) indices.forEach((i: number) => { if (diagnosisList[i]) relevantSet.add(diagnosisList[i]); });
     }
   }
 
@@ -295,7 +294,7 @@ export function StepDiagnosis({ diagnosis, setDiagnosis, isDoctorRole, selectedD
 }
 
 // ── Step 7: Treatment Plan ────────────────────────────────────────────────────
-export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatmentPlan, setTreatmentPlan }: any) {
+export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatmentPlan, setTreatmentPlan, treatmentsList }: any) {
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const accent = isDoctorRole ? 'doctor' : 'emerald';
   const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-emerald-600';
@@ -321,12 +320,16 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
     </div>
   );
 
+  const modalities = (treatmentsList || []).filter((t: any) => t.category === 'Modalities').map((t: any) => t.treatmentName);
+  const manualTherapy = (treatmentsList || []).filter((t: any) => t.category === 'Manual Therapy').map((t: any) => t.treatmentName);
+  const rehab = (treatmentsList || []).filter((t: any) => t.category === 'Rehabilitation').map((t: any) => t.treatmentName);
+
   return (
     <div className="flex flex-col gap-4">
       <SectionCard icon={<PenTool size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Treatment Plan" subtitle="Management & follow-up" accent={accent}>
-        <ChipGroup label="Modalities / Treatment Given" items={TREATMENT_MODALITIES} field="modalities" />
-        <ChipGroup label="Manual Therapy" items={TREATMENT_MANUAL_THERAPY} field="manualTherapy" />
-        <ChipGroup label="Rehabilitation" items={TREATMENT_REHABILITATION} field="rehabilitation" />
+        <ChipGroup label="Modalities / Treatment Given" items={modalities} field="modalities" />
+        <ChipGroup label="Manual Therapy" items={manualTherapy} field="manualTherapy" />
+        <ChipGroup label="Rehabilitation" items={rehab} field="rehabilitation" />
       </SectionCard>
 
       <SectionCard icon={<CalendarDays size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Schedule & Follow-up" subtitle="Visits, frequency & planning" accent={accent}>
@@ -394,7 +397,7 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
 }
 
 // ── Step 6: Medical History ───────────────────────────────────────────────────
-export function StepHistory({ selectedMedicalHistory, setSelectedMedicalHistory, otherMedicalHistory, setOtherMedicalHistory, showOtherMedicalHistory, setShowOtherMedicalHistory, isDoctorRole }: any) {
+export function StepHistory({ selectedMedicalHistory, setSelectedMedicalHistory, otherMedicalHistory, setOtherMedicalHistory, showOtherMedicalHistory, setShowOtherMedicalHistory, isDoctorRole, medicalHistoryList }: any) {
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const accent = isDoctorRole ? 'doctor' : 'fuchsia';
   const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-fuchsia-600';
@@ -402,7 +405,7 @@ export function StepHistory({ selectedMedicalHistory, setSelectedMedicalHistory,
   return (
     <SectionCard icon={<ClipboardList size={18} className={`${iconColor} dark:text-fuchsia-400`} />} title="Medical History" subtitle="Past conditions & surgeries" accent={accent}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        {MEDICAL_HISTORY_OPTIONS.map(item => (
+        {(medicalHistoryList || []).map((item: string) => (
           <ToggleChip key={item} label={item} checked={selectedMedicalHistory.includes(item)} onChange={() => setSelectedMedicalHistory((prev: string[]) => prev.includes(item) ? prev.filter((x: string) => x !== item) : [...prev, item])} accent={accent} />
         ))}
       </div>

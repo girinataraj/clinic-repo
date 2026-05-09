@@ -4,7 +4,8 @@ import { BottomNav } from '../components/BottomNav';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import { PatientHistoryUpload } from '../components/PatientHistoryUpload';
 import { usePatient } from '../../hooks/usePatients';
-import { useLatestEvaluation, useUpdateEvaluation } from '../../hooks/useEvaluations';
+import { useLatestEvaluation, useUpdateEvaluation, useEvaluations } from '../../hooks/useEvaluations';
+import { Calendar, UserCheck } from 'lucide-react';
 import {
   ArrowLeft,
   Edit3,
@@ -14,12 +15,15 @@ import {
   CheckSquare,
   Stethoscope,
   StickyNote,
+  ClipboardList,
   Dumbbell,
   Save,
   ImagePlus,
 } from 'lucide-react';
 
 const funcLabels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
+const painColors = ['#22c55e', '#84cc16', '#a8d830', '#d4d830', '#facc15', '#f59e0b', '#fbbf24', '#f87171', '#ef4444', '#dc2626', '#b91c1c'];
+const funcColors: Record<number, string> = { 0: '#22c55e', 1: '#facc15', 2: '#f59e0b', 3: '#ef4444', 4: '#dc2626' };
 // Colors are now handled by classes, these are kept for reference or fallback logic if needed
 const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes', 'History'];
 
@@ -39,6 +43,14 @@ export function PatientDetailPage() {
     isError: evaluationError,
     error: evaluationErrorObj,
   } = useLatestEvaluation(patientId);
+
+  const {
+    data: allEvaluationsData,
+    isLoading: historyLoading,
+  } = useEvaluations({ patientId: patientId! });
+
+  const allEvaluations = allEvaluationsData?.data ?? [];
+
   const [activeTab, setActiveTab] = useState('Overview');
   const [editMode, setEditMode] = useState(false);
   const [diagnosis, setDiagnosis] = useState('');
@@ -69,30 +81,80 @@ export function PatientDetailPage() {
     }
   }, [editMode, evaluation?.diagnosis, evaluation?.management]);
 
-  const functionalEntries = useMemo(() => {
-    if (!evaluation?.functionalScores) return [] as Array<{ key: string; value: number }>;
-    return Object.entries(evaluation.functionalScores)
+  const mergedFunctionalEntries = useMemo(() => {
+    // Find latest evaluation with functional scores
+    const ev = allEvaluations.find(e => e.functionalScores && Object.keys(e.functionalScores).length > 0);
+    if (!ev?.functionalScores) return [] as Array<{ key: string; value: number }>;
+    return Object.entries(ev.functionalScores)
       .map(([key, value]) => {
         const numeric = typeof value === 'number' ? value : Number(value);
         if (!Number.isFinite(numeric)) return null;
         return { key, value: numeric };
       })
       .filter((entry): entry is { key: string; value: number } => entry !== null);
-  }, [evaluation?.functionalScores]);
+  }, [allEvaluations]);
 
-  const painLevel = typeof evaluation?.painLevel === 'number' ? evaluation.painLevel : null;
-  const symptoms = evaluation?.associatedSymptoms ?? [];
-  const complaintText = evaluation?.chiefComplaints ?? '';
+  const mergedPainLevel = useMemo(() => {
+    for (const ev of allEvaluations) {
+      if (typeof ev.painLevel === 'number') return ev.painLevel;
+    }
+    return null;
+  }, [allEvaluations]);
+
+  const mergedSymptoms = useMemo(() => {
+    const syms = new Set<string>();
+    allEvaluations.forEach(ev => {
+      if (ev.associatedSymptoms) ev.associatedSymptoms.forEach(s => syms.add(s));
+    });
+    return Array.from(syms);
+  }, [allEvaluations]);
+
+  const mergedMedicalHistory = useMemo(() => {
+    const history = new Set<string>();
+    allEvaluations.forEach(ev => {
+      if (ev.medicalHistory) ev.medicalHistory.forEach(h => history.add(h));
+    });
+    return Array.from(history);
+  }, [allEvaluations]);
+  const complaintText = useMemo(() => {
+    for (const ev of allEvaluations) {
+      if (ev.chiefComplaints && ev.chiefComplaints.trim()) return ev.chiefComplaints;
+    }
+    return '';
+  }, [allEvaluations]);
   const consultationName = evaluation?.createdBy?.name ?? '';
   const consultationDate = evaluation?.createdAt
     ? new Date(evaluation.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
     : '';
+
+  const mergedVitals = useMemo(() => {
+    const v = { bp: '-', pr: '-', spo2: '-', temp: '-', ef: '-' };
+    // Scan all evaluations from newest to oldest to pick up latest recorded values
+    for (const ev of allEvaluations) {
+      if (v.bp === '-' && ev.bp) v.bp = ev.bp;
+      if (v.pr === '-' && ev.pr != null) v.pr = `${ev.pr} bpm`;
+      if (v.spo2 === '-' && ev.spo2 != null) v.spo2 = `${ev.spo2}%`;
+      if (v.temp === '-' && ev.temperature != null) v.temp = `${ev.temperature}°F`;
+      if (v.ef === '-' && ev.ef != null) v.ef = `${ev.ef}%`;
+    }
+    return v;
+  }, [allEvaluations]);
+
+  const mergedDiagnosis = useMemo(() => {
+    // Look for the most recent evaluation with a diagnosis
+    for (const ev of allEvaluations) {
+      if (ev.diagnosisList && ev.diagnosisList.length > 0) return ev.diagnosisList[0];
+      if (ev.diagnosis && ev.diagnosis.trim()) return ev.diagnosis;
+    }
+    return patient?.condition || '-';
+  }, [allEvaluations, patient?.condition]);
+
   const vitalsCards = [
-    { icon: '💓', label: 'Blood Pressure', value: evaluation?.bp ?? '-', color: 'text-[#3B3E66] dark:text-teal-400' },
-    { icon: '❤️', label: 'Pulse Rate', value: evaluation?.pr != null ? `${evaluation.pr} bpm` : '-', color: 'text-[#262842] dark:text-rose-400' },
-    { icon: '🫁', label: 'SpO2', value: evaluation?.spo2 != null ? `${evaluation.spo2}%` : '-', color: 'text-[#3B3E66] dark:text-blue-400' },
-    { icon: '🌡️', label: 'Temperature', value: evaluation?.temperature != null ? `${evaluation.temperature}°F` : '-', color: 'text-[#262842] dark:text-amber-400' },
-    { icon: '⚡', label: 'Ejection Fraction', value: evaluation?.ef != null ? `${evaluation.ef}%` : '-', color: 'text-[#3B3E66] dark:text-indigo-400' },
+    { icon: '💓', label: 'Blood Pressure', value: mergedVitals.bp, color: 'text-[#3B3E66] dark:text-teal-400' },
+    { icon: '❤️', label: 'Pulse Rate', value: mergedVitals.pr, color: 'text-[#262842] dark:text-rose-400' },
+    { icon: '🫁', label: 'SpO2', value: mergedVitals.spo2, color: 'text-[#3B3E66] dark:text-blue-400' },
+    { icon: '🌡️', label: 'Temperature', value: mergedVitals.temp, color: 'text-[#262842] dark:text-amber-400' },
+    { icon: '⚡', label: 'Ejection Fraction', value: mergedVitals.ef, color: 'text-[#3B3E66] dark:text-indigo-400' },
   ];
   const isLoading = patientLoading || evaluationLoading;
 
@@ -191,7 +253,7 @@ export function PatientDetailPage() {
                 </div>
                 <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Primary Condition</h3>
               </div>
-              <p className="text-[15px] font-semibold text-[#3B3E66] dark:text-slate-200">{patient?.condition ?? '-'}</p>
+              <p className="text-[15px] font-semibold text-[#3B3E66] dark:text-slate-200">{mergedDiagnosis}</p>
               <p className="text-[13px] text-[#262842] dark:text-slate-400 mt-1">
                 Consultation with {consultationName || '-'} on {consultationDate || '-'}
               </p>
@@ -206,10 +268,10 @@ export function PatientDetailPage() {
                 <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Reported Symptoms</h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                {symptoms.length === 0 && (
+                {mergedSymptoms.length === 0 && (
                   <span className="text-[13px] text-[#262842] dark:text-slate-400">No symptoms recorded</span>
                 )}
-                {symptoms.map((symptom) => (
+                {mergedSymptoms.map((symptom) => (
                   <span key={symptom} className="px-3 py-1.5 rounded-xl bg-[#E8E9F1] dark:bg-slate-800 text-[#3B3E66] dark:text-slate-200 text-[13px] font-semibold border border-[#E8E9F1] dark:border-slate-700">
                     {symptom}
                   </span>
@@ -221,17 +283,17 @@ export function PatientDetailPage() {
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
-                  <StickyNote size={16} color="#3B3E66" />
+                  <ClipboardList size={16} color="#3B3E66" />
                 </div>
                 <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Medical History</h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                {(evaluation?.medicalHistory ?? []).length === 0 && (
+                {mergedMedicalHistory.length === 0 && (
                   <span className="text-[13px] text-[#262842] dark:text-slate-400">No medical history recorded</span>
                 )}
-                {(evaluation?.medicalHistory ?? []).map((history) => (
-                  <span key={history} className="px-3 py-1.5 rounded-xl bg-[#E8E9F1] dark:bg-slate-800 text-[#262842] dark:text-slate-300 text-[13px] font-semibold border border-[#E8E9F1] dark:border-slate-700">
-                    {history}
+                {mergedMedicalHistory.map((h) => (
+                  <span key={h} className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[13px] font-semibold border border-slate-100 dark:border-slate-700">
+                    {h}
                   </span>
                 ))}
               </div>
@@ -246,18 +308,18 @@ export function PatientDetailPage() {
                   </div>
                   <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Pain Level</h3>
                 </div>
-                {painLevel == null ? (
+                {mergedPainLevel == null ? (
                   <span className="text-[16px] font-bold text-[#262842] dark:text-slate-400">-</span>
                 ) : (
-                  <span className="text-[20px] font-extrabold" style={{ color: painColors[painLevel] }}>
-                    {painLevel}/10
+                  <span className="text-[20px] font-extrabold" style={{ color: painColors[mergedPainLevel] }}>
+                    {mergedPainLevel}/10
                   </span>
                 )}
               </div>
-              {painLevel != null && (
+              {mergedPainLevel != null && (
                 <div className="flex gap-1 rounded-xl overflow-hidden">
                   {painColors.map((c, i) => (
-                    <div key={i} className="flex-1 flex items-center justify-center rounded-sm h-8" style={{ background: c, opacity: i <= painLevel ? 1 : 0.15 }}>
+                    <div key={i} className="flex-1 flex items-center justify-center rounded-sm h-8" style={{ background: c, opacity: i <= mergedPainLevel ? 1 : 0.15 }}>
                       <span className="text-[10px] font-bold text-white">{i}</span>
                     </div>
                   ))}
@@ -274,10 +336,10 @@ export function PatientDetailPage() {
                 <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Functional Activities</h3>
               </div>
               <div className="flex flex-col gap-3">
-                {functionalEntries.length === 0 && (
+                {mergedFunctionalEntries.length === 0 && (
                   <span className="text-[13px] text-[#262842] dark:text-slate-400">No functional scores recorded</span>
                 )}
-                {functionalEntries.map(({ key, value }) => (
+                {mergedFunctionalEntries.map(({ key, value }) => (
                   <div key={key} className="flex items-center justify-between py-1 border-b last:border-0 border-b border-[#E8E9F1] dark:border-slate-800">
                     <span className="text-[14px] font-medium text-[#262842] dark:text-slate-300 capitalize">
                       {key === 'stairs' ? 'Climbing Stairs' : key}
@@ -298,6 +360,62 @@ export function PatientDetailPage() {
               <p className="text-[14px] text-[#262842] dark:text-slate-300 leading-relaxed">
                 {complaintText || 'No chief complaints recorded'}
               </p>
+            </div>
+
+            {/* Visit History Section */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none mb-6">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
+                  <Calendar size={16} color="#3B3E66" />
+                </div>
+                <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Visit History</h3>
+              </div>
+              
+              <div className="flex flex-col gap-4">
+                {historyLoading ? (
+                  <p className="text-[13px] text-slate-500 italic">Loading history...</p>
+                ) : allEvaluations.length === 0 ? (
+                  <p className="text-[13px] text-slate-500 italic">No previous visits found.</p>
+                ) : (
+                  allEvaluations.map((ev) => (
+                    <div key={ev.id} className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 transition-colors hover:border-teal-200 dark:hover:border-teal-900">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-slate-900 shadow-sm shrink-0">
+                        <UserCheck size={18} className="text-teal-600 dark:text-teal-400" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[14px] font-bold text-slate-900 dark:text-white">
+                            Assessment by {ev.createdBy?.name || 'Unknown'}
+                          </p>
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300">
+                            {ev.createdBy?.role === 'doctor' ? 'Doctor' : 'Therapist'}
+                          </span>
+                        </div>
+                        <p className="text-[12px] text-slate-500 dark:text-slate-400 font-semibold mt-1">
+                          {new Date(ev.createdAt).toLocaleDateString('en-IN', { 
+                            day: 'numeric', 
+                            month: 'short', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                        {ev.diagnosis && (
+                          <p className="text-[12px] text-slate-700 dark:text-slate-300 mt-2 line-clamp-2 italic">
+                            "{ev.diagnosis}"
+                          </p>
+                        )}
+                        <button 
+                          onClick={() => navigate(`/doctor/report?evaluationId=${ev.id}`)}
+                          className="text-[12px] font-bold text-teal-600 dark:text-teal-400 mt-3 flex items-center gap-1 hover:underline"
+                        >
+                          <FileText size={14} /> View Report
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         )}

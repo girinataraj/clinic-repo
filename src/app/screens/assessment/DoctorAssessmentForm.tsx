@@ -5,6 +5,7 @@ import { BottomNav } from '../../components/BottomNav';
 import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEvaluations';
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
 import { useTreatments } from '../../../hooks/useTreatments';
+import { useClinicalConfig } from '../../../hooks/useAppConfig';
 import { useStaffUsers } from '../../../hooks/useStaff';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
@@ -82,6 +83,16 @@ export function DoctorAssessmentForm() {
   const matchedTreatments = treatments.filter(t => selectedTreatmentNames.includes(t.treatmentName));
   const billTotal = matchedTreatments.reduce((sum, t) => sum + t.charge, 0);
 
+  // Dynamic clinical configuration
+  const {
+    chiefComplaints: chiefComplaintsList,
+    associatedSymptoms: associatedSymptomsList,
+    medicalHistory: medicalHistoryList,
+    diagnoses: diagnosisList,
+    complaintDiagnosisRelevance: relevanceMap,
+    clinicalTestMap: testMap,
+  } = useClinicalConfig();
+
   useEffect(() => {
     if (patientById && !foundPatient && resolvedPatientId) {
       setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??''});
@@ -96,6 +107,56 @@ export function DoctorAssessmentForm() {
       if (foundPatient.therapistId) setSelectedTherapistId(foundPatient.therapistId);
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);
+
+  // Pre-fill clinical data from previous assessment
+  useEffect(() => {
+    if (previousEval) {
+      // Vitals
+      setVitals({
+        bp_sys: previousEval.bp?.split('/')[0] || '',
+        bp_dia: previousEval.bp?.split('/')[1] || '',
+        pr: previousEval.pr ? String(previousEval.pr) : '',
+        spo2: previousEval.spo2 ? String(previousEval.spo2) : '',
+        temp: previousEval.temperature ? String(previousEval.temperature) : '',
+        ef: previousEval.ef ? String(previousEval.ef) : '',
+      });
+      // Chief Complaints
+      if (previousEval.chiefComplaints) {
+        setComplaintsText(previousEval.chiefComplaints);
+      }
+      // Symptoms
+      if (previousEval.associatedSymptoms) {
+        setAssociatedSymptoms(previousEval.associatedSymptoms);
+      }
+      // Medical History
+      if (previousEval.medicalHistory) {
+        setSelectedMedicalHistory(previousEval.medicalHistory);
+      }
+      // Pain Level
+      if (previousEval.painLevel != null) {
+        setPainLevel(previousEval.painLevel);
+      }
+      // Diagnosis
+      if (previousEval.diagnosis) {
+        setDiagnosisNotes(previousEval.diagnosis);
+      }
+      if (previousEval.diagnosisList) {
+        setSelectedDiagnoses(previousEval.diagnosisList);
+      }
+      // Treatment Plan
+      if (previousEval.treatmentPlan) {
+        const tp = previousEval.treatmentPlan as any;
+        setTreatmentPlanData({
+          modalities: tp.modalities || [],
+          manualTherapy: tp.manualTherapy || [],
+          rehabilitation: tp.rehabilitation || [],
+          visitsRequired: tp.visitsRequired ? String(tp.visitsRequired) : '',
+          frequencyGapDays: tp.frequencyGapDays ? String(tp.frequencyGapDays) : '',
+          suggestedStartDate: tp.suggestedStartDate || '',
+        });
+      }
+    }
+  }, [previousEval]);
 
   useEffect(() => { if (!intakePhoto) { setIntakePhotoUrl(null); return; } const u=URL.createObjectURL(intakePhoto); setIntakePhotoUrl(u); return ()=>URL.revokeObjectURL(u); }, [intakePhoto]);
 
@@ -133,6 +194,19 @@ export function DoctorAssessmentForm() {
       const allComplaints = [...chiefComplaints, complaintsText.trim()].filter(Boolean).join('; ');
       const hasRomData = Object.keys(romData).length > 0;
       const hasAnthro = Object.values(anthropometrics).some(v => v !== '');
+      
+      // 1. Update patient demographics if they changed
+      await updatePatientMutation.mutateAsync({
+        id: resolvedPatientId,
+        name: patientInfo.name,
+        age: Number(patientInfo.age),
+        gender: patientInfo.gender,
+        phone: patientInfo.phone,
+        city: patientInfo.address,
+        condition: selectedDiagnoses.length > 0 ? selectedDiagnoses[0] : (diagnosisNotes || undefined),
+      });
+
+      // 2. Create the evaluation record
       await createEvaluation.mutateAsync({
         patientId: resolvedPatientId,
         vitals: Object.keys(vitalsPayload).length>0 ? (vitalsPayload as any) : undefined,
@@ -292,12 +366,12 @@ export function DoctorAssessmentForm() {
         <div className="transition-all duration-300">
           {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} selectedTherapistId={selectedTherapistId} setSelectedTherapistId={setSelectedTherapistId} therapistsList={therapistsList} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
           {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
-          {step===2&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} />}
-          {step===3&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} />}
+          {step===2&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} medicalHistoryList={medicalHistoryList} />}
+          {step===3&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} chiefComplaintsList={chiefComplaintsList} associatedSymptomsList={associatedSymptomsList} />}
           {step===4&&<StepPainScale painLevel={painLevel} setPainLevel={setPainLevel} isDoctorRole={isDoctorRole} />}
-          {step===5&&<StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} chiefComplaints={chiefComplaints} clinicalExamData={clinicalExamData} onClinicalExamChange={setClinicalExamData} />}
-          {step===6&&<StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} selectedDiagnoses={selectedDiagnoses} setSelectedDiagnoses={setSelectedDiagnoses} chiefComplaints={chiefComplaints} />}
-          {step===7&&<StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} />}
+          {step===5&&<StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} chiefComplaints={chiefComplaints} clinicalExamData={clinicalExamData} onClinicalExamChange={setClinicalExamData} testMap={testMap} />}
+          {step===6&&<StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} selectedDiagnoses={selectedDiagnoses} setSelectedDiagnoses={setSelectedDiagnoses} chiefComplaints={chiefComplaints} diagnosisList={diagnosisList} relevanceMap={relevanceMap} />}
+          {step===7&&<StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} treatmentsList={treatments} />}
 
           {/* Step 8: Review & Payment */}
           {step===8&&(
@@ -376,7 +450,14 @@ export function DoctorAssessmentForm() {
             )}
             {step < totalSteps - 1 && (
               <button
-                onClick={() => { setSubmitError(null); setStep(step + 1); }}
+                onClick={() => { 
+                  if (step === 0 && !resolvedPatientId) {
+                    setSubmitError('Please resolve a patient before continuing.');
+                    return;
+                  }
+                  setSubmitError(null); 
+                  setStep(step + 1); 
+                }}
                 className="flex-1 flex items-center justify-center gap-2 py-4 rounded-[20px] text-white text-[15px] font-black shadow-xl shadow-indigo-900/10 bg-[#262842] hover:bg-[#3B3E66] transition-all active:scale-[0.98]"
               >
                 Next Step

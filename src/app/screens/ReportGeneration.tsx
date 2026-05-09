@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
-import { useEvaluation, useLatestEvaluation } from '../../hooks/useEvaluations';
+import { useEvaluation, useLatestEvaluation, useEvaluations } from '../../hooks/useEvaluations';
 import { usePatient, usePatients } from '../../hooks/usePatients';
 import { useExercisePlans } from '../../hooks/useExercisePlans';
 import api from '../../services/api';
@@ -37,10 +37,41 @@ export function ReportGeneration() {
 
   const { data: patient, isLoading: patientLoading } = usePatient(evaluation?.patientId ?? null);
   const { data: plansData } = useExercisePlans(evaluation?.patientId ?? null);
+  
+  // Fetch all evaluations to merge clinical history for the report preview
+  const { data: allEvalsData } = useEvaluations(evaluation?.patientId ? { patientId: evaluation.patientId } : undefined);
+  const allEvaluations = allEvalsData?.data ?? [];
 
   const exerciseItems = plansData?.data?.[0]?.items ?? [];
   const isLoading = evalLoading || patientLoading;
   const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // ── Merged Data Logic ───────────────────────────────────────────────────
+  const mergedVitals = useMemo(() => {
+    const v: Record<string, any> = {
+      bp: evaluation?.bp,
+      pr: evaluation?.pr,
+      spo2: evaluation?.spo2,
+      temperature: evaluation?.temperature,
+      ef: evaluation?.ef,
+      painLevel: evaluation?.painLevel,
+    };
+    
+    const metrics = ['bp', 'pr', 'spo2', 'temperature', 'ef', 'painLevel'] as const;
+    for (const m of metrics) {
+      if (v[m] == null || v[m] === '') {
+        const found = allEvaluations.find(ev => ev[m] != null && ev[m] !== '');
+        if (found) v[m] = found[m];
+      }
+    }
+    return v;
+  }, [evaluation, allEvaluations]);
+
+  const mergedChiefComplaints = evaluation?.chiefComplaints || allEvaluations.find(ev => ev.chiefComplaints)?.chiefComplaints;
+  const mergedDiagnosis = evaluation?.diagnosis || allEvaluations.find(ev => ev.diagnosis)?.diagnosis;
+  const mergedDiagnosisList = evaluation?.diagnosisList || allEvaluations.find(ev => ev.diagnosisList && ev.diagnosisList.length > 0)?.diagnosisList;
+  const mergedPlan = evaluation?.plan || allEvaluations.find(ev => ev.plan)?.plan;
+  const mergedTreatmentPlan = (evaluation?.treatmentPlan as any) || allEvaluations.find(ev => ev.treatmentPlan && Object.keys(ev.treatmentPlan as any).length > 0)?.treatmentPlan;
 
   // ── PDF download via blob ─────────────────────────────────────────────────
   const handleDownloadPdf = async () => {
@@ -98,26 +129,52 @@ export function ReportGeneration() {
   };
 
   const handleShare = async () => {
-    const shareData = {
-      title: `Report – ${patient?.name ?? 'Patient'}`,
-      text: `Physiotherapy Assessment Report for ${patient?.name ?? 'Patient'}`,
-      url: window.location.href,
-    };
+    const targetEvalId = evaluation?.id;
+    if (!targetEvalId) return;
 
+    setDownloading(true);
     try {
-      if (navigator.share && navigator.canShare?.(shareData)) {
+      const response = await api.get(ENDPOINTS.REPORTS.PDF(targetEvalId), {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const filename = `Report-${patient?.name?.replace(/\s+/g, '-') ?? 'Patient'}-${targetEvalId.substring(0, 8)}.pdf`;
+      const file = new File([blob], filename, { type: 'application/pdf' });
+
+      const shareData: any = {
+        files: [file],
+        title: `Report – ${patient?.name ?? 'Patient'}`,
+        text: `Physiotherapy Assessment Report for ${patient?.name ?? 'Patient'}`,
+      };
+
+      if (navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(window.location.href);
+        // Fallback to link if file share not supported
+        await navigator.share({
+          title: shareData.title,
+          text: shareData.text,
+          url: window.location.href,
+        });
       }
       setAction('share');
       setTimeout(() => setAction(null), 1500);
-    } catch {
-      // User cancelled or share failed — ignore
+    } catch (err) {
+      // Fallback to clipboard if share fails entirely
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setAction('share');
+        setTimeout(() => setAction(null), 1500);
+      } catch (e) {
+        console.error('Share failed', e);
+      }
+    } finally {
+      setDownloading(false);
     }
   };
 
   const handleAction = (type: string) => {
+    setAction(type);
     if (type === 'pdf') {
       handleDownloadPdf();
       return;
@@ -130,19 +187,17 @@ export function ReportGeneration() {
       handleShare();
       return;
     }
-    setAction(type);
     setTimeout(() => setAction(null), 1500);
   };
 
   // Parse vitals
-  const bp = evaluation?.bp?.split('/');
   const vitals = [
-    { label: 'BP', value: evaluation?.bp ?? '—' },
-    { label: 'PR', value: evaluation?.pr ? `${evaluation.pr} bpm` : '—' },
-    { label: 'SpO₂', value: evaluation?.spo2 ? `${evaluation.spo2}%` : '—' },
-    { label: 'Temp', value: evaluation?.temperature ? `${evaluation.temperature}°F` : '—' },
-    { label: 'EF', value: evaluation?.ef ? `${evaluation.ef}%` : '—' },
-    { label: 'Pain', value: evaluation?.painLevel != null ? `${evaluation.painLevel}/10` : '—' },
+    { label: 'BP', value: mergedVitals.bp ?? '—' },
+    { label: 'PR', value: mergedVitals.pr ? `${mergedVitals.pr} bpm` : '—' },
+    { label: 'SpO₂', value: mergedVitals.spo2 ? `${mergedVitals.spo2}%` : '—' },
+    { label: 'Temp', value: mergedVitals.temperature ? `${mergedVitals.temperature}°F` : '—' },
+    { label: 'EF', value: mergedVitals.ef ? `${mergedVitals.ef}%` : '—' },
+    { label: 'Pain', value: mergedVitals.painLevel != null ? `${mergedVitals.painLevel}/10` : '—' },
   ];
 
   return (
@@ -170,10 +225,16 @@ export function ReportGeneration() {
             const Icon = btn.icon;
             const isActive = action === btn.key;
             return (
-              <button key={btn.key} onClick={() => handleAction(btn.key)} disabled={downloading && btn.key === 'pdf'}
-                className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl transition-colors hover:bg-white/20"
+              <button key={btn.key} onClick={() => handleAction(btn.key)} disabled={downloading}
+                className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl transition-colors hover:bg-white/20 disabled:opacity-50"
                 style={{ background: isActive ? 'rgba(254,255,255,0.3)' : 'rgba(254,255,255,0.15)', border: '1px solid rgba(254,255,255,0.2)' }}>
-                {downloading && btn.key === 'pdf' ? <Loader2 size={20} color="#FEFFFF" className="animate-spin" /> : isActive ? <CheckCircle size={20} color="#FEFFFF" /> : <Icon size={20} color="#FEFFFF" />}
+                {downloading && (action === btn.key || (btn.key === 'pdf' && !action)) ? (
+                  <Loader2 size={20} color="#FEFFFF" className="animate-spin" />
+                ) : isActive ? (
+                  <CheckCircle size={20} color="#FEFFFF" />
+                ) : (
+                  <Icon size={20} color="#FEFFFF" />
+                )}
                 <span style={{ fontSize: '12px', fontWeight: 600, color: '#FEFFFF' }}>{isActive ? 'Done!' : btn.label}</span>
               </button>
             );
@@ -337,23 +398,83 @@ export function ReportGeneration() {
                 </div>
               </section>
 
+              {/* Chief Complaints */}
+              {mergedChiefComplaints && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b-[1.5px] border-[#262842] dark:border-slate-600">
+                    <span className="text-[12px] font-extrabold text-[#262842] dark:text-slate-300 uppercase tracking-wide">Chief Complaints</span>
+                  </div>
+                  <p className="text-[13px] text-[#17252A] dark:text-slate-200 leading-relaxed">{mergedChiefComplaints}</p>
+                </section>
+              )}
+
               {/* Diagnosis */}
-              {evaluation.diagnosis && (
+              {(mergedDiagnosis || (mergedDiagnosisList && mergedDiagnosisList.length > 0)) && (
                 <section>
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b-[1.5px] border-[#17252A] dark:border-slate-600">
                     <span className="text-[12px] font-extrabold text-[#17252A] dark:text-slate-300 uppercase tracking-wide">Diagnosis</span>
                   </div>
-                  <p className="text-[14px] font-semibold text-[#17252A] dark:text-slate-200 leading-relaxed">{evaluation.diagnosis}</p>
+                  {mergedDiagnosis && <p className="text-[14px] font-semibold text-[#17252A] dark:text-slate-200 leading-relaxed mb-2">{mergedDiagnosis}</p>}
+                  {mergedDiagnosisList && mergedDiagnosisList.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {mergedDiagnosisList.map((d: string) => (
+                        <span key={d} className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[12px] font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {d}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </section>
               )}
 
               {/* Treatment Plan */}
-              {evaluation.plan && (
+              {(mergedPlan || mergedTreatmentPlan) && (
                 <section>
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b-[1.5px] border-[#3B3E66] dark:border-slate-600">
                     <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Treatment Plan</span>
                   </div>
-                  <p className="text-[13px] text-[#17252A] dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{evaluation.plan}</p>
+                  {mergedPlan && <p className="text-[13px] text-[#17252A] dark:text-slate-200 leading-relaxed whitespace-pre-wrap mb-4">{mergedPlan}</p>}
+                  
+                  {mergedTreatmentPlan && (
+                    <div className="grid grid-cols-1 gap-4">
+                      {mergedTreatmentPlan.modalities?.length > 0 && (
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+                          <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Modalities</p>
+                          <div className="flex flex-wrap gap-2">
+                            {mergedTreatmentPlan.modalities.map((m: string) => (
+                              <span key={m} className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[12px] font-bold text-[#3B3E66] dark:text-slate-300 border border-slate-100 dark:border-slate-700 shadow-sm">{m}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {mergedTreatmentPlan.manualTherapy?.length > 0 && (
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+                          <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Manual Therapy</p>
+                          <div className="flex flex-wrap gap-2">
+                            {mergedTreatmentPlan.manualTherapy.map((m: string) => (
+                              <span key={m} className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[12px] font-bold text-[#3B3E66] dark:text-slate-300 border border-slate-100 dark:border-slate-700 shadow-sm">{m}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {mergedTreatmentPlan.rehabilitation?.length > 0 && (
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+                          <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Rehabilitation</p>
+                          <div className="flex flex-wrap gap-2">
+                            {mergedTreatmentPlan.rehabilitation.map((m: string) => (
+                              <span key={m} className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[12px] font-bold text-[#3B3E66] dark:text-slate-300 border border-slate-100 dark:border-slate-700 shadow-sm">{m}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {mergedTreatmentPlan.visitsRequired && (
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50">
+                          <span className="text-[13px] font-bold text-indigo-700 dark:text-indigo-300">Total Visits Required</span>
+                          <span className="text-[16px] font-black text-indigo-900 dark:text-white">{mergedTreatmentPlan.visitsRequired}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </section>
               )}
 

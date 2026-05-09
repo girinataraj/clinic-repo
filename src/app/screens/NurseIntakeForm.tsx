@@ -338,6 +338,57 @@ export function NurseIntakeForm() {
   );
   const isFollowUp = Boolean(previousEval);
 
+  // Pre-fill clinical data from previous assessment
+  useEffect(() => {
+    if (previousEval) {
+      // Vitals
+      setVitals({
+        bp_sys: previousEval.bp?.split('/')[0] || '',
+        bp_dia: previousEval.bp?.split('/')[1] || '',
+        pr: previousEval.pr ? String(previousEval.pr) : '',
+        spo2: previousEval.spo2 ? String(previousEval.spo2) : '',
+        temp: previousEval.temperature ? String(previousEval.temperature) : '',
+        ef: previousEval.ef ? String(previousEval.ef) : '',
+      });
+      // Complaints
+      if (previousEval.chiefComplaints) {
+        setComplaints(previousEval.chiefComplaints);
+      }
+      // Symptoms
+      if (previousEval.associatedSymptoms) {
+        setCheckedSymptoms(previousEval.associatedSymptoms.filter(s => !s.startsWith('Other: ') && !s.startsWith('Notes: ')));
+        const other = previousEval.associatedSymptoms.find(s => s.startsWith('Other: '));
+        if (other) {
+          setOtherSymptom(other.replace('Other: ', ''));
+          setShowOtherSymptom(true);
+        }
+        const notes = previousEval.associatedSymptoms.find(s => s.startsWith('Notes: '));
+        if (notes) setAssociated(notes.replace('Notes: ', ''));
+      }
+      // Medical History
+      if (previousEval.medicalHistory) {
+        setSelectedMedicalHistory(previousEval.medicalHistory.filter(s => !s.startsWith('Other: ')));
+        const other = previousEval.medicalHistory.find(s => s.startsWith('Other: '));
+        if (other) {
+          setOtherMedicalHistory(other.replace('Other: ', ''));
+          setShowOtherMedicalHistory(true);
+        }
+      }
+      // Pain Level
+      if (previousEval.painLevel != null) {
+        setPainLevel(previousEval.painLevel);
+      }
+      // Functional Ratings
+      if (previousEval.functionalScores) {
+        setFuncRatings(previousEval.functionalScores as Record<string, number>);
+      }
+      // Associated Pains
+      if (previousEval.associatedPains) {
+        setAssociatedPains(previousEval.associatedPains);
+      }
+    }
+  }, [previousEval]);
+
   const resolvedIntakeConfig = {
     symptoms: nonEmptyOrDefault(intakeConfig?.symptoms, defaultIntakeConfig.symptoms),
     functionalActivities: nonEmptyOrDefault(
@@ -441,6 +492,18 @@ export function NurseIntakeForm() {
       const finalHistory = [...selectedMedicalHistory];
       if (otherMedicalHistory.trim()) finalHistory.push(`Other: ${otherMedicalHistory.trim()}`);
 
+      // 1. Update patient demographics if they changed
+      await updatePatientMutation.mutateAsync({
+        id: patientId,
+        name: patientInfo.name,
+        age: Number(patientInfo.age),
+        gender: patientInfo.gender,
+        phone: patientInfo.phone,
+        city: patientInfo.address,
+        condition: complaints.trim() || (checkedSymptoms.length > 0 ? checkedSymptoms[0] : undefined),
+      });
+
+      // 2. Create the evaluation record
       await createEvaluation.mutateAsync({
         patientId,
         vitals: Object.keys(vitalsPayload).length > 0 ? (vitalsPayload as any) : undefined,

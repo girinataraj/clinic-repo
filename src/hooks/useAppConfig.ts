@@ -67,6 +67,14 @@ export interface AppConfigScopes {
   navigation: {
     [key: string]: unknown;
   };
+  clinical: {
+    chief_complaints?: string[];
+    associated_symptoms?: string[];
+    medical_history?: string[];
+    diagnoses?: string[];
+    complaint_diagnosis_relevance?: Record<string, number[]>;
+    clinical_test_map?: any[];
+  };
 }
 
 export function useAppConfigScope<TScope extends keyof AppConfigScopes>(scope: TScope) {
@@ -80,4 +88,23 @@ export function useAppConfigScope<TScope extends keyof AppConfigScopes>(scope: T
     },
     staleTime: 5 * 60 * 1000,
   });
+}
+
+/**
+ * Helper hook to specifically fetch and parse the clinical configuration.
+ * Maps backend keys to frontend camelCase variables.
+ */
+export function useClinicalConfig() {
+  const { data, isLoading, error } = useAppConfigScope('clinical');
+
+  return {
+    chiefComplaints: data?.chief_complaints || [],
+    associatedSymptoms: data?.associated_symptoms || [],
+    medicalHistory: data?.medical_history || [],
+    diagnoses: data?.diagnoses || [],
+    complaintDiagnosisRelevance: data?.complaint_diagnosis_relevance || {},
+    clinicalTestMap: data?.clinical_test_map || [],
+    isLoading,
+    error,
+  };
 }

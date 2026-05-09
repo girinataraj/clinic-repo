@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { SectionCard, FormField } from './FormComponents';
 import {
-  CLINICAL_TEST_MAP,
   getClinicalTestKey,
   type ClinicalExamData,
   type TestResult,
@@ -18,6 +17,7 @@ interface ClinicalExaminationProps {
   examinationNotes: string;
   onExaminationNotesChange: (notes: string) => void;
   isDoctorRole?: boolean;
+  testMap?: any[];
 }
 
 const TEST_RESULTS: TestResult[] = ['Positive', 'Negative', 'Not Tested'];
@@ -36,6 +36,7 @@ export function ClinicalExamination({
   examinationNotes,
   onExaminationNotesChange,
   isDoctorRole,
+  testMap,
 }: ClinicalExaminationProps) {
   const [expandedRegions, setExpandedRegions] = useState<Set<string>>(new Set());
 
@@ -46,7 +47,7 @@ export function ClinicalExamination({
     : 'w-full outline-none px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors';
 
   // Filter test groups to only those matching selected complaints
-  const activeGroups = CLINICAL_TEST_MAP.filter(g =>
+  const activeGroups = (testMap || []).filter((g: any) =>
     chiefComplaints.includes(g.complaint)
   );
 

@@ -5,6 +5,7 @@ import { BottomNav } from '../components/BottomNav';
 import { usePatient, useCheckoutPatient } from '../../hooks/usePatients';
 import { useExercisePlans } from '../../hooks/useExercisePlans';
 import { useCreateEvaluation, useLatestEvaluation } from '../../hooks/useEvaluations';
+import { useTreatments } from '../../hooks/useTreatments';
 import { FollowUpSection } from './FollowUpSection';
 import {
   type FollowUpSessionData,
@@ -29,6 +30,7 @@ export function SessionPage() {
   const { data: patient, isLoading: loadingPatient } = usePatient(patientId);
   const { data: plansData, isLoading: loadingPlans } = useExercisePlans(patientId);
   const { data: latestEvaluation } = useLatestEvaluation(patientId);
+  const { data: treatments = [] } = useTreatments();
   const checkoutPatient = useCheckoutPatient();
   const createEvaluation = useCreateEvaluation();
 
@@ -203,6 +205,7 @@ export function SessionPage() {
             onChange={setFollowUp}
             previousTreatmentPlan={previousTreatmentPlan}
             exercises={exercises}
+            allTreatments={treatments}
           />
         </div>
 
