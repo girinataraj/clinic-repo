@@ -516,6 +516,11 @@ export function NurseIntakeForm() {
         billAmount: billTotal,
         visitType,
         associatedPains: associatedPains.length > 0 ? associatedPains : undefined,
+        treatmentPlan: selectedTreatmentIds.length > 0 ? {
+          modalities: treatments
+            .filter(t => selectedTreatmentIds.includes(t.id))
+            .map(t => t.treatmentName)
+        } : undefined
       });
       setSaved(true);
       setTimeout(() => navigate(`/${currentRole}`), 2000);

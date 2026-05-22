@@ -408,25 +408,6 @@ export function ReportGeneration() {
                 </section>
               )}
 
-              {/* Diagnosis */}
-              {(mergedDiagnosis || (mergedDiagnosisList && mergedDiagnosisList.length > 0)) && (
-                <section>
-                  <div className="flex items-center gap-2 mb-3 pb-2 border-b-[1.5px] border-[#17252A] dark:border-slate-600">
-                    <span className="text-[12px] font-extrabold text-[#17252A] dark:text-slate-300 uppercase tracking-wide">Diagnosis</span>
-                  </div>
-                  {mergedDiagnosis && <p className="text-[14px] font-semibold text-[#17252A] dark:text-slate-200 leading-relaxed mb-2">{mergedDiagnosis}</p>}
-                  {mergedDiagnosisList && mergedDiagnosisList.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {mergedDiagnosisList.map((d: string) => (
-                        <span key={d} className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[12px] font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                          {d}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </section>
-              )}
-
               {/* Treatment Plan */}
               {(mergedPlan || mergedTreatmentPlan) && (
                 <section>
@@ -473,6 +454,25 @@ export function ReportGeneration() {
                           <span className="text-[16px] font-black text-indigo-900 dark:text-white">{mergedTreatmentPlan.visitsRequired}</span>
                         </div>
                       )}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* Diagnosis */}
+              {(mergedDiagnosis || (mergedDiagnosisList && mergedDiagnosisList.length > 0)) && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b-[1.5px] border-[#17252A] dark:border-slate-600">
+                    <span className="text-[12px] font-extrabold text-[#17252A] dark:text-slate-300 uppercase tracking-wide">Diagnosis</span>
+                  </div>
+                  {mergedDiagnosis && <p className="text-[14px] font-semibold text-[#17252A] dark:text-slate-200 leading-relaxed mb-2">{mergedDiagnosis}</p>}
+                  {mergedDiagnosisList && mergedDiagnosisList.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {mergedDiagnosisList.map((d: string) => (
+                        <span key={d} className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[12px] font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {d}
+                        </span>
+                      ))}
                     </div>
                   )}
                 </section>
