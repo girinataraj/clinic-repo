@@ -40,9 +40,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const restoreSession = async () => {
       try {
         const refreshToken = getRefreshToken();
+
+        // No refresh token available at all — skip the API call entirely.
+        // The cookie (withCredentials) may still carry one, so only bail
+        // when localStorage is also empty.
+        if (!refreshToken) {
+          console.debug('[Auth] No refresh token in storage — skipping restore');
+          setUser(null);
+          setIsInitializing(false);
+          return;
+        }
+
+        console.debug('[Auth] Attempting session restore…');
         const response = await axios.post<{
           success: boolean;
-          data: { accessToken: string; user: AuthUser };
+          data: { accessToken: string; refreshToken?: string; user: AuthUser };
         }>(
           `${BASE_URL}/auth/refresh`,
           { refreshToken },
@@ -50,19 +62,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
         
         if (response.status === 200 && response.data?.success) {
-          setAccessToken(response.data.data.accessToken);
-          setUser(response.data.data.user);
-          // ── Capture and save the rotated refresh token for cross-domain resilience ──
-          if ((response.data.data as any).refreshToken) {
-            setRefreshToken((response.data.data as any).refreshToken);
+          const { accessToken, refreshToken: newRefreshToken, user: restoredUser } = response.data.data;
+          setAccessToken(accessToken);
+          setUser(restoredUser);
+          // ── Save the rotated refresh token so the next reload works ──
+          if (newRefreshToken) {
+            setRefreshToken(newRefreshToken);
           }
+          console.debug('[Auth] Session restored for', restoredUser?.role, restoredUser?.name);
         } else {
+          console.warn('[Auth] Refresh responded but not successful', response.status);
           setUser(null);
         }
-      } catch (error) {
-        // Network errors or 500s
+      } catch (error: unknown) {
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        const msg = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+        console.warn('[Auth] Session restore failed', { status, msg });
         setUser(null);
-        setRefreshToken(null);
+        // Only clear the stored token if the server explicitly rejected it (401).
+        // For network errors / 500s, keep the token so the next reload can retry.
+        if (status === 401) {
+          setRefreshToken(null);
+        }
       } finally {
         setIsInitializing(false);
       }

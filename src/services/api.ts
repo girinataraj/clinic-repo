@@ -106,10 +106,14 @@ api.interceptors.response.use(
         processQueue(null, newToken);
         original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
-      } catch (refreshError) {
+      } catch (refreshError: any) {
         processQueue(refreshError, null);
         setAccessToken(null);
-        setRefreshToken(null);
+        // Only clear refresh token if explicitly rejected (401).
+        // Network errors or 500s shouldn't wipe the user's session from storage.
+        if (refreshError.response?.status === 401) {
+          setRefreshToken(null);
+        }
         // Let AuthContext handle the redirect — don't force window.location here
         return Promise.reject(refreshError);
       } finally {

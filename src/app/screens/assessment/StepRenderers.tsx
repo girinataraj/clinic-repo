@@ -3,6 +3,8 @@ import { SectionCard, FormField, inputClass, doctorInputClass, MultiSelectDropdo
 import { FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS, getSortedDiagnoses, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown, Stethoscope, FileSearch, PenTool, CalendarDays } from 'lucide-react';
 import { ClinicalExamination } from './ClinicalExamination';
+import { RomMatrix } from './RomMatrix';
+import { MusclePower } from './MusclePower';
 
 // ── Step 0: Patient Info ──────────────────────────────────────────────────────
 export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handlePhotoChange, handlePhotoRemove, photoInputKey, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user }: any) {
@@ -226,17 +228,30 @@ export function StepPainScale({ painLevel, setPainLevel, isDoctorRole }: any) {
 }
 
 // ── Step 5: Examination ───────────────────────────────────────────────────────
-export function StepExamination({ examination, setExamination, isDoctorRole, chiefComplaints, clinicalExamData, onClinicalExamChange, testMap }: any) {
+export function StepExamination({ examination, setExamination, isDoctorRole, chiefComplaints, clinicalExamData, onClinicalExamChange, testMap, romData, setRomData }: any) {
   return (
-    <ClinicalExamination
-      chiefComplaints={chiefComplaints ?? []}
-      clinicalExamData={clinicalExamData ?? { tests: {}, imaging: {} }}
-      onChange={onClinicalExamChange ?? (() => {})}
-      examinationNotes={examination}
-      onExaminationNotesChange={setExamination}
-      isDoctorRole={isDoctorRole}
-      testMap={testMap || []}
-    />
+    <div className="flex flex-col gap-4">
+      <MusclePower
+        data={romData || {}}
+        onChange={setRomData}
+        isDoctorRole={isDoctorRole}
+        chiefComplaints={chiefComplaints || []}
+      />
+      <RomMatrix
+        data={romData || {}}
+        onChange={setRomData}
+        isDoctorRole={isDoctorRole}
+      />
+      <ClinicalExamination
+        chiefComplaints={chiefComplaints ?? []}
+        clinicalExamData={clinicalExamData ?? { tests: {}, imaging: {} }}
+        onChange={onClinicalExamChange ?? (() => {})}
+        examinationNotes={examination}
+        onExaminationNotesChange={setExamination}
+        isDoctorRole={isDoctorRole}
+        testMap={testMap || []}
+      />
+    </div>
   );
 }
 

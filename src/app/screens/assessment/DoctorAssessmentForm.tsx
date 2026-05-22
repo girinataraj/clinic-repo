@@ -11,7 +11,7 @@ import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Sa
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { SectionCard, FormField, doctorInputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
-import { RomMatrix } from './RomMatrix';
+
 import { AnthropometricSection } from './AnthropometricSection';
 
 export function DoctorAssessmentForm() {
@@ -227,7 +227,7 @@ export function DoctorAssessmentForm() {
         } : undefined,
         management: examinationNotes.trim() || undefined,
         status: 'submitted',
-        paymentMode, billAmount: billTotal, visitType,
+        paymentMode, billAmount: billAmount !== null ? billAmount : billTotal, visitType,
         associatedPains: chiefComplaints.length>0 ? chiefComplaints : undefined,
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
@@ -235,7 +235,7 @@ export function DoctorAssessmentForm() {
         clinicalExamination: (Object.keys(clinicalExamData.tests).length > 0 || Object.keys(clinicalExamData.imaging).length > 0) ? clinicalExamData : undefined,
       });
       setSaved(true);
-      setTimeout(() => navigate(`/${currentRole}/session/${resolvedPatientId}`), 2000);
+      setTimeout(() => navigate(`/${currentRole}/report?patientId=${resolvedPatientId}`), 2000);
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to save.'); }
   };
 
@@ -369,7 +369,7 @@ export function DoctorAssessmentForm() {
           {step===2&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} medicalHistoryList={medicalHistoryList} />}
           {step===3&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} chiefComplaintsList={chiefComplaintsList} associatedSymptomsList={associatedSymptomsList} />}
           {step===4&&<StepPainScale painLevel={painLevel} setPainLevel={setPainLevel} isDoctorRole={isDoctorRole} />}
-          {step===5&&<StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} chiefComplaints={chiefComplaints} clinicalExamData={clinicalExamData} onClinicalExamChange={setClinicalExamData} testMap={testMap} />}
+          {step===5&&<StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} chiefComplaints={chiefComplaints} clinicalExamData={clinicalExamData} onClinicalExamChange={setClinicalExamData} testMap={testMap} romData={romData} setRomData={setRomData} />}
           {step===6&&<StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} selectedDiagnoses={selectedDiagnoses} setSelectedDiagnoses={setSelectedDiagnoses} chiefComplaints={chiefComplaints} diagnosisList={diagnosisList} relevanceMap={relevanceMap} />}
           {step===7&&<StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} treatmentsList={treatments} />}
 
@@ -412,14 +412,19 @@ export function DoctorAssessmentForm() {
                 </FormField>
                 
                 <FormField label="Bill Amount">
-                  <div className="flex items-center gap-4 px-5 py-4 rounded-[18px] border border-[#262842] dark:border-indigo-700 bg-slate-50 dark:bg-slate-900">
+                  <div className="flex items-center gap-4 px-5 py-4 rounded-[18px] border border-[#262842] dark:border-indigo-700 bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-indigo-500 transition-shadow">
                     <span className="text-[18px] font-black text-slate-500 dark:text-slate-400">₹</span>
-                    <span className="flex-1 text-[18px] font-extrabold text-slate-900 dark:text-white">
-                      {billTotal > 0 ? formatRupees(billTotal) : '—'}
-                    </span>
+                    <input 
+                      type="text"
+                      inputMode="numeric"
+                      value={billAmount !== null ? billAmountInput : (billTotal > 0 ? formatRupees(billTotal) : '')}
+                      onChange={(e) => handleBillAmountChange(e.target.value)}
+                      className="flex-1 bg-transparent text-[18px] font-extrabold text-slate-900 dark:text-white outline-none"
+                      placeholder="0"
+                    />
                   </div>
                   <p className="text-[12px] text-[#262842] dark:text-indigo-400 font-semibold mt-1.5">
-                    {billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7.' : 'Select treatments in Step 7 to auto-fill.'}
+                    {billAmount !== null ? 'Manually edited.' : (billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7. You can edit this amount.' : 'Select treatments in Step 7 to auto-fill or enter manually.')}
                   </p>
                 </FormField>
               </SectionCard>

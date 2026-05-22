@@ -55,8 +55,8 @@ export function RomMatrix({ data, onChange, isDoctorRole }: RomMatrixProps) {
   return (
     <SectionCard
       icon={<Activity size={20} className={isDoctorRole ? "text-[#262842]" : "text-emerald-600 dark:text-emerald-400"} />}
-      title="Muscle Power & ROM"
-      subtitle="Range of Motion & Power assessment"
+      title="Range of Motion (ROM)"
+      subtitle="Joint range of motion assessment"
       accent={accent}
     >
       <div className="flex flex-col gap-3">
@@ -93,15 +93,12 @@ export function RomMatrix({ data, onChange, isDoctorRole }: RomMatrixProps) {
                   {section.joints.map(joint => {
                     const isJointExpanded = expandedJoint === joint.label;
                     
-                    // calculate completed entries for this joint
                     let completed = 0;
-                    let total = joint.movements.length * 4; // 4 inputs per movement
+                    let total = joint.movements.length * 2; // 2 inputs per movement (ROM RT, ROM LT)
                     joint.movements.forEach(movement => {
                       const key = getRomKey(joint.label, movement);
                       const entry = data[key];
                       if (entry) {
-                        if (entry.powerRt) completed++;
-                        if (entry.powerLt) completed++;
                         if (entry.romRt) completed++;
                         if (entry.romLt) completed++;
                       }
@@ -142,15 +139,7 @@ export function RomMatrix({ data, onChange, isDoctorRole }: RomMatrixProps) {
                               return (
                                 <div key={key} className="px-3 py-3">
                                   <p className="text-[12px] font-extrabold text-slate-700 dark:text-slate-300 mb-2">{movement}</p>
-                                  <div className="grid grid-cols-4 gap-2">
-                                    <div className="flex flex-col gap-1">
-                                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">Pwr RT</span>
-                                      <RomInput value={entry.powerRt ?? ''} onChange={v => updateEntry(key, 'powerRt', v)} placeholder="—" isDoctorRole={isDoctorRole} />
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">Pwr LT</span>
-                                      <RomInput value={entry.powerLt ?? ''} onChange={v => updateEntry(key, 'powerLt', v)} placeholder="—" isDoctorRole={isDoctorRole} />
-                                    </div>
+                                  <div className="grid grid-cols-2 gap-4">
                                     <div className="flex flex-col gap-1">
                                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">ROM RT</span>
                                       <RomInput value={entry.romRt ?? ''} onChange={v => updateEntry(key, 'romRt', v)} placeholder="—" isDoctorRole={isDoctorRole} />

@@ -82,6 +82,7 @@ export const router = createBrowserRouter([
               { path: 'nurse/session/:patientId', Component: SessionPage },
               { path: 'nurse/exercise', Component: ExercisePrescription },
               { path: 'nurse/exercise-library', Component: ExerciseLibrary },
+              { path: 'nurse/report', Component: ReportGeneration },
               { path: 'nurse/profile', Component: NurseProfile },
 
               { path: 'nurse/patient/:patientId/treatment', Component: TreatmentDetailPage },
