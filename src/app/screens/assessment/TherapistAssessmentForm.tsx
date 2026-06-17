@@ -64,6 +64,7 @@ export function TherapistAssessmentForm() {
   const [paymentMode, setPaymentMode] = useState<'Cash'|'UPI'|''>('');
   const [billAmount, setBillAmount] = useState<number|null>(null);
   const [billAmountInput, setBillAmountInput] = useState('');
+  const [isManualBillEdit, setIsManualBillEdit] = useState(false);
   const [visitType, setVisitType] = useState<'Clinic'|'Home Visit'|'IP'|'Day Care'>('Clinic');
 
   // Follow-up
@@ -172,7 +173,7 @@ export function TherapistAssessmentForm() {
   const handlePhotoRemove = () => { setIntakePhoto(null); setPhotoInputKey(p=>p+1); };
   const formatRupees = (n:number) => new Intl.NumberFormat('en-IN').format(n);
 
-  const handleBillAmountChange = (v:string) => { setSubmitError(null); const d=v.replace(/[^\d]/g,''); if (!d) { setBillAmount(null); setBillAmountInput(''); return; } const n=Number(d); setBillAmount(n); setBillAmountInput(formatRupees(n)); };
+  const handleBillAmountChange = (v:string) => { setSubmitError(null); setIsManualBillEdit(true); const d=v.replace(/[^\d]/g,''); if (!d) { setBillAmount(null); setBillAmountInput(''); return; } const n=Number(d); setBillAmount(n); setBillAmountInput(formatRupees(n)); };
 
   const handleSave = async () => {
     setSubmitError(null);
@@ -370,15 +371,31 @@ export function TherapistAssessmentForm() {
                     <input 
                       type="text"
                       inputMode="numeric"
-                      value={billAmount !== null ? billAmountInput : (billTotal > 0 ? formatRupees(billTotal) : '')}
+                      value={isManualBillEdit ? billAmountInput : (billTotal > 0 ? formatRupees(billTotal) : '')}
                       onChange={(e) => handleBillAmountChange(e.target.value)}
                       className="flex-1 bg-transparent text-[16px] font-extrabold text-slate-900 dark:text-white outline-none"
                       placeholder="0"
                     />
                   </div>
-                  <p className="text-[11px] text-teal-600 dark:text-teal-400 font-semibold mt-1.5">
-                    {billAmount !== null ? 'Manually edited.' : (billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7. You can edit this amount.' : 'Select treatments in Step 7 to auto-fill or enter manually.')}
-                  </p>
+                  {isManualBillEdit && (
+                    <div className="flex items-center justify-between mt-1.5">
+                      <p className="text-[11px] text-teal-600 dark:text-teal-400 font-semibold">
+                        Manually edited.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => { setIsManualBillEdit(false); setBillAmount(null); setBillAmountInput(''); }}
+                        className="text-[11px] font-bold text-slate-500 hover:text-teal-600 underline transition-colors"
+                      >
+                        Reset to auto
+                      </button>
+                    </div>
+                  )}
+                  {!isManualBillEdit && (
+                    <p className="text-[11px] text-teal-600 dark:text-teal-400 font-semibold mt-1.5">
+                      {billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7. You can edit this amount.' : 'Select treatments in Step 7 to auto-fill or enter manually.'}
+                    </p>
+                  )}
                 </FormField>
               </SectionCard>
               <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-4 rounded-[18px] flex items-center justify-center gap-2 text-white text-[15px] font-black shadow-lg shadow-teal-600/20 disabled:opacity-60 bg-teal-600 hover:bg-teal-700 transition-transform active:scale-[0.98]">
