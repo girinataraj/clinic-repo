@@ -7,7 +7,7 @@ import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } fro
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
 import { useStaffUsers } from '../../../hooks/useStaff';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { SectionCard, FormField, doctorInputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
@@ -38,6 +38,7 @@ export function DoctorAssessmentForm() {
 
   // Form state
   const [step, setStep] = useState(0);
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
   const [saved, setSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string|null>(null);
   const createEvaluation = useCreateEvaluation();
@@ -259,54 +260,65 @@ export function DoctorAssessmentForm() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#E8E9F1] dark:bg-slate-950 font-sans">
+    <div className="flex flex-col h-full overflow-y-auto bg-[#E8E9F1] dark:bg-slate-950 font-sans">
       {/* Header — Design based on user image with Doctor Gradient */}
-      <div className="px-6 pb-8 shrink-0 pt-8 rounded-b-[2.5rem] bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-xl shadow-indigo-950/20 z-10 relative overflow-hidden">
+      <div className={`px-6 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-5 pb-5 rounded-b-[2rem]' : 'py-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-xl shadow-indigo-950/20 z-10 relative overflow-hidden`}>
         {/* Abstract background shapes for premium feel */}
         <div className="absolute right-0 top-0 w-80 h-80 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="absolute left-0 bottom-0 w-40 h-40 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
         
-        <div className="flex items-center gap-5 mb-8 relative z-10">
-          <button 
-            onClick={()=>{setSubmitError(null);step>0?setStep(step-1):navigate(`/${currentRole}`);}} 
-            className="flex items-center justify-center rounded-full w-11 h-11 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-md border border-white/20 active:scale-90"
-          >
-            <ArrowLeft size={22} className="text-white" />
-          </button>
-          <div>
-            <h1 className="text-[20px] font-black text-white tracking-tight">Assessment Form</h1>
-            <p className="text-[12px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} — {ASSESSMENT_STEPS[step]?.label}</p>
+        <div className={`flex items-center justify-between relative z-10 ${isHeaderExpanded ? 'mb-4' : ''}`}>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={()=>{setSubmitError(null);step>0?setStep(step-1):navigate(`/${currentRole}`);}} 
+              className="flex items-center justify-center rounded-full w-9.5 h-9.5 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-md border border-white/20 active:scale-90"
+            >
+              <ArrowLeft size={18} className="text-white" />
+            </button>
+            <div>
+              <h1 className="text-[17px] font-black text-white tracking-tight">Assessment Form</h1>
+              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} — {ASSESSMENT_STEPS[step]?.label}</p>
+            </div>
           </div>
+          <button 
+            onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+            className="flex items-center justify-center rounded-full w-9.5 h-9.5 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-md border border-white/20 text-white active:scale-90"
+            title={isHeaderExpanded ? "Minimize progress details" : "Show progress details"}
+          >
+            {isHeaderExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
         </div>
 
-        {/* Progress Bar */}
-        <div className="max-w-4xl mx-auto px-2 relative z-10">
-          <div className="rounded-full h-2 bg-white/10 dark:bg-white/10 overflow-hidden mb-5">
-            <div 
-              className="h-full bg-white transition-all duration-700 ease-out rounded-full shadow-[0_0_10px_rgba(255,255,255,0.3)]" 
-              style={{width:`${((step+1)/totalSteps)*100}%`}} 
-            />
-          </div>
-          
-          {/* Step Indicators */}
-          <div className="flex justify-center gap-2.5">
-            {ASSESSMENT_STEPS.map((_, i) => (
+        {isHeaderExpanded && (
+          /* Progress Bar */
+          <div className="max-w-3xl mx-auto px-2 relative z-10">
+            <div className="rounded-full h-1.5 bg-white/10 dark:bg-white/10 overflow-hidden mb-3">
               <div 
-                key={i} 
-                className={`rounded-full transition-all duration-500 h-1.5 ${
-                  i === step ? 'w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 
-                  i < step ? 'w-2 bg-white/60' : 
-                  'w-2 bg-white/20'
-                }`} 
+                className="h-full bg-white transition-all duration-700 ease-out rounded-full shadow-[0_0_10px_rgba(255,255,255,0.3)]" 
+                style={{width:`${((step+1)/totalSteps)*100}%`}} 
               />
-            ))}
+            </div>
+            
+            {/* Step Indicators */}
+            <div className="flex justify-center gap-2">
+              {ASSESSMENT_STEPS.map((_, i) => (
+                <div 
+                  key={i} 
+                  className={`rounded-full transition-all duration-500 h-1.5 ${
+                    i === step ? 'w-6 bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 
+                    i < step ? 'w-1.5 bg-white/60' : 
+                    'w-1.5 bg-white/20'
+                  }`} 
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Phone Lookup — Match layout from image */}
       <div className="px-6 pt-6 pb-2 shrink-0 z-0">
-        <div className="max-w-4xl mx-auto flex gap-3 items-center bg-white dark:bg-slate-900 p-2.5 rounded-[24px] shadow-lg shadow-indigo-900/5 border border-slate-100 dark:border-slate-800">
+        <div className="max-w-3xl mx-auto flex gap-3 items-center bg-white dark:bg-slate-900 p-2.5 rounded-[24px] shadow-lg shadow-indigo-900/5 border border-slate-100 dark:border-slate-800">
           <div className="flex-1 flex items-center gap-3 px-4 py-1.5 bg-transparent">
             <Search className="w-5 h-5 text-slate-400" />
             <input 
@@ -329,7 +341,7 @@ export function DoctorAssessmentForm() {
         </div>
 
         {/* Lookup States */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-4 px-4 py-2 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800"><Loader2 size={16} className="animate-spin text-[#262842] dark:text-indigo-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory…</span></div>}
           {lookupDone&&!lookingUp&&foundPatient&&!resolvedPatientId&&(
             <div className="mt-4 p-5 rounded-[22px] bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2">
@@ -362,7 +374,7 @@ export function DoctorAssessmentForm() {
       </div>
 
       {/* Form content */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 max-w-4xl mx-auto w-full pb-12">
+      <div className="flex-1 px-6 py-6 max-w-3xl mx-auto w-full pb-12">
         <div className="transition-all duration-300">
           {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} selectedTherapistId={selectedTherapistId} setSelectedTherapistId={setSelectedTherapistId} therapistsList={therapistsList} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
           {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}

@@ -32,13 +32,128 @@ export const ROM_CONFIG: RomSection[] = [
 // ── Chief Complaints & Associated Symptoms ────────────────────────────────────
 
 
+export const SPECIFIC_PROBLEMS_BY_COMPLAINT: Record<string, Array<{
+  label: string;
+  key: string;
+  type: 'dropdown' | 'checkbox';
+  options?: string[] | 'dynamic';
+}>> = {
+  'Neck Pain': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['neck', 'shoulder', 'arm'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['nape of neck', 'lateral arm', 'elbow'] },
+    { label: 'Unable to', key: 'glass_water', type: 'checkbox', options: ['take a glass of water'] },
+    { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
+    { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['elbow', 'wrist'] },
+    { label: 'Unable to', key: 'hang_arm', type: 'checkbox', options: ['hang the arm'] },
+    { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['driving', 'sleeping', 'picking objects', 'work situations'] },
+    { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'sleeping'] }
+  ],
+  'Lower Back Pain': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['back', 'buttock', 'thigh', 'up to knee'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['side of thigh', 'back of thigh'] },
+    { label: 'Burning sensation over the', key: 'burning_sensation', type: 'dropdown', options: ['upper feet', 'sole'] },
+    { label: 'Difficult to', key: 'difficult_stepping', type: 'dropdown', options: ['stepping', 'walking', 'getting up from bed', 'getting up from chair'] },
+    { label: 'Difficult to', key: 'difficult_sitting', type: 'dropdown', options: ['sitting', 'standing', 'walking', 'bending forward'] }
+  ],
+  'Shoulder Pain': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['anterior shoulder', 'posterior shoulder', 'lateral arm', 'joint line'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['shoulder joint', 'lateral upper arm'] },
+    { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['upper arm', 'elbow', 'hand'] },
+    { label: 'Unable to', key: 'unable_to', type: 'dropdown', options: ['lift arm overhead', 'reach behind back', 'comb hair', 'carry bags', 'sleep on side'] },
+    { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
+    { label: 'Unable to', key: 'hang_arm', type: 'checkbox', options: ['hang the arm'] },
+    { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['overhead reach', 'lifting weights', 'sleeping on side', 'reaching out'] },
+    { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'supporting the arm', 'heat therapy'] }
+  ],
+  'Knee Pain': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['patella (knee cap)', 'medial joint line', 'lateral joint line', 'popliteal fossa (behind knee)'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['around knee cap', 'calf', 'shin'] },
+    { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['thigh', 'calf', 'shin'] },
+    { label: 'Unable to', key: 'unable_to', type: 'dropdown', options: ['squat / kneel', 'climb stairs', 'sit cross-legged', 'walk without support', 'stand for long'] },
+    { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
+    { label: 'Knee', key: 'knee_giving_way', type: 'dropdown', options: ['giving way', 'locking sensation'] },
+    { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['stair climbing', 'squatting', 'prolonged walking', 'prolonged sitting'] },
+    { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'keeping leg straight', 'wearing knee brace', 'ice pack'] }
+  ],
+  'Elbow Pain': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['lateral epicondyle (outer)', 'medial epicondyle (inner)', 'olecranon (tip of elbow)'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['lateral forearm', 'medial forearm', 'ring / little finger'] },
+    { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['upper arm', 'forearm', 'wrist'] },
+    { label: 'Unable to', key: 'unable_to', type: 'dropdown', options: ['grip objects', 'twist forearm (wring clothes)', 'lift weights', 'straighten elbow fully'] },
+    { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
+    { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['gripping', 'typing / mouse work', 'lifting objects', 'twisting forearm'] },
+    { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'wearing elbow brace', 'ice pack'] }
+  ],
+  'Wrist / Hand Pain': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['wrist joint', 'thumb base', 'palm', 'finger joints'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['thumb & index finger', 'palm', 'little / ring finger'] },
+    { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['forearm', 'elbow'] },
+    { label: 'Unable to', key: 'unable_to', type: 'dropdown', options: ['write', 'type / use keyboard', 'hold objects securely', 'open jars / caps', 'make a tight fist'] },
+    { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
+    { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['typing / writing', 'gripping / squeezing', 'repetitive wrist motions'] },
+    { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'wearing wrist splint', 'warm water immersion'] }
+  ],
+  'Hip Pain': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['groin', 'lateral hip (trochanter)', 'buttock', 'anterior thigh'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['groin', 'outer thigh', 'buttock'] },
+    { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['thigh', 'knee'] },
+    { label: 'Unable to', key: 'unable_to', type: 'dropdown', options: ['walk long distances', 'climb stairs', 'sit cross-legged', 'lie on affected side', 'put full weight on leg'] },
+    { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
+    { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['walking', 'prolonged sitting', 'climbing stairs', 'lying on hip'] },
+    { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'lying flat', 'unloading weight'] }
+  ],
+  'Ankle / Foot Pain': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['lateral ankle (outer)', 'medial ankle (inner)', 'heel / Achilles tendon', 'sole (plantar fascia)'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['sole of foot', 'heel', 'toes'] },
+    { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['calf', 'shin'] },
+    { label: 'Unable to', key: 'unable_to', type: 'dropdown', options: ['walk first thing in morning', 'walk barefoot', 'stand on toes', 'run / jump'] },
+    { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
+    { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['first steps in morning', 'prolonged standing / walking', 'weight-bearing activities'] },
+    { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'wearing cushioned footwear', 'ice pack', 'elevation'] }
+  ],
+  'Sciatica': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['lower back', 'gluteal region', 'posterior thigh', 'calf'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['back of thigh', 'calf', 'foot'] },
+    { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['thigh', 'calf', 'foot / toes'] },
+    { label: 'Unable to', key: 'unable_to', type: 'dropdown', options: ['sit for long', 'walk without pain', 'bend forward', 'lift leg straight'] },
+    { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
+    { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['sitting', 'forward bending', 'driving', 'coughing / sneezing'] },
+    { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['walking', 'lying flat', 'changing positions'] }
+  ],
+  'Frozen Shoulder': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['shoulder joint', 'lateral arm', 'deltoid region'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['deltoid region', 'shoulder joint'] },
+    { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['upper arm', 'elbow'] },
+    { label: 'Unable to', key: 'unable_to', type: 'dropdown', options: ['lift arm overhead', 'reach behind back', 'comb hair', 'sleep on affected side'] },
+    { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
+    { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['overhead reach', 'reaching backward', 'sleeping on side', 'sudden movements'] },
+    { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'holding arm in sling / close', 'heat application'] }
+  ],
+  'Upper Back Pain': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['back', 'buttock', 'thigh', 'up to knee'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['side of thigh', 'back of thigh'] },
+    { label: 'Burning sensation over the', key: 'burning_sensation', type: 'dropdown', options: ['upper feet', 'sole'] },
+    { label: 'Difficult to', key: 'difficult_stepping', type: 'dropdown', options: ['stepping', 'walking', 'getting up from bed', 'getting up from chair'] },
+    { label: 'Difficult to', key: 'difficult_sitting', type: 'dropdown', options: ['sitting', 'standing', 'walking', 'bending forward'] }
+  ],
+  'Plantar Fasciitis': [
+    { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['heel base', 'medial arch of foot', 'sole'] },
+    { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['heel base', 'medial arch of foot'] },
+    { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['Achilles tendon', 'calf'] },
+    { label: 'Unable to', key: 'unable_to', type: 'dropdown', options: ['walk first thing in morning', 'walk barefoot', 'stand for long', 'climb stairs comfortably'] },
+    { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
+    { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['first steps after waking / rest', 'prolonged standing / walking', 'walking barefoot'] },
+    { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'wearing soft / orthotic footwear', 'rolling sole on ice bottle'] }
+  ]
+};
+
 export const SPECIFIC_PROBLEM_OPTIONS = [
-  { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: 'dynamic' },
+  { label: 'Pain over the', key: 'pain_over', type: 'dropdown', options: ['neck', 'shoulder', 'arm'] },
   { label: 'Numbness over the', key: 'numbness_over', type: 'dropdown', options: ['nape of neck', 'lateral arm', 'elbow'] },
-  { label: 'Unable to take a glass of water', key: 'glass_water', type: 'checkbox' },
-  { label: 'Feeling weakness / heaviness / prickling sense', key: 'weakness_sense', type: 'checkbox' },
+  { label: 'Unable to', key: 'glass_water', type: 'checkbox', options: ['take a glass of water'] },
+  { label: 'Feeling', key: 'weakness_sense', type: 'dropdown', options: ['weakness', 'heaviness', 'prickling sense'] },
   { label: 'Pain radiating up to', key: 'pain_radiating', type: 'dropdown', options: ['elbow', 'wrist'] },
-  { label: 'Unable to hang the arm', key: 'hang_arm', type: 'checkbox' },
+  { label: 'Unable to', key: 'hang_arm', type: 'checkbox', options: ['hang the arm'] },
   { label: 'Pain increased by', key: 'pain_increased', type: 'dropdown', options: ['driving', 'sleeping', 'picking objects', 'work situations'] },
   { label: 'Pain reduced by', key: 'pain_reduced', type: 'dropdown', options: ['rest', 'sleeping'] }
 ];

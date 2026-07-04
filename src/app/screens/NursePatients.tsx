@@ -53,7 +53,6 @@ export function NursePatients() {
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
-    therapistId: user?.id,
     limit: 50,
   });
 

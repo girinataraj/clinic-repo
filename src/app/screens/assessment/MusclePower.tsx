@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { ROM_CONFIG, getRomKey, type RomData, type RomEntry } from './clinicalConfig';
 import { SectionCard } from './FormComponents';
-import { Activity, ChevronDown, ChevronUp } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 interface MusclePowerProps {
   data: RomData;
@@ -10,148 +9,160 @@ interface MusclePowerProps {
   chiefComplaints?: string[];
 }
 
-function PowerInput({ value, onChange, placeholder, isDoctorRole }: { value: string; onChange: (v: string) => void; placeholder: string; isDoctorRole?: boolean }) {
-  const focusRing = isDoctorRole ? "focus:border-[#262842] focus:ring-[#262842]" : "focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500";
-  return (
-    <input
-      type="text"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      className={`w-full text-center outline-none px-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusRing} transition-colors`}
-    />
-  );
-}
-
-export function MusclePower({ data, onChange, isDoctorRole, chiefComplaints }: MusclePowerProps) {
-  const [expandedComplaint, setExpandedComplaint] = useState<string | null>(null);
-
+export function MusclePower({ data, onChange, isDoctorRole }: MusclePowerProps) {
   const updateEntry = (key: string, field: keyof RomEntry, value: string) => {
     const existing = data[key] ?? {};
     onChange({ ...data, [key]: { ...existing, [field]: value } });
   };
 
-  const toggleComplaint = (label: string) => {
-    setExpandedComplaint(expandedComplaint === label ? null : label);
+  const handlePowerChange = (romKey: string, field: 'powerRt' | 'powerLt', rawValue: string) => {
+    const clean = rawValue.replace(/[^0-9]/g, '');
+    updateEntry(romKey, field, clean.slice(0, 1));
+  };
+
+  const handleRomChange = (romKey: string, field: 'romRt' | 'romLt', rawValue: string) => {
+    const clean = rawValue.replace(/[^0-9]/g, '');
+    updateEntry(romKey, field, clean.slice(0, 3));
   };
 
   const accent = isDoctorRole ? "doctor" : "fuchsia";
-  const chipBg = isDoctorRole ? "bg-indigo-100 dark:bg-indigo-900/30 text-[#262842] dark:text-indigo-400" : "bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-700 dark:text-fuchsia-400";
 
-  // If no complaints selected, show Not Applicable
-  if (!chiefComplaints || chiefComplaints.length === 0) {
-    return (
-      <SectionCard
-        icon={<Activity size={20} className={isDoctorRole ? "text-[#262842]" : "text-fuchsia-600 dark:text-fuchsia-400"} />}
-        title="Muscle Power"
-        subtitle="Power assessment by complaint"
-        accent={accent}
-      >
-        <div className="py-8 flex flex-col items-center text-center">
-          <div className={`rounded-full w-14 h-14 flex items-center justify-center mb-3 ${
-            isDoctorRole ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-fuchsia-50 dark:bg-fuchsia-900/20'
-          }`}>
-            <Activity size={24} className={isDoctorRole ? 'text-[#262842]/40 dark:text-indigo-400/40' : 'text-fuchsia-600/40 dark:text-fuchsia-400/40'} />
-          </div>
-          <p className="text-[14px] font-extrabold text-slate-700 dark:text-slate-300 mb-1">
-            Not Applicable
-          </p>
-          <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
-            Please select chief complaints to assess muscle power.
-          </p>
-        </div>
-      </SectionCard>
-    );
-  }
+  // Flatten ROM_CONFIG to rows with calculated row spans for sections and joints
+  const rows: any[] = [];
+  ROM_CONFIG.forEach((section) => {
+    const totalMovements = section.joints.reduce((acc, j) => acc + j.movements.length, 0);
 
-  // Get movements for a complaint
-  const getMovementsForComplaint = (complaint: string) => {
-    // Try to find a matching joint in ROM_CONFIG
-    for (const section of ROM_CONFIG) {
-      for (const joint of section.joints) {
-        if (complaint.toLowerCase().includes(joint.label.toLowerCase())) {
-          return joint.movements;
-        }
-      }
-    }
-    // Default movements if no match
-    return ['Flexion', 'Extension'];
-  };
+    let isFirstSectionRow = true;
+    section.joints.forEach((joint) => {
+      let isFirstJointRow = true;
+      joint.movements.forEach((movement) => {
+        rows.push({
+          section: section.label,
+          joint: joint.label,
+          movement: movement,
+          romKey: getRomKey(joint.label, movement),
+          sectionRowSpan: isFirstSectionRow ? totalMovements : 0,
+          jointRowSpan: isFirstJointRow ? joint.movements.length : 0,
+        });
+        isFirstSectionRow = false;
+        isFirstJointRow = false;
+      });
+    });
+  });
+
+  const focusBorder = isDoctorRole ? "focus:border-[#262842] dark:focus:border-indigo-400" : "focus:border-fuchsia-500 dark:focus:border-fuchsia-400";
 
   return (
     <SectionCard
       icon={<Activity size={20} className={isDoctorRole ? "text-[#262842]" : "text-fuchsia-600 dark:text-fuchsia-400"} />}
-      title="Muscle Power"
-      subtitle="Power assessment by complaint"
+      title="Muscle Power & ROM"
+      subtitle="Joint muscle strength and range of motion matrix"
       accent={accent}
     >
-      <div className="flex flex-col gap-3">
-        {chiefComplaints.map(complaint => {
-          const isExpanded = expandedComplaint === complaint;
-          const movements = getMovementsForComplaint(complaint);
-          
-          let completed = 0;
-          let total = movements.length * 2; // 2 inputs per movement (RT, LT)
-          movements.forEach(movement => {
-            const key = getRomKey(complaint, movement);
-            const entry = data[key];
-            if (entry) {
-              if (entry.powerRt) completed++;
-              if (entry.powerLt) completed++;
-            }
-          });
+      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+                <th colSpan={3} className="border-r border-slate-200 dark:border-slate-800 px-3 py-2.5 text-center text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                  MUSCLE POWER & ROM
+                </th>
+                <th colSpan={2} className="border-r border-slate-200 dark:border-slate-800 px-3 py-2.5 text-center text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-900/40">
+                  POWER
+                </th>
+                <th colSpan={2} className="px-3 py-2.5 text-center text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-900/40">
+                  ROM
+                </th>
+              </tr>
+              <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                <th className="border-r border-slate-200 dark:border-slate-800 px-3 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[100px]">
+                  LIMB
+                </th>
+                <th className="border-r border-slate-200 dark:border-slate-800 px-3 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[110px]">
+                  JOINT
+                </th>
+                <th className="border-r border-slate-200 dark:border-slate-800 px-3 py-2 text-left text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-4">
+                  MOVEMENT
+                </th>
+                <th className="border-r border-slate-200 dark:border-slate-800 px-2 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[70px] bg-slate-50/50 dark:bg-slate-900/20">
+                  RT
+                </th>
+                <th className="border-r border-slate-200 dark:border-slate-800 px-2 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[70px] bg-slate-50/50 dark:bg-slate-900/20">
+                  LT
+                </th>
+                <th className="border-r border-slate-200 dark:border-slate-800 px-2 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[70px] bg-slate-50/50 dark:bg-slate-900/20">
+                  RT
+                </th>
+                <th className="px-2 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[70px] bg-slate-50/50 dark:bg-slate-900/20">
+                  LT
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              {rows.map((row, index) => {
+                const entry = data[row.romKey] ?? {};
 
-          return (
-            <div key={complaint} className="rounded-[14px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden shadow-sm">
-              <button
-                onClick={() => toggleComplaint(complaint)}
-                className={`w-full px-4 py-3.5 flex items-center justify-between transition-colors ${
-                  isExpanded 
-                    ? 'bg-slate-50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700' 
-                    : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'
-                }`}
-              >
-                <span className="text-[14px] font-extrabold text-slate-800 dark:text-white">{complaint}</span>
-                <div className="flex items-center gap-2.5">
-                  {completed > 0 && (
-                    <span className={`px-2 py-0.5 rounded-full ${chipBg} text-[10px] font-black`}>
-                      {completed}/{total}
-                    </span>
-                  )}
-                  {isExpanded ? (
-                    <ChevronUp size={18} className="text-slate-400" />
-                  ) : (
-                    <ChevronDown size={18} className="text-slate-400" />
-                  )}
-                </div>
-              </button>
-
-              {isExpanded && (
-                <div className="divide-y divide-slate-100 dark:divide-slate-700/50 p-2">
-                  {movements.map(movement => {
-                    const key = getRomKey(complaint, movement);
-                    const entry = data[key] ?? {};
-                    return (
-                      <div key={key} className="px-3 py-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg mb-2 last:mb-0">
-                        <p className="text-[12px] font-extrabold text-slate-700 dark:text-slate-300 mb-2">{movement}</p>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">Power RT</span>
-                            <PowerInput value={entry.powerRt ?? ''} onChange={v => updateEntry(key, 'powerRt', v)} placeholder="—" isDoctorRole={isDoctorRole} />
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">Power LT</span>
-                            <PowerInput value={entry.powerLt ?? ''} onChange={v => updateEntry(key, 'powerLt', v)} placeholder="—" isDoctorRole={isDoctorRole} />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                return (
+                  <tr key={index} className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10 transition-colors">
+                    {row.sectionRowSpan > 0 && (
+                      <td rowSpan={row.sectionRowSpan} className="border-r border-slate-200 dark:border-slate-800 px-3 py-2 text-center text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-900/60 w-[100px] align-middle">
+                        {row.section}
+                      </td>
+                    )}
+                    {row.jointRowSpan > 0 && (
+                      <td rowSpan={row.jointRowSpan} className="border-r border-slate-200 dark:border-slate-800 px-3 py-2 text-center text-[11px] font-black text-slate-700 dark:text-slate-350 uppercase tracking-wider bg-slate-50/30 dark:bg-slate-900/30 w-[110px] align-middle">
+                        {row.joint}
+                      </td>
+                    )}
+                    <td className="border-r border-slate-200 dark:border-slate-800 px-3 py-2 text-left text-[11px] font-bold text-slate-650 dark:text-slate-400 uppercase tracking-wider pl-4">
+                      {row.movement}
+                    </td>
+                    <td className="border-r border-slate-200 dark:border-slate-800 p-1 w-[70px]">
+                      <input
+                        type="text"
+                        value={entry.powerRt ?? ''}
+                        onChange={e => handlePowerChange(row.romKey, 'powerRt', e.target.value)}
+                        maxLength={1}
+                        placeholder="—"
+                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusBorder} transition-colors`}
+                      />
+                    </td>
+                    <td className="border-r border-slate-200 dark:border-slate-800 p-1 w-[70px]">
+                      <input
+                        type="text"
+                        value={entry.powerLt ?? ''}
+                        onChange={e => handlePowerChange(row.romKey, 'powerLt', e.target.value)}
+                        maxLength={1}
+                        placeholder="—"
+                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusBorder} transition-colors`}
+                      />
+                    </td>
+                    <td className="border-r border-slate-200 dark:border-slate-800 p-1 w-[70px]">
+                      <input
+                        type="text"
+                        value={entry.romRt ?? ''}
+                        onChange={e => handleRomChange(row.romKey, 'romRt', e.target.value)}
+                        maxLength={3}
+                        placeholder="—"
+                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusBorder} transition-colors`}
+                      />
+                    </td>
+                    <td className="p-1 w-[70px]">
+                      <input
+                        type="text"
+                        value={entry.romLt ?? ''}
+                        onChange={e => handleRomChange(row.romKey, 'romLt', e.target.value)}
+                        maxLength={3}
+                        placeholder="—"
+                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusBorder} transition-colors`}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </SectionCard>
   );

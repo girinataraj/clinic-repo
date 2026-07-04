@@ -1,6 +1,6 @@
 import { type ChangeEvent } from 'react';
 import { SectionCard, FormField, inputClass, doctorInputClass, MultiSelectDropdown, ToggleChip } from './FormComponents';
-import { FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS, getSortedDiagnoses, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
+import { FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS, SPECIFIC_PROBLEMS_BY_COMPLAINT, getSortedDiagnoses, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown, Stethoscope, FileSearch, PenTool, CalendarDays } from 'lucide-react';
 import { ClinicalExamination } from './ClinicalExamination';
 import { RomMatrix } from './RomMatrix';
@@ -134,58 +134,131 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
         <textarea value={complaintsText} onChange={(e: any) => setComplaintsText(e.target.value)} placeholder="Additional complaint details or free-text notes…" className={`${ic} h-[70px] resize-none`} />
       </SectionCard>
 
-      {chiefComplaints.length > 0 && (
-        <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Specific Problems" subtitle="Provide details about complaints" accent={accent2}>
-          <div className="flex flex-col gap-4">
-            {SPECIFIC_PROBLEM_OPTIONS.map(opt => {
-              const isEnabled = specificProblems[opt.key]?.enabled;
-              const options = opt.options === 'dynamic' ? dynamicOptions : opt.options;
-              
-              return (
-                <div key={opt.key} className="flex flex-col gap-2 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handleProblemChange(opt.key, { ...specificProblems[opt.key], enabled: !isEnabled })}
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${isEnabled ? 'bg-blue-600 border-blue-600' : 'bg-white dark:bg-slate-800 border-slate-300'}`}
-                    >
-                      {isEnabled && <Check size={12} strokeWidth={3} className="text-white" />}
-                    </button>
-                    <span className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{opt.label}</span>
-                    
-                    {isEnabled && opt.type === 'dropdown' && options.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2 ml-8">
-                        {options.map((o: string) => {
-                          const isSelected = (specificProblems[opt.key]?.values || []).includes(o);
-                          return (
-                            <button
-                              key={o}
-                              type="button"
-                              onClick={() => {
-                                const current = specificProblems[opt.key]?.values || [];
-                                const next = isSelected ? current.filter((x: string) => x !== o) : [...current, o];
-                                handleProblemChange(opt.key, { ...specificProblems[opt.key], values: next });
-                              }}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all ${
-                                isSelected
-                                  ? 'border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-500/20'
-                                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:border-slate-300'
-                              }`}
-                            >
-                              {isSelected && <Check size={12} strokeWidth={4} />}
-                              {o}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </SectionCard>
-      )}
+      {chiefComplaints.length > 0 && (() => {
+        const activeComplaints = chiefComplaints.filter((c: string) => c !== 'Another');
+        if (activeComplaints.length === 0) return null;
+
+        // Group options by their unique key
+        const groupedRows: Record<string, {
+          label: string;
+          key: string;
+          type: 'dropdown' | 'checkbox';
+          options: Array<{
+            complaint: string;
+            value: string;
+          }>;
+        }> = {};
+
+        activeComplaints.forEach((complaint: string) => {
+          const options = SPECIFIC_PROBLEMS_BY_COMPLAINT[complaint] || SPECIFIC_PROBLEM_OPTIONS;
+          options.forEach(opt => {
+            if (!groupedRows[opt.key]) {
+              groupedRows[opt.key] = {
+                label: opt.label,
+                key: opt.key,
+                type: opt.type,
+                options: []
+              };
+            }
+            const optList = opt.options || [];
+            optList.forEach(val => {
+              groupedRows[opt.key].options.push({
+                complaint,
+                value: val
+              });
+            });
+          });
+        });
+
+        const activeChipClass = isDoctorRole
+          ? 'border-[#262842] bg-[#262842] text-white shadow-sm shadow-indigo-500/10'
+          : 'border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-500/10';
+
+        return (
+          <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Specific Problems" subtitle="Provide details about complaints" accent={accent2}>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                      <th className="px-4 py-3 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[180px]">
+                        Category
+                      </th>
+                      <th className="px-4 py-3 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        Selectable Details
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {Object.values(groupedRows).map((row) => {
+                      // Get unique option values to render them without duplication
+                      const uniqueOptionValues = Array.from(new Set(row.options.map(o => o.value)));
+
+                      return (
+                        <tr key={row.key} className="hover:bg-slate-50/20 dark:hover:bg-slate-900/10 transition-colors">
+                          <td className="px-4 py-3 text-[13px] font-extrabold text-slate-700 dark:text-slate-300 align-top pt-4">
+                            {row.label}
+                          </td>
+                          <td className="px-4 py-3 align-middle">
+                            <div className="flex flex-wrap gap-1.5">
+                              {uniqueOptionValues.map((v: string) => {
+                                // Find all complaints that match this value for the key
+                                const matchingComplaints = row.options.filter(o => o.value === v).map(o => o.complaint);
+
+                                const isSelected = matchingComplaints.some(comp => {
+                                  const stateKey = `${comp}_${row.key}`;
+                                  return row.type === 'checkbox'
+                                    ? !!specificProblems[stateKey]?.enabled
+                                    : (specificProblems[stateKey]?.values || []).includes(v);
+                                });
+
+                                return (
+                                  <button
+                                    key={v}
+                                    type="button"
+                                    onClick={() => {
+                                      matchingComplaints.forEach(comp => {
+                                        const stateKey = `${comp}_${row.key}`;
+                                        if (row.type === 'checkbox') {
+                                          handleProblemChange(stateKey, {
+                                            ...specificProblems[stateKey],
+                                            enabled: !isSelected
+                                          });
+                                        } else {
+                                          const current = specificProblems[stateKey]?.values || [];
+                                          const next = isSelected
+                                            ? current.filter((x: string) => x !== v)
+                                            : [...current, v];
+                                          handleProblemChange(stateKey, {
+                                            enabled: next.length > 0,
+                                            values: next
+                                          });
+                                        }
+                                      });
+                                    }}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all active:scale-[0.97] cursor-pointer ${
+                                      isSelected
+                                        ? activeChipClass
+                                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-slate-300 hover:bg-slate-50/50 dark:hover:bg-slate-800'
+                                    }`}
+                                  >
+                                    {isSelected && <Check size={11} strokeWidth={4} />}
+                                    {v}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </SectionCard>
+        );
+      })()}
 
       <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Associated Symptoms" subtitle="Select all that apply" accent={accent2}>
         <MultiSelectDropdown options={associatedSymptomsList || []} selected={associatedSymptoms} onChange={setAssociatedSymptoms} placeholder="Search symptoms…" accent={accent2} />
@@ -236,11 +309,6 @@ export function StepExamination({ examination, setExamination, isDoctorRole, chi
         onChange={setRomData}
         isDoctorRole={isDoctorRole}
         chiefComplaints={chiefComplaints || []}
-      />
-      <RomMatrix
-        data={romData || {}}
-        onChange={setRomData}
-        isDoctorRole={isDoctorRole}
       />
       <ClinicalExamination
         chiefComplaints={chiefComplaints ?? []}

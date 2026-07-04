@@ -6,7 +6,7 @@ import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEval
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { SectionCard, FormField, inputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
@@ -35,6 +35,7 @@ export function TherapistAssessmentForm() {
 
   // Form state
   const [step, setStep] = useState(0);
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
   const [saved, setSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string|null>(null);
   const createEvaluation = useCreateEvaluation();
@@ -255,25 +256,38 @@ export function TherapistAssessmentForm() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
+    <div className="flex flex-col h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Header — Design based on Dashboard Gradient */}
-      <div className="px-5 pb-5 shrink-0 pt-8 rounded-b-[2.5rem] bg-gradient-to-br from-[#134e4a] to-[#0d9488] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden">
+      <div className={`px-5 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-5 pb-4 rounded-b-[2rem]' : 'py-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#134e4a] to-[#0d9488] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden`}>
         <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="flex items-center gap-4 mb-4 relative z-10">
-          <button onClick={()=>{setSubmitError(null);step>0?setStep(step-1):navigate(`/${currentRole}`);}} className="flex items-center justify-center rounded-[14px] w-10 h-10 bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md border border-white/20">
-            <ArrowLeft size={20} className="text-white" />
-          </button>
-          <div>
-            <h1 className="text-[18px] font-black text-white tracking-tight">Assessment Form</h1>
-            <p className="text-[12px] font-medium text-teal-100/80 mt-0.5">Step {step+1} of {totalSteps} — {ASSESSMENT_STEPS[step]?.label}</p>
+        <div className={`flex items-center justify-between relative z-10 ${isHeaderExpanded ? 'mb-3' : ''}`}>
+          <div className="flex items-center gap-3">
+            <button onClick={()=>{setSubmitError(null);step>0?setStep(step-1):navigate(`/${currentRole}`);}} className="flex items-center justify-center rounded-[12px] w-8.5 h-8.5 bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md border border-white/20">
+              <ArrowLeft size={18} className="text-white" />
+            </button>
+            <div>
+              <h1 className="text-[16px] font-black text-white tracking-tight">Assessment Form</h1>
+              <p className="text-[11px] font-medium text-teal-100/80 mt-0.5">Step {step+1} of {totalSteps} — {ASSESSMENT_STEPS[step]?.label}</p>
+            </div>
           </div>
+          <button 
+            onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+            className="flex items-center justify-center rounded-[12px] w-8.5 h-8.5 bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md border border-white/20 text-white active:scale-95"
+            title={isHeaderExpanded ? "Minimize progress details" : "Show progress details"}
+          >
+            {isHeaderExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
         </div>
-        <div className="rounded-full h-1.5 bg-black/10 dark:bg-white/10 relative z-10 overflow-hidden">
-          <div className="h-full bg-white transition-all duration-500 rounded-full" style={{width:`${((step+1)/totalSteps)*100}%`}} />
-        </div>
-        <div className="flex justify-center gap-1.5 mt-3 relative z-10">
-          {ASSESSMENT_STEPS.map((_,i)=>(<div key={i} className={`rounded-full transition-all duration-300 h-1.5 ${i<=step?'bg-white':'bg-white/20'} ${i===step?'w-6':'w-1.5'}`} />))}
-        </div>
+        {isHeaderExpanded && (
+          <>
+            <div className="rounded-full h-1 bg-black/10 dark:bg-white/10 relative z-10 overflow-hidden">
+              <div className="h-full bg-white transition-all duration-500 rounded-full" style={{width:`${((step+1)/totalSteps)*100}%`}} />
+            </div>
+            <div className="flex justify-center gap-1.5 mt-2.5 relative z-10">
+              {ASSESSMENT_STEPS.map((_,i)=>(<div key={i} className={`rounded-full transition-all duration-300 h-1 ${i<=step?'bg-white':'bg-white/20'} ${i===step?'w-5':'w-1'}`} />))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Phone Lookup */}
@@ -316,7 +330,7 @@ export function TherapistAssessmentForm() {
       </div>
 
       {/* Form content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 max-w-3xl mx-auto w-full pb-8">
+      <div className="flex-1 px-4 py-4 max-w-3xl mx-auto w-full pb-8">
         <div className="transition-all duration-300">
           {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
           {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
