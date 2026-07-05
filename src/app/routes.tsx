@@ -22,6 +22,7 @@ import { ExerciseLibrary } from './screens/ExerciseLibrary';
 import { ReportGeneration } from './screens/ReportGeneration';
 import { TreatmentDetailPage } from '../features/patients/pages/TreatmentDetailPage';
 import { SessionPage } from './screens/SessionPage';
+import { PatientHistorySearch } from './screens/PatientHistorySearch';
 
 import { PatientForm } from './screens/PatientForm';
 import { TherapistHierarchy } from './screens/TherapistHierarchy';
@@ -83,6 +84,7 @@ export const router = createBrowserRouter([
               { path: 'nurse/exercise', Component: ExercisePrescription },
               { path: 'nurse/exercise-library', Component: ExerciseLibrary },
               { path: 'nurse/report', Component: ReportGeneration },
+              { path: 'nurse/patient-history', Component: PatientHistorySearch },
               { path: 'nurse/profile', Component: NurseProfile },
 
               { path: 'nurse/patient/:patientId/treatment', Component: TreatmentDetailPage },
@@ -108,6 +110,7 @@ export const router = createBrowserRouter([
               { path: 'doctor/report', Component: ReportGeneration },
               { path: 'doctor/daily-report', Component: DailyReportPage },
               { path: 'doctor/revenue', Component: DoctorRevenue },
+              { path: 'doctor/patient-history', Component: PatientHistorySearch },
               { path: 'doctor/profile', Component: DoctorProfile },
 
             ],

@@ -233,7 +233,7 @@ export function DoctorAssessmentForm() {
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
         anthropometrics: hasAnthro ? anthropometrics : undefined,
-        clinicalExamination: (Object.keys(clinicalExamData.tests).length > 0 || Object.keys(clinicalExamData.imaging).length > 0) ? clinicalExamData : undefined,
+        clinicalExamination: (Object.keys(clinicalExamData.tests).length > 0 || Object.keys(clinicalExamData.imaging).length > 0 || !!clinicalExamData.examinationNotes) ? clinicalExamData : undefined,
       });
       setSaved(true);
       setTimeout(() => navigate(`/${currentRole}/report?patientId=${resolvedPatientId}`), 2000);
@@ -260,7 +260,8 @@ export function DoctorAssessmentForm() {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto bg-[#E8E9F1] dark:bg-slate-950 font-sans">
+    <div className="flex flex-col h-full bg-[#E8E9F1] dark:bg-slate-950 font-sans overflow-hidden">
+      <div className="flex-1 overflow-y-auto flex flex-col overflow-x-hidden">
       {/* Header — Design based on user image with Doctor Gradient */}
       <div className={`px-6 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-5 pb-5 rounded-b-[2rem]' : 'py-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-xl shadow-indigo-950/20 z-10 relative overflow-hidden`}>
         {/* Abstract background shapes for premium feel */}
@@ -328,15 +329,16 @@ export function DoctorAssessmentForm() {
               onChange={e=>setPhoneInput(e.target.value)} 
               onKeyDown={e=>e.key==='Enter'&&handlePhoneLookup()} 
               placeholder="Patient mobile number" 
-              className="flex-1 bg-transparent outline-none text-[15px] font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400" 
+              className="flex-1 w-full min-w-0 bg-transparent outline-none text-[15px] font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400" 
             />
           </div>
           <button 
             onClick={handlePhoneLookup} 
             disabled={phoneInput.trim().length<7} 
-            className="px-7 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-indigo-500/20 bg-[#262842] hover:bg-[#3B3E66]"
+            className="px-5 md:px-7 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-indigo-500/20 bg-[#262842] hover:bg-[#3B3E66] flex items-center justify-center"
           >
-            Lookup
+            <Search className="w-5 h-5 md:hidden" />
+            <span className="hidden md:inline">Lookup</span>
           </button>
         </div>
 
@@ -374,7 +376,7 @@ export function DoctorAssessmentForm() {
       </div>
 
       {/* Form content */}
-      <div className="flex-1 px-6 py-6 max-w-3xl mx-auto w-full pb-12">
+      <div className="flex-1 px-6 py-6 max-w-2xl mx-auto w-full pb-12">
         <div className="transition-all duration-300">
           {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} selectedTherapistId={selectedTherapistId} setSelectedTherapistId={setSelectedTherapistId} therapistsList={therapistsList} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
           {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
@@ -446,9 +448,12 @@ export function DoctorAssessmentForm() {
             </div>
           )}
         </div>
+      </div>
+      </div>
 
-        {/* Navigation Buttons — Positioned like in the user's image */}
-        <div className="mt-12 flex flex-col gap-4">
+      {/* Navigation Buttons (Fixed Bottom) */}
+      <div className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)] relative z-20">
+        <div className="max-w-2xl mx-auto w-full flex flex-col gap-4">
           {submitError && (
             <div className="p-4 rounded-[18px] bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[14px] text-red-700 dark:text-red-400 font-bold flex items-center gap-3 shadow-sm animate-in fade-in slide-in-from-left-2">
               <AlertTriangle size={18} className="shrink-0" />

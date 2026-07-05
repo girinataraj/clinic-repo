@@ -4,7 +4,7 @@ import type { UserRole } from '../contexts/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import {
   Home, Calendar, FileText, User, Users, ClipboardList, BarChart2,
-  Activity, LogOut, ChevronRight, IndianRupee, UserCog,
+  Activity, LogOut, ChevronRight, IndianRupee, UserCog, FileSearch,
 } from 'lucide-react';
 
 interface NavItem {
@@ -24,6 +24,7 @@ const navConfig: Record<UserRole, NavItem[]> = {
     { label: 'Dashboard', Icon: Home, path: '/nurse' },
     { label: 'Intake Form', Icon: ClipboardList, path: '/nurse/intake' },
     { label: 'Patients', Icon: Users, path: '/nurse/patients' },
+    { label: 'Patient History', Icon: FileSearch, path: '/nurse/patient-history' },
     { label: 'Exercises', Icon: Activity, path: '/nurse/exercise' },
     { label: 'Profile', Icon: User, path: '/nurse/profile' },
   ],
@@ -32,6 +33,7 @@ const navConfig: Record<UserRole, NavItem[]> = {
     { label: 'Patients', Icon: Users, path: '/doctor/patients' },
     { label: 'Therapists', Icon: UserCog, path: '/doctor/therapists' },
     { label: 'Intake Form', Icon: ClipboardList, path: '/doctor/intake' },
+    { label: 'Patient History', Icon: FileSearch, path: '/doctor/patient-history' },
     { label: 'Reports', Icon: BarChart2, path: '/doctor/report' },
     { label: 'Revenue', Icon: IndianRupee, path: '/doctor/revenue' },
     { label: 'Profile', Icon: User, path: '/doctor/profile' },

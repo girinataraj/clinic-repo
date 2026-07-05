@@ -229,7 +229,7 @@ export function TherapistAssessmentForm() {
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
         anthropometrics: hasAnthro ? anthropometrics : undefined,
-        clinicalExamination: (Object.keys(clinicalExamData.tests).length > 0 || Object.keys(clinicalExamData.imaging).length > 0) ? clinicalExamData : undefined,
+        clinicalExamination: (Object.keys(clinicalExamData.tests).length > 0 || Object.keys(clinicalExamData.imaging).length > 0 || !!clinicalExamData.examinationNotes) ? clinicalExamData : undefined,
       });
       setSaved(true);
       setTimeout(() => navigate(`/${currentRole}/report?patientId=${resolvedPatientId}`), 2000);
@@ -256,7 +256,8 @@ export function TherapistAssessmentForm() {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 font-sans">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden">
+      <div className="flex-1 overflow-y-auto flex flex-col overflow-x-hidden">
       {/* Header — Design based on Dashboard Gradient */}
       <div className={`px-5 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-5 pb-4 rounded-b-[2rem]' : 'py-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#134e4a] to-[#0d9488] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden`}>
         <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
@@ -278,6 +279,7 @@ export function TherapistAssessmentForm() {
             {isHeaderExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
         </div>
+
         {isHeaderExpanded && (
           <>
             <div className="rounded-full h-1 bg-black/10 dark:bg-white/10 relative z-10 overflow-hidden">
@@ -295,9 +297,12 @@ export function TherapistAssessmentForm() {
         <div className="flex gap-2 items-center bg-white dark:bg-slate-900 p-2 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
           <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-transparent">
             <Search className="w-4 h-4 text-slate-400" />
-            <input type="tel" inputMode="numeric" value={phoneInput} onChange={e=>setPhoneInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handlePhoneLookup()} placeholder="Patient mobile number" className="flex-1 bg-transparent outline-none text-[14px] font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400" />
+            <input type="tel" inputMode="numeric" value={phoneInput} onChange={e=>setPhoneInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handlePhoneLookup()} placeholder="Patient mobile number" className="flex-1 w-full min-w-0 bg-transparent outline-none text-[14px] font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400" />
           </div>
-          <button onClick={handlePhoneLookup} disabled={phoneInput.trim().length<7} className="px-5 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-50 transition-transform active:scale-95 shadow-md shadow-teal-500/20 bg-teal-600 hover:bg-teal-700">Lookup</button>
+          <button onClick={handlePhoneLookup} disabled={phoneInput.trim().length<7} className="px-4 md:px-5 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-50 transition-transform active:scale-95 shadow-md shadow-teal-500/20 bg-teal-600 hover:bg-teal-700 flex items-center justify-center">
+            <Search className="w-4 h-4 md:hidden" />
+            <span className="hidden md:inline">Lookup</span>
+          </button>
         </div>
         {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-3 px-3 py-2 bg-white dark:bg-slate-900 rounded-xl"><Loader2 size={16} className="animate-spin text-teal-600 dark:text-teal-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory…</span></div>}
         {lookupDone&&!lookingUp&&foundPatient&&!resolvedPatientId&&(
@@ -330,7 +335,7 @@ export function TherapistAssessmentForm() {
       </div>
 
       {/* Form content */}
-      <div className="flex-1 px-4 py-4 max-w-3xl mx-auto w-full pb-8">
+      <div className="flex-1 px-4 py-6 max-w-2xl mx-auto w-full pb-12">
         <div className="transition-all duration-300">
           {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
           {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
@@ -418,9 +423,12 @@ export function TherapistAssessmentForm() {
             </div>
           )}
         </div>
+      </div>
+      </div>
 
-        {/* Navigation Buttons (Integrated) */}
-        <div className="mt-8 mb-6 flex flex-col gap-3">
+      {/* Navigation Buttons (Fixed Bottom) */}
+      <div className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)] relative z-20">
+        <div className="max-w-2xl mx-auto w-full flex flex-col gap-3">
           {submitError && (
             <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2 shadow-sm">
               <AlertTriangle size={16} className="shrink-0" />

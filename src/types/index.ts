@@ -88,6 +88,7 @@ export interface Evaluation {
   associatedPains?: string[];
   musclePowerRom?: Record<string, unknown> | null;
   anthropometrics?: Record<string, unknown> | null;
+  clinicalExamination?: Record<string, any> | null;
   treatmentPlan?: Record<string, unknown> | null;
   followUpSession?: Record<string, unknown> | null;
   // Meta
