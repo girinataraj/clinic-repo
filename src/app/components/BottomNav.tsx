@@ -26,7 +26,8 @@ const navConfig: Record<string, NavItem[]> = {
   doctor: [
     { label: 'Home', Icon: Home, path: '/doctor' },
     { label: 'Patients', Icon: Users, path: '/doctor/patients' },
-    { label: 'Therapists', Icon: UserCog, path: '/doctor/therapists' },
+    { label: 'Therapists', Icon: Users, path: '/doctor/therapists' },
+    { label: 'Staff', Icon: UserCog, path: '/doctor/staff' },
     { label: 'Intake', Icon: ClipboardList, path: '/doctor/intake' },
     { label: 'History', Icon: FileSearch, path: '/doctor/patient-history' },
     { label: 'Profile', Icon: User, path: '/doctor/profile' },

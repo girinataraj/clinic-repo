@@ -31,7 +31,8 @@ const navConfig: Record<UserRole, NavItem[]> = {
   doctor: [
     { label: 'Dashboard', Icon: Home, path: '/doctor' },
     { label: 'Patients', Icon: Users, path: '/doctor/patients' },
-    { label: 'Therapists', Icon: UserCog, path: '/doctor/therapists' },
+    { label: 'Therapists', Icon: Users, path: '/doctor/therapists' },
+    { label: 'Manage Staff', Icon: UserCog, path: '/doctor/staff' },
     { label: 'Intake Form', Icon: ClipboardList, path: '/doctor/intake' },
     { label: 'Patient History', Icon: FileSearch, path: '/doctor/patient-history' },
     { label: 'Reports', Icon: BarChart2, path: '/doctor/report' },

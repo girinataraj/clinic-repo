@@ -140,6 +140,24 @@ export function useUpdatePatient() {
   });
 }
 
+/** Assign a therapist to a patient (doctor/admin). */
+export function useAssignTherapist() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ patientId, therapistId }: { patientId: string; therapistId: string }) => {
+      const { data } = await api.post<{ success: boolean; data: any }>(
+        `/patients/${patientId}/assign-therapist`,
+        { therapistId }
+      );
+      return data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['patient', variables.patientId] });
+    },
+  });
+}
+
 /** Checkout patient session (increment count, mark completed). */
 export function useCheckoutPatient() {
   const queryClient = useQueryClient();

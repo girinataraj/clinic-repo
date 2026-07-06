@@ -2,12 +2,13 @@ import { useState, useCallback, useEffect, type ChangeEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
+import { SearchDropdown } from '../../components/SearchDropdown';
 import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEvaluations';
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
 import { useStaffUsers } from '../../../hooks/useStaff';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { SectionCard, FormField, doctorInputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
@@ -320,22 +321,35 @@ export function DoctorAssessmentForm() {
       {/* Phone Lookup — Match layout from image */}
       <div className="px-6 pt-6 pb-2 shrink-0 z-0">
         <div className="max-w-3xl mx-auto flex gap-3 items-center bg-white dark:bg-slate-900 p-2.5 rounded-[24px] shadow-lg shadow-indigo-900/5 border border-slate-100 dark:border-slate-800">
-          <div className="flex-1 flex items-center gap-3 px-4 py-1.5 bg-transparent">
-            <Search className="w-5 h-5 text-slate-400" />
-            <input 
-              type="tel" 
-              inputMode="numeric" 
-              value={phoneInput} 
-              onChange={e=>setPhoneInput(e.target.value)} 
-              onKeyDown={e=>e.key==='Enter'&&handlePhoneLookup()} 
-              placeholder="Patient mobile number" 
-              className="flex-1 w-full min-w-0 bg-transparent outline-none text-[15px] font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400" 
-            />
-          </div>
+          <SearchDropdown
+            module="patients"
+            searchFields={['name', 'mobile']}
+            apiEndpoint="/patients/search"
+            value={phoneInput}
+            onChange={setPhoneInput}
+            onSelect={(patient: any) => {
+              setPhoneInput(patient.mobile);
+              setPhoneToFetch(patient.mobile);
+              setLookupDone(true);
+              setShowNewPatientForm(false);
+            }}
+            renderItem={(patient: any, highlightText: any) => (
+              <div className="flex flex-col">
+                <span className="font-bold text-slate-800 dark:text-slate-100">
+                  {highlightText(patient.name)}
+                </span>
+                <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                  <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
+                </span>
+              </div>
+            )}
+            placeholder="Patient mobile number..."
+            className="flex-1"
+          />
           <button 
             onClick={handlePhoneLookup} 
             disabled={phoneInput.trim().length<7} 
-            className="px-5 md:px-7 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-indigo-500/20 bg-[#262842] hover:bg-[#3B3E66] flex items-center justify-center"
+            className="px-5 md:px-7 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-indigo-500/20 bg-[#262842] hover:bg-[#3B3E66] flex items-center justify-center shrink-0"
           >
             <Search className="w-5 h-5 md:hidden" />
             <span className="hidden md:inline">Lookup</span>

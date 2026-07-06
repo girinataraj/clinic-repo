@@ -247,3 +247,11 @@ export interface PaymentDetails {
   remainingAmount: number;
   visits: PaymentVisit[];
 }
+
+export interface SearchPatientResult {
+  id: string;
+  displayId: string;
+  name: string;
+  mobile: string;
+  lastVisitDate?: string | null;
+}

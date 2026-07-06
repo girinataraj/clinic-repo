@@ -2,11 +2,12 @@ import { useState, useCallback, useEffect, type ChangeEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
+import { SearchDropdown } from '../../components/SearchDropdown';
 import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEvaluations';
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search, ChevronDown, ChevronUp, Phone } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { SectionCard, FormField, inputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
@@ -295,11 +296,32 @@ export function TherapistAssessmentForm() {
       {/* Phone Lookup */}
       <div className="px-4 pt-4 pb-2 bg-slate-50 dark:bg-slate-950 shrink-0 z-0 -mt-2">
         <div className="flex gap-2 items-center bg-white dark:bg-slate-900 p-2 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
-          <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-transparent">
-            <Search className="w-4 h-4 text-slate-400" />
-            <input type="tel" inputMode="numeric" value={phoneInput} onChange={e=>setPhoneInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handlePhoneLookup()} placeholder="Patient mobile number" className="flex-1 w-full min-w-0 bg-transparent outline-none text-[14px] font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400" />
-          </div>
-          <button onClick={handlePhoneLookup} disabled={phoneInput.trim().length<7} className="px-4 md:px-5 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-50 transition-transform active:scale-95 shadow-md shadow-teal-500/20 bg-teal-600 hover:bg-teal-700 flex items-center justify-center">
+          <SearchDropdown
+            module="patients"
+            searchFields={['name', 'mobile']}
+            apiEndpoint="/patients/search"
+            value={phoneInput}
+            onChange={setPhoneInput}
+            onSelect={(patient: any) => {
+              setPhoneInput(patient.mobile);
+              setPhoneToFetch(patient.mobile);
+              setLookupDone(true);
+              setShowNewPatientForm(false);
+            }}
+            renderItem={(patient: any, highlightText: any) => (
+              <div className="flex flex-col">
+                <span className="font-bold text-slate-800 dark:text-slate-100">
+                  {highlightText(patient.name)}
+                </span>
+                <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                  <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
+                </span>
+              </div>
+            )}
+            placeholder="Patient mobile number..."
+            className="flex-1"
+          />
+          <button onClick={handlePhoneLookup} disabled={phoneInput.trim().length<7} className="px-4 md:px-5 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-50 transition-transform active:scale-95 shadow-md shadow-teal-500/20 bg-teal-600 hover:bg-teal-700 flex items-center justify-center shrink-0">
             <Search className="w-4 h-4 md:hidden" />
             <span className="hidden md:inline">Lookup</span>
           </button>
