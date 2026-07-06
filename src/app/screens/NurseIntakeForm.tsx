@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef, type ChangeEvent } from 'reac
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
+import { SearchDropdown } from '../components/SearchDropdown';
 import { useCreateEvaluation, useLatestEvaluation } from '../../hooks/useEvaluations';
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../hooks/usePatients';
 import { useStaffUsers } from '../../hooks/useStaff';
@@ -616,22 +617,35 @@ export function NurseIntakeForm() {
       {/* ── Phone Lookup Banner ─────────────────────────────────────────── */}
       <div className="px-4 pt-3 pb-1 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shrink-0">
         <div className="flex gap-2 items-center">
-          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-            <Phone size={15} className="text-indigo-900 shrink-0" />
-            <input
-              type="tel"
-              inputMode="numeric"
-              value={phoneInput}
-              onChange={(e) => setPhoneInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handlePhoneLookup()}
-              placeholder="Enter patient mobile number"
-              className="flex-1 bg-transparent outline-none text-[13px] text-slate-800 dark:text-white placeholder:text-slate-400"
-            />
-          </div>
+          <SearchDropdown
+            module="patients"
+            searchFields={['name', 'mobile']}
+            apiEndpoint="/patients/search"
+            value={phoneInput}
+            onChange={setPhoneInput}
+            onSelect={(patient: any) => {
+              setPhoneInput(patient.mobile);
+              setPhoneToFetch(patient.mobile);
+              setLookupDone(true);
+              setShowNewPatientForm(false);
+            }}
+            renderItem={(patient: any, highlightText: any) => (
+              <div className="flex flex-col">
+                <span className="font-bold text-slate-800 dark:text-slate-100">
+                  {highlightText(patient.name)}
+                </span>
+                <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                  <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
+                </span>
+              </div>
+            )}
+            placeholder="Enter patient mobile number..."
+            className="flex-1"
+          />
           <button
             onClick={handlePhoneLookup}
             disabled={phoneInput.trim().length < 7}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white text-[13px] font-bold disabled:opacity-50 transition-opacity"
+            className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-white text-[13px] font-bold disabled:opacity-50 transition-opacity shrink-0"
             style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}
           >
             <Search size={14} />

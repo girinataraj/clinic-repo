@@ -196,7 +196,7 @@ export function NursePatients() {
 
               {/* List heading */}
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-slate-900 dark:text-white">Patient list</h2>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">My Patients ({patients.length})</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
                   {isLoading ? '…' : `${patients.length} results`}
                 </p>
@@ -270,6 +270,11 @@ export function NursePatients() {
                             <span className="rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[11px] font-semibold">
                               {patient.phone}
                             </span>
+                            {(patient as any).assignedByDoctorName && (
+                              <span className="rounded-lg px-2 py-1 bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 text-[11px] font-semibold border border-teal-100/50 dark:border-teal-900/50">
+                                Assigned by Dr. {(patient as any).assignedByDoctorName} on {new Date((patient as any).assignedDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>

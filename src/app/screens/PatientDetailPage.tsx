@@ -3,7 +3,9 @@ import { useNavigate, useParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import { PatientHistoryUpload } from '../components/PatientHistoryUpload';
-import { usePatient } from '../../hooks/usePatients';
+import { usePatient, useAssignTherapist } from '../../hooks/usePatients';
+import { useAuth } from '../contexts/AuthContext';
+import { SearchDropdown } from '../components/SearchDropdown';
 import { useLatestEvaluation, useUpdateEvaluation, useEvaluations } from '../../hooks/useEvaluations';
 import { Calendar, UserCheck } from 'lucide-react';
 import {
@@ -31,6 +33,10 @@ export function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const patientId = id ?? null;
+  const { user } = useAuth();
+  const isStaff = user?.role === 'doctor' || user?.role === 'admin';
+  const [therapistSearchVal, setTherapistSearchVal] = useState('');
+  const assignTherapistMutation = useAssignTherapist();
   const {
     data: patient,
     isLoading: patientLoading,
@@ -245,6 +251,44 @@ export function PatientDetailPage() {
         {/* Overview Tab */}
         {activeTab === 'Overview' && (
           <div className="flex flex-col gap-4">
+            {/* Assign/Therapist Info */}
+            {isStaff && (
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#E8E9F1] dark:bg-slate-800">
+                    <UserCheck size={16} color="#3B3E66" />
+                  </div>
+                  <h3 className="text-[15px] font-bold text-[#17252A] dark:text-white">Assigned Therapist</h3>
+                </div>
+                <p className="text-[15px] font-semibold text-[#3B3E66] dark:text-slate-200">
+                  {patient?.therapistName ? patient.therapistName : 'No therapist assigned'}
+                </p>
+                <div className="mt-4">
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
+                    Assign/Reassign Therapist
+                  </label>
+                  <SearchDropdown
+                    module="therapists"
+                    searchFields={['name']}
+                    apiEndpoint="/staff?role=therapist"
+                    value={therapistSearchVal}
+                    onChange={setTherapistSearchVal}
+                    onSelect={(therapist: any) => {
+                      assignTherapistMutation.mutate({ patientId: patientId!, therapistId: therapist.id });
+                      setTherapistSearchVal('');
+                    }}
+                    renderItem={(item: any, highlightText: any) => (
+                      <div className="flex justify-between items-center w-full">
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{highlightText(item.name)}</span>
+                        <span className="text-xs text-slate-500">{item.displayId}</span>
+                      </div>
+                    )}
+                    placeholder="Type to search and assign a therapist..."
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Condition */}
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_4px_16px_rgba(23,37,42,0.03)] dark:shadow-none">
               <div className="flex items-center gap-3 mb-3">
