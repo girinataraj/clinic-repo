@@ -10,6 +10,7 @@ import { ENDPOINTS } from '../../services/endpoints';
 import {
   ArrowLeft, Printer, Share2, Download, CheckCircle,
   Activity, Phone, Mail, Dumbbell, Loader2, Search,
+  Stethoscope, ClipboardList, Scale, CheckSquare
 } from 'lucide-react';
 
 export function ReportGeneration() {
@@ -74,6 +75,108 @@ export function ReportGeneration() {
   const mergedDiagnosisList = evaluation?.diagnosisList || allEvaluations.find(ev => ev.diagnosisList && ev.diagnosisList.length > 0)?.diagnosisList;
   const mergedPlan = evaluation?.plan || allEvaluations.find(ev => ev.plan)?.plan;
   const mergedTreatmentPlan = (evaluation?.treatmentPlan as any) || allEvaluations.find(ev => ev.treatmentPlan && Object.keys(ev.treatmentPlan as any).length > 0)?.treatmentPlan;
+
+  const mergedMedicalHistory = useMemo(() => {
+    const history = new Set<string>();
+    allEvaluations.forEach(ev => {
+      if (ev.medicalHistory) ev.medicalHistory.forEach(h => history.add(h));
+    });
+    return Array.from(history);
+  }, [allEvaluations]);
+
+  const mergedClinicalExamination = useMemo(() => {
+    const ce: Record<string, any> = { tests: {}, imaging: {}, examinationNotes: '' };
+    const evTests = allEvaluations.find(e => e.clinicalExamination?.tests && Object.keys(e.clinicalExamination.tests).length > 0);
+    if (evTests?.clinicalExamination?.tests) ce.tests = evTests.clinicalExamination.tests;
+    
+    const evImaging = allEvaluations.find(e => e.clinicalExamination?.imaging && Object.keys(e.clinicalExamination.imaging).length > 0);
+    if (evImaging?.clinicalExamination?.imaging) ce.imaging = evImaging.clinicalExamination.imaging;
+    
+    const evNotes = allEvaluations.find(e => e.clinicalExamination?.examinationNotes);
+    if (evNotes?.clinicalExamination?.examinationNotes) ce.examinationNotes = evNotes.clinicalExamination.examinationNotes;
+    
+    return ce;
+  }, [allEvaluations]);
+
+  const ROM_CONFIG = useMemo(() => [
+    {
+      label: 'Upper Limb',
+      joints: [
+        { label: 'Shoulder', movements: ['Flexion', 'Extension', 'Abduction', 'Adduction'] },
+        { label: 'Elbow', movements: ['Flexion', 'Extension'] },
+        { label: 'Forearm', movements: ['Supination', 'Pronation'] },
+        { label: 'Wrist', movements: ['Flexion', 'Extension'] },
+      ],
+    },
+    {
+      label: 'Lower Limb',
+      joints: [
+        { label: 'Hip', movements: ['Flexion', 'Extension', 'Abduction', 'Adduction'] },
+        { label: 'Knee', movements: ['Flexion', 'Extension'] },
+        { label: 'Ankle', movements: ['Dorsi Flexion', 'Plantar Flexion', 'Inversion', 'Eversion', 'EHL'] },
+      ],
+    },
+  ], []);
+
+  const getRomKey = (joint: string, movement: string) => {
+    const cleanJoint = joint.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanMovement = movement.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return `${cleanJoint}_${cleanMovement}`;
+  };
+
+  const mergedMusclePowerRom = useMemo(() => {
+    const ev = allEvaluations.find(e => e.musclePowerRom && Object.keys(e.musclePowerRom).length > 0);
+    return ev?.musclePowerRom || null;
+  }, [allEvaluations]);
+
+  const romTableRows = useMemo(() => {
+    if (!mergedMusclePowerRom) return [];
+    const rows: any[] = [];
+    ROM_CONFIG.forEach((section) => {
+      section.joints.forEach((joint) => {
+        joint.movements.forEach((movement) => {
+          const key = getRomKey(joint.label, movement);
+          const entry = mergedMusclePowerRom[key] as any;
+          if (entry && (entry.powerRt || entry.powerLt || entry.romRt || entry.romLt)) {
+            rows.push({
+              joint: joint.label,
+              movement: movement,
+              powerRt: entry.powerRt || '—',
+              powerLt: entry.powerLt || '—',
+              romRt: entry.romRt ? `${entry.romRt}°` : '—',
+              romLt: entry.romLt ? `${entry.romLt}°` : '—',
+            });
+          }
+        });
+      });
+    });
+    return rows;
+  }, [mergedMusclePowerRom, ROM_CONFIG]);
+
+  const mergedAnthropometrics = useMemo(() => {
+    const ev = allEvaluations.find(e => e.anthropometrics && Object.keys(e.anthropometrics).length > 0);
+    return ev?.anthropometrics || null;
+  }, [allEvaluations]);
+
+  const mergedFunctionalScores = useMemo(() => {
+    const ev = allEvaluations.find(e => e.functionalScores && Object.keys(e.functionalScores).length > 0);
+    if (!ev?.functionalScores) return [] as Array<{ key: string; value: number }>;
+    return Object.entries(ev.functionalScores)
+      .map(([key, value]) => {
+        const numeric = typeof value === 'number' ? value : Number(value);
+        return { key, value: numeric };
+      })
+      .filter(entry => Number.isFinite(entry.value));
+  }, [allEvaluations]);
+
+  const mergedPatientInfo = useMemo(() => {
+    return {
+      referredBy: evaluation?.referredBy || allEvaluations.find(ev => ev.referredBy)?.referredBy || 'Self',
+      visitType: evaluation?.visitType || allEvaluations.find(ev => ev.visitType)?.visitType || 'Clinic',
+      paymentMode: evaluation?.paymentMode || allEvaluations.find(ev => ev.paymentMode)?.paymentMode || '—',
+      billAmount: evaluation?.billAmount != null ? evaluation.billAmount : (allEvaluations.find(ev => ev.billAmount != null)?.billAmount ?? '—'),
+    };
+  }, [evaluation, allEvaluations]);
 
   // ── PDF download via blob ─────────────────────────────────────────────────
   const handleDownloadPdf = async () => {
@@ -374,7 +477,10 @@ export function ReportGeneration() {
                     { label: 'Patient ID', value: patient?.displayId ?? '—' },
                     { label: 'Age / Gender', value: patient ? `${patient.age} yrs / ${patient.gender}` : '—' },
                     { label: 'Phone', value: patient?.phone ?? '—' },
-                    { label: 'Referred By', value: evaluation.referredBy ?? 'Self' },
+                    { label: 'Referred By', value: mergedPatientInfo.referredBy },
+                    { label: 'Visit Type', value: mergedPatientInfo.visitType },
+                    { label: 'Payment Mode', value: mergedPatientInfo.paymentMode },
+                    { label: 'Bill Amount', value: typeof mergedPatientInfo.billAmount === 'number' ? `₹${mergedPatientInfo.billAmount.toLocaleString('en-IN')}` : mergedPatientInfo.billAmount },
                     { label: 'Status', value: evaluation.status },
                   ].map((item) => (
                     <div key={item.label}>
@@ -407,6 +513,213 @@ export function ReportGeneration() {
                     <span className="text-[12px] font-extrabold text-[#262842] dark:text-slate-300 uppercase tracking-wide">Chief Complaints</span>
                   </div>
                   <p className="text-[13px] text-[#17252A] dark:text-slate-200 leading-relaxed">{mergedChiefComplaints}</p>
+                </section>
+              )}
+
+              {/* Medical History */}
+              {mergedMedicalHistory.length > 0 && (
+                <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <ClipboardList size={16} className="text-[#3B3E66] dark:text-slate-350" />
+                    <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Medical History</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {mergedMedicalHistory.map((h) => (
+                      <span key={h} className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[12px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-150 dark:border-slate-700 shadow-sm">
+                        {h}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Clinical Examination */}
+              {((mergedClinicalExamination.tests && Object.keys(mergedClinicalExamination.tests).length > 0) || 
+                (mergedClinicalExamination.imaging && Object.keys(mergedClinicalExamination.imaging).length > 0) || 
+                mergedClinicalExamination.examinationNotes) && (
+                <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <Stethoscope size={16} className="text-[#3B3E66] dark:text-slate-350" />
+                    <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Clinical Examination</span>
+                  </div>
+                  <div className="flex flex-col gap-4 text-xs font-semibold">
+                    {mergedClinicalExamination.tests && Object.keys(mergedClinicalExamination.tests).length > 0 && (
+                      <div>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-2">Special Physical Tests</span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                          {Object.entries(mergedClinicalExamination.tests).map(([key, value]: [string, any]) => {
+                            const result = value?.result ?? 'Not Tested';
+                            const isPositive = result === 'Positive';
+                            const isNegative = result === 'Negative';
+                            return (
+                              <div key={key} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-150 dark:border-slate-800 bg-white dark:bg-slate-950/40">
+                                <span className="text-slate-700 dark:text-slate-300 truncate max-w-[130px] font-bold">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-black ${isPositive ? 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400' : isNegative ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>{result}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {mergedClinicalExamination.imaging && Object.keys(mergedClinicalExamination.imaging).length > 0 && (
+                      <div className="mt-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-2">Imaging Reports (X-Ray & MRI)</span>
+                        <div className="flex flex-col gap-2">
+                          {Object.entries(mergedClinicalExamination.imaging).map(([region, findings]: [string, any]) => {
+                            if (!findings.xray?.trim() && !findings.mri?.trim()) return null;
+                            return (
+                              <div key={region} className="p-3 rounded-xl bg-amber-50/10 dark:bg-amber-955/5 border border-amber-100/30 dark:border-amber-900/10 flex flex-col gap-1.5 shadow-sm">
+                                <span className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase">{region} Imaging</span>
+                                {findings.xray?.trim() && <p className="text-slate-700 dark:text-slate-300 font-medium"><strong className="text-slate-450 uppercase text-[9px] block">X-Ray:</strong> {findings.xray}</p>}
+                                {findings.mri?.trim() && <p className="text-slate-700 dark:text-slate-300 font-medium"><strong className="text-slate-450 uppercase text-[9px] block">MRI:</strong> {findings.mri}</p>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {mergedClinicalExamination.examinationNotes && (
+                      <div className="mt-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-1">Additional Physical Notes</span>
+                        <p className="p-3 bg-white dark:bg-slate-955/40 text-slate-750 dark:text-slate-300 rounded-xl whitespace-pre-wrap font-medium border border-slate-150 dark:border-slate-800">{mergedClinicalExamination.examinationNotes}</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* Range of Motion & Muscle Power */}
+              {romTableRows.length > 0 && (
+                <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <Activity size={16} className="text-[#3B3E66] dark:text-slate-355" />
+                    <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Muscle Power & ROM</span>
+                  </div>
+                  <div className="overflow-hidden rounded-xl border border-slate-150 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
+                    <div className="overflow-x-auto max-h-96">
+                      <table className="w-full border-collapse text-left text-xs font-semibold">
+                        <thead className="sticky top-0 bg-slate-50 dark:bg-slate-900 z-10">
+                          <tr className="border-b border-slate-200 dark:border-slate-800">
+                            <th className="px-3 py-2 text-slate-800 dark:text-slate-200">Joint</th>
+                            <th className="px-3 py-2 text-slate-800 dark:text-slate-200">Movement</th>
+                            <th className="px-2 py-2 text-center text-slate-800 dark:text-slate-200">Power Rt</th>
+                            <th className="px-2 py-2 text-center text-slate-800 dark:text-slate-200">Power Lt</th>
+                            <th className="px-2 py-2 text-center text-slate-800 dark:text-slate-200">ROM Rt</th>
+                            <th className="px-2 py-2 text-center text-slate-800 dark:text-slate-200">ROM Lt</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                          {romTableRows.map((row, index) => (
+                            <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
+                              <td className="px-3 py-2 font-bold text-slate-800 dark:text-slate-200">{row.joint}</td>
+                              <td className="px-3 py-2 text-slate-600 dark:text-slate-400 uppercase text-[9px]">{row.movement}</td>
+                              <td className="px-2 py-2 text-center font-extrabold text-slate-950 dark:text-white">{row.powerRt}</td>
+                              <td className="px-2 py-2 text-center font-extrabold text-slate-950 dark:text-white">{row.powerLt}</td>
+                              <td className="px-2 py-2 text-center font-extrabold text-slate-950 dark:text-white">{row.romRt}</td>
+                              <td className="px-2 py-2 text-center font-extrabold text-slate-950 dark:text-white">{row.romLt}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* Anthropometrics */}
+              {mergedAnthropometrics && Object.keys(mergedAnthropometrics).length > 0 && (
+                <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <Scale size={16} className="text-[#3B3E66] dark:text-slate-350" />
+                    <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Anthropometrics</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-semibold">
+                    {mergedAnthropometrics.height && (
+                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                        <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Height</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.height} cm</span>
+                      </div>
+                    )}
+                    {mergedAnthropometrics.weight && (
+                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                        <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Weight</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.weight} kg</span>
+                      </div>
+                    )}
+                    {mergedAnthropometrics.bmi && (
+                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                        <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">BMI</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.bmi}</span>
+                      </div>
+                    )}
+                    {mergedAnthropometrics.waist && (
+                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                        <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Waist</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.waist} cm</span>
+                      </div>
+                    )}
+                    {mergedAnthropometrics.hip && (
+                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                        <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Hip</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.hip} cm</span>
+                      </div>
+                    )}
+                    {mergedAnthropometrics.whRatio && (
+                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-155 dark:border-slate-800 shadow-sm">
+                        <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Waist-to-Hip Ratio</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.whRatio}</span>
+                      </div>
+                    )}
+                    {(mergedAnthropometrics.chestInspiration || mergedAnthropometrics.chestExpiration) && (
+                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 col-span-2 sm:col-span-3 shadow-sm">
+                        <span className="text-[10px] text-slate-400 block mb-1 font-bold">Chest Measurements</span>
+                        <div className="flex gap-4">
+                          <div>
+                            <span className="text-[9px] text-slate-450 block uppercase font-bold">Inspiration</span>
+                            <span className="text-slate-850 dark:text-slate-200 font-extrabold">{mergedAnthropometrics.chestInspiration || '—'} cm</span>
+                          </div>
+                          <div>
+                            <span className="text-[9px] text-slate-450 block uppercase font-bold">Expiration</span>
+                            <span className="text-slate-850 dark:text-slate-200 font-extrabold">{mergedAnthropometrics.chestExpiration || '—'} cm</span>
+                          </div>
+                          <div>
+                            <span className="text-[9px] text-slate-455 block uppercase font-bold text-teal-650 dark:text-teal-400">Expansion</span>
+                            <span className="text-teal-750 dark:text-teal-400 font-black">{mergedAnthropometrics.chestExpansion || '—'} cm</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* Functional Limitations */}
+              {mergedFunctionalScores.length > 0 && (
+                <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <CheckSquare size={16} className="text-[#3B3E66] dark:text-slate-350" />
+                    <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Functional Limitations</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {mergedFunctionalScores.map(({ key, value }) => {
+                      const labels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
+                      const colors: Record<number, string> = { 
+                        0: 'text-green-600 bg-green-50 border-green-100 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900', 
+                        1: 'text-yellow-650 bg-yellow-50 border-yellow-100 dark:bg-yellow-950/20 dark:text-yellow-400 dark:border-yellow-900', 
+                        2: 'text-orange-600 bg-orange-50 border-orange-100 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-900', 
+                        3: 'text-red-500 bg-red-50 border-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900', 
+                        4: 'text-red-700 bg-red-100 border-red-200 dark:bg-red-950/40 dark:text-red-305 dark:border-red-800' 
+                      };
+                      return (
+                        <div key={key} className="flex items-center justify-between py-1.5 border-b last:border-0 border-slate-100 dark:border-slate-800 font-semibold text-xs">
+                          <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize">{key === 'stairs' ? 'Climbing Stairs' : key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                          <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-black border ${colors[value] || 'text-slate-600 bg-slate-50 border-slate-100'}`}>{value} - {labels[value] || 'Recorded'}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </section>
               )}
 
