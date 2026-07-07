@@ -252,6 +252,16 @@ export function PatientDetailPage() {
               <Edit3 size={18} color={editMode ? '#fbbf24' : '#FEFFFF'} />
             </button>
             <button
+              onClick={() => {
+                const basePath = user?.role === 'nurse' ? 'nurse' : 'doctor';
+                navigate(`/${basePath}/patient/${patientId}/assessment-form`);
+              }}
+              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 bg-white/15"
+              title="Start Clinical Assessment"
+            >
+              <ClipboardList size={18} color="#FEFFFF" />
+            </button>
+            <button
               onClick={() => navigate(evaluation?.id ? `/doctor/report?evaluationId=${evaluation.id}` : '/doctor/report')}
               className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 bg-white/15">
               <FileText size={18} color="#FEFFFF" />
