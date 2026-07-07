@@ -365,7 +365,7 @@ export function PatientHistorySearch() {
               </div>
 
               <h3 className="text-[13px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1 mb-4 flex items-center gap-2">
-                <CalendarIcon size={13} /> Longitudinal Patient Timeline History
+                <Calendar size={13} /> Longitudinal Patient Timeline History
               </h3>
 
               {timelineLoading ? (
