@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { useStaffUsers, useCreateStaffUser } from '../../hooks/useStaff';
-import { usePatients, useUpdatePatient } from '../../hooks/usePatients';
+import { usePatients, useUpdatePatient, useAssignTherapist } from '../../hooks/usePatients';
 import type { Patient } from '../../types';
 import {
   ArrowLeft, ChevronDown, ChevronRight, Users, User, Search,
@@ -81,10 +81,11 @@ export function TherapistHierarchy() {
   }, [hierarchy, search]);
 
   // ── Reassign ──────────────────────────────────────────────────────────────
+  const assignTherapist = useAssignTherapist();
   const handleReassign = async () => {
     if (!reassignPatient || !reassignTarget) return;
     try {
-      await updatePatient.mutateAsync({ id: reassignPatient.id, therapistId: reassignTarget });
+      await assignTherapist.mutateAsync({ patientId: reassignPatient.id, therapistId: reassignTarget });
       setReassignPatient(null);
       setReassignTarget(null);
     } catch { /* handled by RQ */ }
@@ -339,11 +340,11 @@ export function TherapistHierarchy() {
             </div>
             <div className="flex gap-2.5">
               <button onClick={() => { setReassignPatient(null); setReassignTarget(null); }} className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-[#E8E9F1] dark:bg-slate-700 text-[#262842] dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">Cancel</button>
-              <button onClick={handleReassign} disabled={!reassignTarget || updatePatient.isPending} className="flex-1 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 bg-[#262842] dark:bg-blue-600 text-white hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors">
-                {updatePatient.isPending ? 'Saving…' : 'Confirm'}
+              <button onClick={handleReassign} disabled={!reassignTarget || assignTherapist.isPending} className="flex-1 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 bg-[#262842] dark:bg-blue-600 text-white hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors">
+                {assignTherapist.isPending ? 'Saving…' : 'Confirm'}
               </button>
             </div>
-            {updatePatient.isError && <p className="text-[11px] font-semibold text-red-600 text-center mt-2">Failed to reassign. Try again.</p>}
+            {assignTherapist.isError && <p className="text-[11px] font-semibold text-red-600 text-center mt-2">Failed to reassign. Try again.</p>}
           </div>
         </div>
       )}

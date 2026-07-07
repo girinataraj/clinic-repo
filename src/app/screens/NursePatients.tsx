@@ -135,28 +135,7 @@ export function NursePatients() {
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto min-h-0 pb-20 md:pb-6" style={{ scrollbarGutter: 'stable' }}>
         <div className="px-6 max-w-5xl mx-auto w-full mt-6">
-          {/* Start new assessment CTA */}
-          <div className="mb-5 flex flex-wrap gap-3">
-            <button
-              onClick={() => navigate('/nurse/intake')}
-              className="flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-lg shadow-teal-600/20 group w-full sm:w-auto"
-              style={{ background: 'linear-gradient(135deg, #0f766e, #14b8a6)', color: 'white', fontWeight: 700 }}
-            >
-              <div className="flex items-center justify-center rounded-xl bg-white/20 w-8 h-8">
-                <Plus className="w-4 h-4" />
-              </div>
-              Start new assessment
-            </button>
-            <button
-              onClick={() => navigate('/nurse/patient-form')}
-              className="flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-sm group w-full sm:w-auto transition-colors bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-[#0f766e] dark:text-teal-400 font-bold border border-[#ccfbf1] dark:border-teal-900"
-            >
-              <div className="flex items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-900/30 w-8 h-8">
-                <UserPlus className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-              </div>
-              Add patient
-            </button>
-          </div>
+
 
           <div className="grid grid-cols-1 xl:grid-cols-[2fr,1fr] gap-5 pb-6">
             {/* LEFT: Search + Filters + List */}

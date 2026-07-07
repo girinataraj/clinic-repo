@@ -17,7 +17,7 @@ const navConfig: Record<string, NavItem[]> = {
   ],
   nurse: [
     { label: 'Home', Icon: Home, path: '/nurse' },
-    { label: 'Intake', Icon: ClipboardList, path: '/nurse/intake' },
+
     { label: 'Patients', Icon: Users, path: '/nurse/patients' },
     { label: 'History', Icon: FileSearch, path: '/nurse/patient-history' },
     { label: 'Exercises', Icon: Activity, path: '/nurse/exercise' },

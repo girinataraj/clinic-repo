@@ -50,7 +50,7 @@ export function DoctorDashboard() {
 
   const patients = patientsData?.data ?? [];
 
-  const actualName = user?.name === 'Dr. Rajesh Kumar' ? 'Dr. SV. Sathish Kumar' : (user?.name || 'Doctor');
+  const actualName = user?.name || 'Doctor';
   const firstName = actualName.replace('Dr. ', '');
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
 

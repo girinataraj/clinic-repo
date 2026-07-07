@@ -22,7 +22,7 @@ const navConfig: Record<UserRole, NavItem[]> = {
   ],
   nurse: [
     { label: 'Dashboard', Icon: Home, path: '/nurse' },
-    { label: 'Intake Form', Icon: ClipboardList, path: '/nurse/intake' },
+
     { label: 'Patients', Icon: Users, path: '/nurse/patients' },
     { label: 'Patient History', Icon: FileSearch, path: '/nurse/patient-history' },
     { label: 'Exercises', Icon: Activity, path: '/nurse/exercise' },
@@ -184,7 +184,7 @@ export function SideNav() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-extrabold text-slate-900 dark:text-white">
-              {user.name === 'Dr. Rajesh Kumar' ? 'Dr. SV. Sathish Kumar' : user.name}
+              {user.name}
             </p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold capitalize">
               {role === 'nurse' ? 'therapist' : role} · SAAI Clinic
