@@ -73,6 +73,8 @@ export const ENDPOINTS = {
   REPORTS: {
     PDF: (evaluationId: string) => `/reports/${evaluationId}/pdf`,
     DAILY: '/reports/daily',
+    PATIENT_REPORT: (patientId: string) => `/reports/patient/${patientId}`,
+    PATIENT_REPORT_PDF: (patientId: string) => `/reports/patient/${patientId}/pdf`,
   },
 
   REVENUE: {

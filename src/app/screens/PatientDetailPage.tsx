@@ -7,7 +7,9 @@ import { usePatient, useAssignTherapist } from '../../hooks/usePatients';
 import { useAuth } from '../contexts/AuthContext';
 import { SearchDropdown } from '../components/SearchDropdown';
 import { useLatestEvaluation, useUpdateEvaluation, useEvaluations } from '../../hooks/useEvaluations';
-import { Calendar, UserCheck } from 'lucide-react';
+import api from '../../services/api';
+import { ENDPOINTS } from '../../services/endpoints';
+import { Calendar, UserCheck, Printer, Download, Eye, AlertCircle, RefreshCw, User, Phone, MapPin, CreditCard, FileCheck } from 'lucide-react';
 import {
   ArrowLeft,
   Edit3,
@@ -27,7 +29,7 @@ const funcLabels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderat
 const painColors = ['#22c55e', '#84cc16', '#a8d830', '#d4d830', '#facc15', '#f59e0b', '#fbbf24', '#f87171', '#ef4444', '#dc2626', '#b91c1c'];
 const funcColors: Record<number, string> = { 0: '#22c55e', 1: '#facc15', 2: '#f59e0b', 3: '#ef4444', 4: '#dc2626' };
 // Colors are now handled by classes, these are kept for reference or fallback logic if needed
-const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes', 'History'];
+const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes', 'History', 'Final Report'];
 
 export function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -61,6 +63,62 @@ export function PatientDetailPage() {
   const [editMode, setEditMode] = useState(false);
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
+
+  const [reportData, setReportData] = useState<any>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeTab === 'Final Report' && patientId) {
+      setReportLoading(true);
+      setReportError(null);
+      api.get(ENDPOINTS.REPORTS.PATIENT_REPORT(patientId))
+        .then(res => {
+          setReportData(res.data.data);
+          setReportLoading(false);
+        })
+        .catch(err => {
+          setReportError(err?.response?.data?.message || 'Failed to load report.');
+          setReportLoading(false);
+        });
+    }
+  }, [activeTab, patientId]);
+
+  const handleDownloadPdf = async () => {
+    try {
+      const response = await api.get(ENDPOINTS.REPORTS.PATIENT_REPORT_PDF(patientId!), {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Comprehensive_Report_${patient?.name || 'Patient'}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    } catch (err) {
+      alert('Failed to download PDF report.');
+    }
+  };
+
+  const handlePrintReport = async () => {
+    try {
+      const response = await api.get(ENDPOINTS.REPORTS.PATIENT_REPORT_PDF(patientId!), {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const printWindow = window.open(url);
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+      }
+    } catch (err) {
+      alert('Failed to print report.');
+    }
+  };
 
   const updateEvaluation = useUpdateEvaluation(evaluation?.id ?? '');
 
@@ -594,6 +652,293 @@ export function PatientDetailPage() {
         {activeTab === 'History' && patientId && (
           <div className="rounded-2xl p-5 bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800 shadow-[0_2px_12px_rgba(23,37,42,0.04)] dark:shadow-none">
             <PatientHistoryUpload patientId={patientId} patientName={patient?.name} />
+          </div>
+        )}
+
+        {/* Final Report Tab */}
+        {activeTab === 'Final Report' && (
+          <div className="flex flex-col gap-6">
+            {/* Action Bar */}
+            <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
+              <span className="text-[14px] font-black text-[#262842] dark:text-indigo-400">
+                Comprehensive Patient Report (JSON + PDF)
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDownloadPdf}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black shadow-md hover:bg-emerald-700 active:scale-95 transition-all"
+                >
+                  <Download size={14} />
+                  Download PDF
+                </button>
+                <button
+                  onClick={handlePrintReport}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#262842] text-white rounded-xl text-xs font-black shadow-md hover:bg-[#3B3E66] active:scale-95 transition-all"
+                >
+                  <Printer size={14} />
+                  Print Report
+                </button>
+              </div>
+            </div>
+
+            {reportLoading && (
+              <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-[#E8E9F1] dark:border-slate-800">
+                <Loader2 size={32} className="animate-spin mx-auto text-[#3B3E66] dark:text-teal-500 mb-3" />
+                <p className="text-[14px] text-slate-500 font-semibold">Compiling comprehensive patient file...</p>
+              </div>
+            )}
+
+            {reportError && (
+              <div className="p-6 text-center bg-rose-50 dark:bg-rose-950/20 rounded-2xl border border-rose-200 dark:border-rose-900/30 text-rose-700 dark:text-rose-400 font-bold flex items-center justify-center gap-3">
+                <AlertCircle size={20} />
+                {reportError}
+              </div>
+            )}
+
+            {reportData && (
+              <div className="flex flex-col gap-6 select-none animate-in fade-in duration-300">
+                
+                {/* 1. Patient Demographics */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
+                  <h3 className="text-[15px] font-black text-slate-900 dark:text-white border-b pb-2 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <User size={16} className="text-[#3B3E66] dark:text-teal-400" />
+                    Patient Demographics & Registration Details
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {[
+                      { l: 'Full Name', v: reportData.patient.name },
+                      { l: 'Patient ID', v: reportData.patient.displayId || reportData.patient.display_id },
+                      { l: 'Age & Gender', v: `${reportData.patient.age} Yrs / ${reportData.patient.gender}` },
+                      { l: 'Phone Number', v: reportData.patient.phone },
+                      { l: 'City / Location', v: reportData.patient.city },
+                      { l: 'Active Status', v: reportData.patient.status },
+                      { l: 'Priority Level', v: reportData.patient.priority },
+                      { l: 'Blood Group', v: reportData.patient.bloodGroup || reportData.patient.blood_group || '—' },
+                      { l: 'Emergency Contact', v: reportData.patient.emergencyContactName || reportData.patient.emergency_contact_name || '—' },
+                      { l: 'Emergency Phone', v: reportData.patient.emergencyContactPhone || reportData.patient.emergency_contact_phone || '—' },
+                      { l: 'Assigned Therapist', v: reportData.patient.therapist?.name || 'None Assigned' },
+                    ].map(item => (
+                      <div key={item.l} className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                        <span className="block text-[10px] text-slate-500 font-bold uppercase">{item.l}</span>
+                        <span className="text-[13px] font-extrabold text-[#262842] dark:text-slate-200 mt-1 block">{item.v || '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Clinical History & Vitals */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
+                  <h3 className="text-[15px] font-black text-slate-900 dark:text-white border-b pb-2 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <Heart size={16} className="text-red-500" />
+                    Clinical Intake & Vital Signs
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                      {[
+                        { l: 'BP', v: reportData.evaluations[0]?.bp || '—' },
+                        { l: 'Pulse Rate', v: reportData.evaluations[0]?.pr ? `${reportData.evaluations[0].pr} bpm` : '—' },
+                        { l: 'SpO2', v: reportData.evaluations[0]?.spo2 ? `${reportData.evaluations[0].spo2}%` : '—' },
+                        { l: 'Temperature', v: reportData.evaluations[0]?.temperature ? `${reportData.evaluations[0].temperature}°F` : '—' },
+                        { l: 'Ejection Fraction (EF)', v: reportData.evaluations[0]?.ef ? `${reportData.evaluations[0].ef}%` : '—' },
+                      ].map(vital => (
+                        <div key={vital.l} className="p-3 bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/40 rounded-xl text-center">
+                          <span className="block text-[9px] text-teal-600 dark:text-teal-400 font-bold uppercase">{vital.l}</span>
+                          <span className="text-[14px] font-black text-teal-800 dark:text-teal-300 mt-0.5 block">{vital.v}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {[
+                      { l: 'Pain Scale Rating', v: reportData.evaluations[0]?.painLevel !== undefined ? `${reportData.evaluations[0].painLevel}/10` : '—' },
+                      { l: 'Chief Complaints', v: reportData.evaluations[0]?.chiefComplaints || reportData.evaluations[0]?.chief_complaints },
+                      { l: 'Allergies', v: reportData.evaluations[0]?.allergies || 'No known allergies reported.' },
+                      { l: 'Medical History', v: (reportData.evaluations[0]?.medicalHistory || []).join(', ') || 'No significant medical history recorded.' },
+                      { l: 'Family History', v: reportData.evaluations[0]?.familyHistory },
+                      { l: 'Lifestyle History', v: reportData.evaluations[0]?.lifestyleHistory },
+                    ].map(clinical => (
+                      <div key={clinical.l} className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                        <span className="block text-[10px] text-slate-500 font-bold uppercase">{clinical.l}</span>
+                        <span className="text-[13px] text-slate-800 dark:text-slate-200 font-semibold mt-1 block whitespace-pre-wrap">{clinical.v || '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Clinical Examinations & Findings */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
+                  <h3 className="text-[15px] font-black text-slate-900 dark:text-white border-b pb-2 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <Stethoscope size={16} className="text-indigo-500" />
+                    Clinical Findings & Examinations
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    {[
+                      { l: 'Physical Findings / Symptoms', v: reportData.evaluations[0]?.management },
+                      { l: 'Range of Motion & Muscle Power', v: reportData.evaluations[0]?.musclePowerRom ? JSON.stringify(reportData.evaluations[0].musclePowerRom, null, 2) : undefined },
+                      { l: 'Mental Status Examination', v: reportData.evaluations[0]?.mentalStatusExamination },
+                      { l: 'Clinical Findings', v: reportData.evaluations[0]?.clinicalFindings },
+                      { l: 'Diagnosis Notes', v: reportData.evaluations[0]?.diagnosis },
+                    ].map(item => (
+                      <div key={item.l} className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                        <span className="block text-[10px] text-slate-500 font-bold uppercase">{item.l}</span>
+                        <span className="text-[13px] text-slate-800 dark:text-slate-200 font-semibold mt-1 block whitespace-pre-wrap">{item.v || '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. Home Exercise Programs */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
+                  <h3 className="text-[15px] font-black text-slate-900 dark:text-white border-b pb-2 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <Dumbbell size={16} className="text-amber-500" />
+                    Home Exercise Programmes (HEP)
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    {reportData.exercisePlans.length === 0 ? (
+                      <span className="text-[13px] text-slate-500">No Home Exercise Program prescribed yet.</span>
+                    ) : (
+                      reportData.exercisePlans.map((plan: any) => (
+                        <div key={plan.id} className="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl">
+                          <p className="text-[12px] text-slate-500 font-bold">
+                            Prescribed on {new Date(plan.created_at).toLocaleDateString('en-IN')} by {plan.prescriber_name || 'Therapist'}
+                          </p>
+                          <div className="mt-3 flex flex-col gap-3">
+                            {plan.items.map((item: any) => (
+                              <div key={item.id} className="border-l-2 border-amber-500 pl-3">
+                                <p className="text-[13px] font-extrabold text-slate-800 dark:text-slate-200">{item.name}</p>
+                                <p className="text-[11px] font-semibold text-slate-500 mt-0.5">
+                                  {item.sets && item.reps ? `${item.sets} sets x ${item.reps} reps` : (item.duration || '—')}
+                                </p>
+                                {item.instructions && (
+                                  <p className="text-[11px] text-slate-500 dark:text-slate-400 italic mt-1 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                                    Instructions: {item.instructions}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* 5. Historical Assessment Records */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
+                  <h3 className="text-[15px] font-black text-slate-900 dark:text-white border-b pb-2 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <FileCheck size={16} className="text-[#3B3E66] dark:text-teal-400" />
+                    Assessment History Logs (Versions)
+                  </h3>
+                  <div className="flex flex-col gap-3">
+                    {reportData.evaluations.map((ev: any) => (
+                      <div key={ev.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors border border-slate-100 dark:border-slate-800">
+                        <div>
+                          <p className="text-[13px] font-extrabold text-[#262842] dark:text-slate-200">
+                            Assessment: {ev.display_id}
+                          </p>
+                          <p className="text-[11px] text-slate-500 mt-0.5 font-bold">
+                            Version {ev.version || 1} · Date: {new Date(ev.created_at).toLocaleDateString('en-IN')} · Clinician: {ev.doctor_name || 'Physiotherapist'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const response = await api.get(ENDPOINTS.REPORTS.PDF(ev.id), { responseType: 'blob' });
+                              const blob = new Blob([response.data], { type: 'application/pdf' });
+                              const url = window.URL.createObjectURL(blob);
+                              window.open(url, '_blank');
+                            } catch (e) {
+                              alert('Failed to load assessment report PDF.');
+                            }
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/20 text-[#3B3E66] dark:text-indigo-400 rounded-lg text-xs font-bold hover:bg-indigo-100/50"
+                        >
+                          <Eye size={12} />
+                          View PDF
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 6. Session History & Billing */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
+                  <h3 className="text-[15px] font-black text-slate-900 dark:text-white border-b pb-2 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <CreditCard size={16} className="text-emerald-600" />
+                    Session Logs & Billing History
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-[#E8E9F1] dark:border-slate-800">
+                          <th className="py-2.5 text-[11px] text-slate-500 font-bold uppercase">Date</th>
+                          <th className="py-2.5 text-[11px] text-slate-500 font-bold uppercase">Reason</th>
+                          <th className="py-2.5 text-[11px] text-slate-500 font-bold uppercase">Therapist</th>
+                          <th className="py-2.5 text-[11px] text-slate-500 font-bold uppercase">Status</th>
+                          <th className="py-2.5 text-[11px] text-slate-500 font-bold uppercase">Charge</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reportData.appointments.map((appt: any) => {
+                          const matchingEval = reportData.evaluations.find((e: any) => new Date(e.created_at).toDateString() === new Date(appt.datetime).toDateString());
+                          return (
+                            <tr key={appt.id} className="border-b border-slate-50 dark:border-slate-800/40 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
+                              <td className="py-3 text-[13px] font-semibold text-slate-700 dark:text-slate-300">
+                                {new Date(appt.datetime).toLocaleDateString('en-IN')}
+                              </td>
+                              <td className="py-3 text-[13px] text-slate-600 dark:text-slate-400 font-medium">
+                                {appt.reason || 'Therapy Session'}
+                              </td>
+                              <td className="py-3 text-[13px] text-slate-600 dark:text-slate-400 font-medium">
+                                {appt.doctor_name || '—'}
+                              </td>
+                              <td className="py-3 text-[12px]">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                  appt.status === 'completed' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40' :
+                                  appt.status === 'cancelled' ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40' :
+                                  'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40'
+                                }`}>
+                                  {appt.status}
+                                </span>
+                              </td>
+                              <td className="py-3 text-[13px] font-extrabold text-slate-800 dark:text-slate-200">
+                                {matchingEval?.bill_amount ? `₹${matchingEval.bill_amount}` : '—'}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="mt-4 p-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-900/30 rounded-xl flex flex-wrap gap-4 items-center justify-between text-emerald-800 dark:text-emerald-400 font-bold text-xs">
+                    <span>Total Prescribed Sessions: {reportData.appointmentsCount.total}</span>
+                    <span>Completed Attendance: {reportData.appointmentsCount.completed}</span>
+                    <span>Total Billing: ₹{reportData.billingSummary.totalBilled}</span>
+                  </div>
+                </div>
+
+                {/* 7. Clinical Remarks */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
+                  <h3 className="text-[15px] font-black text-slate-900 dark:text-white border-b pb-2 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <StickyNote size={16} className="text-[#3B3E66] dark:text-teal-400" />
+                    Clinician Remarks & Summary
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    {[
+                      { l: 'Doctor Remarks', v: reportData.evaluations[0]?.doctorRemarks || reportData.evaluations[0]?.doctor_remarks },
+                      { l: 'Therapist Remarks', v: reportData.evaluations[0]?.therapistRemarks || reportData.evaluations[0]?.therapist_remarks },
+                      { l: 'Final Clinical Summary', v: reportData.evaluations[0]?.finalClinicalSummary || reportData.evaluations[0]?.final_clinical_summary },
+                    ].map(remarks => (
+                      <div key={remarks.l} className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                        <span className="block text-[10px] text-slate-500 font-bold uppercase">{remarks.l}</span>
+                        <span className="text-[13px] text-slate-800 dark:text-slate-200 font-semibold mt-1 block whitespace-pre-wrap">{remarks.v || '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            )}
           </div>
         )}
       </div>

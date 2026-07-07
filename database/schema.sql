@@ -49,7 +49,7 @@ CREATE TABLE users (
 -- Evaluations
 CREATE TABLE evaluations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  display_id VARCHAR(50) UNIQUE NOT NULL,
+  display_id VARCHAR(50) NOT NULL,
   patient_id VARCHAR(20) NOT NULL REFERENCES patients(mobile) ON DELETE CASCADE,
   status evaluation_status NOT NULL DEFAULT 'draft',
 
@@ -71,7 +71,33 @@ CREATE TABLE evaluations (
   created_by UUID NOT NULL REFERENCES users(id),
   updated_by UUID REFERENCES users(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- Versioning & Complete Assessment columns
+  version INT NOT NULL DEFAULT 1,
+  answers JSONB,
+  score DECIMAL(10,2),
+  notes TEXT,
+  uploaded_files TEXT[],
+
+  -- Patient History & clinical report columns
+  family_history TEXT,
+  lifestyle_history TEXT,
+  allergies TEXT,
+  current_medications TEXT,
+  previous_medications TEXT,
+  lab_reports TEXT,
+  radiology_reports TEXT,
+  prescriptions TEXT,
+  procedures TEXT,
+  follow_up_plan TEXT,
+  mental_status_examination TEXT,
+  clinical_findings TEXT,
+  therapy_notes TEXT,
+  progress_notes TEXT,
+  doctor_remarks TEXT,
+  therapist_remarks TEXT,
+  final_clinical_summary TEXT
 );
 
 -- Appointments

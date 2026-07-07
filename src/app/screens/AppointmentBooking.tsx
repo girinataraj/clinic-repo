@@ -417,8 +417,17 @@ export function AppointmentBooking() {
                     <div className="flex items-center gap-4 mb-3 text-[11px] font-semibold text-slate-500">
                       <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: '#dcfce7', border: '1px solid #86efac' }} /> Available</span>
                       <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: '#fff7ed', border: '1px solid #fdba74' }} /> 1 Booked</span>
-                      <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: '#fef2f2', border: '1px solid #fca5a5' }} /> Full</span>
+                      <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: '#fef2f2', border: '1px solid #fca5a5' }} /> Full / Occupied</span>
                     </div>
+
+                    {slots.some(s => s.status === 'red') && (
+                      <div className="flex items-center gap-2 mb-3 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50">
+                        <AlertTriangle size={14} className="text-red-600 dark:text-red-500" />
+                        <span className="text-[12px] font-bold text-red-800 dark:text-red-400">
+                          All therapists are currently occupied in some slots. Please select another available time slot.
+                        </span>
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-3 gap-2">
                       {slots.map((slot) => {
