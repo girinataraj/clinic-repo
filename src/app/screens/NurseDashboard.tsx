@@ -34,12 +34,11 @@ export function NurseDashboard() {
 
 
   // ── Live data from backend ─────────────────────────────────────────────────
-  // Therapist (nurse) sees all patients (same as doctor module)
+  // Therapist (nurse) sees only patients assigned to them (filtered by backend)
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: filter !== 'all' ? filter : undefined,
-    bookedOnly: filter === 'waiting' ? 'true' : undefined,
-    limit: 20,
+    limit: 50,
   }, true); // ← 10s polling for live patient queue
 
   const updatePatient = useUpdatePatient();
