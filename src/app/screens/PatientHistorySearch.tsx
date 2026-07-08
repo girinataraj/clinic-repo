@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { usePatients, usePatient } from '../../hooks/usePatients';
 import { ROM_CONFIG, getRomKey } from './assessment/clinicalConfig';
+<<<<<<< HEAD
 import { EvaluationSummaryReport } from '../components/EvaluationSummaryReport';
+=======
+import { VitalSignsTable, SymptomChecklist, ClinicalExaminationTable } from './assessment/AssessmentTableDisplay';
+>>>>>>> 00f1f7f7e86888545b2fe389003fade4943a9771
 import api from '../../services/api';
 import { ENDPOINTS } from '../../services/endpoints';
 import {
@@ -31,7 +35,18 @@ import {
   Loader2,
   Trash,
   FileUp,
+  ClipboardList,
 } from 'lucide-react';
+
+const SYMPTOM_LABELS: Record<string, string> = {
+  hang_arm: 'Difficulty hanging arm',
+  pain_over: 'Pain over joint/area',
+  glass_water: 'Difficulty holding a glass of water',
+  numbness_over: 'Numbness over joint/area',
+  pain_increased: 'Pain increased during movement',
+  pain_radiating: 'Pain radiating down limb',
+  weakness_sense: 'Sense of weakness in muscles'
+};
 
 interface RomEntry {
   romRt?: string;
@@ -126,6 +141,26 @@ export function PatientHistorySearch() {
       alert('Failed to download assessment PDF.');
     }
   };
+
+  const handleDownloadAssessmentModulePdf = async (patId: string, assId: string) => {
+    try {
+      const response = await api.get(`/assessments/${patId}/download`, {
+        params: { assessmentId: assId },
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Assessment_Report_${assId.substring(0, 8)}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    } catch (err) {
+      alert('Failed to download assessment PDF.');
+    }
+  };
+
 
   // Accent colors based on roles
   const accentColor = isDoctorRole ? 'text-[#262842]' : 'text-teal-700';
@@ -463,47 +498,717 @@ export function PatientHistorySearch() {
                           {/* Collapsible Details */}
                           {isExpanded && (
                             <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-6 flex flex-col gap-6">
-                              {/* Vitals Grid */}
+                              {/* 1. Registration & General Information */}
                               <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
-                                <h5 className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
-                                  <Heart size={14} className="text-rose-500" /> Vitals & General Details
+                                <h5 className="text-[11px] font-black uppercase text-slate-450 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                                  <User size={14} className="text-slate-500" /> Patient Demographics & Intake Information
                                 </h5>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold">
-                                  <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
-                                    <span className="text-[10px] text-slate-400 block mb-0.5">Blood Pressure</span>
-                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{item.bp || '—'}</span>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Patient Full Name</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{patient?.name || '—'}</span>
                                   </div>
-                                  <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
-                                    <span className="text-[10px] text-slate-400 block mb-0.5">Pulse Rate</span>
-                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{item.pr ? `${item.pr} bpm` : '—'}</span>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Age & Gender</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{patient?.age} Yrs / {patient?.gender}</span>
                                   </div>
-                                  <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
-                                    <span className="text-[10px] text-slate-400 block mb-0.5">SpO₂ Level</span>
-                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{item.spo2 ? `${item.spo2} %` : '—'}</span>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Assigned Therapist</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.therapistName || 'None Assigned'}</span>
                                   </div>
-                                  <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
-                                    <span className="text-[10px] text-slate-400 block mb-0.5">Temperature</span>
-                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{item.temperature ? `${item.temperature} °F` : '—'}</span>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Visit Details</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">
+                                      {item.visitType || 'Clinic'} {item.referredBy ? `(Ref: ${item.referredBy})` : ''}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
 
+<<<<<<< HEAD
                               {/* Reusable Clinical Report Blocks */}
                               <EvaluationSummaryReport evaluation={item} isDoctorRole={item.doctor_role === 'doctor'} />
+=======
+                              {/* 2. Vitals & General Details */}
+                              <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
+                                <h5 className="text-[11px] font-black uppercase text-slate-450 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                                  <Heart size={14} className="text-rose-500" /> Vital Signs & Physiological Status
+                                </h5>
+                                <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-xs font-semibold">
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Blood Pressure</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.bp || '—'}</span>
+                                  </div>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Pulse Rate</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.pr ? `${item.pr} bpm` : '—'}</span>
+                                  </div>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">SpO₂ Level</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.spo2 ? `${item.spo2} %` : '—'}</span>
+                                  </div>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Temperature</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.temperature ? `${item.temperature} °F` : '—'}</span>
+                                  </div>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Ejection Fraction</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.ef ? `${item.ef} %` : '—'}</span>
+                                  </div>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Pain Rating</span>
+                                    <span className="text-rose-600 dark:text-rose-400 font-black text-sm">{item.painLevel !== undefined ? `${item.painLevel}/10` : '—'}</span>
+                                  </div>
+                                </div>
+                              </div>
 
-                              {/* Billing Info */}
+                              {/* 3. Intake History & Subjective Assessment */}
+                              <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-4 text-xs">
+                                <h5 className="text-[11px] font-black uppercase text-slate-450 dark:text-slate-500 tracking-wider mb-2 flex items-center gap-2">
+                                  <FileText size={14} className="text-blue-500" /> Intake History & Subjective Assessment
+                                </h5>
+
+                                {item.chiefComplaints && (
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold mb-1">CHIEF COMPLAINTS</span>
+                                    <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-700 dark:text-slate-305 leading-relaxed font-semibold">
+                                      {item.chiefComplaints}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {romData && Object.keys(romData).length > 0 && item.answers && Object.keys(item.answers).length > 0 && (
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold mb-1">SPECIFIC PROBLEMS QUESTIONNAIRE</span>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                      {Object.entries(item.answers).map(([key, val]: [string, any]) => {
+                                        if (!val) return null;
+                                        const displayVal = Array.isArray(val) ? val.join(', ') : String(val);
+                                        return (
+                                          <div key={key} className="p-2.5 bg-slate-50 dark:bg-slate-800/20 rounded-lg border border-slate-100 dark:border-slate-800/60">
+                                            <span className="text-[9px] text-slate-400 block font-bold capitalize">{key.replace(/_/g, ' ')}</span>
+                                            <span className="font-semibold text-slate-700 dark:text-slate-300">{displayVal}</span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {(item.associatedSymptoms?.length > 0 || item.associatedPains?.length > 0) && (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {item.associatedSymptoms?.length > 0 && (
+                                      <div>
+                                        <span className="text-[10px] text-slate-400 block font-bold mb-1">ASSOCIATED CLINICAL SYMPTOMS</span>
+                                        <div className="flex flex-wrap gap-1">
+                                          {item.associatedSymptoms.map((s: string) => (
+                                            <span key={s} className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-350 rounded-full font-bold text-[10px]">{s}</span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {item.associatedPains?.length > 0 && (
+                                      <div>
+                                        <span className="text-[10px] text-slate-400 block font-bold mb-1">ASSOCIATED PAIN AREAS</span>
+                                        <div className="flex flex-wrap gap-1">
+                                          {item.associatedPains.map((p: string) => (
+                                            <span key={p} className="px-2 py-0.5 bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 rounded-full font-bold text-[10px] border border-rose-100 dark:border-rose-900/30">{p}</span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {item.medicalHistory?.length > 0 && (
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold mb-1">PAST MEDICAL HISTORY</span>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {item.medicalHistory.map((h: string) => (
+                                        <span key={h} className="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 rounded-md font-bold text-[10px] border border-blue-100 dark:border-blue-900/30">{h}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-100 dark:border-slate-800/60 pt-3 mt-1">
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold mb-0.5">ALLERGIES</span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold">{item.allergies || 'No known allergies reported.'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold mb-0.5">FAMILY CLINICAL HISTORY</span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold">{item.familyHistory || 'No significant family history.'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold mb-0.5">LIFESTYLE & SOCIAL HISTORY</span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold">{item.lifestyleHistory || '—'}</span>
+                                  </div>
+                                </div>
+
+                                {(item.currentMedications || item.previousMedications) && (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800/60 pt-3">
+                                    {item.currentMedications && (
+                                      <div>
+                                        <span className="text-[10px] text-slate-400 block font-bold mb-0.5">CURRENT PHARMACOLOGICAL MEDICATION</span>
+                                        <span className="text-slate-700 dark:text-slate-300 font-medium block whitespace-pre-wrap">{item.currentMedications}</span>
+                                      </div>
+                                    )}
+                                    {item.previousMedications && (
+                                      <div>
+                                        <span className="text-[10px] text-slate-400 block font-bold mb-0.5">PREVIOUS PRESCRIBED MEDICATIONS</span>
+                                        <span className="text-slate-700 dark:text-slate-300 font-medium block whitespace-pre-wrap">{item.previousMedications}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* 4. Objective Physical Examination */}
+                              {(ceData?.tests || ceData?.imaging || ceData?.examinationNotes) && (
+                                <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-4 text-xs">
+                                  <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-2 flex items-center gap-2">
+                                    <Stethoscope size={14} className="text-emerald-500" /> Physical Assessment & Special Diagnostic Tests
+                                  </h5>
+
+                                  {ceData?.tests && Object.keys(ceData.tests).length > 0 && (
+                                    <div>
+                                      <span className="text-[10px] text-slate-400 block font-bold mb-1.5">SPECIAL PHYSICAL TESTS</span>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                        {Object.entries(ceData.tests).map(([test, val]: [string, any]) => (
+                                          <div key={test} className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/60 flex justify-between items-center text-[11px]">
+                                            <span className="font-semibold text-slate-600 dark:text-slate-400 capitalize">{test.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                            <span className="font-extrabold text-slate-800 dark:text-slate-200">{val?.result || 'Not Tested'}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {ceData?.imaging && Object.keys(ceData.imaging).length > 0 && (
+                                    <div>
+                                      <span className="text-[10px] text-slate-400 block font-bold mb-1.5">IMAGING & RADIOLOGY FINDINGS (X-RAY / MRI)</span>
+                                      <div className="flex flex-col gap-2">
+                                        {Object.entries(ceData.imaging).map(([region, findings]: [string, any]) => {
+                                          if (!findings.xray?.trim() && !findings.mri?.trim()) return null;
+                                          return (
+                                            <div key={region} className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/60">
+                                              <span className="font-black text-slate-700 dark:text-slate-300 capitalize text-[11.5px] block mb-1">{region} Joint Findings</span>
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1.5 pl-3 border-l-2 border-slate-200 dark:border-slate-800">
+                                                {findings.xray?.trim() && (
+                                                  <div>
+                                                    <span className="text-[9px] text-slate-400 block font-bold uppercase">X-Ray Report</span>
+                                                    <span className="text-slate-650 dark:text-slate-350 font-medium">{findings.xray}</span>
+                                                  </div>
+                                                )}
+                                                {findings.mri?.trim() && (
+                                                  <div>
+                                                    <span className="text-[9px] text-slate-400 block font-bold uppercase">MRI Scan Report</span>
+                                                    <span className="text-slate-650 dark:text-slate-350 font-medium">{findings.mri}</span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {ceData?.examinationNotes && (
+                                    <div className="border-t border-slate-100 dark:border-slate-800/60 pt-3">
+                                      <span className="text-[10px] text-slate-400 block font-bold mb-1">CLINICAL OBSERVATION & EXAMINATION REMARKS</span>
+                                      <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-755 dark:text-slate-300 leading-relaxed font-semibold">
+                                        {ceData.examinationNotes}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* 5. Joint Range of Motion (ROM) & Muscle Power Table */}
+                              {romRows.length > 0 ? (
+                                <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
+                                  <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                                    <Activity size={14} className="text-teal-600" /> Joint Range of Motion (ROM) & Muscle Power Matrix
+                                  </h5>
+                                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800/60 shadow-sm">
+                                    <table className="w-full text-left border-collapse text-xs">
+                                      <thead>
+                                        <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 font-bold uppercase">
+                                          <th className="px-4 py-2.5">Joint</th>
+                                          <th className="px-4 py-2.5">Movement</th>
+                                          <th className="px-4 py-2.5 text-center">Power Rt</th>
+                                          <th className="px-4 py-2.5 text-center">Power Lt</th>
+                                          <th className="px-4 py-2.5 text-center">ROM Rt</th>
+                                          <th className="px-4 py-2.5 text-center">ROM Lt</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40">
+                                        {romRows.map((row, idx) => (
+                                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                                            <td className="px-4 py-2 font-bold text-slate-800 dark:text-slate-200">{row.joint}</td>
+                                            <td className="px-4 py-2 font-medium text-slate-600 dark:text-slate-400">{row.movement}</td>
+                                            <td className="px-4 py-2 text-center font-extrabold text-slate-700 dark:text-slate-300">{row.powerRt}</td>
+                                            <td className="px-4 py-2 text-center font-extrabold text-slate-700 dark:text-slate-300">{row.powerLt}</td>
+                                            <td className="px-4 py-2 text-center font-extrabold text-teal-600 dark:text-teal-400">{row.romRt}</td>
+                                            <td className="px-4 py-2 text-center font-extrabold text-teal-600 dark:text-teal-400">{row.romLt}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner text-center py-6 text-slate-400 dark:text-slate-500 text-xs font-semibold">
+                                  <Activity size={24} className="mx-auto mb-2 opacity-30 text-teal-500" />
+                                  No Muscle Power or Range of Motion (ROM) data recorded for this assessment.
+                                </div>
+                              )}
+
+                              {/* Anthropometrics & Functional Ratings */}
+                              {((antData && Object.keys(antData).length > 0) || (fsData && Object.keys(fsData).length > 0)) && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                  {antData && Object.keys(antData).length > 0 && (
+                                    <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
+                                      <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                                        <Scale size={14} className="text-blue-500" /> Anthropometrics & Body Composition
+                                      </h5>
+                                      <div className="grid grid-cols-2 gap-3.5 text-xs font-semibold">
+                                        {antData.height && (
+                                          <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                            <span className="text-[10px] text-slate-400 block mb-0.5">Height</span>
+                                            <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{antData.height} cm</span>
+                                          </div>
+                                        )}
+                                        {antData.weight && (
+                                          <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                            <span className="text-[10px] text-slate-400 block mb-0.5">Weight</span>
+                                            <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{antData.weight} kg</span>
+                                          </div>
+                                        )}
+                                        {antData.bmi && (
+                                          <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                            <span className="text-[10px] text-slate-400 block mb-0.5">BMI Rating</span>
+                                            <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{antData.bmi}</span>
+                                          </div>
+                                        )}
+                                        {antData.waist && (
+                                          <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                            <span className="text-[10px] text-slate-400 block mb-0.5">Waist size</span>
+                                            <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{antData.waist} cm</span>
+                                          </div>
+                                        )}
+                                        {antData.hip && (
+                                          <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                            <span className="text-[10px] text-slate-400 block mb-0.5">Hip size</span>
+                                            <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{antData.hip} cm</span>
+                                          </div>
+                                        )}
+                                        {antData.whRatio && (
+                                          <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                            <span className="text-[10px] text-slate-400 block mb-0.5">Waist-Hip Ratio</span>
+                                            <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{antData.whRatio}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {fsData && Object.keys(fsData).length > 0 && (
+                                    <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
+                                      <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                                        <Award size={14} className="text-amber-500" /> Functional Limitation Ratings
+                                      </h5>
+                                      <div className="grid grid-cols-2 gap-3.5">
+                                        {Object.entries(fsData).map(([key, val]) => {
+                                          const numeric = typeof val === 'number' ? val : Number(val);
+                                          if (!Number.isFinite(numeric)) return null;
+                                          return (
+                                            <div key={key} className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+                                              <span className="text-[9px] text-slate-400 block font-bold capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                              <span className="font-extrabold text-slate-800 dark:text-slate-200">{numeric} - {fsLabels[numeric] || 'Recorded'}</span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* 6. Diagnosis, Treatment Protocol & Plan */}
+                              <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-4 text-xs">
+                                <h5 className="text-[11px] font-black uppercase text-slate-450 dark:text-slate-500 tracking-wider mb-2 flex items-center gap-2">
+                                  <Stethoscope size={14} className="text-indigo-500" /> Diagnosis & Prescribed Treatment Protocols
+                                </h5>
+
+                                {item.diagnosisList?.length > 0 && (
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold mb-1.5">CONFIRMED PATHOLOGY / CONDITIONS</span>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {item.diagnosisList.map((d: string) => (
+                                        <span key={d} className="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 rounded-md font-bold text-[11px] border border-rose-100 dark:border-rose-900/30">{d}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {item.diagnosis && (
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold mb-1">DIAGNOSTIC FINDINGS & NOTES</span>
+                                    <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-700 dark:text-slate-305 leading-relaxed font-semibold">
+                                      {item.diagnosis}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {(item.plan || tpData) && (
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold mb-1">PRESCRIBED PHYSICAL REHAB PLAN</span>
+                                    <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-700 dark:text-slate-305 leading-relaxed font-semibold">
+                                      {item.plan && <p className="mb-2">{item.plan}</p>}
+                                      {tpData && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-800 text-[11px]">
+                                          {tpData.modalities?.length > 0 && (
+                                            <div>
+                                              <span className="text-[9px] text-slate-400 block font-bold mb-1">ELECTRO-MODALITIES</span>
+                                              <div className="flex flex-wrap gap-1">
+                                                {tpData.modalities.map((m: string) => (
+                                                  <span key={m} className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 rounded font-bold">{m}</span>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+                                          {tpData.manualTherapy?.length > 0 && (
+                                            <div>
+                                              <span className="text-[9px] text-slate-400 block font-bold mb-1">MANUAL THERAPY</span>
+                                              <div className="flex flex-wrap gap-1">
+                                                {tpData.manualTherapy.map((m: string) => (
+                                                  <span key={m} className="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded font-bold">{m}</span>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+                                          {tpData.rehabilitation?.length > 0 && (
+                                            <div className="sm:col-span-2">
+                                              <span className="text-[9px] text-slate-400 block font-bold mb-1">REHAB EXERCISES</span>
+                                              <div className="flex flex-wrap gap-1">
+                                                {tpData.rehabilitation.map((r: string) => (
+                                                  <span key={r} className="px-2 py-0.5 bg-teal-50 dark:bg-teal-950/20 text-teal-700 dark:text-teal-400 rounded font-bold">{r}</span>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+                                          {tpData.visitsRequired && (
+                                            <div>
+                                              <span className="text-[9px] text-slate-400 block font-bold mb-0.5">VISITS PRESCRIBED</span>
+                                              <span className="font-extrabold text-slate-800 dark:text-slate-200">{tpData.visitsRequired} sessions</span>
+                                            </div>
+                                          )}
+                                          {tpData.gapDays && (
+                                            <div>
+                                              <span className="text-[9px] text-slate-400 block font-bold mb-0.5">FREQUENCY INTERVAL</span>
+                                              <span className="font-extrabold text-slate-800 dark:text-slate-200">Every {tpData.gapDays} days</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {item.followUpPlan && (
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold mb-1">FOLLOW-UP & LONG-TERM DISCHARGE STRATEGY</span>
+                                    <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-700 dark:text-slate-305 leading-relaxed font-semibold">
+                                      {item.followUpPlan}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+>>>>>>> 00f1f7f7e86888545b2fe389003fade4943a9771
+
+                              {/* 7. Clinical Remarks & Final Reviews */}
+                              {(item.doctorRemarks || item.therapistRemarks || item.finalClinicalSummary) && (
+                                <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-4 text-xs">
+                                  <h5 className="text-[11px] font-black uppercase text-slate-450 dark:text-slate-500 tracking-wider mb-2 flex items-center gap-2">
+                                    <UserCog size={14} className="text-slate-500" /> Longitudinal Clinical Summary & Reviews
+                                  </h5>
+                                  {item.doctorRemarks && (
+                                    <div>
+                                      <span className="text-[10px] text-slate-400 block font-bold mb-1">DOCTOR / CLINICAL CONSULTANT REMARKS</span>
+                                      <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-755 dark:text-slate-300 leading-relaxed font-medium">
+                                        {item.doctorRemarks}
+                                      </p>
+                                    </div>
+                                  )}
+                                  {item.therapistRemarks && (
+                                    <div>
+                                      <span className="text-[10px] text-slate-400 block font-bold mb-1">PHYSIOTHERAPIST REHABILITATION REMARKS</span>
+                                      <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-755 dark:text-slate-300 leading-relaxed font-medium">
+                                        {item.therapistRemarks}
+                                      </p>
+                                    </div>
+                                  )}
+                                  {item.finalClinicalSummary && (
+                                    <div>
+                                      <span className="text-[10px] text-slate-400 block font-bold mb-1">FINAL CLINICAL CASE DISCHARGE SUMMARY</span>
+                                      <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-755 dark:text-slate-300 leading-relaxed font-semibold">
+                                        {item.finalClinicalSummary}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* 8. Billing & Payment logs */}
                               {item.billAmount !== null && (
                                 <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
-                                  <h5 className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-3 flex items-center gap-2">
-                                    <DollarSign size={14} className="text-emerald-500" /> Billing Log info
+                                  <h5 className="text-[11px] font-black uppercase text-slate-450 dark:text-slate-500 tracking-wider mb-3 flex items-center gap-2">
+                                    <DollarSign size={14} className="text-emerald-500" /> Billing Log & Financial Information
                                   </h5>
-                                  <div className="flex gap-4 items-center">
-                                    <span className="text-[13px] text-slate-700 dark:text-slate-300 font-extrabold">Bill Amount: <span className="text-emerald-600 dark:text-emerald-400">₹{item.billAmount}</span></span>
-                                    {item.paymentMode && <span className="text-[13px] text-slate-700 dark:text-slate-300 font-extrabold">Payment Mode: <span className="capitalize">{item.paymentMode}</span></span>}
-                                    {item.visitType && <span className="text-[13px] text-slate-700 dark:text-slate-300 font-extrabold">Visit Type: <span>{item.visitType}</span></span>}
+                                  <div className="flex flex-wrap gap-6 text-xs font-semibold">
+                                    <div>
+                                      <span className="text-[10px] text-slate-400 block mb-0.5">Bill Amount Issued</span>
+                                      <span className="text-emerald-600 dark:text-emerald-400 font-extrabold text-sm">₹ {item.billAmount}</span>
+                                    </div>
+                                    {item.paymentMode && (
+                                      <div>
+                                        <span className="text-[10px] text-slate-400 block mb-0.5">Method of Payment</span>
+                                        <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm capitalize">{item.paymentMode}</span>
+                                      </div>
+                                    )}
+                                    {item.visitType && (
+                                      <div>
+                                        <span className="text-[10px] text-slate-400 block mb-0.5">Type of Visit</span>
+                                        <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.visitType}</span>
+                                      </div>
+                                    )}
+                                    <div>
+                                      <span className="text-[10px] text-slate-400 block mb-0.5">Invoice State</span>
+                                      <span className="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-100 dark:border-emerald-900/30">Paid</span>
+                                    </div>
                                   </div>
                                 </div>
                               )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // ───── CASE 1.5: NEW ASSESSMENT MODULE EVENT ─────
+                    if (item.type === 'assessment_module') {
+                      const isExpanded = expandedEvalId === item.id;
+                      
+                      const mapFlatSymptomsToNested = () => {
+                        const sObj: any = {};
+                        Object.keys(SYMPTOM_LABELS).forEach(k => {
+                          sObj[k] = {
+                            value: !!(item.symptoms?.[k]?.value ?? item.symptoms?.[k]),
+                            notes: item.symptoms?.[k]?.notes || ''
+                          };
+                        });
+                        return sObj;
+                      };
+
+                      return (
+                        <div
+                          key={item.id}
+                          className={`bg-white dark:bg-slate-900 rounded-[20px] border transition-all overflow-hidden shadow-sm relative ${
+                            isExpanded ? 'border-indigo-600 ring-1 ring-indigo-650/20' : 'border-slate-150 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700'
+                          }`}
+                        >
+                          {/* Timeline dot */}
+                          <div className="absolute -left-[21px] top-6 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-950 bg-indigo-600 shadow-sm" />
+
+                          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 text-left">
+                            <button
+                              onClick={() => setExpandedEvalId(isExpanded ? null : item.id)}
+                              className="flex items-start gap-3 flex-1 text-left"
+                            >
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 ${
+                                isExpanded ? 'bg-indigo-655 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-400'
+                              }`}>
+                                v{item.version || 1}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <h4 className="text-[14px] font-black text-slate-800 dark:text-white">
+                                    Patient Assessment
+                                  </h4>
+                                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wide ${
+                                    item.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                                  }`}>
+                                    {item.paymentStatus || 'Pending'}
+                                  </span>
+                                </div>
+                                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                  {dateFormatted} · Therapist: <span className="font-bold text-slate-700 dark:text-slate-300">{item.therapistName || '—'}</span>
+                                </p>
+                              </div>
+                            </button>
+
+                            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                              {item.painScale !== undefined && item.painScale !== null && (
+                                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-50 text-rose-700 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/35">
+                                  <Activity size={12} /> Pain: {item.painScale}/10
+                                </div>
+                              )}
+                              <button
+                                onClick={() => handleDownloadAssessmentModulePdf(selectedPatientId || '', item.id)}
+                                className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-650 dark:text-slate-350 rounded-xl hover:bg-slate-100 active:scale-95 transition-all"
+                                title="Download Report PDF"
+                              >
+                                <Download size={14} />
+                              </button>
+                              <button
+                                onClick={() => setExpandedEvalId(isExpanded ? null : item.id)}
+                                className="p-2 text-slate-400"
+                              >
+                                {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Collapsible Details */}
+                          {isExpanded && (
+                            <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-6 flex flex-col gap-6">
+                              {/* 1. Basic Info */}
+                              <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
+                                <h5 className="text-[11px] font-black uppercase text-slate-450 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                                  <User size={14} className="text-slate-500" /> Patient Demographics & Therapist Intake
+                                </h5>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold">
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Patient Full Name</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.fullName || '—'}</span>
+                                  </div>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-150 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Age & Gender</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.age} Yrs / {item.gender}</span>
+                                  </div>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-150 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Assigned Therapist</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.therapistName || 'None Assigned'}</span>
+                                  </div>
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-150 dark:border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Symptom Duration</span>
+                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.symptomDuration || '—'}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* 2. Vitals */}
+                              <div className="flex flex-col gap-2">
+                                <span className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider flex items-center gap-2">
+                                  <Heart size={14} className="text-rose-500" /> Vital Signs Parameters
+                                </span>
+                                <VitalSignsTable vitals={{
+                                  bloodPressure: item.bp,
+                                  pulseRate: item.pr,
+                                  spo2: item.spo2,
+                                  temperature: item.temperature,
+                                  ejectionFraction: item.ef
+                                }} />
+                              </div>
+
+                              {/* 3. Medical History */}
+                              <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
+                                <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                                  <ClipboardList size={14} className="text-amber-500" /> Medical & Surgical Log History
+                                </h5>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold">
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block mb-1">Chronic Conditions</span>
+                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-150 dark:border-slate-800">{item.chronicConditions?.join(', ') || 'None'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block mb-1">Active Medications</span>
+                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-150 dark:border-slate-800">{item.medications?.join(', ') || 'None'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block mb-1">Allergies</span>
+                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-150 dark:border-slate-800 text-rose-700 dark:text-rose-400 font-bold">{item.allergies?.join(', ') || 'None'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block mb-1">Surgical History</span>
+                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-150 dark:border-slate-800">{item.surgicalHistory?.join(', ') || 'None'}</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* 4. Symptoms checklist */}
+                              <div className="flex flex-col gap-2">
+                                <span className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider flex items-center gap-2">
+                                  <FileText size={14} className="text-purple-500" /> Specific Symptoms Checklist
+                                </span>
+                                <SymptomChecklist symptoms={mapFlatSymptomsToNested()} />
+                              </div>
+
+                              {/* 5. Clinical Examination */}
+                              <div className="flex flex-col gap-2">
+                                <span className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider flex items-center gap-2">
+                                  <Stethoscope size={14} className="text-emerald-500" /> Objective clinical examination findings
+                                </span>
+                                <ClinicalExaminationTable exam={{
+                                  musclePower: item.musclePower,
+                                  rom: item.rom,
+                                  specialTests: item.specialTests,
+                                  findings: item.findings
+                                }} />
+                              </div>
+
+                              {/* 6. Diagnosis & Plan */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-3 text-xs">
+                                  <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-2">
+                                    <Activity size={14} className="text-indigo-500" /> Diagnosis pathology
+                                  </h5>
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Primary Diagnosis</span>
+                                    <span className="font-extrabold">{item.diagnosisPrimary || '—'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">ICD-10 Pathology Code</span>
+                                    <span className="font-extrabold uppercase">{item.icdCode || '—'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Secondary Conditions</span>
+                                    <span className="font-extrabold">{item.diagnosisSecondary?.join(', ') || '—'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-400 block mb-0.5">Prescribed Therapies & exercises</span>
+                                    <span className="font-extrabold">{item.treatmentTherapies?.join(', ') || '—'}</span>
+                                  </div>
+                                </div>
+
+                                <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-3 text-xs">
+                                  <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-2">
+                                    <CreditCard size={14} className="text-indigo-500" /> Billing receipt logs
+                                  </h5>
+                                  <div className="flex flex-col gap-2">
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-550">Session Rate:</span>
+                                      <span className="font-extrabold">₹ {item.sessionFee || '—'}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-550">Total Sessions:</span>
+                                      <span className="font-extrabold">{item.totalSessions || '—'}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-550">Paid Sessions:</span>
+                                      <span className="font-extrabold">{item.paidSessions || '—'}</span>
+                                    </div>
+                                    <div className="flex justify-between border-t border-slate-100 dark:border-slate-800 pt-2 font-bold text-slate-900 dark:text-white">
+                                      <span>Balance Due:</span>
+                                      <span className="text-emerald-600 dark:text-emerald-400">₹ {item.balance || '—'}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
                             </div>
                           )}
                         </div>
