@@ -28,6 +28,8 @@ export function NurseDashboard() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState<string>('');
+  const [daysFilter, setDaysFilter] = useState<string>('all');
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -38,6 +40,8 @@ export function NurseDashboard() {
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: filter !== 'all' ? filter : undefined,
+    date: dateFilter || undefined,
+    days: daysFilter !== 'all' ? daysFilter : undefined,
     limit: 50,
   }, true); // ← 10s polling for live patient queue
 
@@ -197,6 +201,38 @@ export function NurseDashboard() {
                 {f.label}
               </button>
             ))}
+          </div>
+
+          {/* Date and Days filters */}
+          <div className="flex flex-wrap gap-4 px-1 py-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Date:</span>
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => {
+                  setDateFilter(e.target.value);
+                  if (e.target.value) setDaysFilter('all');
+                }}
+                className="rounded-xl px-3 py-1.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Days:</span>
+              <select
+                value={daysFilter}
+                onChange={(e) => {
+                  setDaysFilter(e.target.value);
+                  if (e.target.value !== 'all') setDateFilter('');
+                }}
+                className="rounded-xl px-3 py-2 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+              >
+                <option value="all">Any Day</option>
+                <option value="1">Today</option>
+                <option value="3">Next 3 Days</option>
+                <option value="7">Next 7 Days</option>
+              </select>
+            </div>
           </div>
 
           {/* Patient Queue heading */}

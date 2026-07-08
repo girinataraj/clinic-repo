@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { BottomNav } from '../components/BottomNav';
 import { usePatients, useUpdatePatient } from '../../hooks/usePatients';
+import { useStaffUsers } from '../../hooks/useStaff';
 
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
@@ -25,19 +26,26 @@ export function DoctorDashboard() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [therapistFilter, setTherapistFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('');
+  const [daysFilter, setDaysFilter] = useState<string>('all');
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-
-
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: activeTab !== 'all' ? activeTab : undefined,
     bookedOnly: activeTab === 'waiting' ? 'true' : undefined,
+    priority: priorityFilter !== 'all' ? priorityFilter : undefined,
+    therapistId: therapistFilter !== 'all' ? therapistFilter : undefined,
+    date: dateFilter || undefined,
+    days: daysFilter !== 'all' ? daysFilter : undefined,
     limit: 20,
   }, true); // ← 10s polling for live patient queue
 
+  const { data: therapists = [] } = useStaffUsers({ role: 'nurse' });
   const updatePatient = useUpdatePatient();
 
   const handleCompleteSession = async (patientId: string) => {
@@ -156,38 +164,98 @@ export function DoctorDashboard() {
           </div>
 
           {/* Search + Tabs */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div
-              className="flex items-center gap-3 px-4 flex-1 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
-            >
-              <Search size={18} className="text-slate-400 dark:text-slate-500" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search patients or conditions..."
-                className="flex-1 outline-none bg-transparent py-3.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              />
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-4 shadow-sm mb-6 space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div
+                className="flex items-center gap-3 px-4 flex-1 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
+              >
+                <Search size={18} className="text-slate-400 dark:text-slate-500" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search patients or conditions..."
+                  className="flex-1 outline-none bg-transparent py-3.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                />
+              </div>
+
+              <div className="flex gap-2 p-1 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                {[
+                  { key: 'all', label: `All (${patientsData?.total ?? 0})` },
+                  { key: 'waiting', label: `Wait (${waiting})` },
+                  { key: 'in-session', label: 'Active' },
+                  { key: 'completed', label: 'Done' },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`px-4 py-2.5 rounded-xl transition-all duration-200 text-[13px] font-semibold ${
+                      activeTab === tab.key
+                        ? 'bg-slate-900 text-white dark:bg-slate-700'
+                        : 'bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="flex gap-2 p-1 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-              {[
-                { key: 'all', label: `All (${patientsData?.total ?? 0})` },
-                { key: 'waiting', label: `Wait (${waiting})` },
-                { key: 'in-session', label: 'Active' },
-                { key: 'completed', label: 'Done' },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`px-4 py-2.5 rounded-xl transition-all duration-200 text-[13px] font-semibold ${
-                    activeTab === tab.key
-                      ? 'bg-slate-900 text-white dark:bg-slate-700'
-                      : 'bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-                  }`}
+            <div className="flex flex-wrap gap-4 pt-3.5 border-t border-slate-100 dark:border-slate-700/80">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Priority:</span>
+                <select
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
                 >
-                  {tab.label}
-                </button>
-              ))}
+                  <option value="all">All Priorities</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Therapist:</span>
+                <select
+                  value={therapistFilter}
+                  onChange={(e) => setTherapistFilter(e.target.value)}
+                  className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+                >
+                  <option value="all">All Therapists</option>
+                  <option value="unassigned">Unassigned Only</option>
+                  {therapists.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Date:</span>
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => {
+                    setDateFilter(e.target.value);
+                    if (e.target.value) setDaysFilter('all');
+                  }}
+                  className="rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Days:</span>
+                <select
+                  value={daysFilter}
+                  onChange={(e) => {
+                    setDaysFilter(e.target.value);
+                    if (e.target.value !== 'all') setDateFilter('');
+                  }}
+                  className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+                >
+                  <option value="all">Any Day</option>
+                  <option value="1">Today</option>
+                  <option value="3">Next 3 Days</option>
+                  <option value="7">Next 7 Days</option>
+                </select>
+              </div>
             </div>
           </div>
 

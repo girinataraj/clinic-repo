@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { useAuth } from '../contexts/AuthContext';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { usePatients, useUpdatePatient } from '../../hooks/usePatients';
+import { usePatients, useUpdatePatient, useDeletePatient } from '../../hooks/usePatients';
 import { useStaffUsers } from '../../hooks/useStaff';
 import { TreatmentDetailModal } from '../../features/patients/components/TreatmentDetailModal';
 import {
@@ -19,6 +19,7 @@ import {
   UserCog,
   RefreshCw,
   X,
+  Trash2,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -43,20 +44,40 @@ export function DoctorPatients() {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [therapistFilter, setTherapistFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('');
+  const [daysFilter, setDaysFilter] = useState<string>('all');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [assignPatient, setAssignPatient] = useState<{ id: string; name: string; therapistId?: string } | null>(null);
   const [assignTarget, setAssignTarget] = useState<string | null>(null);
+  const [deletePatientId, setDeletePatientId] = useState<string | null>(null);
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
+    priority: priorityFilter !== 'all' ? priorityFilter : undefined,
+    therapistId: therapistFilter !== 'all' ? therapistFilter : undefined,
+    date: dateFilter || undefined,
+    days: daysFilter !== 'all' ? daysFilter : undefined,
     limit: 50,
   });
   const { data: therapists = [] } = useStaffUsers({ role: 'nurse' });
   const updatePatient = useUpdatePatient();
+  const deletePatient = useDeletePatient();
 
   const patients = patientsData?.data ?? [];
+
+  const handleDeletePatient = async (id: string) => {
+    try {
+      await deletePatient.mutateAsync(id);
+      setDeletePatientId(null);
+    } catch (err) {
+      console.error('Failed to delete patient:', err);
+    }
+  };
+
 
   const handlePatientClick = (patientId: string) => {
     if (isDesktop) {
@@ -225,7 +246,66 @@ export function DoctorPatients() {
                     ))}
                   </div>
                 </div>
+
+                <div className="flex flex-wrap gap-4 mt-3.5 pt-3.5 border-t border-slate-100 dark:border-slate-800/80">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Priority:</span>
+                    <select
+                      value={priorityFilter}
+                      onChange={(e) => setPriorityFilter(e.target.value)}
+                      className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700 text-[#262842] dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+                    >
+                      <option value="all">All Priorities</option>
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Therapist:</span>
+                    <select
+                      value={therapistFilter}
+                      onChange={(e) => setTherapistFilter(e.target.value)}
+                      className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700 text-[#262842] dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+                    >
+                      <option value="all">All Therapists</option>
+                      <option value="unassigned">Unassigned Only</option>
+                      {therapists.map((t) => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Date:</span>
+                    <input
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => {
+                        setDateFilter(e.target.value);
+                        if (e.target.value) setDaysFilter('all');
+                      }}
+                      className="rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700 text-[#262842] dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Days:</span>
+                    <select
+                      value={daysFilter}
+                      onChange={(e) => {
+                        setDaysFilter(e.target.value);
+                        if (e.target.value !== 'all') setDateFilter('');
+                      }}
+                      className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700 text-[#262842] dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+                    >
+                      <option value="all">Any Day</option>
+                      <option value="1">Today</option>
+                      <option value="3">Next 3 Days</option>
+                      <option value="7">Next 7 Days</option>
+                    </select>
+                  </div>
+                </div>
               </div>
+
 
               <div className="flex items-center justify-between">
                 <h2 className="display-font text-[18px] font-bold text-[#17252A] dark:text-white">
@@ -351,6 +431,13 @@ export function DoctorPatients() {
                         >
                           <ChevronRight size={16} />
                           Write Rx
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setDeletePatientId(patient.id); }}
+                          className="flex items-center justify-center rounded-xl p-2.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors border border-rose-100 dark:border-rose-900/50"
+                          title="Delete Patient"
+                        >
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </div>
@@ -511,6 +598,40 @@ export function DoctorPatients() {
           </div>
         </div>
       )}
+
+      {/* Patient Delete Confirmation Modal */}
+      {deletePatientId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-3xl p-5 bg-white dark:bg-slate-900 shadow-2xl dark:shadow-none border dark:border-slate-800">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[15px] font-extrabold text-[#17252A] dark:text-white">Delete Patient Record</h3>
+              <button onClick={() => setDeletePatientId(null)} className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                <X size={16} className="text-slate-500 dark:text-slate-400" />
+              </button>
+            </div>
+            <p className="text-[12px] text-slate-600 dark:text-slate-300 mb-4">
+              Are you sure you want to permanently delete patient <strong>{patients.find(p => p.id === deletePatientId)?.name}</strong>? This action will cascade delete all appointments, evaluations, reports, and exercise plans associated with this patient, and cannot be undone.
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setDeletePatientId(null)}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-[#E8E9F1] dark:bg-slate-800 text-[#262842] dark:text-slate-200 hover:opacity-90"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeletePatient(deletePatientId)}
+                disabled={deletePatient.isPending}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50"
+              >
+                {deletePatient.isPending ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+            {deletePatient.isError && <p className="text-[11px] font-semibold text-rose-600 text-center mt-2">Failed to delete patient. Try again.</p>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
