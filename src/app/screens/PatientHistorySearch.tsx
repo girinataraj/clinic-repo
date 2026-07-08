@@ -33,6 +33,7 @@ import {
   Trash,
   FileUp,
   ClipboardList,
+  Dumbbell,
 } from 'lucide-react';
 
 const SYMPTOM_LABELS: Record<string, string> = {
@@ -772,6 +773,39 @@ export function PatientHistorySearch() {
                                   </div>
                                 </div>
                               </div>
+
+                              {/* Treatment & Rehabilitation Plan Details */}
+                              {(item.treatmentModalities?.length > 0 || item.treatmentFrequency || item.treatmentDuration) && (
+                                <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-3 text-xs">
+                                  <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-2">
+                                    <Dumbbell size={14} className="text-emerald-500" /> Prescribed Rehabilitation & Modalities Plan
+                                  </h5>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {item.treatmentModalities?.length > 0 && (
+                                      <div>
+                                        <span className="text-[10px] text-slate-400 block mb-1">Modalities Prescribed</span>
+                                        <div className="flex flex-wrap gap-1.5">
+                                          {item.treatmentModalities.map((m: string) => (
+                                            <span key={m} className="px-2 py-0.5 rounded bg-slate-50 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 border border-slate-150 dark:border-slate-700">{m}</span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {item.treatmentFrequency && (
+                                      <div>
+                                        <span className="text-[10px] text-slate-400 block mb-0.5">Session Frequency</span>
+                                        <span className="font-extrabold">{item.treatmentFrequency}</span>
+                                      </div>
+                                    )}
+                                    {item.treatmentDuration && (
+                                      <div>
+                                        <span className="text-[10px] text-slate-400 block mb-0.5">Plan Duration</span>
+                                        <span className="font-extrabold">{item.treatmentDuration}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
 
                             </div>
                           )}

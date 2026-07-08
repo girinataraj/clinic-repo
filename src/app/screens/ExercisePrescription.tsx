@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import { useExercisePlans } from '../../hooks/useExercisePlans';
+import { useLatestEvaluation } from '../../hooks/useEvaluations';
 import {
   useExerciseTemplates,
   usePatientAssignments,
@@ -289,6 +290,12 @@ function DoctorExerciseAssignments() {
     data: selectedPatient,
     isLoading: selectedPatientLoading,
   } = usePatient(selectedPatientId);
+
+  const { data: plansData, isLoading: plansLoading } = useExercisePlans(selectedPatientId);
+  const plans = plansData?.data ?? [];
+  const { data: latestEval, isLoading: latestEvalLoading } = useLatestEvaluation(selectedPatientId);
+  const [historyTab, setHistoryTab] = useState<'clinical' | 'exercise'>('clinical');
+
 
   const {
     data: templates,
@@ -588,6 +595,146 @@ function DoctorExerciseAssignments() {
                   )}
                 </CardContent>
               </Card>
+
+              {selectedPatientId && (
+                <Card className="border-slate-200 dark:border-slate-800">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2 text-[#262842] dark:text-white font-extrabold">
+                      <Info size={16} className="text-indigo-600 dark:text-indigo-400" />
+                      Patient & Exercise History
+                    </CardTitle>
+                    <CardDescription>Clinical context & past prescriptions</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Tab Buttons */}
+                    <div className="flex rounded-lg bg-slate-100 dark:bg-slate-900 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setHistoryTab('clinical')}
+                        className={`flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all ${
+                          historyTab === 'clinical'
+                            ? 'bg-white dark:bg-slate-800 text-[#262842] dark:text-white shadow-sm'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                        }`}
+                      >
+                        Clinical Context
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setHistoryTab('exercise')}
+                        className={`flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all ${
+                          historyTab === 'exercise'
+                            ? 'bg-white dark:bg-slate-800 text-[#262842] dark:text-white shadow-sm'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                        }`}
+                      >
+                        HEP History
+                      </button>
+                    </div>
+
+                    {/* Tab Content */}
+                    {historyTab === 'clinical' ? (
+                      <div className="space-y-3 text-xs">
+                        {latestEvalLoading ? (
+                          <div className="text-slate-500 dark:text-slate-400 py-4 text-center">Loading clinical details...</div>
+                        ) : latestEval ? (
+                          <div className="space-y-3">
+                            {selectedPatient?.condition && (
+                              <div>
+                                <span className="font-bold text-slate-500 dark:text-slate-400 block mb-0.5">Primary Diagnosis</span>
+                                <span className="font-semibold text-slate-800 dark:text-white bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-md inline-block">
+                                  {selectedPatient.condition}
+                                </span>
+                              </div>
+                            )}
+                            
+                            {latestEval.chiefComplaints && (
+                              <div>
+                                <span className="font-bold text-slate-500 dark:text-slate-400 block mb-0.5">Chief Complaints</span>
+                                <p className="text-slate-700 dark:text-slate-300 font-semibold border-l-2 border-indigo-500 pl-2 leading-relaxed">
+                                  {latestEval.chiefComplaints}
+                                </p>
+                              </div>
+                            )}
+
+                            {latestEval.treatmentPlan && (
+                              <div>
+                                <span className="font-bold text-slate-500 dark:text-slate-400 block mb-0.5">Rehab Modalities (Prescribed)</span>
+                                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-1.5 text-[11px]">
+                                  {latestEval.treatmentPlan.modalities?.length && (
+                                    <p><span className="font-bold text-slate-600 dark:text-slate-400">Modalities:</span> {latestEval.treatmentPlan.modalities.join(', ')}</p>
+                                  )}
+                                  {latestEval.treatmentPlan.rehabilitation?.length && (
+                                    <p><span className="font-bold text-slate-600 dark:text-slate-400">Rehabilitation:</span> {latestEval.treatmentPlan.rehabilitation.join(', ')}</p>
+                                  )}
+                                  {latestEval.treatmentPlan.visitsRequired && (
+                                    <p><span className="font-bold text-slate-600 dark:text-slate-400">Visits Prescribed:</span> {latestEval.treatmentPlan.visitsRequired}</p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {(latestEval.management || latestEval.clinicalFindings) && (
+                              <div>
+                                <span className="font-bold text-slate-500 dark:text-slate-400 block mb-0.5">Clinical Examination Notes</span>
+                                <p className="text-slate-700 dark:text-slate-300 leading-relaxed italic bg-slate-50/50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100/50 dark:border-slate-800/50">
+                                  {latestEval.management || latestEval.clinicalFindings}
+                                </p>
+                              </div>
+                            )}
+
+                            {latestEval.painLevel != null && (
+                              <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-2.5">
+                                <span className="font-bold text-slate-500 dark:text-slate-400">Pain Level</span>
+                                <span className="font-extrabold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded text-[11px]">
+                                  {latestEval.painLevel} / 10
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-slate-500 dark:text-slate-400 py-4 text-center italic">No clinical assessment history found.</div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-3 text-xs max-h-[300px] overflow-y-auto">
+                        {plansLoading ? (
+                          <div className="text-slate-500 dark:text-slate-400 py-4 text-center">Loading exercise history...</div>
+                        ) : plans && plans.length > 0 ? (
+                          <div className="space-y-3 pr-1">
+                            {plans.map((plan) => (
+                              <div key={plan.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 space-y-2">
+                                <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-1.5">
+                                  <span className="font-bold text-slate-800 dark:text-slate-200">{plan.title}</span>
+                                  <span className="text-[10px] text-slate-400">
+                                    {new Date(plan.createdAt).toLocaleDateString('en-IN')}
+                                  </span>
+                                </div>
+                                {plan.items && plan.items.length > 0 ? (
+                                  <div className="space-y-1">
+                                    {plan.items.map((item) => (
+                                      <div key={item.id} className="flex justify-between items-center text-[11px] text-slate-600 dark:text-slate-400">
+                                        <span>• {item.name}</span>
+                                        <span className="text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 px-1.5 py-0.25 rounded text-slate-500">
+                                          {item.sets && item.reps ? `${item.sets}x${item.reps}` : item.duration || 'HEP'}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400 italic">No exercises listed in this plan.</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-slate-500 dark:text-slate-400 py-4 text-center italic">No exercise prescription history found.</div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             <div className="space-y-5">

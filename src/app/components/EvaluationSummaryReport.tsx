@@ -106,8 +106,32 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
     return hasTests || hasImaging || hasNotes;
   }, [clinicalExamination]);
 
+  const therapistName = evaluation.therapistName || evaluation.doctor_name || evaluation.createdBy?.name || '—';
+
   return (
     <div className="flex flex-col gap-6 w-full text-left">
+
+      {/* Therapist & Visit Information */}
+      <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-semibold">
+          <div>
+            <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Conducting Therapist</span>
+            <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{therapistName}</span>
+          </div>
+          {evaluation.visitType && (
+            <div>
+              <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Visit Type</span>
+              <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{evaluation.visitType}</span>
+            </div>
+          )}
+          {evaluation.referredBy && (
+            <div>
+              <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Referred By</span>
+              <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{evaluation.referredBy}</span>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Chief Complaints & Pain Level */}
       {(chiefComplaints || (painLevel !== undefined && painLevel !== null)) && (
@@ -268,73 +292,6 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
         </section>
       )}
 
-      {/* Anthropometrics */}
-      {anthropometrics && Object.values(anthropometrics).some(v => v !== '') && (
-        <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-            <Scale size={16} className={accentColor} />
-            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Anthropometrics</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-semibold">
-            {anthropometrics.height && (
-              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
-                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Height</span>
-                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.height} cm</span>
-              </div>
-            )}
-            {anthropometrics.weight && (
-              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
-                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Weight</span>
-                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.weight} kg</span>
-              </div>
-            )}
-            {anthropometrics.bmi && (
-              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
-                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">BMI</span>
-                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.bmi}</span>
-              </div>
-            )}
-            {anthropometrics.waist && (
-              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
-                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Waist</span>
-                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.waist} cm</span>
-              </div>
-            )}
-            {anthropometrics.hip && (
-              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
-                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Hip</span>
-                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.hip} cm</span>
-              </div>
-            )}
-            {anthropometrics.whRatio && (
-              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
-                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Waist-to-Hip Ratio</span>
-                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.whRatio}</span>
-              </div>
-            )}
-            {(anthropometrics.chestInspiration || anthropometrics.chestExpiration) && (
-              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 col-span-2 sm:col-span-3 shadow-sm">
-                <span className="text-[10px] text-slate-400 block mb-1.5 font-bold">Chest Measurements</span>
-                <div className="flex gap-6">
-                  <div>
-                    <span className="text-[9px] text-slate-400 block uppercase font-bold">Inspiration</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-extrabold">{anthropometrics.chestInspiration || '—'} cm</span>
-                  </div>
-                  <div>
-                    <span className="text-[9px] text-slate-400 block uppercase font-bold">Expiration</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-extrabold">{anthropometrics.chestExpiration || '—'} cm</span>
-                  </div>
-                  <div>
-                    <span className="text-[9px] text-slate-400 block uppercase font-bold text-teal-650 dark:text-teal-400">Expansion</span>
-                    <span className="text-teal-650 dark:text-teal-400 font-black">{anthropometrics.chestExpansion || '—'} cm</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
       {/* Functional Limitations (Functional Scores) */}
       {functionalScores && Object.keys(functionalScores).length > 0 && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
@@ -448,41 +405,6 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
               )}
             </div>
           )}
-        </section>
-      )}
-
-      {/* Additional Clinical Text Notes (Family history, lifestyle, etc.) */}
-      {(familyHistory || lifestyleHistory || currentMedications || previousMedications || labReports || radiologyReports || prescriptions || procedures || followUpPlan || mentalStatusExamination || clinicalFindings || therapyNotes || progressNotes) && (
-        <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-            <FileText size={16} className={accentColor} />
-            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Other Assessment Records</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { label: 'Family History', value: familyHistory },
-              { label: 'Lifestyle History', value: lifestyleHistory },
-              { label: 'Current Medications', value: currentMedications },
-              { label: 'Previous Medications', value: previousMedications },
-              { label: 'Laboratory Reports', value: labReports },
-              { label: 'Radiology Reports', value: radiologyReports },
-              { label: 'Prescriptions', value: prescriptions },
-              { label: 'Procedures', value: procedures },
-              { label: 'Follow Up Plan', value: followUpPlan },
-              { label: 'Mental Status Examination', value: mentalStatusExamination },
-              { label: 'Clinical Findings', value: clinicalFindings },
-              { label: 'Therapy Notes', value: therapyNotes },
-              { label: 'Progress Notes', value: progressNotes },
-            ].map(item => {
-              if (!item.value) return null;
-              return (
-                <div key={item.label} className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-850">
-                  <span className="block text-[10px] text-slate-400 font-bold uppercase">{item.label}</span>
-                  <p className="text-[12.5px] text-slate-700 dark:text-slate-300 font-semibold mt-1 whitespace-pre-wrap">{item.value}</p>
-                </div>
-              );
-            })}
-          </div>
         </section>
       )}
 

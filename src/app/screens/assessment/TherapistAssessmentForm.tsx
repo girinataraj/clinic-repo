@@ -230,7 +230,10 @@ export function TherapistAssessmentForm() {
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
         anthropometrics: hasAnthro ? anthropometrics : undefined,
-        clinicalExamination: (Object.keys(clinicalExamData.tests).length > 0 || Object.keys(clinicalExamData.imaging).length > 0 || !!clinicalExamData.examinationNotes) ? clinicalExamData : undefined,
+        clinicalExamination: (Object.keys(clinicalExamData.tests).length > 0 || Object.keys(clinicalExamData.imaging).length > 0 || !!examinationNotes.trim()) ? {
+          ...clinicalExamData,
+          examinationNotes: examinationNotes.trim() || undefined
+        } : undefined,
       });
       setSaved(true);
       setTimeout(() => navigate(`/${currentRole}/report?patientId=${resolvedPatientId}`), 2000);
