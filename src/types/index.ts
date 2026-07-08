@@ -158,6 +158,7 @@ export interface CreateEvaluationPayload {
   clinicalExamination?: Record<string, unknown>;
   treatmentPlan?: Record<string, unknown>;
   followUpSession?: Record<string, unknown>;
+  functionalScores?: Record<string, unknown>;
 }
 
 // ─── Appointment ───────────────────────────────────────────────────────────────

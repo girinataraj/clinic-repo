@@ -517,6 +517,7 @@ export function NurseIntakeForm() {
         billAmount: billTotal,
         visitType,
         associatedPains: associatedPains.length > 0 ? associatedPains : undefined,
+        functionalScores: Object.keys(funcRatings).length > 0 ? funcRatings : undefined,
         treatmentPlan: selectedTreatmentIds.length > 0 ? {
           modalities: treatments
             .filter(t => selectedTreatmentIds.includes(t.id))

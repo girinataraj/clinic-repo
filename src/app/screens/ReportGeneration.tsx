@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
@@ -45,6 +45,22 @@ export function ReportGeneration() {
   const { data: allEvalsData } = useEvaluations(evaluation?.patientId ? { patientId: evaluation.patientId } : undefined);
   const allEvaluations = allEvalsData?.data ?? [];
 
+  const getMergedField = useCallback((fieldCamel: string, fieldSnake: string, isArray = false, isObject = false) => {
+    const currVal = evaluation ? ((evaluation as any)[fieldCamel] ?? (evaluation as any)[fieldSnake]) : null;
+    if (isArray && currVal && currVal.length > 0) return currVal;
+    if (isObject && currVal && Object.keys(currVal).length > 0) return currVal;
+    if (!isArray && !isObject && currVal != null && currVal !== '') return currVal;
+
+    const found = allEvaluations.find(ev => {
+      const val = (ev as any)[fieldCamel] ?? (ev as any)[fieldSnake];
+      if (isArray) return val && val.length > 0;
+      if (isObject) return val && Object.keys(val).length > 0;
+      return val != null && val !== '';
+    });
+
+    return found ? ((found as any)[fieldCamel] ?? (found as any)[fieldSnake]) : null;
+  }, [evaluation, allEvaluations]);
+
   const exerciseItems = plansData?.data?.[0]?.items ?? [];
   const isLoading = evalLoading || patientLoading;
   const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -57,43 +73,86 @@ export function ReportGeneration() {
       spo2: evaluation?.spo2,
       temperature: evaluation?.temperature,
       ef: evaluation?.ef,
-      painLevel: evaluation?.painLevel,
+      painLevel: evaluation?.painLevel ?? (evaluation as any)?.pain_level,
     };
     
     const metrics = ['bp', 'pr', 'spo2', 'temperature', 'ef', 'painLevel'] as const;
     for (const m of metrics) {
       if (v[m] == null || v[m] === '') {
-        const found = allEvaluations.find(ev => ev[m] != null && ev[m] !== '');
-        if (found) v[m] = found[m];
+        const found = allEvaluations.find(ev => {
+          const val = ev[m] !== undefined ? ev[m] : (m === 'painLevel' ? (ev as any).pain_level : undefined);
+          return val != null && val !== '';
+        });
+        if (found) {
+          v[m] = found[m] !== undefined ? found[m] : (m === 'painLevel' ? (found as any).pain_level : undefined);
+        }
       }
     }
     return v;
   }, [evaluation, allEvaluations]);
 
-  const mergedChiefComplaints = evaluation?.chiefComplaints || allEvaluations.find(ev => ev.chiefComplaints)?.chiefComplaints;
-  const mergedDiagnosis = evaluation?.diagnosis || allEvaluations.find(ev => ev.diagnosis)?.diagnosis;
-  const mergedDiagnosisList = evaluation?.diagnosisList || allEvaluations.find(ev => ev.diagnosisList && ev.diagnosisList.length > 0)?.diagnosisList;
-  const mergedPlan = evaluation?.plan || allEvaluations.find(ev => ev.plan)?.plan;
-  const mergedTreatmentPlan = (evaluation?.treatmentPlan as any) || allEvaluations.find(ev => ev.treatmentPlan && Object.keys(ev.treatmentPlan as any).length > 0)?.treatmentPlan;
+  const mergedChiefComplaints = useMemo(() => getMergedField('chiefComplaints', 'chief_complaints'), [getMergedField]);
+  const mergedDiagnosis = useMemo(() => getMergedField('diagnosis', 'diagnosis'), [getMergedField]);
+  const mergedDiagnosisList = useMemo(() => getMergedField('diagnosisList', 'diagnosis_list', true), [getMergedField]);
+  const mergedPlan = useMemo(() => getMergedField('plan', 'plan'), [getMergedField]);
+  const mergedTreatmentPlan = useMemo(() => getMergedField('treatmentPlan', 'treatment_plan', false, true), [getMergedField]);
 
   const mergedMedicalHistory = useMemo(() => {
     const history = new Set<string>();
     allEvaluations.forEach(ev => {
-      if (ev.medicalHistory) ev.medicalHistory.forEach(h => history.add(h));
+      const h = (ev as any).medicalHistory || (ev as any).medical_history;
+      if (h && Array.isArray(h)) h.forEach(item => history.add(item));
     });
     return Array.from(history);
   }, [allEvaluations]);
 
+  const mergedAssociatedSymptoms = useMemo(() => {
+    const symptoms = new Set<string>();
+    allEvaluations.forEach(ev => {
+      const s = (ev as any).associatedSymptoms || (ev as any).associated_symptoms;
+      if (s && Array.isArray(s)) {
+        s.filter((item: string) => !item.startsWith('Visit Type:')).forEach(item => symptoms.add(item));
+      }
+    });
+    return Array.from(symptoms);
+  }, [allEvaluations]);
+
+  const mergedAssociatedPains = useMemo(() => {
+    const pains = new Set<string>();
+    allEvaluations.forEach(ev => {
+      const p = (ev as any).associatedPains || (ev as any).associated_pains;
+      if (p && Array.isArray(p)) {
+        p.forEach(item => pains.add(item));
+      }
+    });
+    return Array.from(pains);
+  }, [allEvaluations]);
+
   const mergedClinicalExamination = useMemo(() => {
     const ce: Record<string, any> = { tests: {}, imaging: {}, examinationNotes: '' };
-    const evTests = allEvaluations.find(e => e.clinicalExamination?.tests && Object.keys(e.clinicalExamination.tests).length > 0);
-    if (evTests?.clinicalExamination?.tests) ce.tests = evTests.clinicalExamination.tests;
     
-    const evImaging = allEvaluations.find(e => e.clinicalExamination?.imaging && Object.keys(e.clinicalExamination.imaging).length > 0);
-    if (evImaging?.clinicalExamination?.imaging) ce.imaging = evImaging.clinicalExamination.imaging;
+    const evTests = allEvaluations.find(e => {
+      const field = e.clinicalExamination || (e as any).clinical_examination;
+      return field?.tests && Object.keys(field.tests).length > 0;
+    });
+    const fieldTests = evTests ? (evTests.clinicalExamination || (evTests as any).clinical_examination) : null;
+    if (fieldTests?.tests) ce.tests = fieldTests.tests;
     
-    const evNotes = allEvaluations.find(e => e.clinicalExamination?.examinationNotes);
-    if (evNotes?.clinicalExamination?.examinationNotes) ce.examinationNotes = evNotes.clinicalExamination.examinationNotes;
+    const evImaging = allEvaluations.find(e => {
+      const field = e.clinicalExamination || (e as any).clinical_examination;
+      return field?.imaging && Object.keys(field.imaging).length > 0;
+    });
+    const fieldImaging = evImaging ? (evImaging.clinicalExamination || (evImaging as any).clinical_examination) : null;
+    if (fieldImaging?.imaging) ce.imaging = fieldImaging.imaging;
+    
+    const evNotes = allEvaluations.find(e => {
+      const field = e.clinicalExamination || (e as any).clinical_examination;
+      return field?.examinationNotes || field?.examination_notes;
+    });
+    const fieldNotes = evNotes ? (evNotes.clinicalExamination || (evNotes as any).clinical_examination) : null;
+    if (fieldNotes) {
+      ce.examinationNotes = fieldNotes.examinationNotes || fieldNotes.examination_notes;
+    }
     
     return ce;
   }, [allEvaluations]);
@@ -125,9 +184,8 @@ export function ReportGeneration() {
   };
 
   const mergedMusclePowerRom = useMemo(() => {
-    const ev = allEvaluations.find(e => e.musclePowerRom && Object.keys(e.musclePowerRom).length > 0);
-    return ev?.musclePowerRom || null;
-  }, [allEvaluations]);
+    return getMergedField('musclePowerRom', 'muscle_power_rom', false, true);
+  }, [getMergedField]);
 
   const romTableRows = useMemo(() => {
     if (!mergedMusclePowerRom) return [];
@@ -135,8 +193,9 @@ export function ReportGeneration() {
     ROM_CONFIG.forEach((section) => {
       section.joints.forEach((joint) => {
         joint.movements.forEach((movement) => {
-          const key = getRomKey(joint.label, movement);
-          const entry = mergedMusclePowerRom[key] as any;
+          const key1 = `${joint.label}_${movement}`.replace(/\s+/g, '_');
+          const key2 = getRomKey(joint.label, movement);
+          const entry = (mergedMusclePowerRom[key1] || mergedMusclePowerRom[key2]) as any;
           if (entry && (entry.powerRt || entry.powerLt || entry.romRt || entry.romLt)) {
             rows.push({
               joint: joint.label,
@@ -533,6 +592,42 @@ export function ReportGeneration() {
                 </section>
               )}
 
+              {/* Associated Symptoms & Pains */}
+              {(mergedAssociatedSymptoms.length > 0 || mergedAssociatedPains.length > 0) && (
+                <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <Activity size={16} className="text-[#3B3E66] dark:text-slate-350" />
+                    <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Associated Symptoms & Pains</span>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    {mergedAssociatedSymptoms.length > 0 && (
+                      <div>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-1.5">Symptoms</span>
+                        <div className="flex flex-wrap gap-2">
+                          {mergedAssociatedSymptoms.map((s) => (
+                            <span key={s} className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[12px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-150 dark:border-slate-700 shadow-sm">
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {mergedAssociatedPains.length > 0 && (
+                      <div>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-1.5">Pain Areas</span>
+                        <div className="flex flex-wrap gap-2">
+                          {mergedAssociatedPains.map((p) => (
+                            <span key={p} className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[12px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-150 dark:border-slate-700 shadow-sm">
+                              {p}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
               {/* Clinical Examination */}
               {((mergedClinicalExamination.tests && Object.keys(mergedClinicalExamination.tests).length > 0) || 
                 (mergedClinicalExamination.imaging && Object.keys(mergedClinicalExamination.imaging).length > 0) || 
@@ -830,10 +925,10 @@ export function ReportGeneration() {
                 <div>
                   <div className="mb-2 h-10 border-b border-[#17252A] dark:border-slate-600 w-[120px]">
                     <span className="text-[20px] italic font-bold text-[#17252A] dark:text-slate-300 font-serif">
-                      {evaluation.createdBy?.name?.split(' ').map(n => n[0]).join('. ') ?? ''}
+                      {evaluation.createdBy?.role === 'doctor' ? (evaluation.createdBy?.name?.split(' ').map(n => n[0]).join('. ') ?? '') : 'S. Kumar'}
                     </span>
                   </div>
-                  <p className="text-[12px] font-bold text-[#17252A] dark:text-white">{evaluation.createdBy?.name ?? '—'}</p>
+                  <p className="text-[12px] font-bold text-[#17252A] dark:text-white">{evaluation.createdBy?.role === 'doctor' ? (evaluation.createdBy?.name ?? '—') : 'Dr. Satish Kumar'}</p>
                   <p style={{ fontSize: '11px', color: '#262842', marginTop: '2px' }}>SAAI Physiotherapy</p>
                 </div>
                 <div className="text-right">

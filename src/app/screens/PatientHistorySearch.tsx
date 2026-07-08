@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { usePatients, usePatient } from '../../hooks/usePatients';
 import { ROM_CONFIG, getRomKey } from './assessment/clinicalConfig';
+import { EvaluationSummaryReport } from '../components/EvaluationSummaryReport';
 import api from '../../services/api';
 import { ENDPOINTS } from '../../services/endpoints';
 import {
@@ -487,48 +488,8 @@ export function PatientHistorySearch() {
                                 </div>
                               </div>
 
-                              {/* Chief Complaint, Examination and ROM details */}
-                              <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-4 text-xs">
-                                <h5 className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-2 flex items-center gap-2">
-                                  <Stethoscope size={14} className="text-blue-500" /> Assessment Details
-                                </h5>
-
-                                {item.chiefComplaints && (
-                                  <div>
-                                    <span className="text-[10px] text-slate-455 uppercase block font-bold mb-1">Chief Complaints</span>
-                                    <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-700 dark:text-slate-305 leading-relaxed font-medium">
-                                      {item.chiefComplaints}
-                                    </p>
-                                  </div>
-                                )}
-
-                                {item.diagnosis && (
-                                  <div>
-                                    <span className="text-[10px] text-slate-455 uppercase block font-bold mb-1">Diagnosis Notes / Findings</span>
-                                    <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-700 dark:text-slate-305 leading-relaxed font-medium">
-                                      {item.diagnosis}
-                                    </p>
-                                  </div>
-                                )}
-
-                                {item.plan && (
-                                  <div>
-                                    <span className="text-[10px] text-slate-455 uppercase block font-bold mb-1">Treatment Plan Prescribed</span>
-                                    <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-700 dark:text-slate-305 leading-relaxed font-medium">
-                                      {item.plan}
-                                    </p>
-                                  </div>
-                                )}
-
-                                {item.followUpPlan && (
-                                  <div>
-                                    <span className="text-[10px] text-slate-455 uppercase block font-bold mb-1">Follow-up Details</span>
-                                    <p className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 text-slate-700 dark:text-slate-305 leading-relaxed font-medium">
-                                      {item.followUpPlan}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
+                              {/* Reusable Clinical Report Blocks */}
+                              <EvaluationSummaryReport evaluation={item} isDoctorRole={item.doctor_role === 'doctor'} />
 
                               {/* Billing Info */}
                               {item.billAmount !== null && (

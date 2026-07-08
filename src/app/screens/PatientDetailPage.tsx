@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import { PatientHistoryUpload } from '../components/PatientHistoryUpload';
+import { EvaluationSummaryReport } from '../components/EvaluationSummaryReport';
 import { usePatient, useAssignTherapist } from '../../hooks/usePatients';
 import { useAuth } from '../contexts/AuthContext';
 import { SearchDropdown } from '../components/SearchDropdown';
@@ -764,27 +765,13 @@ export function PatientDetailPage() {
                   </div>
                 </div>
 
-                {/* 3. Clinical Examinations & Findings */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
-                  <h3 className="text-[15px] font-black text-slate-900 dark:text-white border-b pb-2 mb-4 uppercase tracking-wider flex items-center gap-2">
-                    <Stethoscope size={16} className="text-indigo-500" />
-                    Clinical Findings & Examinations
-                  </h3>
-                  <div className="flex flex-col gap-4">
-                    {[
-                      { l: 'Physical Findings / Symptoms', v: reportData.evaluations[0]?.management },
-                      { l: 'Range of Motion & Muscle Power', v: reportData.evaluations[0]?.musclePowerRom ? JSON.stringify(reportData.evaluations[0].musclePowerRom, null, 2) : undefined },
-                      { l: 'Mental Status Examination', v: reportData.evaluations[0]?.mentalStatusExamination },
-                      { l: 'Clinical Findings', v: reportData.evaluations[0]?.clinicalFindings },
-                      { l: 'Diagnosis Notes', v: reportData.evaluations[0]?.diagnosis },
-                    ].map(item => (
-                      <div key={item.l} className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
-                        <span className="block text-[10px] text-slate-500 font-bold uppercase">{item.l}</span>
-                        <span className="text-[13px] text-slate-800 dark:text-slate-200 font-semibold mt-1 block whitespace-pre-wrap">{item.v || '—'}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {/* 3. Clinical Findings, Examinations, ROM & Details */}
+                {reportData.evaluations[0] && (
+                  <EvaluationSummaryReport 
+                    evaluation={reportData.evaluations[0]} 
+                    isDoctorRole={reportData.evaluations[0]?.doctor_role === 'doctor'} 
+                  />
+                )}
 
                 {/* 4. Home Exercise Programs */}
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
@@ -914,26 +901,6 @@ export function PatientDetailPage() {
                     <span>Total Prescribed Sessions: {reportData.appointmentsCount.total}</span>
                     <span>Completed Attendance: {reportData.appointmentsCount.completed}</span>
                     <span>Total Billing: ₹{reportData.billingSummary.totalBilled}</span>
-                  </div>
-                </div>
-
-                {/* 7. Clinical Remarks */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E8E9F1] dark:border-slate-800 shadow-sm">
-                  <h3 className="text-[15px] font-black text-slate-900 dark:text-white border-b pb-2 mb-4 uppercase tracking-wider flex items-center gap-2">
-                    <StickyNote size={16} className="text-[#3B3E66] dark:text-teal-400" />
-                    Clinician Remarks & Summary
-                  </h3>
-                  <div className="flex flex-col gap-4">
-                    {[
-                      { l: 'Doctor Remarks', v: reportData.evaluations[0]?.doctorRemarks || reportData.evaluations[0]?.doctor_remarks },
-                      { l: 'Therapist Remarks', v: reportData.evaluations[0]?.therapistRemarks || reportData.evaluations[0]?.therapist_remarks },
-                      { l: 'Final Clinical Summary', v: reportData.evaluations[0]?.finalClinicalSummary || reportData.evaluations[0]?.final_clinical_summary },
-                    ].map(remarks => (
-                      <div key={remarks.l} className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
-                        <span className="block text-[10px] text-slate-500 font-bold uppercase">{remarks.l}</span>
-                        <span className="text-[13px] text-slate-800 dark:text-slate-200 font-semibold mt-1 block whitespace-pre-wrap">{remarks.v || '—'}</span>
-                      </div>
-                    ))}
                   </div>
                 </div>
 
