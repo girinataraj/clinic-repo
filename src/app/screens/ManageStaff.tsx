@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import api from '../../services/api';
@@ -16,6 +17,8 @@ import {
   CheckCircle,
   Copy,
   Users,
+  Trash2,
+  X,
 } from 'lucide-react';
 
 interface StaffUser {
@@ -28,6 +31,7 @@ interface StaffUser {
 
 export function ManageStaff() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const [staffList, setStaffList] = useState<StaffUser[]>([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -44,6 +48,25 @@ export function ManageStaff() {
   });
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [deleteStaffId, setDeleteStaffId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteStaff = async (id: string) => {
+    setDeleting(true);
+    setError(null);
+    try {
+      await api.delete(`/staff/${id}`);
+      setDeleteStaffId(null);
+      fetchStaff();
+      queryClient.invalidateQueries({ queryKey: ['staff-users'] });
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    } catch (err: any) {
+      setError(err?.response?.data?.message ?? 'Failed to delete staff member.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
 
   const fetchStaff = async () => {
     setLoadingList(true);
@@ -90,6 +113,7 @@ export function ManageStaff() {
         role: 'therapist',
       });
       fetchStaff();
+      queryClient.invalidateQueries({ queryKey: ['staff-users'] });
       // Keep form open but show success block
     } catch (err: any) {
       setError(err?.response?.data?.message ?? 'Failed to create staff member.');
@@ -121,27 +145,29 @@ export function ManageStaff() {
       {/* Header */}
       <div className="px-5 pb-5 shrink-0 relative overflow-hidden pt-7 bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-[0_4px_24px_rgba(38,40,66,0.15)] dark:shadow-none">
         <div className="absolute -right-16 -top-16 rounded-full opacity-10 w-[200px] h-[200px] bg-white pointer-events-none" />
-        <div className="flex items-center gap-3 mb-4 relative z-10">
+        <div className="flex items-center gap-3 mb-4 relative z-10 flex-wrap">
           <button
             onClick={() => navigate('/doctor')}
-            className="flex items-center justify-center rounded-xl w-9 h-9 bg-white/15 hover:bg-white/20 transition-colors"
+            className="flex items-center justify-center rounded-xl w-9 h-9 bg-white/15 hover:bg-white/20 transition-colors shrink-0"
           >
             <ArrowLeft size={18} className="text-white" />
           </button>
-          <div className="flex-1">
+          <div className="flex-1 min-w-[150px]">
             <h1 className="text-[19px] font-extrabold text-white tracking-[-0.5px]">Manage Staff</h1>
             <p className="text-[11px] text-white/70">Create accounts and manage credentials</p>
           </div>
-          <button
-            onClick={() => {
-              setShowAddForm(!showAddForm);
-              setSuccessData(null);
-              setError(null);
-            }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/20 text-white border border-white/30 hover:bg-white/30 transition-colors"
-          >
-            <Plus size={14} /> Add Staff Account
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => {
+                setShowAddForm(!showAddForm);
+                setSuccessData(null);
+                setError(null);
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/20 text-white border border-white/30 hover:bg-white/30 transition-colors"
+            >
+              <Plus size={14} /> Add Staff Account
+            </button>
+          </div>
         </div>
       </div>
 
@@ -332,6 +358,15 @@ export function ManageStaff() {
                     <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${getRoleBadge(item.role)}`}>
                       {item.role}
                     </span>
+                    {item.role !== 'doctor' && (
+                      <button
+                        onClick={() => setDeleteStaffId(item.id)}
+                        className="p-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors border border-rose-100 dark:border-rose-900/50"
+                        title="Delete Staff"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -339,6 +374,45 @@ export function ManageStaff() {
           )}
         </div>
       </div>
+
+      {/* Staff Delete Confirmation Modal */}
+      {deleteStaffId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-3xl p-5 bg-white dark:bg-slate-800 shadow-[0_24px_64px_rgba(0,0,0,0.15)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)] border dark:border-slate-700">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[15px] font-extrabold text-[#17252A] dark:text-white">Delete Staff Account</h3>
+              <button onClick={() => { setDeleteStaffId(null); setError(null); }} className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><X size={16} className="text-slate-500 dark:text-slate-400" /></button>
+            </div>
+            <p className="text-[12px] text-slate-600 dark:text-slate-300 mb-4">
+              Are you sure you want to delete staff member <strong>{staffList.find(s => s.id === deleteStaffId)?.name}</strong>?
+              <br /><br />
+              This will disable their account immediately. Any active patients assigned to this therapist will become **Unassigned** so they can be reassigned to other therapists.
+            </p>
+            {error && (
+              <div className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-xl mb-4 text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                <AlertTriangle size={14} className="shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => { setDeleteStaffId(null); setError(null); }}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-[#E8E9F1] dark:bg-slate-700 text-[#262842] dark:text-white hover:opacity-90"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteStaff(deleteStaffId)}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50"
+              >
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <BottomNav role="doctor" />
     </div>
   );

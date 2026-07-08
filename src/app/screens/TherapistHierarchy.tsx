@@ -1,13 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
+import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
-import { useStaffUsers, useCreateStaffUser } from '../../hooks/useStaff';
+import { useStaffUsers, useCreateStaffUser, useDeleteStaffUser } from '../../hooks/useStaff';
 import { usePatients, useUpdatePatient, useAssignTherapist } from '../../hooks/usePatients';
 import type { Patient } from '../../types';
 import {
   ArrowLeft, ChevronDown, ChevronRight, Users, User, Search,
   Activity, Loader2, AlertTriangle, UserCog, RefreshCw, Plus,
-  Mail, Lock, Eye, EyeOff, CheckCircle, X, ExternalLink,
+  Mail, Lock, Eye, EyeOff, CheckCircle, X, ExternalLink, Trash2,
 } from 'lucide-react';
 
 // The limit of 2 is only for slot booking, not for assignment.
@@ -24,6 +25,7 @@ interface TherapistNode {
 
 export function TherapistHierarchy() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [expandedTherapist, setExpandedTherapist] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
@@ -228,10 +230,10 @@ export function TherapistHierarchy() {
                           View Profile →
                         </span>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 shrink-0">
                         {node.activeCount} active
                       </span>
-                      {isExpanded ? <ChevronDown size={16} className="text-[#3B3E66] dark:text-slate-400" /> : <ChevronRight size={16} className="text-[#262842] dark:text-slate-400" />}
+                      {isExpanded ? <ChevronDown size={16} className="text-[#3B3E66] dark:text-slate-400 shrink-0" /> : <ChevronRight size={16} className="text-[#262842] dark:text-slate-400 shrink-0" />}
                     </button>
                   </div>
 
@@ -291,6 +293,7 @@ export function TherapistHierarchy() {
                 ))}
               </div>
             )}
+
           </div>
         )}
       </div>
@@ -410,9 +413,12 @@ export function TherapistHierarchy() {
         </div>
       )}
 
+
+
       <div className="md:hidden border-t border-[#E8E9F1] dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role="doctor" />
       </div>
     </div>
   );
 }
+

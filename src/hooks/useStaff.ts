@@ -46,3 +46,19 @@ export function useCreateStaffUser() {
     },
   });
 }
+
+/** Delete a staff user (therapist/receptionist). */
+export function useDeleteStaffUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.delete<ApiEnvelope<any>>(`/staff/${id}`);
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff-users'] });
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+  });
+}
+

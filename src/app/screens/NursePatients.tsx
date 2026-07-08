@@ -45,14 +45,18 @@ export function NursePatients() {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('');
+  const [daysFilter, setDaysFilter] = useState<string>('all');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-
-
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
+    priority: priorityFilter !== 'all' ? priorityFilter : undefined,
+    date: dateFilter || undefined,
+    days: daysFilter !== 'all' ? daysFilter : undefined,
     limit: 50,
   });
 
@@ -170,6 +174,50 @@ export function NursePatients() {
                       {item.label}
                     </button>
                   ))}
+                </div>
+
+                <div className="flex flex-wrap gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Priority:</span>
+                    <select
+                      value={priorityFilter}
+                      onChange={(e) => setPriorityFilter(e.target.value)}
+                      className="rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+                    >
+                      <option value="all">All Priorities</option>
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Date:</span>
+                    <input
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => {
+                        setDateFilter(e.target.value);
+                        if (e.target.value) setDaysFilter('all');
+                      }}
+                      className="rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Days:</span>
+                    <select
+                      value={daysFilter}
+                      onChange={(e) => {
+                        setDaysFilter(e.target.value);
+                        if (e.target.value !== 'all') setDateFilter('');
+                      }}
+                      className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+                    >
+                      <option value="all">Any Day</option>
+                      <option value="1">Today</option>
+                      <option value="3">Next 3 Days</option>
+                      <option value="7">Next 7 Days</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 

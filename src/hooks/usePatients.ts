@@ -9,6 +9,8 @@ export interface PatientsFilter {
   search?: string;
   bookedOnly?: 'true' | 'false';
   therapistId?: string;
+  date?: string;
+  days?: string;
   page?: number;
   limit?: number;
   sort?: string;
@@ -139,6 +141,23 @@ export function useUpdatePatient() {
     },
   });
 }
+
+/** Delete a patient record (doctor/admin). */
+export function useDeletePatient() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.delete<{ success: boolean; data: any }>(
+        ENDPOINTS.PATIENTS.DETAIL(id)
+      );
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+  });
+}
+
 
 /** Assign a therapist to a patient (doctor/admin). */
 export function useAssignTherapist() {
