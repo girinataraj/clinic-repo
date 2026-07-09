@@ -59,6 +59,9 @@ export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handl
             <UserCog size={14} className="text-slate-400 shrink-0" />
             <select value={selectedTherapistId} onChange={(e: any) => { setSelectedTherapistId(e.target.value); if (resolvedPatientId && e.target.value) updatePatientMutation.mutate({ id: resolvedPatientId, therapistId: e.target.value }); }} className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white appearance-none cursor-pointer">
               <option value="">Select therapist…</option>
+              {user?.role === 'doctor' && (
+                <option value={user.id}>Self (Doctor)</option>
+              )}
               {therapistsList.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
             <ChevronDown size={12} className="text-slate-400 shrink-0" />
