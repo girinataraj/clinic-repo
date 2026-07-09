@@ -106,7 +106,13 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
     return hasTests || hasImaging || hasNotes;
   }, [clinicalExamination]);
 
-  const therapistName = evaluation.therapistName || evaluation.doctor_name || evaluation.createdBy?.name || '—';
+  let therapistName = evaluation.therapistName || evaluation.doctor_name || evaluation.createdBy?.name || '—';
+  if (therapistName.toLowerCase().includes('self')) {
+    therapistName = evaluation.doctor_name || evaluation.createdBy?.name || '—';
+    if (therapistName.toLowerCase().includes('self') || therapistName === '—') {
+      therapistName = 'Clinic Physiotherapist';
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6 w-full text-left">
@@ -132,6 +138,48 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
           )}
         </div>
       </section>
+
+      {/* Vital Signs */}
+      {(bp || pr || spo2 || temp || ef) && (
+        <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <Heart size={16} className="text-rose-500" />
+            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Vital Signs</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-semibold">
+            {bp && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm text-center">
+                <span className="text-[10px] text-slate-400 block mb-1 font-bold">Blood Pressure</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{bp}</span>
+              </div>
+            )}
+            {pr && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm text-center">
+                <span className="text-[10px] text-slate-400 block mb-1 font-bold">Pulse Rate</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{pr} bpm</span>
+              </div>
+            )}
+            {spo2 && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm text-center">
+                <span className="text-[10px] text-slate-400 block mb-1 font-bold">SpO₂</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{spo2}%</span>
+              </div>
+            )}
+            {temp && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm text-center">
+                <span className="text-[10px] text-slate-400 block mb-1 font-bold">Temperature</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{temp}°F</span>
+              </div>
+            )}
+            {ef && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm text-center">
+                <span className="text-[10px] text-slate-400 block mb-1 font-bold">Ejection Fraction</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{ef}%</span>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Chief Complaints & Pain Level */}
       {(chiefComplaints || (painLevel !== undefined && painLevel !== null)) && (
@@ -191,6 +239,23 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
                 </div>
               </div>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* Medical History */}
+      {medicalHistory && medicalHistory.length > 0 && (
+        <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <ClipboardList size={16} className={accentColor} />
+            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Medical History</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {medicalHistory.map((h: string) => (
+              <span key={h} className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[12px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-155 dark:border-slate-700 shadow-sm">
+                {h}
+              </span>
+            ))}
           </div>
         </section>
       )}
@@ -409,7 +474,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
       )}
 
       {/* Clinician Remarks & Summary */}
-      {(doctorRemarks || therapistRemarks || finalClinicalSummary) && (
+      {(clinicalFindings || therapyNotes || progressNotes || doctorRemarks || therapistRemarks || finalClinicalSummary) && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <StickyNote size={16} className={accentColor} />
@@ -417,6 +482,9 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
           </div>
           <div className="flex flex-col gap-3">
             {[
+              { label: 'Clinical Findings', value: clinicalFindings },
+              { label: 'Therapy Session Notes', value: therapyNotes },
+              { label: 'Progression Track Notes', value: progressNotes },
               { label: 'Doctor Remarks', value: doctorRemarks },
               { label: 'Therapist Remarks', value: therapistRemarks },
               { label: 'Final Clinical Summary', value: finalClinicalSummary }

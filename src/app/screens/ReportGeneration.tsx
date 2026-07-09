@@ -50,24 +50,16 @@ export function ReportGeneration() {
     if (isArray && currVal && currVal.length > 0) return currVal;
     if (isObject && currVal && Object.keys(currVal).length > 0) return currVal;
     if (!isArray && !isObject && currVal != null && currVal !== '') return currVal;
-
-    const found = allEvaluations.find(ev => {
-      const val = (ev as any)[fieldCamel] ?? (ev as any)[fieldSnake];
-      if (isArray) return val && val.length > 0;
-      if (isObject) return val && Object.keys(val).length > 0;
-      return val != null && val !== '';
-    });
-
-    return found ? ((found as any)[fieldCamel] ?? (found as any)[fieldSnake]) : null;
-  }, [evaluation, allEvaluations]);
+    return null;
+  }, [evaluation]);
 
   const exerciseItems = plansData?.data?.[0]?.items ?? [];
   const isLoading = evalLoading || patientLoading;
   const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  // ── Merged Data Logic ───────────────────────────────────────────────────
+  // ── Current Data Selection (No history merging) ─────────────────────────
   const mergedVitals = useMemo(() => {
-    const v: Record<string, any> = {
+    return {
       bp: evaluation?.bp,
       pr: evaluation?.pr,
       spo2: evaluation?.spo2,
@@ -75,21 +67,7 @@ export function ReportGeneration() {
       ef: evaluation?.ef,
       painLevel: evaluation?.painLevel ?? (evaluation as any)?.pain_level,
     };
-    
-    const metrics = ['bp', 'pr', 'spo2', 'temperature', 'ef', 'painLevel'] as const;
-    for (const m of metrics) {
-      if (v[m] == null || v[m] === '') {
-        const found = allEvaluations.find(ev => {
-          const val = ev[m] !== undefined ? ev[m] : (m === 'painLevel' ? (ev as any).pain_level : undefined);
-          return val != null && val !== '';
-        });
-        if (found) {
-          v[m] = found[m] !== undefined ? found[m] : (m === 'painLevel' ? (found as any).pain_level : undefined);
-        }
-      }
-    }
-    return v;
-  }, [evaluation, allEvaluations]);
+  }, [evaluation]);
 
   const mergedChiefComplaints = useMemo(() => getMergedField('chiefComplaints', 'chief_complaints'), [getMergedField]);
   const mergedDiagnosis = useMemo(() => getMergedField('diagnosis', 'diagnosis'), [getMergedField]);
@@ -98,64 +76,28 @@ export function ReportGeneration() {
   const mergedTreatmentPlan = useMemo(() => getMergedField('treatmentPlan', 'treatment_plan', false, true), [getMergedField]);
 
   const mergedMedicalHistory = useMemo(() => {
-    const history = new Set<string>();
-    allEvaluations.forEach(ev => {
-      const h = (ev as any).medicalHistory || (ev as any).medical_history;
-      if (h && Array.isArray(h)) h.forEach(item => history.add(item));
-    });
-    return Array.from(history);
-  }, [allEvaluations]);
+    const h = evaluation ? ((evaluation as any).medicalHistory || (evaluation as any).medical_history) : null;
+    return Array.isArray(h) ? h : [];
+  }, [evaluation]);
 
   const mergedAssociatedSymptoms = useMemo(() => {
-    const symptoms = new Set<string>();
-    allEvaluations.forEach(ev => {
-      const s = (ev as any).associatedSymptoms || (ev as any).associated_symptoms;
-      if (s && Array.isArray(s)) {
-        s.filter((item: string) => !item.startsWith('Visit Type:')).forEach(item => symptoms.add(item));
-      }
-    });
-    return Array.from(symptoms);
-  }, [allEvaluations]);
+    const s = evaluation ? ((evaluation as any).associatedSymptoms || (evaluation as any).associated_symptoms) : null;
+    return Array.isArray(s) ? s.filter((item: string) => !item.startsWith('Visit Type:')) : [];
+  }, [evaluation]);
 
   const mergedAssociatedPains = useMemo(() => {
-    const pains = new Set<string>();
-    allEvaluations.forEach(ev => {
-      const p = (ev as any).associatedPains || (ev as any).associated_pains;
-      if (p && Array.isArray(p)) {
-        p.forEach(item => pains.add(item));
-      }
-    });
-    return Array.from(pains);
-  }, [allEvaluations]);
+    const p = evaluation ? ((evaluation as any).associatedPains || (evaluation as any).associated_pains) : null;
+    return Array.isArray(p) ? p : [];
+  }, [evaluation]);
 
   const mergedClinicalExamination = useMemo(() => {
-    const ce: Record<string, any> = { tests: {}, imaging: {}, examinationNotes: '' };
-    
-    const evTests = allEvaluations.find(e => {
-      const field = e.clinicalExamination || (e as any).clinical_examination;
-      return field?.tests && Object.keys(field.tests).length > 0;
-    });
-    const fieldTests = evTests ? (evTests.clinicalExamination || (evTests as any).clinical_examination) : null;
-    if (fieldTests?.tests) ce.tests = fieldTests.tests;
-    
-    const evImaging = allEvaluations.find(e => {
-      const field = e.clinicalExamination || (e as any).clinical_examination;
-      return field?.imaging && Object.keys(field.imaging).length > 0;
-    });
-    const fieldImaging = evImaging ? (evImaging.clinicalExamination || (evImaging as any).clinical_examination) : null;
-    if (fieldImaging?.imaging) ce.imaging = fieldImaging.imaging;
-    
-    const evNotes = allEvaluations.find(e => {
-      const field = e.clinicalExamination || (e as any).clinical_examination;
-      return field?.examinationNotes || field?.examination_notes;
-    });
-    const fieldNotes = evNotes ? (evNotes.clinicalExamination || (evNotes as any).clinical_examination) : null;
-    if (fieldNotes) {
-      ce.examinationNotes = fieldNotes.examinationNotes || fieldNotes.examination_notes;
-    }
-    
-    return ce;
-  }, [allEvaluations]);
+    const ce = evaluation ? (evaluation.clinicalExamination || (evaluation as any).clinical_examination) : null;
+    return {
+      tests: ce?.tests || {},
+      imaging: ce?.imaging || {},
+      examinationNotes: ce?.examinationNotes || ce?.examination_notes || ''
+    };
+  }, [evaluation]);
 
   const ROM_CONFIG = useMemo(() => [
     {
@@ -213,29 +155,27 @@ export function ReportGeneration() {
   }, [mergedMusclePowerRom, ROM_CONFIG]);
 
   const mergedAnthropometrics = useMemo(() => {
-    const ev = allEvaluations.find(e => e.anthropometrics && Object.keys(e.anthropometrics).length > 0);
-    return ev?.anthropometrics || null;
-  }, [allEvaluations]);
+    return evaluation?.anthropometrics || null;
+  }, [evaluation]);
 
   const mergedFunctionalScores = useMemo(() => {
-    const ev = allEvaluations.find(e => e.functionalScores && Object.keys(e.functionalScores).length > 0);
-    if (!ev?.functionalScores) return [] as Array<{ key: string; value: number }>;
-    return Object.entries(ev.functionalScores)
+    if (!evaluation?.functionalScores) return [] as Array<{ key: string; value: number }>;
+    return Object.entries(evaluation.functionalScores)
       .map(([key, value]) => {
         const numeric = typeof value === 'number' ? value : Number(value);
         return { key, value: numeric };
       })
       .filter(entry => Number.isFinite(entry.value));
-  }, [allEvaluations]);
+  }, [evaluation]);
 
   const mergedPatientInfo = useMemo(() => {
     return {
-      referredBy: evaluation?.referredBy || allEvaluations.find(ev => ev.referredBy)?.referredBy || 'Self',
-      visitType: evaluation?.visitType || allEvaluations.find(ev => ev.visitType)?.visitType || 'Clinic',
-      paymentMode: evaluation?.paymentMode || allEvaluations.find(ev => ev.paymentMode)?.paymentMode || '—',
-      billAmount: evaluation?.billAmount != null ? evaluation.billAmount : (allEvaluations.find(ev => ev.billAmount != null)?.billAmount ?? '—'),
+      referredBy: evaluation?.referredBy || 'Self',
+      visitType: evaluation?.visitType || 'Clinic',
+      paymentMode: evaluation?.paymentMode || '—',
+      billAmount: evaluation?.billAmount != null ? evaluation.billAmount : '—',
     };
-  }, [evaluation, allEvaluations]);
+  }, [evaluation]);
 
   // ── PDF download via blob ─────────────────────────────────────────────────
   const handleDownloadPdf = async () => {
