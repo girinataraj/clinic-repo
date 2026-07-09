@@ -1,14 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { useStaffUsers, useCreateStaffUser, useDeleteStaffUser } from '../../hooks/useStaff';
 import { usePatients, useUpdatePatient, useAssignTherapist } from '../../hooks/usePatients';
+import { useDebounce } from '../../hooks/useDebounce';
 import type { Patient } from '../../types';
 import {
   ArrowLeft, ChevronDown, ChevronRight, Users, User, Search,
   Activity, Loader2, AlertTriangle, UserCog, RefreshCw, Plus,
   Mail, Lock, Eye, EyeOff, CheckCircle, X, ExternalLink, Trash2,
+  Filter,
 } from 'lucide-react';
 
 // The limit of 2 is only for slot booking, not for assignment.
@@ -27,7 +29,20 @@ export function TherapistHierarchy() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [expandedTherapist, setExpandedTherapist] = useState<string | null>(null);
+  
+  // Search state (remains inline)
   const [search, setSearch] = useState('');
+
+  // Filter Modal states
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [therapistFilter, setTherapistFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('');
+  const [daysFilter, setDaysFilter] = useState<string>('all');
+
+  // Temporary/Modal local edit states
+  const [tempTherapistFilter, setTempTherapistFilter] = useState<string>('all');
+  const [tempDateFilter, setTempDateFilter] = useState<string>('');
+  const [tempDaysFilter, setTempDaysFilter] = useState<string>('all');
 
   // Reassign state
   const [reassignPatient, setReassignPatient] = useState<Patient | null>(null);
@@ -42,9 +57,18 @@ export function TherapistHierarchy() {
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState(false);
 
+  // Debounced search query
+  const debouncedSearch = useDebounce(search, 300);
+
   // ── Data fetching ─────────────────────────────────────────────────────────
   const { data: therapists = [], isLoading: therapistsLoading, isError: therapistsError } = useStaffUsers({ role: 'nurse' });
-  const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = usePatients({ limit: 200 });
+  const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = usePatients({
+    search: debouncedSearch.trim() || undefined,
+    therapistId: therapistFilter !== 'all' ? therapistFilter : undefined,
+    date: dateFilter || undefined,
+    days: daysFilter !== 'all' ? daysFilter : undefined,
+    limit: 200,
+  });
   const updatePatient = useUpdatePatient();
   const createStaffUser = useCreateStaffUser();
 
@@ -114,6 +138,26 @@ export function TherapistHierarchy() {
   const totalPatients = allPatients.length;
   const totalTherapists = therapists.length;
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsFilterModalOpen(false);
+      }
+    };
+    if (isFilterModalOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFilterModalOpen]);
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsFilterModalOpen(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full font-sans bg-[#E8E9F1] dark:bg-slate-950">
       {/* ── Header ─────────────────────────────────────────────── */}
@@ -157,10 +201,29 @@ export function TherapistHierarchy() {
 
       {/* ── Content ────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
-        {/* Search */}
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl mb-4 bg-white dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none">
-          <Search size={15} className="text-[#262842] dark:text-slate-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search therapists or patients…" className="flex-1 outline-none bg-transparent text-sm text-[#17252A] dark:text-white dark:placeholder-slate-500" />
+        {/* Search & Filter */}
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-[#E8E9F1] dark:border-slate-700 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none">
+            <Search size={15} className="text-[#262842] dark:text-slate-400" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search therapists or patients…" className="flex-1 outline-none bg-transparent text-sm text-[#17252A] dark:text-white dark:placeholder-slate-500" />
+          </div>
+          <button
+            onClick={() => {
+              setTempTherapistFilter(therapistFilter);
+              setTempDateFilter(dateFilter);
+              setTempDaysFilter(daysFilter);
+              setIsFilterModalOpen(true);
+            }}
+            className={`flex items-center justify-center p-2.5 border rounded-xl hover:bg-slate-100 dark:hover:bg-slate-750 transition-all ${
+              therapistFilter !== 'all' || dateFilter !== '' || daysFilter !== 'all'
+                ? 'bg-[#3B3E66]/10 border-[#3B3E66] text-[#3B3E66] dark:text-blue-400 font-bold'
+                : 'bg-white dark:bg-slate-800 border-[#E8E9F1] dark:border-slate-700 text-slate-500 dark:text-slate-400 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none'
+            }`}
+            title="Filter Records"
+            aria-label="Filter Records"
+          >
+            <Filter className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Loading */}
@@ -418,6 +481,120 @@ export function TherapistHierarchy() {
       <div className="md:hidden border-t border-[#E8E9F1] dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role="doctor" />
       </div>
+
+      {/* Filter Modal */}
+      {isFilterModalOpen && (
+        <div
+          onClick={handleBackdropClick}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 animate-in fade-in duration-200"
+        >
+          <div
+            className="w-full max-w-sm rounded-[28px] p-6 bg-white dark:bg-slate-900 shadow-2xl border border-slate-150 dark:border-slate-800 animate-in zoom-in-95 duration-200 flex flex-col gap-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-[15px] font-extrabold text-[#262842] dark:text-white">Filter Records</h3>
+              <button
+                onClick={() => setIsFilterModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                aria-label="Close modal"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="space-y-4">
+              {/* Therapist Filter (Dropdown, Optional) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                  Therapist
+                </label>
+                <select
+                  value={tempTherapistFilter}
+                  onChange={(e) => setTempTherapistFilter(e.target.value)}
+                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-205 outline-none focus:ring-1 focus:ring-[#3B3E66]"
+                >
+                  <option value="all">All Therapists</option>
+                  <option value="unassigned">Unassigned Only</option>
+                  {therapists.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date Filter (datepicker) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={tempDateFilter}
+                  onChange={(e) => {
+                    setTempDateFilter(e.target.value);
+                    if (e.target.value) {
+                      setTempDaysFilter('all');
+                    }
+                  }}
+                  className="w-full rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-205 outline-none focus:ring-1 focus:ring-[#3B3E66]"
+                />
+              </div>
+
+              {/* Days Range Filter (Dropdown) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                  Days Range
+                </label>
+                <select
+                  value={tempDaysFilter}
+                  onChange={(e) => {
+                    setTempDaysFilter(e.target.value);
+                    if (e.target.value !== 'all') {
+                      setTempDateFilter('');
+                    }
+                  }}
+                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 text-slate-855 dark:text-slate-205 outline-none focus:ring-1 focus:ring-[#3B3E66]"
+                >
+                  <option value="all">Any Day</option>
+                  <option value="1">Today</option>
+                  <option value="3">Next 3 Days</option>
+                  <option value="7">Next 7 Days</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3 border-t border-slate-100 dark:border-slate-800 pt-4 mt-2">
+              <button
+                onClick={() => {
+                  setTherapistFilter('all');
+                  setDateFilter('');
+                  setDaysFilter('all');
+                  setIsFilterModalOpen(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-850 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all"
+              >
+                Clear Filter
+              </button>
+              <button
+                onClick={() => {
+                  setTherapistFilter(tempTherapistFilter);
+                  setDateFilter(tempDateFilter);
+                  setDaysFilter(tempDaysFilter);
+                  setIsFilterModalOpen(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-[#3B3E66] hover:bg-[#2F3152] active:scale-95 transition-all shadow-sm"
+              >
+                Apply Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { usePatients } from '../../hooks/usePatients';
+import { useDebounce } from '../../hooks/useDebounce';
+import { useStaffUsers } from '../../hooks/useStaff';
 
 import { TreatmentDetailModal } from '../../features/patients/components/TreatmentDetailModal';
 import {
@@ -20,6 +22,7 @@ import {
   ShieldCheck,
   User,
   UserPlus,
+  Filter,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -43,22 +46,37 @@ export function NursePatients() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isDesktop = useMediaQuery('(min-width: 768px)');
+  
+  // Search and status (remains inline)
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
-  const [dateFilter, setDateFilter] = useState<string>('');
-  const [daysFilter, setDaysFilter] = useState<string>('all');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+
+  // Modal open state
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  // Applied filter state (defaults: Therapist optional -> undefined, Date mandatory -> Last 1 Week/7 days)
+  const [appliedTherapistId, setAppliedTherapistId] = useState<string | undefined>(undefined);
+  const [appliedDateRange, setAppliedDateRange] = useState<string>('7');
+
+  // Temporary/Modal local edit state
+  const [tempTherapistId, setTempTherapistId] = useState<string | undefined>(undefined);
+  const [tempDateRange, setTempDateRange] = useState<string>('7');
+
+  // Debounced search query
+  const debouncedSearch = useDebounce(search, 300);
 
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
-    search: search.trim() || undefined,
+    search: debouncedSearch.trim() || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
-    priority: priorityFilter !== 'all' ? priorityFilter : undefined,
-    date: dateFilter || undefined,
-    days: daysFilter !== 'all' ? daysFilter : undefined,
+    therapistId: appliedTherapistId,
+    dateRange: appliedDateRange,
     limit: 50,
   });
+
+  // Fetch therapist list dynamically (optional filter selection)
+  const { data: therapists = [] } = useStaffUsers({ role: 'nurse' });
 
   const patients = patientsData?.data ?? [];
 
@@ -88,6 +106,26 @@ export function NursePatients() {
   };
 
   const getInitials = (name: string) => name.split(' ').map((p) => p[0]).join('');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsFilterModalOpen(false);
+      }
+    };
+    if (isFilterModalOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFilterModalOpen]);
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsFilterModalOpen(false);
+    }
+  };
 
 
   return (
@@ -146,14 +184,32 @@ export function NursePatients() {
             <div className="flex flex-col gap-4">
               {/* Search & Status filters */}
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm space-y-3">
-                <div className="flex items-center gap-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
-                  <Search className="w-4 h-4 text-slate-400 shrink-0" />
-                  <input
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Search patients or conditions"
-                    className="flex-1 outline-none bg-transparent py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                  />
+                <div className="flex gap-2">
+                  <div className="flex-1 flex items-center gap-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
+                    <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                    <input
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder="Search patients or conditions"
+                      className="flex-1 outline-none bg-transparent py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      setTempTherapistId(appliedTherapistId);
+                      setTempDateRange(appliedDateRange);
+                      setIsFilterModalOpen(true);
+                    }}
+                    className={`flex items-center justify-center p-2.5 border rounded-xl hover:bg-slate-100 dark:hover:bg-slate-750 transition-all ${
+                      appliedTherapistId || appliedDateRange !== '7'
+                        ? 'bg-teal-50 dark:bg-teal-900/30 border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-400 font-bold'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-250 dark:border-slate-700 text-slate-500 dark:text-slate-400'
+                    }`}
+                    title="Filter Records"
+                    aria-label="Filter Records"
+                  >
+                    <Filter className="h-5 w-5" />
+                  </button>
                 </div>
                 <div className="flex gap-2">
                   {([
@@ -174,50 +230,6 @@ export function NursePatients() {
                       {item.label}
                     </button>
                   ))}
-                </div>
-
-                <div className="flex flex-wrap gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Priority:</span>
-                    <select
-                      value={priorityFilter}
-                      onChange={(e) => setPriorityFilter(e.target.value)}
-                      className="rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
-                    >
-                      <option value="all">All Priorities</option>
-                      <option value="high">High</option>
-                      <option value="medium">Medium</option>
-                      <option value="low">Low</option>
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Date:</span>
-                    <input
-                      type="date"
-                      value={dateFilter}
-                      onChange={(e) => {
-                        setDateFilter(e.target.value);
-                        if (e.target.value) setDaysFilter('all');
-                      }}
-                      className="rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Days:</span>
-                    <select
-                      value={daysFilter}
-                      onChange={(e) => {
-                        setDaysFilter(e.target.value);
-                        if (e.target.value !== 'all') setDateFilter('');
-                      }}
-                      className="rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
-                    >
-                      <option value="all">Any Day</option>
-                      <option value="1">Today</option>
-                      <option value="3">Next 3 Days</option>
-                      <option value="7">Next 7 Days</option>
-                    </select>
-                  </div>
                 </div>
               </div>
 
@@ -443,6 +455,129 @@ export function NursePatients() {
           viewerRole={user?.role ?? 'nurse'}
           onClose={() => setSelectedPatientId(null)}
         />
+      )}
+
+      {/* Filter Modal */}
+      {isFilterModalOpen && (
+        <div
+          onClick={handleBackdropClick}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 animate-in fade-in duration-200"
+        >
+          <div
+            className="w-full max-w-sm rounded-[28px] p-6 bg-white dark:bg-slate-900 shadow-2xl border border-slate-150 dark:border-slate-800 animate-in zoom-in-95 duration-200 flex flex-col gap-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-[15px] font-extrabold text-slate-850 dark:text-white">Filter Records</h3>
+              <button
+                onClick={() => setIsFilterModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                aria-label="Close modal"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="space-y-4">
+              {/* Therapist Filter (Dropdown, Optional) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                  Therapist (Optional)
+                </label>
+                <select
+                  value={tempTherapistId || ''}
+                  onChange={(e) => setTempTherapistId(e.target.value || undefined)}
+                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-200 outline-none focus:ring-1 focus:ring-teal-500"
+                >
+                  <option value="">All Therapists</option>
+                  {therapists.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date Range Filter (Radio Button, Mandatory) */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                  Date Range (Mandatory)
+                </label>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { label: 'Last 1 Day', value: '1' },
+                    { label: 'Last 3 Days', value: '3' },
+                    { label: 'Last 1 Week', value: '7' },
+                  ].map((option) => {
+                    const isSelected = tempDateRange === option.value;
+                    return (
+                      <label
+                        key={option.value}
+                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-teal-50/50 dark:bg-teal-950/20 border-teal-500 text-teal-850 dark:text-teal-400'
+                            : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-850/50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="dateRange"
+                          value={option.value}
+                          checked={isSelected}
+                          onChange={() => setTempDateRange(option.value)}
+                          className="sr-only"
+                        />
+                        <div
+                          className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                            isSelected ? 'border-teal-500 bg-teal-500/10' : 'border-slate-300 dark:border-slate-650'
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="w-2 h-2 rounded-full bg-teal-500" />
+                          )}
+                        </div>
+                        {option.label}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3 border-t border-slate-100 dark:border-slate-800 pt-4 mt-2">
+              <button
+                onClick={() => {
+                  // Reset filters and fetch records
+                  setAppliedTherapistId(undefined);
+                  setAppliedDateRange('7');
+                  setIsFilterModalOpen(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all"
+              >
+                Clear Filter
+              </button>
+              <button
+                onClick={() => {
+                  if (!tempDateRange) {
+                    alert('Date range selection is mandatory.');
+                    return;
+                  }
+                  setAppliedTherapistId(tempTherapistId);
+                  setAppliedDateRange(tempDateRange);
+                  setIsFilterModalOpen(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-teal-700 hover:bg-teal-650 active:scale-95 transition-all shadow-sm"
+              >
+                Apply Filter
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
