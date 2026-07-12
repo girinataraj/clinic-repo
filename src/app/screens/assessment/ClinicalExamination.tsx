@@ -71,24 +71,9 @@ export function ClinicalExamination({
     });
   };
 
-  const setImaging = (region: string, field: keyof ImagingFindings, value: string) => {
-    const current = clinicalExamData.imaging[region] ?? { xray: '', mri: '' };
-    onChange({
-      ...clinicalExamData,
-      imaging: {
-        ...clinicalExamData.imaging,
-        [region]: { ...current, [field]: value },
-      },
-    });
-  };
-
   const getTestResult = (region: string, testName: string): TestResult => {
     const key = getClinicalTestKey(region, testName);
     return clinicalExamData.tests[key]?.result ?? 'Not Tested';
-  };
-
-  const getImaging = (region: string): ImagingFindings => {
-    return clinicalExamData.imaging[region] ?? { xray: '', mri: '' };
   };
 
   // Count completed tests per region
@@ -117,8 +102,6 @@ export function ClinicalExamination({
             {activeGroups.map(group => {
               const isExpanded = expandedRegions.has(group.region);
               const filled = getRegionProgress(group.region, group.tests);
-              const imaging = getImaging(group.region);
-              const hasImaging = imaging.xray.trim() || imaging.mri.trim();
 
               return (
                 <div
@@ -164,9 +147,6 @@ export function ClinicalExamination({
                         }`}>
                           {filled}/{group.tests.length}
                         </span>
-                      )}
-                      {hasImaging && (
-                        <ImageIcon size={14} className="text-amber-500" />
                       )}
                       {isExpanded ? (
                         <ChevronUp size={18} className={isDoctorRole ? 'text-[#262842] dark:text-indigo-400' : 'text-blue-600 dark:text-blue-400'} />
@@ -216,40 +196,6 @@ export function ClinicalExamination({
                             </div>
                           );
                         })}
-                      </div>
-
-                      {/* Imaging Findings */}
-                      <div className="mt-1 p-3.5 rounded-[14px] bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
-                        <div className="flex items-center gap-2 mb-3">
-                          <FileText size={14} className="text-amber-600 dark:text-amber-400" />
-                          <span className="text-[12px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider">
-                            Imaging Findings — {group.region}
-                          </span>
-                        </div>
-                        <div className="flex flex-col gap-3">
-                          <div>
-                            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                              X-Ray
-                            </label>
-                            <textarea
-                              value={imaging.xray}
-                              onChange={e => setImaging(group.region, 'xray', e.target.value)}
-                              placeholder={`X-ray findings for ${group.region}…`}
-                              className={`${ic} h-[70px] resize-none`}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                              MRI
-                            </label>
-                            <textarea
-                              value={imaging.mri}
-                              onChange={e => setImaging(group.region, 'mri', e.target.value)}
-                              placeholder={`MRI findings for ${group.region}…`}
-                              className={`${ic} h-[70px] resize-none`}
-                            />
-                          </div>
-                        </div>
                       </div>
                     </div>
                   )}

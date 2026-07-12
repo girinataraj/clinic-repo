@@ -239,6 +239,9 @@ export interface TreatmentPlanData {
   frequencyGapDays: string;         // same approach
   suggestedStartDate: string;       // ISO date string or ''
   notes: string;
+  xrayFindings: string;
+  mriFindings: string;
+  pftFindings: string;
 }
 
 export function getEmptyTreatmentPlan(): TreatmentPlanData {
@@ -250,6 +253,9 @@ export function getEmptyTreatmentPlan(): TreatmentPlanData {
     frequencyGapDays: '',
     suggestedStartDate: '',
     notes: '',
+    xrayFindings: '',
+    mriFindings: '',
+    pftFindings: '',
   };
 }
 
@@ -339,3 +345,56 @@ export function getClinicalTestKey(region: string, testName: string): string {
 export function getEmptyClinicalExam(): ClinicalExamData {
   return { tests: {}, imaging: {} };
 }
+
+// ── Cardio Exam Configuration ───────────────────────────────────────────────
+export interface CardioExamData {
+  borgRating: string;
+  vo2Max: string;
+  sixMinWalk: string;
+  rockportWalk: string;
+  harvardStep: string;
+  exercisePrescription: {
+    warmups: string;
+    stretching: string;
+    hiit: string;
+    aerobics: string;
+    strengthTraining: string;
+    cooldown: string;
+  };
+}
+
+export function getEmptyCardioExam(): CardioExamData {
+  return {
+    borgRating: '',
+    vo2Max: '',
+    sixMinWalk: '',
+    rockportWalk: '',
+    harvardStep: '',
+    exercisePrescription: {
+      warmups: '20',
+      stretching: '5',
+      hiit: '',
+      aerobics: '',
+      strengthTraining: '',
+      cooldown: ''
+    }
+  };
+}
+
+export const BORG_SCALE_MAP: Record<string, string> = {
+  '6': 'No Exertion',
+  '7': 'Extremely Light',
+  '8': 'Extremely Light - Very Light',
+  '9': 'Very Light',
+  '10': 'Very Light - Light',
+  '11': 'Light',
+  '12': 'Light - Somewhat Hard',
+  '13': 'Somewhat Hard',
+  '14': 'Somewhat Hard - Hard',
+  '15': 'Hard',
+  '16': 'Hard - Very Hard',
+  '17': 'Very Hard',
+  '18': 'Very Hard - Extremely Hard',
+  '19': 'Extremely Hard',
+  '20': 'Maximal Exertion'
+};

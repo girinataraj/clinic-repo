@@ -442,6 +442,35 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
         <ChipGroup label="Rehabilitation" items={rehab} field="rehabilitation" />
       </SectionCard>
 
+      <SectionCard icon={<ImagePlus size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Imaging Findings" subtitle="X-Ray, MRI, PFT reports" accent={accent}>
+        <div className="flex flex-col gap-3">
+          <FormField label="X-Ray Findings">
+            <textarea
+              value={tp.xrayFindings || ''}
+              onChange={e => update({ xrayFindings: e.target.value })}
+              placeholder="Enter X-Ray details (if any)"
+              className={`${ic} h-[60px] resize-none`}
+            />
+          </FormField>
+          <FormField label="MRI Findings">
+            <textarea
+              value={tp.mriFindings || ''}
+              onChange={e => update({ mriFindings: e.target.value })}
+              placeholder="Enter MRI details (if any)"
+              className={`${ic} h-[60px] resize-none`}
+            />
+          </FormField>
+          <FormField label="PFT Findings">
+            <textarea
+              value={tp.pftFindings || ''}
+              onChange={e => update({ pftFindings: e.target.value })}
+              placeholder="Enter Pulmonary Function Test details (if any)"
+              className={`${ic} h-[60px] resize-none`}
+            />
+          </FormField>
+        </div>
+      </SectionCard>
+
       <SectionCard icon={<CalendarDays size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Schedule & Follow-up" subtitle="Visits, frequency & planning" accent={accent}>
         <div className="grid grid-cols-2 gap-3 mb-3.5">
           <FormField label="Visits Required">

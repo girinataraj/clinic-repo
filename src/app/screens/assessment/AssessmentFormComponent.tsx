@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import api from '../../../services/api';
 import { StepNeuroExam, getEmptyNeuroData } from './StepNeuroExam';
+import { StepCardioExam } from './StepCardioExam';
+import { type CardioExamData, getEmptyCardioExam, type Anthropometrics } from './clinicalConfig';
 import { 
   User, Heart, ClipboardList, Stethoscope, Activity, CreditCard, 
   Save, Download, Check, AlertCircle, FileText, ChevronLeft, ChevronRight,
@@ -76,6 +78,9 @@ interface FormData {
     frequency: string;
     duration: string;
     modalities: string[];
+    xrayFindings: string;
+    mriFindings: string;
+    pftFindings: string;
   };
   finalReview: {
     progressNotes: string;
@@ -90,6 +95,8 @@ interface FormData {
     paymentStatus: string;
   };
   neuroData: any;
+  cardioData: CardioExamData;
+  anthropometrics: Anthropometrics;
 }
 
 const initialFormData = (): FormData => ({
@@ -117,10 +124,12 @@ const initialFormData = (): FormData => ({
     findings: ''
   },
   diagnosis: { primary: '', secondary: [], icdCode: '' },
-  treatmentPlan: { therapies: [], frequency: '', duration: '', modalities: [] },
+  treatmentPlan: { therapies: [], frequency: '', duration: '', modalities: [], xrayFindings: '', mriFindings: '', pftFindings: '' },
   finalReview: { progressNotes: '', nextSession: '', recommendations: [] },
   payment: { sessionFee: '', totalSessions: '', paidSessions: '', balance: '', paymentStatus: 'Pending' },
-  neuroData: getEmptyNeuroData()
+  neuroData: getEmptyNeuroData(),
+  cardioData: getEmptyCardioExam(),
+  anthropometrics: { height: '', weight: '', bmi: '', excessWeight: '', excessCalorie: '', duration: '', waist: '', hip: '', whRatio: '' }
 });
 
 export function AssessmentFormComponent() {
@@ -380,21 +389,39 @@ export function AssessmentFormComponent() {
   };
 
   const hasNeuro = formData.basicInfo.condition?.includes('Neuro');
+  const hasCardio = formData.basicInfo.condition?.includes('Cardio');
   const stepsList = [
-    { label: 'Basic Info', icon: User },
-    { label: 'Vitals', icon: Heart },
-    { label: 'History', icon: ClipboardList },
-    { label: 'Complaints', icon: FileText },
-    { label: 'Clinical Exam', icon: Stethoscope },
+    { label: 'Basic Info', icon: User, key: 'patient' },
+    { label: 'Vitals', icon: Heart, key: 'vitals' },
+    { label: 'History', icon: ClipboardList, key: 'history' },
+    { label: 'Complaints', icon: FileText, key: 'complaints' },
+    { label: 'Clinical Exam', icon: Stethoscope, key: 'examination' },
     ...(hasNeuro ? [
-      { label: 'Neuro: Mental & Nerves', icon: Activity },
-      { label: 'Neuro: Sensory & Motor', icon: Activity },
-      { label: 'Neuro: Coordination & Balance', icon: Activity },
-      { label: 'Neuro: Gait & Hand', icon: Activity }
+      { label: 'Neuro: Mental & Nerves', icon: Activity, key: 'neuro_mental' },
+      { label: 'Neuro: Sensory & Motor', icon: Activity, key: 'neuro_sensory' },
+      { label: 'Neuro: Coordination & Balance', icon: Activity, key: 'neuro_coordination' },
+      { label: 'Neuro: Gait & Hand', icon: Activity, key: 'neuro_gait_hand' }
     ] : []),
-    { label: 'Diagnosis / Plan', icon: Activity },
-    { label: 'Billing & Pay', icon: CreditCard }
+    ...(hasCardio ? [
+      { label: 'Cardio Exam: Tests', icon: Heart, key: 'cardio_exam_1' },
+      { label: 'Cardio Exam: Prescription', icon: Heart, key: 'cardio_exam_2' }
+    ] : []),
+    { label: 'Diagnosis / Plan', icon: Activity, key: 'diagnosis' },
+    { label: 'Billing & Pay', icon: CreditCard, key: 'review' }
   ];
+
+  const currentStepKey = stepsList[step]?.key;
+
+  const dynamicSymptomKeys = [
+    ...SYMPTOM_KEYS,
+    ...(hasCardio ? ['respiratory', 'dyspnea', 'weight_gain'] : [])
+  ];
+  const dynamicSymptomLabels: Record<string, string> = {
+    ...SYMPTOM_LABELS,
+    respiratory: 'Respiratory',
+    dyspnea: 'Dyspnea',
+    weight_gain: 'Weight Gain'
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 font-sans">
@@ -901,7 +928,7 @@ export function AssessmentFormComponent() {
                 <div className="border-t border-slate-100 dark:border-slate-800/60 pt-4">
                   <span className="text-xs font-extrabold text-[#262842] dark:text-white block mb-3 uppercase">Specific Critical Symptoms Checklist</span>
                   <div className="flex flex-col gap-3">
-                    {SYMPTOM_KEYS.map((key) => {
+                    {dynamicSymptomKeys.map((key) => {
                       const item = formData.chiefComplaint.symptoms[key] || { value: false, notes: '' };
                       return (
                         <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 dark:bg-slate-850/30 rounded-2xl border border-slate-150/40 dark:border-slate-850">
@@ -919,7 +946,7 @@ export function AssessmentFormComponent() {
                               }}
                               className="w-4.5 h-4.5 rounded accent-indigo-650"
                             />
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-350">{SYMPTOM_LABELS[key] || key}</span>
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-350">{dynamicSymptomLabels[key] || key}</span>
                           </div>
                           {item.value && (
                             <input 
@@ -1155,7 +1182,8 @@ export function AssessmentFormComponent() {
             )}
 
             {/* Step 5, 6, 7, 8: Neuro Exam (Conditional) */}
-            {hasNeuro && step === 5 && (
+            {/* Step 5, 6, 7, 8: Neuro Exam (Conditional) */}
+            {currentStepKey === 'neuro_mental' && (
               <StepNeuroExam
                 data={formData.neuroData}
                 onChange={(updated: any) => setFormData(prev => ({ ...prev, neuroData: updated }))}
@@ -1163,7 +1191,7 @@ export function AssessmentFormComponent() {
                 page={1}
               />
             )}
-            {hasNeuro && step === 6 && (
+            {currentStepKey === 'neuro_sensory' && (
               <StepNeuroExam
                 data={formData.neuroData}
                 onChange={(updated: any) => setFormData(prev => ({ ...prev, neuroData: updated }))}
@@ -1171,7 +1199,7 @@ export function AssessmentFormComponent() {
                 page={2}
               />
             )}
-            {hasNeuro && step === 7 && (
+            {currentStepKey === 'neuro_coordination' && (
               <StepNeuroExam
                 data={formData.neuroData}
                 onChange={(updated: any) => setFormData(prev => ({ ...prev, neuroData: updated }))}
@@ -1179,7 +1207,7 @@ export function AssessmentFormComponent() {
                 page={3}
               />
             )}
-            {hasNeuro && step === 8 && (
+            {currentStepKey === 'neuro_gait_hand' && (
               <StepNeuroExam
                 data={formData.neuroData}
                 onChange={(updated: any) => setFormData(prev => ({ ...prev, neuroData: updated }))}
@@ -1188,8 +1216,30 @@ export function AssessmentFormComponent() {
               />
             )}
 
+            {/* Cardio Exam (Conditional) */}
+            {currentStepKey === 'cardio_exam_1' && (
+              <StepCardioExam
+                data={formData.cardioData}
+                onChange={(updated: any) => setFormData(prev => ({ ...prev, cardioData: updated }))}
+                isDoctorRole={false}
+                anthropometrics={formData.anthropometrics}
+                onAnthropometricsChange={(updated: any) => setFormData(prev => ({ ...prev, anthropometrics: updated }))}
+                page={1}
+              />
+            )}
+            {currentStepKey === 'cardio_exam_2' && (
+              <StepCardioExam
+                data={formData.cardioData}
+                onChange={(updated: any) => setFormData(prev => ({ ...prev, cardioData: updated }))}
+                isDoctorRole={false}
+                anthropometrics={formData.anthropometrics}
+                onAnthropometricsChange={(updated: any) => setFormData(prev => ({ ...prev, anthropometrics: updated }))}
+                page={2}
+              />
+            )}
+
             {/* Step 5: Diagnosis & Plan */}
-            {step === (hasNeuro ? 9 : 5) && (
+            {currentStepKey === 'diagnosis' && (
               <div className="flex flex-col gap-4">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                   <Activity className="text-[#262842]" size={18} /> Diagnosis & Treatment Plan
@@ -1247,11 +1297,44 @@ export function AssessmentFormComponent() {
                     />
                   </div>
                 </div>
+
+                <div className="border-t border-slate-100 dark:border-slate-800/60 pt-4">
+                  <span className="text-xs font-extrabold text-slate-500 block mb-2.5 uppercase font-bold">Imaging Findings</span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-slate-500 uppercase font-bold">X-Ray Findings</label>
+                      <textarea 
+                        placeholder="X-RAY findings..."
+                        value={formData.treatmentPlan.xrayFindings}
+                        onChange={(e) => setFormData(prev => ({ ...prev, treatmentPlan: { ...prev.treatmentPlan, xrayFindings: e.target.value } }))}
+                        className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600 h-20"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-slate-500 uppercase font-bold">MRI Findings</label>
+                      <textarea 
+                        placeholder="MRI findings..."
+                        value={formData.treatmentPlan.mriFindings}
+                        onChange={(e) => setFormData(prev => ({ ...prev, treatmentPlan: { ...prev.treatmentPlan, mriFindings: e.target.value } }))}
+                        className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600 h-20"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-slate-500 uppercase font-bold">PFT Findings</label>
+                      <textarea 
+                        placeholder="PFT findings..."
+                        value={formData.treatmentPlan.pftFindings}
+                        onChange={(e) => setFormData(prev => ({ ...prev, treatmentPlan: { ...prev.treatmentPlan, pftFindings: e.target.value } }))}
+                        className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600 h-20"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
             {/* Step 6: Payment */}
-            {step === (hasNeuro ? 10 : 6) && (
+            {currentStepKey === 'review' && (
               <div className="flex flex-col gap-4">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                   <CreditCard className="text-[#262842]" size={18} /> Payment & Billing Details

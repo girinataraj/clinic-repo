@@ -13,6 +13,8 @@ import {
   Stethoscope, ClipboardList, Scale, CheckSquare
 } from 'lucide-react';
 
+import { BORG_SCALE_MAP } from './assessment/clinicalConfig';
+
 export function ReportGeneration() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -74,6 +76,9 @@ export function ReportGeneration() {
   const mergedDiagnosisList = useMemo(() => getMergedField('diagnosisList', 'diagnosis_list', true), [getMergedField]);
   const mergedPlan = useMemo(() => getMergedField('plan', 'plan'), [getMergedField]);
   const mergedTreatmentPlan = useMemo(() => getMergedField('treatmentPlan', 'treatment_plan', false, true), [getMergedField]);
+  const mergedCardioData = useMemo(() => {
+    return evaluation?.cardioData || (evaluation as any)?.cardio_data || null;
+  }, [evaluation]);
 
   const mergedMedicalHistory = useMemo(() => {
     const h = evaluation ? ((evaluation as any).medicalHistory || (evaluation as any).medical_history) : null;
@@ -597,23 +602,7 @@ export function ReportGeneration() {
                       </div>
                     )}
 
-                    {mergedClinicalExamination.imaging && Object.keys(mergedClinicalExamination.imaging).length > 0 && (
-                      <div className="mt-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-2">Imaging Reports (X-Ray & MRI)</span>
-                        <div className="flex flex-col gap-2">
-                          {Object.entries(mergedClinicalExamination.imaging).map(([region, findings]: [string, any]) => {
-                            if (!findings.xray?.trim() && !findings.mri?.trim()) return null;
-                            return (
-                              <div key={region} className="p-3 rounded-xl bg-amber-50/10 dark:bg-amber-955/5 border border-amber-100/30 dark:border-amber-900/10 flex flex-col gap-1.5 shadow-sm">
-                                <span className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase">{region} Imaging</span>
-                                {findings.xray?.trim() && <p className="text-slate-700 dark:text-slate-300 font-medium"><strong className="text-slate-450 uppercase text-[9px] block">X-Ray:</strong> {findings.xray}</p>}
-                                {findings.mri?.trim() && <p className="text-slate-700 dark:text-slate-300 font-medium"><strong className="text-slate-450 uppercase text-[9px] block">MRI:</strong> {findings.mri}</p>}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
+
 
                     {mergedClinicalExamination.examinationNotes && (
                       <div className="mt-2 border-t border-slate-100 dark:border-slate-800 pt-3">
@@ -730,6 +719,77 @@ export function ReportGeneration() {
                 </section>
               )}
 
+              {/* Cardio Exam */}
+              {mergedCardioData && (mergedCardioData.borgRating || mergedCardioData.vo2Max || mergedCardioData.sixMinWalk || mergedCardioData.rockportWalk || mergedCardioData.harvardStep || (mergedCardioData.exercisePrescription && Object.values(mergedCardioData.exercisePrescription).some(Boolean))) && (
+                <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <Activity size={16} className="text-[#3B3E66] dark:text-slate-350" />
+                    <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Cardiorespiratory Assessment</span>
+                  </div>
+                  <div className="flex flex-col gap-4 text-xs font-semibold">
+                    {mergedCardioData.borgRating && (
+                      <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                        <span className="text-slate-500">Borg Rating (Perceived Exertion)</span>
+                        <span className="font-extrabold text-slate-800 dark:text-white">
+                          {mergedCardioData.borgRating} — {BORG_SCALE_MAP[mergedCardioData.borgRating] || ''}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {(mergedCardioData.vo2Max || mergedCardioData.sixMinWalk || mergedCardioData.rockportWalk || mergedCardioData.harvardStep) && (
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Fitness & Endurance Tests</span>
+                        <div className="grid grid-cols-2 gap-3">
+                          {mergedCardioData.vo2Max && (
+                            <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                              <span className="text-[9px] text-slate-400 block mb-0.5 uppercase">Vo2 Max</span>
+                              <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedCardioData.vo2Max}</span>
+                            </div>
+                          )}
+                          {mergedCardioData.sixMinWalk && (
+                            <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                              <span className="text-[9px] text-slate-400 block mb-0.5 uppercase">6 Min Walk Test</span>
+                              <span className="text-slate-800 dark:text-slate-205 font-extrabold text-sm">{mergedCardioData.sixMinWalk}</span>
+                            </div>
+                          )}
+                          {mergedCardioData.rockportWalk && (
+                            <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                              <span className="text-[9px] text-slate-400 block mb-0.5 uppercase">Rockport Walk Test</span>
+                              <span className="text-slate-800 dark:text-slate-205 font-extrabold text-sm">{mergedCardioData.rockportWalk}</span>
+                            </div>
+                          )}
+                          {mergedCardioData.harvardStep && (
+                            <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                              <span className="text-[9px] text-slate-400 block mb-0.5 uppercase">Harvard Step Test</span>
+                              <span className="text-slate-800 dark:text-slate-205 font-extrabold text-sm">{mergedCardioData.harvardStep}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {mergedCardioData.exercisePrescription && Object.values(mergedCardioData.exercisePrescription).some(Boolean) && (
+                      <div className="mt-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+                        <span className="text-[10px] text-slate-450 uppercase block font-bold mb-2">Exercise Prescription</span>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {Object.entries(mergedCardioData.exercisePrescription).map(([name, val]: [string, any]) => {
+                            if (!val) return null;
+                            const displayName = name === 'hiit' ? 'HIIT' : name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                            const suffix = ['warmups', 'stretching'].includes(name) ? ' reps' : ' mins';
+                            return (
+                              <div key={name} className="p-2 bg-slate-50/50 dark:bg-slate-800/40 rounded-lg border border-slate-150 dark:border-slate-700/50 flex justify-between items-center">
+                                <span className="text-[11px] text-slate-500 capitalize">{displayName}</span>
+                                <span className="font-extrabold text-slate-800 dark:text-slate-205">{val}{suffix}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
               {/* Functional Limitations */}
               {mergedFunctionalScores.length > 0 && (
                 <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
@@ -802,6 +862,31 @@ export function ReportGeneration() {
                         <div className="flex items-center justify-between p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50">
                           <span className="text-[13px] font-bold text-indigo-700 dark:text-indigo-300">Total Visits Required</span>
                           <span className="text-[16px] font-black text-indigo-900 dark:text-white">{mergedTreatmentPlan.visitsRequired}</span>
+                        </div>
+                      )}
+                      {(evaluation?.xrayFindings || (mergedTreatmentPlan && (mergedTreatmentPlan as any).xrayFindings) ||
+                        evaluation?.mriFindings || (mergedTreatmentPlan && (mergedTreatmentPlan as any).mriFindings) ||
+                        evaluation?.pftFindings || (mergedTreatmentPlan && (mergedTreatmentPlan as any).pftFindings)) && (
+                        <div className="p-3.5 rounded-xl bg-amber-50/10 dark:bg-amber-955/5 border border-amber-100/30 dark:border-amber-900/10 flex flex-col gap-2.5 mt-2">
+                          <span className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider">Imaging Findings</span>
+                          {(evaluation?.xrayFindings || (mergedTreatmentPlan && (mergedTreatmentPlan as any).xrayFindings)) && (
+                            <p className="text-slate-700 dark:text-slate-350 font-medium">
+                              <strong className="text-slate-450 uppercase text-[9px] block font-bold">X-Ray:</strong>
+                              {evaluation?.xrayFindings || (mergedTreatmentPlan as any)?.xrayFindings}
+                            </p>
+                          )}
+                          {(evaluation?.mriFindings || (mergedTreatmentPlan && (mergedTreatmentPlan as any).mriFindings)) && (
+                            <p className="text-slate-700 dark:text-slate-350 font-medium">
+                              <strong className="text-slate-450 uppercase text-[9px] block font-bold">MRI:</strong>
+                              {evaluation?.mriFindings || (mergedTreatmentPlan as any)?.mriFindings}
+                            </p>
+                          )}
+                          {(evaluation?.pftFindings || (mergedTreatmentPlan && (mergedTreatmentPlan as any).pftFindings)) && (
+                            <p className="text-slate-700 dark:text-slate-350 font-medium">
+                              <strong className="text-slate-450 uppercase text-[9px] block font-bold">PFT:</strong>
+                              {evaluation?.pftFindings || (mergedTreatmentPlan as any)?.pftFindings}
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>

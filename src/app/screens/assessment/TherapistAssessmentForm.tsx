@@ -8,10 +8,11 @@ import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } fro
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search, ChevronDown, ChevronUp, Phone } from 'lucide-react';
-import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
+import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount, type CardioExamData, getEmptyCardioExam } from './clinicalConfig';
 import { SectionCard, FormField, inputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
 import { StepNeuroExam, getEmptyNeuroData } from './StepNeuroExam';
+import { StepCardioExam } from './StepCardioExam';
 
 import { AnthropometricSection } from './AnthropometricSection';
 
@@ -70,6 +71,7 @@ export function TherapistAssessmentForm() {
   const [isManualBillEdit, setIsManualBillEdit] = useState(false);
   const [visitType, setVisitType] = useState<'Clinic'|'Home Visit'|'IP'|'Day Care'>('Clinic');
   const [neuroData, setNeuroData] = useState<any>(getEmptyNeuroData());
+  const [cardioData, setCardioData] = useState<CardioExamData>(getEmptyCardioExam());
 
   // Follow-up
   const { data: previousEval } = useLatestEvaluation(resolvedPatientId || null);
@@ -159,10 +161,16 @@ export function TherapistAssessmentForm() {
           visitsRequired: tp.visitsRequired ? String(tp.visitsRequired) : '',
           frequencyGapDays: tp.frequencyGapDays ? String(tp.frequencyGapDays) : '',
           suggestedStartDate: tp.suggestedStartDate || '',
+          xrayFindings: previousEval.xrayFindings || tp.xrayFindings || '',
+          mriFindings: previousEval.mriFindings || tp.mriFindings || '',
+          pftFindings: previousEval.pftFindings || tp.pftFindings || '',
         });
       }
       if (previousEval.neuroData) {
         setNeuroData(previousEval.neuroData);
+      }
+      if (previousEval.cardioData) {
+        setCardioData(previousEval.cardioData);
       }
     }
   }, [previousEval]);
@@ -246,6 +254,10 @@ export function TherapistAssessmentForm() {
           examinationNotes: examinationNotes.trim() || undefined
         } : undefined,
         neuroData: patientInfo.condition?.includes('Neuro') ? neuroData : undefined,
+        cardioData: patientInfo.condition?.includes('Cardio') ? cardioData : undefined,
+        xrayFindings: treatmentPlanData.xrayFindings || undefined,
+        mriFindings: treatmentPlanData.mriFindings || undefined,
+        pftFindings: treatmentPlanData.pftFindings || undefined,
       });
       setSaved(true);
       setTimeout(() => navigate(`/${currentRole}/report?patientId=${resolvedPatientId}`), 2000);
@@ -253,6 +265,11 @@ export function TherapistAssessmentForm() {
   };
 
   const hasNeuro = patientInfo.condition?.includes('Neuro');
+  const hasCardio = patientInfo.condition?.includes('Cardio');
+  const dynamicChiefComplaintsList = [
+    ...(chiefComplaintsList || []),
+    ...(hasCardio ? ["Respiratory", "Dyspnea", "Weight Gain"] : [])
+  ];
   const stepsList = [
     { label: 'Patient', key: 'patient' },
     { label: 'Vitals', key: 'vitals' },
@@ -265,6 +282,10 @@ export function TherapistAssessmentForm() {
       { label: 'Neuro: Sensory & Motor', key: 'neuro_sensory' },
       { label: 'Neuro: Coordination & Balance', key: 'neuro_coordination' },
       { label: 'Neuro: Gait & Hand', key: 'neuro_gait_hand' }
+    ] : []),
+    ...(hasCardio ? [
+      { label: 'Cardio Exam: Tests', key: 'cardio_exam_1' },
+      { label: 'Cardio Exam: Prescription', key: 'cardio_exam_2' }
     ] : []),
     { label: 'Diagnosis', key: 'diagnosis' },
     { label: 'Treatment', key: 'treatment' },
@@ -395,22 +416,26 @@ export function TherapistAssessmentForm() {
       {/* Form content */}
       <div className="flex-1 px-4 py-6 max-w-2xl mx-auto w-full pb-12">
         <div className="transition-all duration-300">
-          {step===0&&<StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
-          {step===1&&<StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
-          {step===2&&<StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} medicalHistoryList={medicalHistoryList} />}
-          {step===3&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} chiefComplaintsList={chiefComplaintsList} associatedSymptomsList={associatedSymptomsList} />}
-          {step===4&&<StepPainScale painLevel={painLevel} setPainLevel={setPainLevel} isDoctorRole={isDoctorRole} />}
-          {step===5&&<StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} chiefComplaints={chiefComplaints} clinicalExamData={clinicalExamData} onClinicalExamChange={setClinicalExamData} testMap={testMap} romData={romData} setRomData={setRomData} />}
-          {hasNeuro && step===6&&<StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={1} />}
-          {hasNeuro && step===7&&<StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={2} />}
-          {hasNeuro && step===8&&<StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={3} />}
-          {hasNeuro && step===9&&<StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={4} />}
-          {step===(hasNeuro ? 10 : 6)&&<StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} selectedDiagnoses={selectedDiagnoses} setSelectedDiagnoses={setSelectedDiagnoses} chiefComplaints={chiefComplaints} diagnosisList={diagnosisList} relevanceMap={relevanceMap} />}
-          {step===(hasNeuro ? 11 : 7)&&<StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} treatmentsList={treatments} />}
-
-          {/* Step 8: Review & Payment */}
-          {step===(hasNeuro ? 12 : 8)&&(
-            <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
+          {(() => {
+            const currentStepKey = stepsList[step]?.key;
+            return (
+              <>
+                {currentStepKey === 'patient' && <StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
+                {currentStepKey === 'vitals' && <StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
+                {currentStepKey === 'history' && <StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} medicalHistoryList={medicalHistoryList} />}
+                {currentStepKey === 'complaints' && <StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} chiefComplaintsList={dynamicChiefComplaintsList} associatedSymptomsList={associatedSymptomsList} />}
+                {currentStepKey === 'pain' && <StepPainScale painLevel={painLevel} setPainLevel={setPainLevel} isDoctorRole={isDoctorRole} />}
+                {currentStepKey === 'examination' && <StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} chiefComplaints={chiefComplaints} clinicalExamData={clinicalExamData} onClinicalExamChange={setClinicalExamData} testMap={testMap} romData={romData} setRomData={setRomData} />}
+                {currentStepKey === 'neuro_mental' && <StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={1} />}
+                {currentStepKey === 'neuro_sensory' && <StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={2} />}
+                {currentStepKey === 'neuro_coordination' && <StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={3} />}
+                {currentStepKey === 'neuro_gait_hand' && <StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={4} />}
+                {currentStepKey === 'cardio_exam_1' && <StepCardioExam data={cardioData} onChange={setCardioData} isDoctorRole={isDoctorRole} anthropometrics={anthropometrics} onAnthropometricsChange={setAnthropometrics} page={1} />}
+                {currentStepKey === 'cardio_exam_2' && <StepCardioExam data={cardioData} onChange={setCardioData} isDoctorRole={isDoctorRole} anthropometrics={anthropometrics} onAnthropometricsChange={setAnthropometrics} page={2} />}
+                {currentStepKey === 'diagnosis' && <StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} selectedDiagnoses={selectedDiagnoses} setSelectedDiagnoses={setSelectedDiagnoses} chiefComplaints={chiefComplaints} diagnosisList={diagnosisList} relevanceMap={relevanceMap} />}
+                {currentStepKey === 'treatment' && <StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} treatmentsList={treatments} />}
+                {currentStepKey === 'review' && (
+                  <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
               <SectionCard icon={<Save size={20} className="text-teal-600 dark:text-teal-400" />} title="Final Review" accent="teal">
                 <FormField label="Visit Type">
                   <div className="grid grid-cols-2 gap-2">{['Clinic','Home Visit','IP','Day Care'].map(v=><button key={v} onClick={()=>setVisitType(v as any)} className={`py-3 rounded-[14px] text-[13px] font-black border-2 transition-all active:scale-95 ${visitType===v?'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300':'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>{v}</button>)}</div>
@@ -484,6 +509,9 @@ export function TherapistAssessmentForm() {
               </button>
             </div>
           )}
+        </>
+      );
+    })()}
         </div>
       </div>
       </div>
