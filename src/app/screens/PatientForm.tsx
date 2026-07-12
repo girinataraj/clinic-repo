@@ -29,7 +29,6 @@ export function PatientForm() {
   const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Male');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
-  const [condition, setCondition] = useState('');
   const [therapistId, setTherapistId] = useState('');
 
   // ── Therapist list for assignment (only fetched for doctor) ────────────
@@ -54,7 +53,6 @@ export function PatientForm() {
       setGender(existingPatient.gender || 'Male');
       setPhone(existingPatient.phone || '');
       setCity(existingPatient.city || '');
-      setCondition(existingPatient.condition || '');
       setTherapistId(existingPatient.therapistId || '');
     }
   }, [isEdit, existingPatient]);
@@ -84,7 +82,6 @@ export function PatientForm() {
           gender,
           phone: phone.trim(),
           city: city.trim() || undefined,
-          condition: condition.trim() || undefined,
           therapistId: resolvedTherapistId || undefined,
         });
       } else {
@@ -94,7 +91,6 @@ export function PatientForm() {
           gender,
           phone: phone.trim(),
           city: city.trim() || undefined,
-          condition: condition.trim() || undefined,
           therapistId: resolvedTherapistId || undefined,
         });
       }
@@ -256,19 +252,7 @@ export function PatientForm() {
                 </div>
               </div>
 
-              {/* Condition */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">Condition</label>
-                <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 transition-colors">
-                  <Activity size={16} className="text-slate-400 shrink-0" />
-                  <input
-                    value={condition}
-                    onChange={(e) => setCondition(e.target.value)}
-                    placeholder="e.g. Post-op Knee"
-                    className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
-                  />
-                </div>
-              </div>
+
 
               {/* Assign Therapist — only shown for doctor role */}
               {isDoctorRole && (
@@ -284,6 +268,9 @@ export function PatientForm() {
                       className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white appearance-none cursor-pointer"
                     >
                       <option value="">Select a therapist…</option>
+                      {user?.id && (
+                        <option value={user.id}>Self ({user.name || 'Doctor'})</option>
+                      )}
                       {therapistsLoading && <option disabled>Loading…</option>}
                       {therapists.map((t) => (
                         <option key={t.id} value={t.id}>{t.name}</option>

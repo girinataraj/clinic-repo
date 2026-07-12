@@ -178,7 +178,7 @@ export const ASSESSMENT_STEPS = [
   { label: 'Vitals', key: 'vitals' },
   { label: 'History', key: 'history' },
   { label: 'Complaints', key: 'complaints' },
-  { label: 'Pain Scale', key: 'pain' },
+  { label: 'VAS Scale', key: 'pain' },
   { label: 'Examination', key: 'examination' },
   { label: 'Diagnosis', key: 'diagnosis' },
   { label: 'Treatment', key: 'treatment' },

@@ -399,7 +399,7 @@ export function NursePatients() {
                 <div className="flex flex-col gap-2">
                   {[
                     { label: 'Vitals captured', done: true },
-                    { label: 'Pain scale noted', done: true },
+                    { label: 'VAS scale noted', done: true },
                     { label: 'Consent verified', done: false },
                     { label: 'Exercise history updated', done: false },
                   ].map((item) => (

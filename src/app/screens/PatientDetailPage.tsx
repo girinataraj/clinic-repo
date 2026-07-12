@@ -760,7 +760,7 @@ export function PatientDetailPage() {
                     </div>
 
                     {[
-                      { l: 'Pain Scale Rating', v: reportData.evaluations[0]?.painLevel !== undefined ? `${reportData.evaluations[0].painLevel}/10` : '—' },
+                      { l: 'VAS Scale Rating', v: reportData.evaluations[0]?.painLevel !== undefined ? `${reportData.evaluations[0].painLevel}/10` : '—' },
                       { l: 'Chief Complaints', v: reportData.evaluations[0]?.chiefComplaints || reportData.evaluations[0]?.chief_complaints },
                       { l: 'Allergies', v: reportData.evaluations[0]?.allergies || 'No known allergies reported.' },
                       { l: 'Medical History', v: (reportData.evaluations[0]?.medicalHistory || []).join(', ') || 'No significant medical history recorded.' },

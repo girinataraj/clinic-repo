@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import api from '../../../services/api';
+import { StepNeuroExam, getEmptyNeuroData } from './StepNeuroExam';
 import { 
   User, Heart, ClipboardList, Stethoscope, Activity, CreditCard, 
   Save, Download, Check, AlertCircle, FileText, ChevronLeft, ChevronRight,
@@ -29,6 +30,7 @@ interface FormData {
     age: number | '';
     gender: string;
     assignedTherapist: string;
+    condition: string[];
   };
   vitalSigns: {
     bloodPressure: string;
@@ -87,10 +89,11 @@ interface FormData {
     balance: number | '';
     paymentStatus: string;
   };
+  neuroData: any;
 }
 
 const initialFormData = (): FormData => ({
-  basicInfo: { fullName: '', age: '', gender: 'Male', assignedTherapist: '' },
+  basicInfo: { fullName: '', age: '', gender: 'Male', assignedTherapist: '', condition: [] },
   vitalSigns: { bloodPressure: '', pulseRate: '', spo2: '', temperature: '', ejectionFraction: '' },
   medicalHistory: { chronicConditions: [], medications: [], allergies: [], surgicalHistory: [] },
   chiefComplaint: {
@@ -116,7 +119,8 @@ const initialFormData = (): FormData => ({
   diagnosis: { primary: '', secondary: [], icdCode: '' },
   treatmentPlan: { therapies: [], frequency: '', duration: '', modalities: [] },
   finalReview: { progressNotes: '', nextSession: '', recommendations: [] },
-  payment: { sessionFee: '', totalSessions: '', paidSessions: '', balance: '', paymentStatus: 'Pending' }
+  payment: { sessionFee: '', totalSessions: '', paidSessions: '', balance: '', paymentStatus: 'Pending' },
+  neuroData: getEmptyNeuroData()
 });
 
 export function AssessmentFormComponent() {
@@ -150,6 +154,9 @@ export function AssessmentFormComponent() {
         .then(res => {
           const patient = res.data.data;
           setPatientName(patient.name);
+          const initialCondition = patient.condition
+            ? patient.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
+            : [];
           setFormData(prev => ({
             ...prev,
             basicInfo: {
@@ -157,6 +164,7 @@ export function AssessmentFormComponent() {
               fullName: prev.basicInfo.fullName || patient.name,
               age: prev.basicInfo.age || patient.age,
               gender: prev.basicInfo.gender || patient.gender,
+              condition: prev.basicInfo.condition && prev.basicInfo.condition.length > 0 ? prev.basicInfo.condition : initialCondition,
             }
           }));
         })
@@ -293,6 +301,7 @@ export function AssessmentFormComponent() {
       ['Age', formData.basicInfo.age],
       ['Gender', formData.basicInfo.gender],
       ['Assigned Therapist', formData.basicInfo.assignedTherapist],
+      ['Condition', formData.basicInfo.condition?.join(', ') || ''],
       [],
       ['VITAL SIGNS'],
       ['Blood Pressure', formData.vitalSigns.bloodPressure || 'N/A'],
@@ -312,7 +321,7 @@ export function AssessmentFormComponent() {
       ['Surgical History', formData.medicalHistory.surgicalHistory.join(', ') || 'None'],
       [],
       ['Primary Complaint', formData.chiefComplaint.primary || 'N/A'],
-      ['Pain Scale (0-10)', formData.chiefComplaint.painScale],
+      ['VAS Scale (0-10)', formData.chiefComplaint.painScale],
       ['Symptom Duration', formData.chiefComplaint.symptomDuration || 'N/A'],
     ];
     const wsHistory = XLSX.utils.aoa_to_sheet(medHistory);
@@ -370,12 +379,19 @@ export function AssessmentFormComponent() {
     downloadAnchor.remove();
   };
 
+  const hasNeuro = formData.basicInfo.condition?.includes('Neuro');
   const stepsList = [
     { label: 'Basic Info', icon: User },
     { label: 'Vitals', icon: Heart },
     { label: 'History', icon: ClipboardList },
     { label: 'Complaints', icon: FileText },
     { label: 'Clinical Exam', icon: Stethoscope },
+    ...(hasNeuro ? [
+      { label: 'Neuro: Mental & Nerves', icon: Activity },
+      { label: 'Neuro: Sensory & Motor', icon: Activity },
+      { label: 'Neuro: Coordination & Balance', icon: Activity },
+      { label: 'Neuro: Gait & Hand', icon: Activity }
+    ] : []),
     { label: 'Diagnosis / Plan', icon: Activity },
     { label: 'Billing & Pay', icon: CreditCard }
   ];
@@ -496,7 +512,7 @@ export function AssessmentFormComponent() {
               {/* 1. Basic Info */}
               <div>
                 <h3 className="text-sm font-black text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2 mb-4 uppercase">1. Patient Demographics & Intake</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-xs">
                   <div>
                     <span className="text-[10px] text-slate-400 font-bold block uppercase mb-0.5">Full Name</span>
                     <span className="font-extrabold">{formData.basicInfo.fullName || '—'}</span>
@@ -512,6 +528,10 @@ export function AssessmentFormComponent() {
                   <div>
                     <span className="text-[10px] text-slate-400 font-bold block uppercase mb-0.5">Therapist</span>
                     <span className="font-extrabold">{formData.basicInfo.assignedTherapist || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-bold block uppercase mb-0.5">Condition</span>
+                    <span className="font-extrabold">{formData.basicInfo.condition?.join(', ') || '—'}</span>
                   </div>
                 </div>
               </div>
@@ -692,6 +712,34 @@ export function AssessmentFormComponent() {
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     />
                   </div>
+                  <div className="col-span-1 sm:col-span-2 flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Condition (Check all that apply)</label>
+                    <div className="flex gap-4 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950">
+                      {['Ortho', 'Neuro', 'Cardio'].map((c) => {
+                        const isChecked = formData.basicInfo.condition?.includes(c) || false;
+                        return (
+                          <label key={c} className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-350 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {
+                                const current = formData.basicInfo.condition || [];
+                                const next = isChecked
+                                  ? current.filter((x) => x !== c)
+                                  : [...current, c];
+                                setFormData(prev => ({
+                                  ...prev,
+                                  basicInfo: { ...prev.basicInfo, condition: next }
+                                }));
+                              }}
+                              className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                            />
+                            {c}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -822,7 +870,7 @@ export function AssessmentFormComponent() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Pain Rating Scale (0 - 10)</label>
+                      <label className="text-xs font-bold text-slate-500 uppercase">VAS Scale (0 - 10)</label>
                       <div className="flex items-center gap-3">
                         <input 
                           type="range"
@@ -830,7 +878,7 @@ export function AssessmentFormComponent() {
                           max="10"
                           value={formData.chiefComplaint.painScale}
                           onChange={(e) => setFormData(prev => ({ ...prev, chiefComplaint: { ...prev.chiefComplaint, painScale: parseInt(e.target.value, 10) } }))}
-                          className="flex-1 accent-indigo-600 cursor-pointer"
+                          className="flex-1 accent-pink-600 cursor-pointer"
                         />
                         <span className="w-12 text-center text-sm font-black border border-slate-200 dark:border-slate-800 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-850 dark:text-white">
                           {formData.chiefComplaint.painScale}
@@ -1106,8 +1154,42 @@ export function AssessmentFormComponent() {
               </div>
             )}
 
+            {/* Step 5, 6, 7, 8: Neuro Exam (Conditional) */}
+            {hasNeuro && step === 5 && (
+              <StepNeuroExam
+                data={formData.neuroData}
+                onChange={(updated: any) => setFormData(prev => ({ ...prev, neuroData: updated }))}
+                isDoctorRole={false}
+                page={1}
+              />
+            )}
+            {hasNeuro && step === 6 && (
+              <StepNeuroExam
+                data={formData.neuroData}
+                onChange={(updated: any) => setFormData(prev => ({ ...prev, neuroData: updated }))}
+                isDoctorRole={false}
+                page={2}
+              />
+            )}
+            {hasNeuro && step === 7 && (
+              <StepNeuroExam
+                data={formData.neuroData}
+                onChange={(updated: any) => setFormData(prev => ({ ...prev, neuroData: updated }))}
+                isDoctorRole={false}
+                page={3}
+              />
+            )}
+            {hasNeuro && step === 8 && (
+              <StepNeuroExam
+                data={formData.neuroData}
+                onChange={(updated: any) => setFormData(prev => ({ ...prev, neuroData: updated }))}
+                isDoctorRole={false}
+                page={4}
+              />
+            )}
+
             {/* Step 5: Diagnosis & Plan */}
-            {step === 5 && (
+            {step === (hasNeuro ? 9 : 5) && (
               <div className="flex flex-col gap-4">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                   <Activity className="text-[#262842]" size={18} /> Diagnosis & Treatment Plan
@@ -1169,7 +1251,7 @@ export function AssessmentFormComponent() {
             )}
 
             {/* Step 6: Payment */}
-            {step === 6 && (
+            {step === (hasNeuro ? 10 : 6) && (
               <div className="flex flex-col gap-4">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                   <CreditCard className="text-[#262842]" size={18} /> Payment & Billing Details

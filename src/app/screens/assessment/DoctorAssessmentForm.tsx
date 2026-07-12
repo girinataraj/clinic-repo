@@ -12,6 +12,7 @@ import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Sa
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { SectionCard, FormField, doctorInputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
+import { StepNeuroExam, getEmptyNeuroData } from './StepNeuroExam';
 
 import { AnthropometricSection } from './AnthropometricSection';
 
@@ -44,7 +45,7 @@ export function DoctorAssessmentForm() {
   const [submitError, setSubmitError] = useState<string|null>(null);
   const createEvaluation = useCreateEvaluation();
 
-  const [patientInfo, setPatientInfo] = useState<{name:string;age:string;phone:string;gender:'Male'|'Female'|'Other';address:string}>({name:'',age:'',phone:'',gender:'Male',address:''});
+  const [patientInfo, setPatientInfo] = useState<{name:string;age:string;phone:string;gender:'Male'|'Female'|'Other';address:string;condition:string[]}>({name:'',age:'',phone:'',gender:'Male',address:'',condition:[]});
   const [vitals, setVitals] = useState({bp_sys:'',bp_dia:'',pr:'',spo2:'',temp:'',ef:''});
   const [chiefComplaints, setChiefComplaints] = useState<string[]>([]);
   const [complaintsText, setComplaintsText] = useState('');
@@ -70,6 +71,7 @@ export function DoctorAssessmentForm() {
   const [billAmount, setBillAmount] = useState<number|null>(null);
   const [billAmountInput, setBillAmountInput] = useState('');
   const [visitType, setVisitType] = useState<'Clinic'|'Home Visit'|'IP'|'Day Care'>('Clinic');
+  const [neuroData, setNeuroData] = useState<any>(getEmptyNeuroData());
 
   // Follow-up
   const { data: previousEval } = useLatestEvaluation(resolvedPatientId || null);
@@ -97,7 +99,10 @@ export function DoctorAssessmentForm() {
 
   useEffect(() => {
     if (patientById && !foundPatient && resolvedPatientId) {
-      setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??''});
+      const cond = patientById.condition
+        ? patientById.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
+        : [];
+      setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??'',condition:cond});
       setPhoneInput(patientById.phone??phoneToFetch);
       if (patientById.therapistId) setSelectedTherapistId(patientById.therapistId);
     }
@@ -105,7 +110,10 @@ export function DoctorAssessmentForm() {
 
   useEffect(() => {
     if (foundPatient && resolvedPatientId && resolvedPatientId === foundPatient.id) {
-      setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??''});
+      const cond = foundPatient.condition
+        ? foundPatient.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
+        : [];
+      setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??'',condition:cond});
       if (foundPatient.therapistId) setSelectedTherapistId(foundPatient.therapistId);
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);
@@ -157,6 +165,9 @@ export function DoctorAssessmentForm() {
           suggestedStartDate: tp.suggestedStartDate || '',
         });
       }
+      if (previousEval.neuroData) {
+        setNeuroData(previousEval.neuroData);
+      }
     }
   }, [previousEval]);
 
@@ -205,7 +216,7 @@ export function DoctorAssessmentForm() {
         gender: patientInfo.gender,
         phone: patientInfo.phone,
         city: patientInfo.address,
-        condition: selectedDiagnoses.length > 0 ? selectedDiagnoses[0] : (diagnosisNotes || undefined),
+        condition: patientInfo.condition && patientInfo.condition.length > 0 ? patientInfo.condition.join(', ') : '',
       });
 
       // 2. Create the evaluation record
@@ -238,13 +249,32 @@ export function DoctorAssessmentForm() {
           ...clinicalExamData,
           examinationNotes: examinationNotes.trim() || undefined
         } : undefined,
+        neuroData: patientInfo.condition?.includes('Neuro') ? neuroData : undefined,
       });
       setSaved(true);
       setTimeout(() => navigate(`/${currentRole}/report?patientId=${resolvedPatientId}`), 2000);
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to save.'); }
   };
 
-  const totalSteps = ASSESSMENT_STEPS.length;
+  const hasNeuro = patientInfo.condition?.includes('Neuro');
+  const stepsList = [
+    { label: 'Patient', key: 'patient' },
+    { label: 'Vitals', key: 'vitals' },
+    { label: 'History', key: 'history' },
+    { label: 'Complaints', key: 'complaints' },
+    { label: 'VAS Scale', key: 'pain' },
+    { label: 'Examination', key: 'examination' },
+    ...(hasNeuro ? [
+      { label: 'Neuro: Mental & Nerves', key: 'neuro_mental' },
+      { label: 'Neuro: Sensory & Motor', key: 'neuro_sensory' },
+      { label: 'Neuro: Coordination & Balance', key: 'neuro_coordination' },
+      { label: 'Neuro: Gait & Hand', key: 'neuro_gait_hand' }
+    ] : []),
+    { label: 'Diagnosis', key: 'diagnosis' },
+    { label: 'Treatment', key: 'treatment' },
+    { label: 'Review & Pay', key: 'review' }
+  ];
+  const totalSteps = stepsList.length;
   const isPhotoUploaded = Boolean(intakePhoto);
 
   if (saved) {
@@ -282,7 +312,7 @@ export function DoctorAssessmentForm() {
             </button>
             <div>
               <h1 className="text-[17px] font-black text-white tracking-tight">Assessment Form</h1>
-              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} — {ASSESSMENT_STEPS[step]?.label}</p>
+              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} — {stepsList[step]?.label}</p>
             </div>
           </div>
           <button 
@@ -306,7 +336,7 @@ export function DoctorAssessmentForm() {
             
             {/* Step Indicators */}
             <div className="flex justify-center gap-2">
-              {ASSESSMENT_STEPS.map((_, i) => (
+              {stepsList.map((_, i) => (
                 <div 
                   key={i} 
                   className={`rounded-full transition-all duration-500 h-1.5 ${
@@ -401,11 +431,15 @@ export function DoctorAssessmentForm() {
           {step===3&&<StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} chiefComplaintsList={chiefComplaintsList} associatedSymptomsList={associatedSymptomsList} />}
           {step===4&&<StepPainScale painLevel={painLevel} setPainLevel={setPainLevel} isDoctorRole={isDoctorRole} />}
           {step===5&&<StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} chiefComplaints={chiefComplaints} clinicalExamData={clinicalExamData} onClinicalExamChange={setClinicalExamData} testMap={testMap} romData={romData} setRomData={setRomData} />}
-          {step===6&&<StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} selectedDiagnoses={selectedDiagnoses} setSelectedDiagnoses={setSelectedDiagnoses} chiefComplaints={chiefComplaints} diagnosisList={diagnosisList} relevanceMap={relevanceMap} />}
-          {step===7&&<StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} treatmentsList={treatments} />}
+          {hasNeuro && step===6&&<StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={1} />}
+          {hasNeuro && step===7&&<StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={2} />}
+          {hasNeuro && step===8&&<StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={3} />}
+          {hasNeuro && step===9&&<StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={4} />}
+          {step===(hasNeuro ? 10 : 6)&&<StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} selectedDiagnoses={selectedDiagnoses} setSelectedDiagnoses={setSelectedDiagnoses} chiefComplaints={chiefComplaints} diagnosisList={diagnosisList} relevanceMap={relevanceMap} />}
+          {step===(hasNeuro ? 11 : 7)&&<StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} treatmentsList={treatments} />}
 
           {/* Step 8: Review & Payment */}
-          {step===8&&(
+          {step===(hasNeuro ? 12 : 8)&&(
             <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-6 duration-500">
               <SectionCard icon={<Save size={20} className="text-indigo-600 dark:text-indigo-400" />} title="Final Review" accent="doctor">
                 <FormField label="Visit Type">

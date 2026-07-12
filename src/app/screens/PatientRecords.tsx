@@ -168,7 +168,7 @@ export function PatientRecords() {
               <div className="rounded-xl flex items-center justify-center print:border print:border-orange-100 bg-orange-50 dark:bg-orange-900/30 w-9 h-9">
                 <Sliders size={18} className="text-orange-500 dark:text-orange-400" />
               </div>
-              <h2 className="text-[16px] font-extrabold text-slate-900 dark:text-white">Pain Scale</h2>
+              <h2 className="text-[16px] font-extrabold text-slate-900 dark:text-white">VAS Scale</h2>
             </div>
             <div className="flex flex-col items-center">
               <div className="rounded-full flex items-center justify-center mb-3" style={{ width: '100px', height: '100px', background: `${painColors[pain]}20` }}>

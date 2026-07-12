@@ -181,12 +181,12 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
         </section>
       )}
 
-      {/* Chief Complaints & Pain Level */}
+      {/* Chief Complaints & VAS Scale */}
       {(chiefComplaints || (painLevel !== undefined && painLevel !== null)) && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <Heart size={16} className="text-rose-500" />
-            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Complaints & Pain Scale</span>
+            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Complaints & VAS Scale</span>
           </div>
           <div className="flex flex-col gap-4 text-xs font-semibold">
             {chiefComplaints && (
@@ -199,7 +199,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
             )}
             {painLevel !== undefined && painLevel !== null && (
               <div>
-                <span className="text-[10px] text-slate-400 block mb-1 font-bold">Pain Scale Rating</span>
+                <span className="text-[10px] text-slate-400 block mb-1 font-bold">VAS Scale Rating</span>
                 <span className="text-rose-600 dark:text-rose-400 font-extrabold text-sm">{painLevel}/10</span>
               </div>
             )}

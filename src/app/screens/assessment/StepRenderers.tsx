@@ -73,6 +73,30 @@ export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handl
           </div>
         )}
       </FormField>
+      <FormField label="Condition (Check all that apply)">
+        <div className="flex gap-4 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+          {['Ortho', 'Neuro', 'Cardio'].map((c) => {
+            const isChecked = patientInfo.condition?.includes(c) || false;
+            return (
+              <label key={c} className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => {
+                    const current = patientInfo.condition || [];
+                    const next = isChecked
+                      ? current.filter((x: string) => x !== c)
+                      : [...current, c];
+                    setPatientInfo({ ...patientInfo, condition: next });
+                  }}
+                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                />
+                {c}
+              </label>
+            );
+          })}
+        </div>
+      </FormField>
     </SectionCard>
   );
 }
@@ -283,7 +307,7 @@ export function StepPainScale({ painLevel, setPainLevel, isDoctorRole }: any) {
 
   return (
     <div className="flex flex-col gap-3">
-      <SectionCard icon={<Sliders size={18} className={`${iconColor1} dark:text-orange-400`} />} title="Pain Scale" subtitle="Rate current pain 0–10" accent={accent}>
+      <SectionCard icon={<Sliders size={18} className={`${iconColor1} dark:text-orange-400`} />} title="VAS Scale" subtitle="Rate current pain 0–10" accent={accent}>
         <div className="flex flex-col items-center mb-4">
           <div className={`rounded-full flex items-center justify-center w-20 h-20 ${painColors[painLevel]} mb-2`}>
             <span className="text-[28px] font-black text-white">{painLevel}</span>
