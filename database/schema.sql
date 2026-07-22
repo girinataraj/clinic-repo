@@ -249,7 +249,7 @@ new_doctor AS (
     display_id, role, name, email, password_hash
   ) VALUES (
     'USR-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('user_display_id_seq')::text, 3, '0'),
-    'doctor', 'Dr. SV. Sathish Kumar', 'doctor@saai.com', crypt('Password@123', gen_salt('bf'))
+    'doctor', 'Dr. Sathish', 'sathish@saai.com', crypt('spcerd@611', gen_salt('bf'))
   )
   RETURNING id
 ),

@@ -171,10 +171,17 @@ export function DoctorAssessmentForm() {
         });
       }
       if (previousEval.neuroData) {
-        setNeuroData(previousEval.neuroData);
+        setNeuroData({ ...getEmptyNeuroData(), ...previousEval.neuroData });
       }
       if (previousEval.cardioData) {
-        setCardioData(previousEval.cardioData);
+        setCardioData({
+          ...getEmptyCardioExam(),
+          ...previousEval.cardioData,
+          exercisePrescription: {
+            ...getEmptyCardioExam().exercisePrescription,
+            ...(previousEval.cardioData.exercisePrescription || {})
+          }
+        });
       }
     }
   }, [previousEval]);

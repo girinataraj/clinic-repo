@@ -10,7 +10,7 @@ import { ENDPOINTS } from '../../services/endpoints';
 import {
   ArrowLeft, Printer, Share2, Download, CheckCircle,
   Activity, Phone, Mail, Dumbbell, Loader2, Search,
-  Stethoscope, ClipboardList, Scale, CheckSquare
+  Stethoscope, ClipboardList, Scale, CheckSquare, Brain
 } from 'lucide-react';
 
 import { BORG_SCALE_MAP } from './assessment/clinicalConfig';
@@ -78,6 +78,10 @@ export function ReportGeneration() {
   const mergedTreatmentPlan = useMemo(() => getMergedField('treatmentPlan', 'treatment_plan', false, true), [getMergedField]);
   const mergedCardioData = useMemo(() => {
     return evaluation?.cardioData || (evaluation as any)?.cardio_data || null;
+  }, [evaluation]);
+
+  const mergedNeuroData = useMemo(() => {
+    return evaluation?.neuroData || (evaluation as any)?.neuro_data || null;
   }, [evaluation]);
 
   const mergedMedicalHistory = useMemo(() => {
@@ -790,6 +794,42 @@ export function ReportGeneration() {
                 </section>
               )}
 
+              {/* Neurological Exam */}
+              {mergedNeuroData && Object.keys(mergedNeuroData).some(key => mergedNeuroData[key] && Object.values(mergedNeuroData[key]).some(Boolean)) && (
+                <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <Brain size={16} className="text-[#3B3E66] dark:text-slate-350" />
+                    <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Neurological Examination</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-semibold">
+                    {mergedNeuroData.mental && Object.values(mergedNeuroData.mental).some(Boolean) && (
+                      <div className="p-3 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800">
+                        <span className="text-[9px] text-slate-400 uppercase block font-bold mb-1">Mental Functions</span>
+                        {Object.entries(mergedNeuroData.mental).map(([k, v]) => v ? (
+                          <p key={k} className="text-[11px] text-slate-700 dark:text-slate-300"><strong className="capitalize">{k}:</strong> {String(v)}</p>
+                        ) : null)}
+                      </div>
+                    )}
+                    {mergedNeuroData.sensory && Object.values(mergedNeuroData.sensory).some(Boolean) && (
+                      <div className="p-3 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800">
+                        <span className="text-[9px] text-slate-400 uppercase block font-bold mb-1">Sensory & Reflexes</span>
+                        {Object.entries(mergedNeuroData.sensory).map(([k, v]) => v ? (
+                          <p key={k} className="text-[11px] text-slate-700 dark:text-slate-300"><strong className="capitalize">{k}:</strong> {String(v)}</p>
+                        ) : null)}
+                      </div>
+                    )}
+                    {mergedNeuroData.coordination && Object.values(mergedNeuroData.coordination).some(Boolean) && (
+                      <div className="p-3 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800">
+                        <span className="text-[9px] text-slate-400 uppercase block font-bold mb-1">Coordination & Balance</span>
+                        {Object.entries(mergedNeuroData.coordination).map(([k, v]) => v ? (
+                          <p key={k} className="text-[11px] text-slate-700 dark:text-slate-300"><strong className="capitalize">{k}:</strong> {String(v)}</p>
+                        ) : null)}
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
               {/* Functional Limitations */}
               {mergedFunctionalScores.length > 0 && (
                 <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
@@ -953,7 +993,7 @@ export function ReportGeneration() {
                       {evaluation.createdBy?.role === 'doctor' ? (evaluation.createdBy?.name?.split(' ').map(n => n[0]).join('. ') ?? '') : 'S. Kumar'}
                     </span>
                   </div>
-                  <p className="text-[12px] font-bold text-[#17252A] dark:text-white">{evaluation.createdBy?.role === 'doctor' ? (evaluation.createdBy?.name ?? '—') : 'Dr. Satish Kumar'}</p>
+                  <p className="text-[12px] font-bold text-[#17252A] dark:text-white">{evaluation.createdBy?.role === 'doctor' ? (evaluation.createdBy?.name ?? '—') : 'Dr. Sathish'}</p>
                   <p style={{ fontSize: '11px', color: '#262842', marginTop: '2px' }}>SAAI Physiotherapy</p>
                 </div>
                 <div className="text-right">

@@ -1,15 +1,17 @@
 import React, { useMemo } from 'react';
-import { ROM_CONFIG } from '../screens/assessment/clinicalConfig';
+import { ROM_CONFIG, BORG_SCALE_MAP } from '../screens/assessment/clinicalConfig';
 import { 
   Activity, 
   Scale, 
   Stethoscope, 
   CheckSquare, 
   Dumbbell, 
-  FileText, 
   ClipboardList,
   Heart,
-  StickyNote
+  StickyNote,
+  Brain,
+  Zap,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface EvaluationSummaryReportProps {
@@ -36,23 +38,18 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
   const diagnosisList = evaluation.diagnosisList || evaluation.diagnosis_list || [];
   const plan = evaluation.plan;
   const treatmentPlan = evaluation.treatmentPlan || evaluation.treatment_plan;
-  const management = evaluation.management;
   const musclePowerRom = evaluation.musclePowerRom || evaluation.muscle_power_rom;
   const anthropometrics = evaluation.anthropometrics;
   const clinicalExamination = evaluation.clinicalExamination || evaluation.clinical_examination;
 
-  // Casing of remarks / history fields
-  const familyHistory = evaluation.familyHistory || evaluation.family_history;
-  const lifestyleHistory = evaluation.lifestyleHistory || evaluation.lifestyle_history;
-  const allergies = evaluation.allergies;
-  const currentMedications = evaluation.currentMedications || evaluation.current_medications;
-  const previousMedications = evaluation.previousMedications || evaluation.previous_medications;
-  const labReports = evaluation.labReports || evaluation.lab_reports;
-  const radiologyReports = evaluation.radiologyReports || evaluation.radiology_reports;
-  const prescriptions = evaluation.prescriptions;
-  const procedures = evaluation.procedures;
-  const followUpPlan = evaluation.followUpPlan || evaluation.follow_up_plan;
-  const mentalStatusExamination = evaluation.mentalStatusExamination || evaluation.mental_status_examination;
+  // New assessment fields
+  const neuroData = evaluation.neuroData || evaluation.neuro_data;
+  const cardioData = evaluation.cardioData || evaluation.cardio_data;
+  const xrayFindings = evaluation.xrayFindings || evaluation.xray_findings || (treatmentPlan && treatmentPlan.xrayFindings);
+  const mriFindings = evaluation.mriFindings || evaluation.mri_findings || (treatmentPlan && treatmentPlan.mriFindings);
+  const pftFindings = evaluation.pftFindings || evaluation.pft_findings || (treatmentPlan && treatmentPlan.pftFindings);
+
+  // Remarks & history fields
   const clinicalFindings = evaluation.clinicalFindings || evaluation.clinical_findings;
   const therapyNotes = evaluation.therapyNotes || evaluation.therapy_notes;
   const progressNotes = evaluation.progressNotes || evaluation.progress_notes;
@@ -64,7 +61,6 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
 
   // Accent styles matching role
   const accentColor = isDoctorRole ? 'text-[#262842]' : 'text-teal-700';
-  const badgeColor = isDoctorRole ? 'bg-[#262842] text-white' : 'bg-teal-700 text-white';
 
   // Helper to parse ROM values safely
   const getRomValue = (romObj: any, joint: string, movement: string) => {
@@ -114,6 +110,10 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
     }
   }
 
+  const hasAnthropometrics = anthropometrics && Object.values(anthropometrics).some(v => v !== '' && v !== null && v !== undefined);
+  const hasCardioData = cardioData && (cardioData.borgRating || cardioData.vo2Max || cardioData.sixMinWalk || cardioData.rockportWalk || cardioData.harvardStep || (cardioData.exercisePrescription && Object.values(cardioData.exercisePrescription).some(Boolean)));
+  const hasNeuroData = neuroData && Object.keys(neuroData).some(key => neuroData[key] && Object.values(neuroData[key]).some(Boolean));
+
   return (
     <div className="flex flex-col gap-6 w-full text-left">
 
@@ -121,7 +121,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
       <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-semibold">
           <div>
-            <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Conducting Therapist</span>
+            <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Conducting Therapist / Clinician</span>
             <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{therapistName}</span>
           </div>
           {evaluation.visitType && (
@@ -243,6 +243,73 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
         </section>
       )}
 
+      {/* Anthropometrics Section */}
+      {hasAnthropometrics && (
+        <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <Scale size={16} className={accentColor} />
+            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Anthropometrics & Body Composition</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-semibold">
+            {anthropometrics.height && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Height</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.height} cm</span>
+              </div>
+            )}
+            {anthropometrics.weight && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Weight</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.weight} kg</span>
+              </div>
+            )}
+            {anthropometrics.bmi && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">BMI</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.bmi}</span>
+              </div>
+            )}
+            {anthropometrics.waist && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Waist Circumference</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.waist} cm</span>
+              </div>
+            )}
+            {anthropometrics.hip && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Hip Circumference</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.hip} cm</span>
+              </div>
+            )}
+            {anthropometrics.whRatio && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Waist-to-Hip Ratio</span>
+                <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{anthropometrics.whRatio}</span>
+              </div>
+            )}
+            {(anthropometrics.chestInspiration || anthropometrics.chestExpiration || anthropometrics.chestExpansion) && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 col-span-2 sm:col-span-3 shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-1.5 font-bold uppercase">Chest Measurements</span>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <span className="text-[9px] text-slate-400 block uppercase font-bold">Inspiration</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-extrabold">{anthropometrics.chestInspiration || '—'} cm</span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-slate-400 block uppercase font-bold">Expiration</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-extrabold">{anthropometrics.chestExpiration || '—'} cm</span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-teal-600 dark:text-teal-400 block uppercase font-bold">Expansion</span>
+                    <span className="text-teal-700 dark:text-teal-300 font-black">{anthropometrics.chestExpansion || '—'} cm</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Medical History */}
       {medicalHistory && medicalHistory.length > 0 && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
@@ -261,14 +328,14 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
       )}
 
       {/* Clinical Examination (Tests & Imaging) */}
-      {hasClinicalExam && (
+      {(hasClinicalExam || xrayFindings || mriFindings || pftFindings) && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <Stethoscope size={16} className={accentColor} />
-            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Clinical Examination</span>
+            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Clinical Examination & Diagnostic Imaging</span>
           </div>
           <div className="flex flex-col gap-4 text-xs">
-            {clinicalExamination.tests && Object.keys(clinicalExamination.tests).length > 0 && (
+            {clinicalExamination?.tests && Object.keys(clinicalExamination.tests).length > 0 && (
               <div>
                 <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-2.5">Special Physical Tests</span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
@@ -291,17 +358,36 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
               </div>
             )}
 
-            {clinicalExamination.imaging && Object.keys(clinicalExamination.imaging).length > 0 && (
+            {/* Structured Imaging Findings (X-Ray, MRI, PFT) */}
+            {(xrayFindings || mriFindings || pftFindings || (clinicalExamination?.imaging && Object.keys(clinicalExamination.imaging).length > 0)) && (
               <div className="mt-2 border-t border-slate-150 dark:border-slate-800/80 pt-4">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-2.5">Imaging Reports (X-Ray & MRI)</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-2.5">Imaging & Lab Reports</span>
                 <div className="flex flex-col gap-2">
-                  {Object.entries(clinicalExamination.imaging).map(([region, findings]: [string, any]) => {
+                  {xrayFindings && (
+                    <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/10 flex flex-col gap-1 shadow-sm">
+                      <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase">X-Ray Findings</span>
+                      <p className="text-slate-700 dark:text-slate-300 font-semibold">{xrayFindings}</p>
+                    </div>
+                  )}
+                  {mriFindings && (
+                    <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/10 flex flex-col gap-1 shadow-sm">
+                      <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase">MRI Findings</span>
+                      <p className="text-slate-700 dark:text-slate-300 font-semibold">{mriFindings}</p>
+                    </div>
+                  )}
+                  {pftFindings && (
+                    <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/10 flex flex-col gap-1 shadow-sm">
+                      <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase">PFT Findings</span>
+                      <p className="text-slate-700 dark:text-slate-300 font-semibold">{pftFindings}</p>
+                    </div>
+                  )}
+                  {clinicalExamination?.imaging && Object.entries(clinicalExamination.imaging).map(([region, findings]: [string, any]) => {
                     if (!findings.xray?.trim() && !findings.mri?.trim()) return null;
                     return (
                       <div key={region} className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/10 flex flex-col gap-1.5 shadow-sm">
                         <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase">{region} Imaging</span>
-                        {findings.xray?.trim() && <p className="text-slate-700 dark:text-slate-300 font-semibold"><strong className="text-slate-400 uppercase text-[9px] block">X-Ray Findings:</strong> {findings.xray}</p>}
-                        {findings.mri?.trim() && <p className="text-slate-700 dark:text-slate-300 font-semibold"><strong className="text-slate-400 uppercase text-[9px] block">MRI Findings:</strong> {findings.mri}</p>}
+                        {findings.xray?.trim() && <p className="text-slate-700 dark:text-slate-300 font-semibold"><strong className="text-slate-400 uppercase text-[9px] block">X-Ray:</strong> {findings.xray}</p>}
+                        {findings.mri?.trim() && <p className="text-slate-700 dark:text-slate-300 font-semibold"><strong className="text-slate-400 uppercase text-[9px] block">MRI:</strong> {findings.mri}</p>}
                       </div>
                     );
                   })}
@@ -309,10 +395,131 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
               </div>
             )}
 
-            {clinicalExamination.examinationNotes && (
+            {clinicalExamination?.examinationNotes && (
               <div className="mt-2 border-t border-slate-150 dark:border-slate-800/80 pt-4">
                 <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-1.5">Additional Physical Notes</span>
                 <p className="p-3.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-xl whitespace-pre-wrap font-medium border border-slate-150 dark:border-slate-850">{clinicalExamination.examinationNotes}</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Neurological Examination */}
+      {hasNeuroData && (
+        <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <Brain size={16} className={accentColor} />
+            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Neurological Examination</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
+            {neuroData.mental && Object.values(neuroData.mental).some(Boolean) && (
+              <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Higher Mental Functions</span>
+                <div className="flex flex-col gap-1.5 text-slate-700 dark:text-slate-300">
+                  {neuroData.mental.consciousness && <p><strong className="text-slate-400 text-[10px]">Consciousness:</strong> {neuroData.mental.consciousness}</p>}
+                  {neuroData.mental.orientation && <p><strong className="text-slate-400 text-[10px]">Orientation:</strong> {neuroData.mental.orientation}</p>}
+                  {neuroData.mental.memory && <p><strong className="text-slate-400 text-[10px]">Memory:</strong> {neuroData.mental.memory}</p>}
+                  {neuroData.mental.speech && <p><strong className="text-slate-400 text-[10px]">Speech:</strong> {neuroData.mental.speech}</p>}
+                </div>
+              </div>
+            )}
+            {neuroData.cranial && Object.values(neuroData.cranial).some(Boolean) && (
+              <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Cranial Nerves</span>
+                <div className="flex flex-col gap-1.5 text-slate-700 dark:text-slate-300">
+                  {Object.entries(neuroData.cranial).map(([nerve, status]) => status ? (
+                    <p key={nerve}><strong className="text-slate-400 text-[10px] capitalize">{nerve.replace(/([A-Z])/g, ' $1')}:</strong> {String(status)}</p>
+                  ) : null)}
+                </div>
+              </div>
+            )}
+            {neuroData.sensory && Object.values(neuroData.sensory).some(Boolean) && (
+              <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Sensory & Reflexes</span>
+                <div className="flex flex-col gap-1.5 text-slate-700 dark:text-slate-300">
+                  {neuroData.sensory.lightTouch && <p><strong className="text-slate-400 text-[10px]">Light Touch:</strong> {neuroData.sensory.lightTouch}</p>}
+                  {neuroData.sensory.pinprick && <p><strong className="text-slate-400 text-[10px]">Pinprick:</strong> {neuroData.sensory.pinprick}</p>}
+                  {neuroData.sensory.proprioception && <p><strong className="text-slate-400 text-[10px]">Proprioception:</strong> {neuroData.sensory.proprioception}</p>}
+                  {neuroData.sensory.reflexes && <p><strong className="text-slate-400 text-[10px]">Reflexes:</strong> {neuroData.sensory.reflexes}</p>}
+                </div>
+              </div>
+            )}
+            {neuroData.coordination && Object.values(neuroData.coordination).some(Boolean) && (
+              <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Coordination & Balance</span>
+                <div className="flex flex-col gap-1.5 text-slate-700 dark:text-slate-300">
+                  {neuroData.coordination.fingerToNose && <p><strong className="text-slate-400 text-[10px]">Finger to Nose:</strong> {neuroData.coordination.fingerToNose}</p>}
+                  {neuroData.coordination.heelToShin && <p><strong className="text-slate-400 text-[10px]">Heel to Shin:</strong> {neuroData.coordination.heelToShin}</p>}
+                  {neuroData.coordination.romberg && <p><strong className="text-slate-400 text-[10px]">Romberg Test:</strong> {neuroData.coordination.romberg}</p>}
+                  {neuroData.coordination.bergScore && <p><strong className="text-slate-400 text-[10px]">Berg Balance Score:</strong> {neuroData.coordination.bergScore}</p>}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Cardiorespiratory Assessment */}
+      {hasCardioData && (
+        <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <Zap size={16} className={accentColor} />
+            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Cardiorespiratory Assessment</span>
+          </div>
+          <div className="flex flex-col gap-4 text-xs font-semibold">
+            {cardioData.borgRating && (
+              <div className="flex justify-between items-center p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800">
+                <span className="text-slate-500 font-bold">Borg Rating (Perceived Exertion)</span>
+                <span className="font-extrabold text-slate-800 dark:text-white">
+                  {cardioData.borgRating} — {BORG_SCALE_MAP[cardioData.borgRating] || ''}
+                </span>
+              </div>
+            )}
+            {(cardioData.vo2Max || cardioData.sixMinWalk || cardioData.rockportWalk || cardioData.harvardStep) && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {cardioData.vo2Max && (
+                  <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm text-center">
+                    <span className="text-[9px] text-slate-400 block mb-1 uppercase font-bold">VO2 Max</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{cardioData.vo2Max}</span>
+                  </div>
+                )}
+                {cardioData.sixMinWalk && (
+                  <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm text-center">
+                    <span className="text-[9px] text-slate-400 block mb-1 uppercase font-bold">6 Min Walk Test</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{cardioData.sixMinWalk}</span>
+                  </div>
+                )}
+                {cardioData.rockportWalk && (
+                  <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm text-center">
+                    <span className="text-[9px] text-slate-400 block mb-1 uppercase font-bold">Rockport Walk Test</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{cardioData.rockportWalk}</span>
+                  </div>
+                )}
+                {cardioData.harvardStep && (
+                  <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm text-center">
+                    <span className="text-[9px] text-slate-400 block mb-1 uppercase font-bold">Harvard Step Test</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{cardioData.harvardStep}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            {cardioData.exercisePrescription && Object.values(cardioData.exercisePrescription).some(Boolean) && (
+              <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Prescribed Cardio Parameters</span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {Object.entries(cardioData.exercisePrescription).map(([name, val]: [string, any]) => {
+                    if (!val) return null;
+                    const displayName = name === 'hiit' ? 'HIIT' : name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    const suffix = ['warmups', 'stretching'].includes(name) ? ' reps' : ' mins';
+                    return (
+                      <div key={name} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-150 dark:border-slate-700 flex justify-between items-center">
+                        <span className="text-[11px] text-slate-600 dark:text-slate-300 capitalize font-medium">{displayName}</span>
+                        <span className="font-extrabold text-slate-900 dark:text-white">{val}{suffix}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

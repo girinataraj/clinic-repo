@@ -455,7 +455,7 @@ export function LoginScreen() {
                 Therapist
               </button>
               <button
-                onClick={() => { setRole('doctor'); setIdentifier('doctor@saai.com'); setPassword('Password@123'); }}
+                onClick={() => { setRole('doctor'); setIdentifier('sathish@saai.com'); setPassword('spcerd@611'); }}
                 style={{ flex: 1, padding: '7px 4px', borderRadius: '12px', background: '#eef2ff', border: '1.5px solid #c7d2fe', fontSize: '11px', fontWeight: 700, color: '#4338ca' }}
               >
                 Doctor

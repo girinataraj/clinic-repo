@@ -53,11 +53,21 @@ export function StepCardioExam({
     });
   };
 
+  const prescription = {
+    warmups: '',
+    stretching: '',
+    hiit: '',
+    aerobics: '',
+    strengthTraining: '',
+    cooldown: '',
+    ...(data?.exercisePrescription || {})
+  };
+
   const updatePrescriptionField = (key: keyof CardioExamData['exercisePrescription'], value: string) => {
     onChange({
       ...data,
       exercisePrescription: {
-        ...data.exercisePrescription,
+        ...prescription,
         [key]: value
       }
     });
@@ -241,7 +251,7 @@ export function StepCardioExam({
           <FormField label="Warm-ups (repetitions)">
             <input
               type="text"
-              value={data.exercisePrescription.warmups}
+              value={prescription.warmups}
               onChange={(e) => updatePrescriptionField('warmups', e.target.value)}
               placeholder="e.g. 20 repetitions"
               className={inputStyle}
@@ -251,7 +261,7 @@ export function StepCardioExam({
           <FormField label="Stretching (repetitions)">
             <input
               type="text"
-              value={data.exercisePrescription.stretching}
+              value={prescription.stretching}
               onChange={(e) => updatePrescriptionField('stretching', e.target.value)}
               placeholder="e.g. 5 repetitions"
               className={inputStyle}
@@ -261,7 +271,7 @@ export function StepCardioExam({
           <FormField label="HIIT (minutes)">
             <input
               type="text"
-              value={data.exercisePrescription.hiit}
+              value={prescription.hiit}
               onChange={(e) => updatePrescriptionField('hiit', e.target.value)}
               placeholder="e.g. 15 mins"
               className={inputStyle}
@@ -271,7 +281,7 @@ export function StepCardioExam({
           <FormField label="Aerobics (minutes)">
             <input
               type="text"
-              value={data.exercisePrescription.aerobics}
+              value={prescription.aerobics}
               onChange={(e) => updatePrescriptionField('aerobics', e.target.value)}
               placeholder="e.g. 30 mins"
               className={inputStyle}
@@ -281,7 +291,7 @@ export function StepCardioExam({
           <FormField label="Strength Training (minutes)">
             <input
               type="text"
-              value={data.exercisePrescription.strengthTraining}
+              value={prescription.strengthTraining}
               onChange={(e) => updatePrescriptionField('strengthTraining', e.target.value)}
               placeholder="e.g. 20 mins"
               className={inputStyle}
@@ -291,7 +301,7 @@ export function StepCardioExam({
           <FormField label="Cool Down (minutes)">
             <input
               type="text"
-              value={data.exercisePrescription.cooldown}
+              value={prescription.cooldown}
               onChange={(e) => updatePrescriptionField('cooldown', e.target.value)}
               placeholder="e.g. 10 mins"
               className={inputStyle}
