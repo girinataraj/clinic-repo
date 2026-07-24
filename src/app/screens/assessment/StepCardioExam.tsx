@@ -73,7 +73,10 @@ export function StepCardioExam({
     });
   };
 
-  const selectedExertion = data.borgRating ? BORG_SCALE_MAP[data.borgRating] : 'No rating selected';
+  const selectedBorgRatings: string[] = (data.borgRating || '')
+    .split(',')
+    .map((r) => r.trim())
+    .filter(Boolean);
 
   // Exertion level color helper
   const getBorgBadgeClass = (rating: string) => {
@@ -107,7 +110,7 @@ export function StepCardioExam({
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
                   {Object.keys(BORG_DISPLAY_LABELS).map((rating) => {
-                    const isSelected = data.borgRating === rating;
+                    const isSelected = selectedBorgRatings.includes(rating);
                     const rowBgClass = isSelected
                       ? isDoctorRole
                         ? 'bg-indigo-50/50 dark:bg-indigo-950/20 font-bold'
@@ -127,11 +130,15 @@ export function StepCardioExam({
                             type="checkbox"
                             checked={isSelected}
                             onChange={(e) => {
+                              let nextRatings: string[];
                               if (e.target.checked) {
-                                updateField('borgRating', rating);
+                                nextRatings = Array.from(new Set([...selectedBorgRatings, rating])).sort(
+                                  (a, b) => parseInt(a, 10) - parseInt(b, 10)
+                                );
                               } else {
-                                updateField('borgRating', '');
+                                nextRatings = selectedBorgRatings.filter((r) => r !== rating);
                               }
+                              updateField('borgRating', nextRatings.join(', '));
                             }}
                             className={`h-4.5 w-4.5 rounded cursor-pointer ${
                               isDoctorRole
@@ -147,13 +154,20 @@ export function StepCardioExam({
               </table>
             </div>
 
-            {data.borgRating && (
-              <div className={`p-4 rounded-xl flex items-center gap-3 w-full ${getBorgBadgeClass(data.borgRating)}`}>
-                <Info size={18} className="shrink-0" />
-                <div>
-                  <p className="text-xs font-black uppercase tracking-wider mb-0.5">Selected Exertion Level</p>
-                  <p className="text-sm font-bold">{data.borgRating} - {selectedExertion}</p>
-                </div>
+            {selectedBorgRatings.length > 0 && (
+              <div className="flex flex-col gap-2.5 w-full">
+                {selectedBorgRatings.map((rating) => {
+                  const exertionText = BORG_SCALE_MAP[rating] || BORG_DISPLAY_LABELS[rating] || '';
+                  return (
+                    <div key={rating} className={`p-3.5 rounded-xl flex items-center gap-3 w-full ${getBorgBadgeClass(rating)}`}>
+                      <Info size={18} className="shrink-0" />
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wider mb-0.5">Selected Exertion Level</p>
+                        <p className="text-sm font-bold">{rating}{exertionText ? ` - ${exertionText}` : ''}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
