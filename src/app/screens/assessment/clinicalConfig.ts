@@ -398,3 +398,18 @@ export const BORG_SCALE_MAP: Record<string, string> = {
   '19': 'Extremely Hard',
   '20': 'Maximal Exertion'
 };
+
+export function formatBorgRatings(borgRating?: string): string {
+  if (!borgRating) return '';
+  const ratings = borgRating
+    .split(',')
+    .map((r) => r.trim())
+    .filter(Boolean);
+  if (ratings.length === 0) return '';
+  return ratings
+    .map((r) => {
+      const label = BORG_SCALE_MAP[r];
+      return label ? `${r} — ${label}` : r;
+    })
+    .join(', ');
+}

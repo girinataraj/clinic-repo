@@ -13,7 +13,7 @@ import {
   Stethoscope, ClipboardList, Scale, CheckSquare, Brain
 } from 'lucide-react';
 
-import { BORG_SCALE_MAP } from './assessment/clinicalConfig';
+import { BORG_SCALE_MAP, formatBorgRatings } from './assessment/clinicalConfig';
 
 export function ReportGeneration() {
   const navigate = useNavigate();
@@ -735,7 +735,7 @@ export function ReportGeneration() {
                       <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                         <span className="text-slate-500">Borg Rating (Perceived Exertion)</span>
                         <span className="font-extrabold text-slate-800 dark:text-white">
-                          {mergedCardioData.borgRating} — {BORG_SCALE_MAP[mergedCardioData.borgRating] || ''}
+                          {formatBorgRatings(mergedCardioData.borgRating)}
                         </span>
                       </div>
                     )}

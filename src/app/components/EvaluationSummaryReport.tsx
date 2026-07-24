@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ROM_CONFIG, BORG_SCALE_MAP } from '../screens/assessment/clinicalConfig';
+import { ROM_CONFIG, BORG_SCALE_MAP, formatBorgRatings } from '../screens/assessment/clinicalConfig';
 import { 
   Activity, 
   Scale, 
@@ -472,7 +472,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
               <div className="flex justify-between items-center p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800">
                 <span className="text-slate-500 font-bold">Borg Rating (Perceived Exertion)</span>
                 <span className="font-extrabold text-slate-800 dark:text-white">
-                  {cardioData.borgRating} — {BORG_SCALE_MAP[cardioData.borgRating] || ''}
+                  {formatBorgRatings(cardioData.borgRating)}
                 </span>
               </div>
             )}
