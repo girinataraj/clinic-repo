@@ -197,9 +197,11 @@ export function StepCardioExam({
           <FormField label="Warm-ups (repetitions)">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={2}
               value={prescription.warmups}
-              onChange={(e) => updatePrescriptionField('warmups', e.target.value)}
-              placeholder="e.g. 20 repetitions"
+              onChange={(e) => updatePrescriptionField('warmups', e.target.value.replace(/[^\d]/g, '').slice(0, 2))}
+              placeholder="e.g. 20"
               className={inputStyle}
             />
           </FormField>
@@ -207,9 +209,11 @@ export function StepCardioExam({
           <FormField label="Stretching (repetitions)">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={2}
               value={prescription.stretching}
-              onChange={(e) => updatePrescriptionField('stretching', e.target.value)}
-              placeholder="e.g. 5 repetitions"
+              onChange={(e) => updatePrescriptionField('stretching', e.target.value.replace(/[^\d]/g, '').slice(0, 2))}
+              placeholder="e.g. 5"
               className={inputStyle}
             />
           </FormField>
@@ -217,9 +221,11 @@ export function StepCardioExam({
           <FormField label="HIIT (minutes)">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={2}
               value={prescription.hiit}
-              onChange={(e) => updatePrescriptionField('hiit', e.target.value)}
-              placeholder="e.g. 15 mins"
+              onChange={(e) => updatePrescriptionField('hiit', e.target.value.replace(/[^\d]/g, '').slice(0, 2))}
+              placeholder="e.g. 15"
               className={inputStyle}
             />
           </FormField>
@@ -227,9 +233,11 @@ export function StepCardioExam({
           <FormField label="Aerobics (minutes)">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={2}
               value={prescription.aerobics}
-              onChange={(e) => updatePrescriptionField('aerobics', e.target.value)}
-              placeholder="e.g. 30 mins"
+              onChange={(e) => updatePrescriptionField('aerobics', e.target.value.replace(/[^\d]/g, '').slice(0, 2))}
+              placeholder="e.g. 30"
               className={inputStyle}
             />
           </FormField>
@@ -237,9 +245,11 @@ export function StepCardioExam({
           <FormField label="Strength Training (minutes)">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={2}
               value={prescription.strengthTraining}
-              onChange={(e) => updatePrescriptionField('strengthTraining', e.target.value)}
-              placeholder="e.g. 20 mins"
+              onChange={(e) => updatePrescriptionField('strengthTraining', e.target.value.replace(/[^\d]/g, '').slice(0, 2))}
+              placeholder="e.g. 20"
               className={inputStyle}
             />
           </FormField>
@@ -247,9 +257,11 @@ export function StepCardioExam({
           <FormField label="Cool Down (minutes)">
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={2}
               value={prescription.cooldown}
-              onChange={(e) => updatePrescriptionField('cooldown', e.target.value)}
-              placeholder="e.g. 10 mins"
+              onChange={(e) => updatePrescriptionField('cooldown', e.target.value.replace(/[^\d]/g, '').slice(0, 2))}
+              placeholder="e.g. 10"
               className={inputStyle}
             />
           </FormField>

@@ -10,8 +10,15 @@ interface Props {
 }
 
 export function AnthropometricSection({ data, onChange, isDoctorRole }: Props) {
-  const update = (field: keyof Anthropometrics, value: string) => {
-    onChange({ ...data, [field]: value });
+  const sanitizeDigitInput = (val: string, maxDigits: number) => {
+    // Retain only digits and slice to maxDigits
+    const digitsOnly = val.replace(/[^\d]/g, '');
+    return digitsOnly.slice(0, maxDigits);
+  };
+
+  const update = (field: keyof Anthropometrics, value: string, maxDigits?: number) => {
+    const finalVal = maxDigits ? sanitizeDigitInput(value, maxDigits) : value;
+    onChange({ ...data, [field]: finalVal });
   };
 
   const ic = isDoctorRole ? doctorInputClass : inputClass;
@@ -34,10 +41,26 @@ export function AnthropometricSection({ data, onChange, isDoctorRole }: Props) {
     >
       <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1">
         <FormField label="Height (cm)">
-          <input type="number" value={data.height} onChange={e => update('height', e.target.value)} placeholder="e.g. 170" className={ic} />
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={3}
+            value={data.height || ''}
+            onChange={e => update('height', e.target.value, 3)}
+            placeholder="e.g. 170"
+            className={ic}
+          />
         </FormField>
         <FormField label="Weight (kg)">
-          <input type="number" value={data.weight} onChange={e => update('weight', e.target.value)} placeholder="e.g. 72" className={ic} />
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={3}
+            value={data.weight || ''}
+            onChange={e => update('weight', e.target.value, 3)}
+            placeholder="e.g. 72"
+            className={ic}
+          />
         </FormField>
         <FormField label="BMI (auto)">
           <div className={`${ic} bg-slate-100 dark:bg-slate-700 font-bold ${data.bmi ? (parseFloat(data.bmi) > 30 ? 'text-red-600' : parseFloat(data.bmi) > 25 ? 'text-amber-600' : 'text-emerald-600') : 'text-slate-400'}`}>
@@ -45,19 +68,59 @@ export function AnthropometricSection({ data, onChange, isDoctorRole }: Props) {
           </div>
         </FormField>
         <FormField label="Excess Weight">
-          <input type="text" value={data.excessWeight} onChange={e => update('excessWeight', e.target.value)} placeholder="kg" className={ic} />
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={2}
+            value={data.excessWeight || ''}
+            onChange={e => update('excessWeight', e.target.value, 2)}
+            placeholder="kg (max 2 digits)"
+            className={ic}
+          />
         </FormField>
         <FormField label="Excess Calorie">
-          <input type="text" value={data.excessCalorie} onChange={e => update('excessCalorie', e.target.value)} placeholder="kcal" className={ic} />
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={2}
+            value={data.excessCalorie || ''}
+            onChange={e => update('excessCalorie', e.target.value, 2)}
+            placeholder="kcal (max 2 digits)"
+            className={ic}
+          />
         </FormField>
         <FormField label="Duration">
-          <input type="text" value={data.duration} onChange={e => update('duration', e.target.value)} placeholder="e.g. 6 months" className={ic} />
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={2}
+            value={data.duration || ''}
+            onChange={e => update('duration', e.target.value, 2)}
+            placeholder="e.g. 6 (max 2 digits)"
+            className={ic}
+          />
         </FormField>
         <FormField label="Waist (cm)">
-          <input type="number" value={data.waist} onChange={e => update('waist', e.target.value)} placeholder="e.g. 85" className={ic} />
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={3}
+            value={data.waist || ''}
+            onChange={e => update('waist', e.target.value, 3)}
+            placeholder="e.g. 85"
+            className={ic}
+          />
         </FormField>
         <FormField label="Hip (cm)">
-          <input type="number" value={data.hip} onChange={e => update('hip', e.target.value)} placeholder="e.g. 98" className={ic} />
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={3}
+            value={data.hip || ''}
+            onChange={e => update('hip', e.target.value, 3)}
+            placeholder="e.g. 98"
+            className={ic}
+          />
         </FormField>
         <FormField label="W/H Ratio (auto)">
           <div className={`${ic} bg-slate-100 dark:bg-slate-700 font-bold ${data.whRatio ? (isDoctorRole ? 'text-[#262842]' : 'text-blue-600') : 'text-slate-400'}`}>
@@ -68,3 +131,5 @@ export function AnthropometricSection({ data, onChange, isDoctorRole }: Props) {
     </SectionCard>
   );
 }
+
+export default AnthropometricSection;

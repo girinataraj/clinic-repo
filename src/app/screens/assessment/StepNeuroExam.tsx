@@ -124,6 +124,11 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
   const [openSec, setOpenSec] = useState<string>(initialOpenSec);
   const neuroData = data || getEmptyNeuroData();
 
+  const MMSE_MAX_MAP: Record<string, number> = {
+    q1: 5, q2: 5, q3: 3, q4: 5, q5: 3,
+    q6: 2, q7: 1, q8: 3, q9: 1, q10: 1, q11: 1
+  };
+
   const updateNested = (path: string[], val: any) => {
     const updated = JSON.parse(JSON.stringify(neuroData));
     let curr = updated;
@@ -131,20 +136,38 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
       if (!curr[path[i]]) curr[path[i]] = {};
       curr = curr[path[i]];
     }
-    curr[path[path.length - 1]] = val;
 
-    // Auto-calculate MMSE
+    let finalVal = val;
+    // Strict MMSE question score clamping to max score
+    if (path[0] === 'mmse' && path[1] !== 'total') {
+      const qKey = path[1];
+      const maxScore = MMSE_MAX_MAP[qKey] ?? 5;
+      if (val !== '' && val !== null && val !== undefined) {
+        let num = parseInt(String(val), 10);
+        if (isNaN(num) || num < 0) num = 0;
+        if (num > maxScore) num = maxScore;
+        finalVal = String(num);
+      }
+    }
+
+    curr[path[path.length - 1]] = finalVal;
+
+    // Auto-calculate MMSE total capped at 30
     if (path[0] === 'mmse' && path[1] !== 'total') {
       let sum = 0;
       let hasVal = false;
       for (let i = 1; i <= 11; i++) {
         const qKey = `q${i}`;
-        if (updated.mmse[qKey] !== '') {
-          sum += parseInt(updated.mmse[qKey] || '0', 10);
+        if (updated.mmse[qKey] !== '' && updated.mmse[qKey] !== undefined && updated.mmse[qKey] !== null) {
+          const itemMax = MMSE_MAX_MAP[qKey] ?? 5;
+          let score = parseInt(String(updated.mmse[qKey] || '0'), 10);
+          if (isNaN(score) || score < 0) score = 0;
+          if (score > itemMax) score = itemMax;
+          sum += score;
           hasVal = true;
         }
       }
-      updated.mmse.total = hasVal ? String(sum) : '';
+      updated.mmse.total = hasVal ? String(Math.min(30, sum)) : '';
     }
 
     onChange(updated);
@@ -208,17 +231,30 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
               >
                 <div className="flex flex-col gap-2.5">
                   <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wide">On Examination</span>
-                  <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
+                  <div className="flex flex-wrap items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
                     <span className="text-sm font-black text-slate-800 dark:text-slate-100">GCS :</span>
                     <span className="text-sm font-bold text-slate-700 dark:text-slate-350">E V M =</span>
                     <input
                       type="text"
                       value={neuroData.gcs?.e_v_m || ''}
                       placeholder="..."
-                      onChange={(e) => updateNested(['gcs', 'e_v_m'], e.target.value)}
+                      maxLength={10}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        const trimmed = raw.trim();
+                        if (/^\d+$/.test(trimmed)) {
+                          const num = parseInt(trimmed, 10);
+                          if (num > 15) {
+                            updateNested(['gcs', 'e_v_m'], '15');
+                            return;
+                          }
+                        }
+                        updateNested(['gcs', 'e_v_m'], raw);
+                      }}
                       className="w-32 text-center px-3 py-1.5 border border-slate-250 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     />
                     <span className="text-sm font-black text-slate-800 dark:text-slate-200">/ 15</span>
+                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 ml-1">(Max score: 15)</span>
                   </div>
                 </div>
               </NeuroAccordionSection>
@@ -260,7 +296,17 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                               min="0"
                               max={item.max}
                               value={neuroData.mmse?.[item.key] ?? ''}
-                              onChange={(e) => updateNested(['mmse', item.key], e.target.value)}
+                              onChange={(e) => {
+                                const raw = e.target.value;
+                                if (raw === '') {
+                                  updateNested(['mmse', item.key], '');
+                                  return;
+                                }
+                                let num = parseInt(raw, 10);
+                                if (isNaN(num) || num < 0) num = 0;
+                                if (num > item.max) num = item.max;
+                                updateNested(['mmse', item.key], String(num));
+                              }}
                               className={tableInputClass}
                               placeholder={`0-${item.max}`}
                             />
@@ -402,8 +448,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                                   <td key={side} className="p-1 border-r border-slate-200 dark:border-slate-850">
                                     <input
                                       type="text"
+                                      maxLength={3}
                                       value={neuroData.sensory?.[r.key]?.[side] || ''}
-                                      onChange={(e) => updateNested(['sensory', r.key, side], e.target.value)}
+                                      onChange={(e) => updateNested(['sensory', r.key, side], e.target.value.slice(0, 3))}
                                       className={tableInputClass}
                                     />
                                   </td>
@@ -480,8 +527,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <td className="p-2 border-r border-slate-200 dark:border-slate-800">
                               <input
                                 type="text"
+                                maxLength={3}
                                 value={neuroData.muscleGirth?.[row.key]?.rt || ''}
-                                onChange={(e) => updateNested(['muscleGirth', row.key, 'rt'], e.target.value)}
+                                onChange={(e) => updateNested(['muscleGirth', row.key, 'rt'], e.target.value.slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Rt"
                               />
@@ -489,8 +537,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <td className="p-2">
                               <input
                                 type="text"
+                                maxLength={3}
                                 value={neuroData.muscleGirth?.[row.key]?.lt || ''}
-                                onChange={(e) => updateNested(['muscleGirth', row.key, 'lt'], e.target.value)}
+                                onChange={(e) => updateNested(['muscleGirth', row.key, 'lt'], e.target.value.slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Lt"
                               />
@@ -522,8 +571,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <td className="p-2 border-r border-slate-200 dark:border-slate-800">
                               <input
                                 type="text"
+                                maxLength={3}
                                 value={neuroData.voluntaryControl?.[row.key]?.rt || ''}
-                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'rt'], e.target.value)}
+                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'rt'], e.target.value.slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Rt Control"
                               />
@@ -531,8 +581,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <td className="p-2">
                               <input
                                 type="text"
+                                maxLength={3}
                                 value={neuroData.voluntaryControl?.[row.key]?.lt || ''}
-                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'lt'], e.target.value)}
+                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'lt'], e.target.value.slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Lt Control"
                               />
@@ -585,8 +636,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <td className="p-2 border-r border-slate-200 dark:border-slate-800">
                               <input
                                 type="text"
+                                maxLength={3}
                                 value={neuroData.reflexes?.[row.key]?.lt || ''}
-                                onChange={(e) => updateNested(['reflexes', row.key, 'lt'], e.target.value)}
+                                onChange={(e) => updateNested(['reflexes', row.key, 'lt'], e.target.value.slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Left score"
                               />
@@ -594,8 +646,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <td className="p-2">
                               <input
                                 type="text"
+                                maxLength={3}
                                 value={neuroData.reflexes?.[row.key]?.rt || ''}
-                                onChange={(e) => updateNested(['reflexes', row.key, 'rt'], e.target.value)}
+                                onChange={(e) => updateNested(['reflexes', row.key, 'rt'], e.target.value.slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Right score"
                               />
@@ -661,8 +714,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                               <td className="p-1 border-r border-slate-200 dark:border-slate-800">
                                 <input
                                   type="text"
+                                  maxLength={3}
                                   value={neuroData.coordination?.[row.key]?.rt || ''}
-                                  onChange={(e) => updateNested(['coordination', row.key, 'rt'], e.target.value)}
+                                  onChange={(e) => updateNested(['coordination', row.key, 'rt'], e.target.value.slice(0, 3))}
                                   className={tableInputClass}
                                   placeholder="Rt"
                                 />
@@ -670,8 +724,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                               <td className="p-1">
                                 <input
                                   type="text"
+                                  maxLength={3}
                                   value={neuroData.coordination?.[row.key]?.lt || ''}
-                                  onChange={(e) => updateNested(['coordination', row.key, 'lt'], e.target.value)}
+                                  onChange={(e) => updateNested(['coordination', row.key, 'lt'], e.target.value.slice(0, 3))}
                                   className={tableInputClass}
                                   placeholder="Lt"
                                 />
