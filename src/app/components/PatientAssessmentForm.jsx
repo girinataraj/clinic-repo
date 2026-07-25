@@ -19,15 +19,19 @@ export function PatientAssessmentForm({ patientId, initialData, onSaveSuccess, c
       try {
         setLoading(true);
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const res = await fetch(`/api/patients/${patientId}`, {
+        const envBase = import.meta.env.VITE_API_BASE_URL;
+        const apiBase = envBase ? envBase.replace(/\/$/, '') : '/api';
+        const res = await fetch(`${apiBase}/patients/${patientId}`, {
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {})
           }
         });
 
-        if (!res.ok) {
-          throw new Error(`Failed to load patient (Status ${res.status})`);
+        const contentType = res.headers.get('content-type') || '';
+        if (!res.ok || !contentType.includes('application/json')) {
+          const text = await res.text().catch(() => '');
+          throw new Error(`Failed to load patient (Status ${res.status}): ${res.statusText || 'Invalid server response'}`);
         }
 
         const json = await res.json();
@@ -64,7 +68,9 @@ export function PatientAssessmentForm({ patientId, initialData, onSaveSuccess, c
 
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`/api/patients/${targetId}/assessment`, {
+      const envBase = import.meta.env.VITE_API_BASE_URL;
+      const apiBase = envBase ? envBase.replace(/\/$/, '') : '/api';
+      const res = await fetch(`${apiBase}/patients/${targetId}/assessment`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -76,8 +82,14 @@ export function PatientAssessmentForm({ patientId, initialData, onSaveSuccess, c
         })
       });
 
+      const contentType = res.headers.get('content-type') || '';
+      if (!res.ok || !contentType.includes('application/json')) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`Failed to save assessment (Status ${res.status}): ${res.statusText || 'Invalid server response'}`);
+      }
+
       const json = await res.json();
-      if (!res.ok || json.success === false) {
+      if (json.success === false) {
         throw new Error(json.message || 'Failed to save assessment');
       }
 
