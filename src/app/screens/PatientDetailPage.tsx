@@ -4,6 +4,7 @@ import { BottomNav } from '../components/BottomNav';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import { PatientHistoryUpload } from '../components/PatientHistoryUpload';
 import { EvaluationSummaryReport } from '../components/EvaluationSummaryReport';
+import { PatientAssessmentForm } from '../components/PatientAssessmentForm';
 import { usePatient, useAssignTherapist } from '../../hooks/usePatients';
 import { useAuth } from '../contexts/AuthContext';
 import { SearchDropdown } from '../components/SearchDropdown';
@@ -29,8 +30,7 @@ import {
 const funcLabels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
 const painColors = ['#22c55e', '#84cc16', '#a8d830', '#d4d830', '#facc15', '#f59e0b', '#fbbf24', '#f87171', '#ef4444', '#dc2626', '#b91c1c'];
 const funcColors: Record<number, string> = { 0: '#22c55e', 1: '#facc15', 2: '#f59e0b', 3: '#ef4444', 4: '#dc2626' };
-// Colors are now handled by classes, these are kept for reference or fallback logic if needed
-const tabs = ['Overview', 'Vitals', 'Diagnosis', 'Notes', 'History', 'Final Report'];
+const tabs = ['Overview', 'Assessment & Borg', 'Vitals', 'Diagnosis', 'Notes', 'History', 'Final Report'];
 
 export function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -314,6 +314,13 @@ export function PatientDetailPage() {
         {isLoading && (
           <div className="rounded-2xl p-6 text-center bg-white dark:bg-slate-900 border border-[#E8E9F1] dark:border-slate-800">
             <p className="text-[14px] text-[#262842] dark:text-slate-400">Loading patient details...</p>
+          </div>
+        )}
+
+        {/* Assessment & Borg Tab */}
+        {activeTab === 'Assessment & Borg' && (
+          <div className="flex flex-col gap-4">
+            <PatientAssessmentForm patientId={patientId!} />
           </div>
         )}
 

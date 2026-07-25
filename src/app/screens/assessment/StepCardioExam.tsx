@@ -3,6 +3,7 @@ import { SectionCard, FormField } from './FormComponents';
 import { type CardioExamData, BORG_SCALE_MAP, type Anthropometrics } from './clinicalConfig';
 import { Heart, Activity, Dumbbell, Info } from 'lucide-react';
 import { AnthropometricSection } from './AnthropometricSection';
+import { BorgScaleRadio } from '../../components/BorgScaleRadio';
 
 interface StepCardioExamProps {
   data: CardioExamData;
@@ -91,86 +92,17 @@ export function StepCardioExam({
   if (page === 1) {
     return (
       <div className="flex flex-col gap-4">
-        {/* 1. Borg Scale Table */}
+        {/* 1. Borg Scale Section (Single Selection Radio) */}
         <SectionCard
           icon={<Activity size={18} className={`${iconColor} dark:text-blue-400`} />}
           title="Borg Scale (Rate of Perceived Exertion)"
-          subtitle="Select exertion rating from 6 to 20"
+          subtitle="Select single exertion rating (0 to 10)"
           accent={accent}
         >
-          <div className="flex flex-col gap-4">
-            <div className="overflow-x-auto max-h-[380px] overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-2xl">
-              <table className="w-full border-collapse text-left text-xs font-semibold">
-                <thead className="sticky top-0 bg-slate-50 dark:bg-slate-900 z-10">
-                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400">
-                    <th className="py-3 px-4 font-black uppercase tracking-wider text-center w-[20%]">Rating</th>
-                    <th className="py-3 px-4 font-black uppercase tracking-wider">Perceived Exertion</th>
-                    <th className="py-3 px-4 font-black uppercase tracking-wider text-center w-[20%]">Select</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-                  {Object.keys(BORG_DISPLAY_LABELS).map((rating) => {
-                    const isSelected = selectedBorgRatings.includes(rating);
-                    const rowBgClass = isSelected
-                      ? isDoctorRole
-                        ? 'bg-indigo-50/50 dark:bg-indigo-950/20 font-bold'
-                        : 'bg-blue-50/50 dark:bg-blue-950/20 font-bold'
-                      : 'hover:bg-slate-50/40 dark:hover:bg-slate-850/20';
-
-                    return (
-                      <tr key={rating} className={`transition-colors ${rowBgClass}`}>
-                        <td className="py-2.5 px-4 text-center font-bold text-slate-800 dark:text-slate-200 text-sm">
-                          {rating}
-                        </td>
-                        <td className="py-2.5 px-4 text-slate-700 dark:text-slate-350 text-sm">
-                          {BORG_DISPLAY_LABELS[rating]}
-                        </td>
-                        <td className="py-2.5 px-4 text-center">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={(e) => {
-                              let nextRatings: string[];
-                              if (e.target.checked) {
-                                nextRatings = Array.from(new Set([...selectedBorgRatings, rating])).sort(
-                                  (a, b) => parseInt(a, 10) - parseInt(b, 10)
-                                );
-                              } else {
-                                nextRatings = selectedBorgRatings.filter((r) => r !== rating);
-                              }
-                              updateField('borgRating', nextRatings.join(', '));
-                            }}
-                            className={`h-4.5 w-4.5 rounded cursor-pointer ${
-                              isDoctorRole
-                                ? 'accent-[#262842] text-[#262842] focus:ring-[#262842]'
-                                : 'accent-blue-600 text-blue-600 focus:ring-blue-500'
-                            }`}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {selectedBorgRatings.length > 0 && (
-              <div className="flex flex-col gap-2.5 w-full">
-                {selectedBorgRatings.map((rating) => {
-                  const exertionText = BORG_SCALE_MAP[rating] || BORG_DISPLAY_LABELS[rating] || '';
-                  return (
-                    <div key={rating} className={`p-3.5 rounded-xl flex items-center gap-3 w-full ${getBorgBadgeClass(rating)}`}>
-                      <Info size={18} className="shrink-0" />
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-wider mb-0.5">Selected Exertion Level</p>
-                        <p className="text-sm font-bold">{rating}{exertionText ? ` - ${exertionText}` : ''}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <BorgScaleRadio
+            value={data.borgRating}
+            onChange={(val) => updateField('borgRating', val !== null ? String(val) : '')}
+          />
         </SectionCard>
 
         {/* 2. Cardiorespiratory Fitness Tests */}
