@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { SectionCard } from './FormComponents';
 import { Brain, ChevronDown } from 'lucide-react';
 
@@ -389,8 +389,8 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             { key: 'doubleSimultaneous', name: 'Double Simultaneous' }
                           ]}
                         ].map((section) => (
-                          <>
-                            <tr key={section.cat} className="bg-slate-100/60 dark:bg-slate-850/40 font-black">
+                          <React.Fragment key={section.cat}>
+                            <tr className="bg-slate-100/60 dark:bg-slate-850/40 font-black">
                               <td className="p-2 border-r border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-350" colSpan={8}>
                                 {section.cat}
                               </td>
@@ -419,7 +419,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                                 </td>
                               </tr>
                             ))}
-                          </>
+                          </React.Fragment>
                         ))}
                       </tbody>
                     </table>

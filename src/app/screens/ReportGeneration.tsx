@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { BORG_SCALE_MAP, formatBorgRatings } from './assessment/clinicalConfig';
+import { NeuroSummaryView } from '../components/NeuroSummaryView';
 
 export function ReportGeneration() {
   const navigate = useNavigate();
@@ -176,6 +177,15 @@ export function ReportGeneration() {
       })
       .filter(entry => Number.isFinite(entry.value));
   }, [evaluation]);
+
+  const selectedModules = useMemo(() => {
+    const cond = patient?.condition || evaluation?.patientCondition || evaluation?.patient_condition || 'Ortho';
+    return cond.split(',').map((x: string) => x.trim()).filter(Boolean);
+  }, [patient, evaluation]);
+
+  const hasOrtho = selectedModules.includes('Ortho');
+  const hasNeuro = selectedModules.includes('Neuro');
+  const hasCardio = selectedModules.includes('Cardio');
 
   const mergedPatientInfo = useMemo(() => {
     return {
@@ -485,6 +495,7 @@ export function ReportGeneration() {
                     { label: 'Patient ID', value: patient?.displayId ?? '—' },
                     { label: 'Age / Gender', value: patient ? `${patient.age} yrs / ${patient.gender}` : '—' },
                     { label: 'Phone', value: patient?.phone ?? '—' },
+                    { label: 'Selected Modules', value: selectedModules.join(', ') || 'Ortho' },
                     { label: 'Referred By', value: mergedPatientInfo.referredBy },
                     { label: 'Visit Type', value: mergedPatientInfo.visitType },
                     { label: 'Payment Mode', value: mergedPatientInfo.paymentMode },
@@ -578,48 +589,46 @@ export function ReportGeneration() {
               )}
 
               {/* Clinical Examination */}
-              {((mergedClinicalExamination.tests && Object.keys(mergedClinicalExamination.tests).length > 0) || 
+              {hasOrtho && ((mergedClinicalExamination.tests && Object.keys(mergedClinicalExamination.tests).length > 0) || 
                 (mergedClinicalExamination.imaging && Object.keys(mergedClinicalExamination.imaging).length > 0) || 
                 mergedClinicalExamination.examinationNotes) && (
-                <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
-                    <Stethoscope size={16} className="text-[#3B3E66] dark:text-slate-350" />
-                    <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Clinical Examination</span>
-                  </div>
-                  <div className="flex flex-col gap-4 text-xs font-semibold">
-                    {mergedClinicalExamination.tests && Object.keys(mergedClinicalExamination.tests).length > 0 && (
-                      <div>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-2">Special Physical Tests</span>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                          {Object.entries(mergedClinicalExamination.tests).map(([key, value]: [string, any]) => {
-                            const result = value?.result ?? 'Not Tested';
-                            const isPositive = result === 'Positive';
-                            const isNegative = result === 'Negative';
-                            return (
-                              <div key={key} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-150 dark:border-slate-800 bg-white dark:bg-slate-950/40">
-                                <span className="text-slate-700 dark:text-slate-300 truncate max-w-[130px] font-bold">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-black ${isPositive ? 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400' : isNegative ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>{result}</span>
-                              </div>
-                            );
-                          })}
+                  <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+                      <Stethoscope size={16} className="text-[#3B3E66] dark:text-slate-355" />
+                      <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Clinical Examination</span>
+                    </div>
+                    <div className="flex flex-col gap-4 text-xs font-semibold">
+                      {mergedClinicalExamination.tests && Object.keys(mergedClinicalExamination.tests).length > 0 && (
+                        <div>
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-2">Special Physical Tests</span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                            {Object.entries(mergedClinicalExamination.tests).map(([key, value]: [string, any]) => {
+                              const result = value?.result ?? 'Not Tested';
+                              const isPositive = result === 'Positive';
+                              const isNegative = result === 'Negative';
+                              return (
+                                <div key={key} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-150 dark:border-slate-800 bg-white dark:bg-slate-955/40">
+                                  <span className="text-slate-700 dark:text-slate-300 truncate max-w-[130px] font-bold">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-black ${isPositive ? 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400' : isNegative ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>{result}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-
-
-                    {mergedClinicalExamination.examinationNotes && (
-                      <div className="mt-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-1">Additional Physical Notes</span>
-                        <p className="p-3 bg-white dark:bg-slate-955/40 text-slate-750 dark:text-slate-300 rounded-xl whitespace-pre-wrap font-medium border border-slate-150 dark:border-slate-800">{mergedClinicalExamination.examinationNotes}</p>
-                      </div>
-                    )}
-                  </div>
-                </section>
-              )}
+                      {mergedClinicalExamination.examinationNotes && (
+                        <div className="mt-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold mb-1">Additional Physical Notes</span>
+                          <p className="p-3 bg-white dark:bg-slate-955/40 text-slate-750 dark:text-slate-300 rounded-xl whitespace-pre-wrap font-medium border border-slate-150 dark:border-slate-800">{mergedClinicalExamination.examinationNotes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                )}
 
               {/* Range of Motion & Muscle Power */}
-              {romTableRows.length > 0 && (
+              {hasOrtho && romTableRows.length > 0 && (
                 <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                     <Activity size={16} className="text-[#3B3E66] dark:text-slate-355" />
@@ -643,10 +652,10 @@ export function ReportGeneration() {
                             <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
                               <td className="px-3 py-2 font-bold text-slate-800 dark:text-slate-200">{row.joint}</td>
                               <td className="px-3 py-2 text-slate-600 dark:text-slate-400 uppercase text-[9px]">{row.movement}</td>
-                              <td className="px-2 py-2 text-center font-extrabold text-slate-950 dark:text-white">{row.powerRt}</td>
-                              <td className="px-2 py-2 text-center font-extrabold text-slate-950 dark:text-white">{row.powerLt}</td>
-                              <td className="px-2 py-2 text-center font-extrabold text-slate-950 dark:text-white">{row.romRt}</td>
-                              <td className="px-2 py-2 text-center font-extrabold text-slate-950 dark:text-white">{row.romLt}</td>
+                              <td className="px-2 py-2 text-center font-extrabold text-slate-955 dark:text-white">{row.powerRt}</td>
+                              <td className="px-2 py-2 text-center font-extrabold text-slate-955 dark:text-white">{row.powerLt}</td>
+                              <td className="px-2 py-2 text-center font-extrabold text-slate-955 dark:text-white">{row.romRt}</td>
+                              <td className="px-2 py-2 text-center font-extrabold text-slate-955 dark:text-white">{row.romLt}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -655,9 +664,8 @@ export function ReportGeneration() {
                   </div>
                 </section>
               )}
-
-              {/* Anthropometrics */}
-              {mergedAnthropometrics && Object.keys(mergedAnthropometrics).length > 0 && (
+              {/* Anthropometrics (Cardio-specific) */}
+              {hasCardio && mergedAnthropometrics && Object.keys(mergedAnthropometrics).length > 0 && (
                 <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                     <Scale size={16} className="text-[#3B3E66] dark:text-slate-350" />
@@ -665,43 +673,43 @@ export function ReportGeneration() {
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-semibold">
                     {mergedAnthropometrics.height && (
-                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                      <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
                         <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Height</span>
                         <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.height} cm</span>
                       </div>
                     )}
                     {mergedAnthropometrics.weight && (
-                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                      <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
                         <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Weight</span>
                         <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.weight} kg</span>
                       </div>
                     )}
                     {mergedAnthropometrics.bmi && (
-                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                      <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
                         <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">BMI</span>
                         <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.bmi}</span>
                       </div>
                     )}
                     {mergedAnthropometrics.waist && (
-                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                      <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
                         <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Waist</span>
                         <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.waist} cm</span>
                       </div>
                     )}
                     {mergedAnthropometrics.hip && (
-                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                      <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
                         <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Hip</span>
                         <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.hip} cm</span>
                       </div>
                     )}
                     {mergedAnthropometrics.whRatio && (
-                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-155 dark:border-slate-800 shadow-sm">
+                      <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-155 dark:border-slate-800 shadow-sm">
                         <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Waist-to-Hip Ratio</span>
                         <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedAnthropometrics.whRatio}</span>
                       </div>
                     )}
                     {(mergedAnthropometrics.chestInspiration || mergedAnthropometrics.chestExpiration) && (
-                      <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 col-span-2 sm:col-span-3 shadow-sm">
+                      <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-150 dark:border-slate-800 col-span-2 sm:col-span-3 shadow-sm">
                         <span className="text-[10px] text-slate-400 block mb-1 font-bold">Chest Measurements</span>
                         <div className="flex gap-4">
                           <div>
@@ -723,8 +731,8 @@ export function ReportGeneration() {
                 </section>
               )}
 
-              {/* Cardio Exam */}
-              {mergedCardioData && (mergedCardioData.borgRating || mergedCardioData.vo2Max || mergedCardioData.sixMinWalk || mergedCardioData.rockportWalk || mergedCardioData.harvardStep || (mergedCardioData.exercisePrescription && Object.values(mergedCardioData.exercisePrescription).some(Boolean))) && (
+              {/* Cardio Exam (Cardio-specific) */}
+              {hasCardio && mergedCardioData && (mergedCardioData.borgRating || mergedCardioData.vo2Max || mergedCardioData.sixMinWalk || mergedCardioData.rockportWalk || mergedCardioData.harvardStep || (mergedCardioData.exercisePrescription && Object.values(mergedCardioData.exercisePrescription).some(Boolean))) && (
                 <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                     <Activity size={16} className="text-[#3B3E66] dark:text-slate-350" />
@@ -745,25 +753,25 @@ export function ReportGeneration() {
                         <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Fitness & Endurance Tests</span>
                         <div className="grid grid-cols-2 gap-3">
                           {mergedCardioData.vo2Max && (
-                            <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                            <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
                               <span className="text-[9px] text-slate-400 block mb-0.5 uppercase">Vo2 Max</span>
                               <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{mergedCardioData.vo2Max}</span>
                             </div>
                           )}
                           {mergedCardioData.sixMinWalk && (
-                            <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                            <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
                               <span className="text-[9px] text-slate-400 block mb-0.5 uppercase">6 Min Walk Test</span>
                               <span className="text-slate-800 dark:text-slate-205 font-extrabold text-sm">{mergedCardioData.sixMinWalk}</span>
                             </div>
                           )}
                           {mergedCardioData.rockportWalk && (
-                            <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                            <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
                               <span className="text-[9px] text-slate-400 block mb-0.5 uppercase">Rockport Walk Test</span>
                               <span className="text-slate-800 dark:text-slate-205 font-extrabold text-sm">{mergedCardioData.rockportWalk}</span>
                             </div>
                           )}
                           {mergedCardioData.harvardStep && (
-                            <div className="p-2.5 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                            <div className="p-2.5 bg-white dark:bg-slate-955/40 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
                               <span className="text-[9px] text-slate-400 block mb-0.5 uppercase">Harvard Step Test</span>
                               <span className="text-slate-800 dark:text-slate-205 font-extrabold text-sm">{mergedCardioData.harvardStep}</span>
                             </div>
@@ -794,44 +802,19 @@ export function ReportGeneration() {
                 </section>
               )}
 
-              {/* Neurological Exam */}
-              {mergedNeuroData && Object.keys(mergedNeuroData).some(key => mergedNeuroData[key] && Object.values(mergedNeuroData[key]).some(Boolean)) && (
+              {/* Neurological Exam (Neuro-specific) */}
+              {hasNeuro && mergedNeuroData && Object.keys(mergedNeuroData).some(key => mergedNeuroData[key] && Object.values(mergedNeuroData[key]).some(Boolean)) && (
                 <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                     <Brain size={16} className="text-[#3B3E66] dark:text-slate-350" />
                     <span className="text-[12px] font-extrabold text-[#3B3E66] dark:text-slate-300 uppercase tracking-wide">Neurological Examination</span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-semibold">
-                    {mergedNeuroData.mental && Object.values(mergedNeuroData.mental).some(Boolean) && (
-                      <div className="p-3 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800">
-                        <span className="text-[9px] text-slate-400 uppercase block font-bold mb-1">Mental Functions</span>
-                        {Object.entries(mergedNeuroData.mental).map(([k, v]) => v ? (
-                          <p key={k} className="text-[11px] text-slate-700 dark:text-slate-300"><strong className="capitalize">{k}:</strong> {String(v)}</p>
-                        ) : null)}
-                      </div>
-                    )}
-                    {mergedNeuroData.sensory && Object.values(mergedNeuroData.sensory).some(Boolean) && (
-                      <div className="p-3 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800">
-                        <span className="text-[9px] text-slate-400 uppercase block font-bold mb-1">Sensory & Reflexes</span>
-                        {Object.entries(mergedNeuroData.sensory).map(([k, v]) => v ? (
-                          <p key={k} className="text-[11px] text-slate-700 dark:text-slate-300"><strong className="capitalize">{k}:</strong> {String(v)}</p>
-                        ) : null)}
-                      </div>
-                    )}
-                    {mergedNeuroData.coordination && Object.values(mergedNeuroData.coordination).some(Boolean) && (
-                      <div className="p-3 bg-white dark:bg-slate-950/40 rounded-xl border border-slate-150 dark:border-slate-800">
-                        <span className="text-[9px] text-slate-400 uppercase block font-bold mb-1">Coordination & Balance</span>
-                        {Object.entries(mergedNeuroData.coordination).map(([k, v]) => v ? (
-                          <p key={k} className="text-[11px] text-slate-700 dark:text-slate-300"><strong className="capitalize">{k}:</strong> {String(v)}</p>
-                        ) : null)}
-                      </div>
-                    )}
-                  </div>
+                  <NeuroSummaryView neuroData={mergedNeuroData} />
                 </section>
               )}
 
-              {/* Functional Limitations */}
-              {mergedFunctionalScores.length > 0 && (
+              {/* Functional Limitations (Ortho-specific) */}
+              {hasOrtho && mergedFunctionalScores.length > 0 && (
                 <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                     <CheckSquare size={16} className="text-[#3B3E66] dark:text-slate-350" />

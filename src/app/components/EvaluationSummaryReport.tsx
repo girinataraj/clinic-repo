@@ -13,6 +13,7 @@ import {
   Zap,
   FileSpreadsheet
 } from 'lucide-react';
+import { NeuroSummaryView } from './NeuroSummaryView';
 
 interface EvaluationSummaryReportProps {
   evaluation: any;
@@ -112,14 +113,32 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
 
   const hasAnthropometrics = anthropometrics && Object.values(anthropometrics).some(v => v !== '' && v !== null && v !== undefined);
   const hasCardioData = cardioData && (cardioData.borgRating || cardioData.vo2Max || cardioData.sixMinWalk || cardioData.rockportWalk || cardioData.harvardStep || (cardioData.exercisePrescription && Object.values(cardioData.exercisePrescription).some(Boolean)));
-  const hasNeuroData = neuroData && Object.keys(neuroData).some(key => neuroData[key] && Object.values(neuroData[key]).some(Boolean));
+  const hasNeuroData = useMemo(() => {
+    if (!neuroData || typeof neuroData !== 'object') return false;
+    const checkSub = (obj: any): boolean => {
+      if (!obj) return false;
+      if (typeof obj !== 'object') return Boolean(obj);
+      return Object.values(obj).some(val => {
+        if (!val) return false;
+        if (typeof val === 'object') return checkSub(val);
+        return Boolean(val);
+      });
+    };
+    return checkSub(neuroData);
+  }, [neuroData]);
+
+  const selectedModulesStr = evaluation.patientCondition || evaluation.patient_condition || 'Ortho';
+  const selectedModules = selectedModulesStr.split(',').map((x: string) => x.trim()).filter(Boolean);
+  const hasOrtho = selectedModules.includes('Ortho');
+  const hasNeuro = selectedModules.includes('Neuro');
+  const hasCardio = selectedModules.includes('Cardio');
 
   return (
     <div className="flex flex-col gap-6 w-full text-left">
 
       {/* Therapist & Visit Information */}
       <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-semibold">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs font-semibold">
           <div>
             <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Conducting Therapist / Clinician</span>
             <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{therapistName}</span>
@@ -136,6 +155,16 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
               <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{evaluation.referredBy}</span>
             </div>
           )}
+          <div>
+            <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold font-bold">Selected Modules</span>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {selectedModules.map((m: string) => (
+                <span key={m} className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900 text-[10px] font-extrabold">
+                  {m}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -244,7 +273,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
       )}
 
       {/* Anthropometrics Section */}
-      {hasAnthropometrics && (
+      {hasCardio && hasAnthropometrics && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <Scale size={16} className={accentColor} />
@@ -328,7 +357,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
       )}
 
       {/* Clinical Examination (Tests & Imaging) */}
-      {(hasClinicalExam || xrayFindings || mriFindings || pftFindings) && (
+      {hasOrtho && (hasClinicalExam || xrayFindings || mriFindings || pftFindings) && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <Stethoscope size={16} className={accentColor} />
@@ -406,62 +435,18 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
       )}
 
       {/* Neurological Examination */}
-      {hasNeuroData && (
+      {hasNeuro && hasNeuroData && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <Brain size={16} className={accentColor} />
             <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Neurological Examination</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
-            {neuroData.mental && Object.values(neuroData.mental).some(Boolean) && (
-              <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
-                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Higher Mental Functions</span>
-                <div className="flex flex-col gap-1.5 text-slate-700 dark:text-slate-300">
-                  {neuroData.mental.consciousness && <p><strong className="text-slate-400 text-[10px]">Consciousness:</strong> {neuroData.mental.consciousness}</p>}
-                  {neuroData.mental.orientation && <p><strong className="text-slate-400 text-[10px]">Orientation:</strong> {neuroData.mental.orientation}</p>}
-                  {neuroData.mental.memory && <p><strong className="text-slate-400 text-[10px]">Memory:</strong> {neuroData.mental.memory}</p>}
-                  {neuroData.mental.speech && <p><strong className="text-slate-400 text-[10px]">Speech:</strong> {neuroData.mental.speech}</p>}
-                </div>
-              </div>
-            )}
-            {neuroData.cranial && Object.values(neuroData.cranial).some(Boolean) && (
-              <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
-                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Cranial Nerves</span>
-                <div className="flex flex-col gap-1.5 text-slate-700 dark:text-slate-300">
-                  {Object.entries(neuroData.cranial).map(([nerve, status]) => status ? (
-                    <p key={nerve}><strong className="text-slate-400 text-[10px] capitalize">{nerve.replace(/([A-Z])/g, ' $1')}:</strong> {String(status)}</p>
-                  ) : null)}
-                </div>
-              </div>
-            )}
-            {neuroData.sensory && Object.values(neuroData.sensory).some(Boolean) && (
-              <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
-                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Sensory & Reflexes</span>
-                <div className="flex flex-col gap-1.5 text-slate-700 dark:text-slate-300">
-                  {neuroData.sensory.lightTouch && <p><strong className="text-slate-400 text-[10px]">Light Touch:</strong> {neuroData.sensory.lightTouch}</p>}
-                  {neuroData.sensory.pinprick && <p><strong className="text-slate-400 text-[10px]">Pinprick:</strong> {neuroData.sensory.pinprick}</p>}
-                  {neuroData.sensory.proprioception && <p><strong className="text-slate-400 text-[10px]">Proprioception:</strong> {neuroData.sensory.proprioception}</p>}
-                  {neuroData.sensory.reflexes && <p><strong className="text-slate-400 text-[10px]">Reflexes:</strong> {neuroData.sensory.reflexes}</p>}
-                </div>
-              </div>
-            )}
-            {neuroData.coordination && Object.values(neuroData.coordination).some(Boolean) && (
-              <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
-                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Coordination & Balance</span>
-                <div className="flex flex-col gap-1.5 text-slate-700 dark:text-slate-300">
-                  {neuroData.coordination.fingerToNose && <p><strong className="text-slate-400 text-[10px]">Finger to Nose:</strong> {neuroData.coordination.fingerToNose}</p>}
-                  {neuroData.coordination.heelToShin && <p><strong className="text-slate-400 text-[10px]">Heel to Shin:</strong> {neuroData.coordination.heelToShin}</p>}
-                  {neuroData.coordination.romberg && <p><strong className="text-slate-400 text-[10px]">Romberg Test:</strong> {neuroData.coordination.romberg}</p>}
-                  {neuroData.coordination.bergScore && <p><strong className="text-slate-400 text-[10px]">Berg Balance Score:</strong> {neuroData.coordination.bergScore}</p>}
-                </div>
-              </div>
-            )}
-          </div>
+          <NeuroSummaryView neuroData={neuroData} />
         </section>
       )}
 
       {/* Cardiorespiratory Assessment */}
-      {hasCardioData && (
+      {hasCardio && hasCardioData && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <Zap size={16} className={accentColor} />
@@ -527,7 +512,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
       )}
 
       {/* Range of Motion & Muscle Power Table */}
-      {romTableRows.length > 0 && (
+      {hasOrtho && romTableRows.length > 0 && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <Activity size={16} className={accentColor} />
@@ -549,7 +534,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {romTableRows.map((row, index) => (
                     <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/30">
-                      <td className="px-3 py-2.5 font-bold text-slate-850 dark:text-white">{row.joint}</td>
+                      <td className="px-3 py-2.5 font-bold text-slate-855 dark:text-white">{row.joint}</td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-slate-400 uppercase text-[9px] font-extrabold">{row.movement}</td>
                       <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.powerRt}</td>
                       <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.powerLt}</td>
@@ -565,7 +550,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
       )}
 
       {/* Functional Limitations (Functional Scores) */}
-      {functionalScores && Object.keys(functionalScores).length > 0 && (
+      {hasOrtho && functionalScores && Object.keys(functionalScores).length > 0 && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <CheckSquare size={16} className={accentColor} />
