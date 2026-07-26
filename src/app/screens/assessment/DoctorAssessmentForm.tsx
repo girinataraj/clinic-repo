@@ -8,7 +8,7 @@ import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } fro
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
 import { useStaffUsers } from '../../../hooks/useStaff';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone, RotateCcw } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount, type CardioExamData, getEmptyCardioExam } from './clinicalConfig';
 import { SectionCard, FormField, doctorInputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
@@ -182,6 +182,10 @@ export function DoctorAssessmentForm() {
             ...(previousEval.cardioData.exercisePrescription || {})
           }
         });
+      }
+      const prevRom = previousEval.musclePowerRom || previousEval.muscle_power_rom;
+      if (prevRom && typeof prevRom === 'object') {
+        setRomData(prevRom as RomData);
       }
     }
   }, [previousEval]);
@@ -509,19 +513,40 @@ export function DoctorAssessmentForm() {
                 </FormField>
                 
                 <FormField label="Bill Amount">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] text-slate-500 font-medium">Doctor assessment charge / consultation fee</p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setSubmitError(null); setBillAmount(0); setBillAmountInput('0'); }}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-1 transition-colors"
+                      >
+                        <RotateCcw size={11} /> Reset to ₹0
+                      </button>
+                      {billAmount !== null && (
+                        <button
+                          type="button"
+                          onClick={() => { setSubmitError(null); setBillAmount(null); setBillAmountInput(''); }}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 transition-colors"
+                        >
+                          Auto-fill (₹{formatRupees(billTotal)})
+                        </button>
+                      )}
+                    </div>
+                  </div>
                   <div className="flex items-center gap-4 px-5 py-4 rounded-[18px] border border-[#262842] dark:border-indigo-700 bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-indigo-500 transition-shadow">
                     <span className="text-[18px] font-black text-slate-500 dark:text-slate-400">₹</span>
                     <input 
                       type="text"
                       inputMode="numeric"
-                      value={billAmount !== null ? billAmountInput : (billTotal > 0 ? formatRupees(billTotal) : '')}
+                      value={billAmount !== null ? billAmountInput : (billTotal > 0 ? formatRupees(billTotal) : '0')}
                       onChange={(e) => handleBillAmountChange(e.target.value)}
                       className="flex-1 bg-transparent text-[18px] font-extrabold text-slate-900 dark:text-white outline-none"
                       placeholder="0"
                     />
                   </div>
                   <p className="text-[12px] text-[#262842] dark:text-indigo-400 font-semibold mt-1.5">
-                    {billAmount !== null ? 'Manually edited.' : (billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7. You can edit this amount.' : 'Select treatments in Step 7 to auto-fill or enter manually.')}
+                    {billAmount === 0 ? 'Amount set to ₹0.' : (billAmount !== null ? 'Manually edited.' : (billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7. You can edit this amount or reset to zero.' : 'Enter fee or select treatments.'))}
                   </p>
                 </FormField>
               </SectionCard>

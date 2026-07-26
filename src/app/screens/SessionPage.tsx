@@ -78,7 +78,7 @@ export function SessionPage() {
             ? latestEvaluation.treatmentPlan
             : undefined,
           assignedExerciseSelection: followUp.followUpModes.includes('assigned_exercise') && exercises.length > 0
-            ? exercises.map((ex: any) => ex.title)
+            ? exercises.map((ex: any) => ex.name || ex.title)
             : undefined,
           otherTreatments: followUp.otherTreatments.length > 0 ? followUp.otherTreatments : undefined,
         } : undefined;
@@ -185,7 +185,7 @@ export function SessionPage() {
                 <div key={idx} className="flex items-start gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
                    <div className="w-2 h-2 rounded-full bg-teal-500 mt-1.5 shrink-0" />
                    <div>
-                     <p className="text-[13px] font-bold text-slate-800">{ex.title}</p>
+                     <p className="text-[13px] font-bold text-slate-800">{ex.name || ex.title}</p>
                      {ex.sets && ex.reps && (
                         <p className="text-[11px] text-slate-500 font-semibold">{ex.sets} sets × {ex.reps} reps</p>
                      )}

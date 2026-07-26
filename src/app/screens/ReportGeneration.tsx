@@ -142,25 +142,43 @@ export function ReportGeneration() {
   const romTableRows = useMemo(() => {
     if (!mergedMusclePowerRom) return [];
     const rows: any[] = [];
-    ROM_CONFIG.forEach((section) => {
-      section.joints.forEach((joint) => {
-        joint.movements.forEach((movement) => {
-          const key1 = `${joint.label}_${movement}`.replace(/\s+/g, '_');
-          const key2 = getRomKey(joint.label, movement);
-          const entry = (mergedMusclePowerRom[key1] || mergedMusclePowerRom[key2]) as any;
-          if (entry && (entry.powerRt || entry.powerLt || entry.romRt || entry.romLt)) {
-            rows.push({
-              joint: joint.label,
-              movement: movement,
-              powerRt: entry.powerRt || '—',
-              powerLt: entry.powerLt || '—',
-              romRt: entry.romRt ? `${entry.romRt}°` : '—',
-              romLt: entry.romLt ? `${entry.romLt}°` : '—',
-            });
-          }
+    if (mergedMusclePowerRom.measurements && Array.isArray(mergedMusclePowerRom.measurements)) {
+      mergedMusclePowerRom.measurements.forEach((m: any) => {
+        rows.push({
+          joint: m.joint,
+          movement: m.movement,
+          powerRt: m.powerRight ?? m.powerRt ?? '—',
+          powerLt: m.powerLeft ?? m.powerLt ?? '—',
+          romRt: m.romRight !== undefined ? `${m.romRight}°` : (m.romRt ? `${m.romRt}°` : '—'),
+          romLt: m.romLeft !== undefined ? `${m.romLeft}°` : (m.romLt ? `${m.romLt}°` : '—'),
         });
       });
-    });
+    } else if (typeof mergedMusclePowerRom === 'object') {
+      ROM_CONFIG.forEach((section) => {
+        section.joints.forEach((joint) => {
+          joint.movements.forEach((movement) => {
+            const key1 = `${joint.label}_${movement}`.replace(/\s+/g, '_');
+            const key2 = getRomKey(joint.label, movement);
+            const key3 = `${joint.label.toLowerCase().replace(/[^a-z0-9]/g, '')}_${movement.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+            const entry = (mergedMusclePowerRom[key1] || mergedMusclePowerRom[key2] || mergedMusclePowerRom[key3]) as any;
+            if (entry && (entry.powerRt || entry.powerLt || entry.romRt || entry.romLt || entry.powerRight || entry.powerLeft || entry.romRight || entry.romLeft)) {
+              const pRt = entry.powerRt ?? entry.powerRight ?? '—';
+              const pLt = entry.powerLt ?? entry.powerLeft ?? '—';
+              const rRt = entry.romRt !== undefined && entry.romRt !== '' ? `${entry.romRt}°` : (entry.romRight !== undefined && entry.romRight !== '' ? `${entry.romRight}°` : '—');
+              const rLt = entry.romLt !== undefined && entry.romLt !== '' ? `${entry.romLt}°` : (entry.romLeft !== undefined && entry.romLeft !== '' ? `${entry.romLeft}°` : '—');
+              rows.push({
+                joint: joint.label,
+                movement: movement,
+                powerRt: pRt,
+                powerLt: pLt,
+                romRt: rRt,
+                romLt: rLt,
+              });
+            }
+          });
+        });
+      });
+    }
     return rows;
   }, [mergedMusclePowerRom, ROM_CONFIG]);
 
@@ -197,18 +215,30 @@ export function ReportGeneration() {
   }, [evaluation]);
 
   // ── PDF download via blob ─────────────────────────────────────────────────
+  // ── PDF download via blob ─────────────────────────────────────────────────
   const handleDownloadPdf = async () => {
-    const targetEvalId = evaluation?.id;
-    if (!targetEvalId) return;
+    const targetEvalId = evaluation?.id || latestEval?.id;
+    const targetPatientId = patientIdParam || evaluation?.patientId;
+
+    if (!targetEvalId && !targetPatientId) {
+      setPdfError('No evaluation or patient found to generate PDF.');
+      return;
+    }
     setDownloading(true);
+    setPdfError(null);
     try {
-      const response = await api.get(ENDPOINTS.REPORTS.PDF(targetEvalId), {
-        responseType: 'blob',
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      let response;
+      if (targetEvalId) {
+        response = await api.get(ENDPOINTS.REPORTS.PDF(targetEvalId), { responseType: 'blob' });
+      } else if (targetPatientId) {
+        response = await api.get(ENDPOINTS.REPORTS.PATIENT_REPORT_PDF(targetPatientId), { responseType: 'blob' });
+      }
+      if (!response || !response.data) throw new Error('No PDF data received from server');
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `report-${targetEvalId}.pdf`);
+      link.setAttribute('download', `Report-${patient?.name?.replace(/\s+/g, '-') ?? 'Patient'}-${(targetEvalId || targetPatientId || '').substring(0, 8)}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -216,22 +246,50 @@ export function ReportGeneration() {
       setPdfError(null);
       setAction('pdf');
       setTimeout(() => setAction(null), 1500);
-    } catch {
-      setPdfError('Failed to generate PDF. The report endpoint may not be available yet.');
+    } catch (err: any) {
+      let msg = 'Failed to generate PDF.';
+      if (err?.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+          msg = json.message || msg;
+        } catch (_) {}
+      } else if (err?.response?.data?.message) {
+        msg = err.response.data.message;
+      } else if (err?.message) {
+        msg = err.message;
+      }
+      console.error('PDF Generation Error:', err);
+      setPdfError(msg);
     } finally {
       setDownloading(false);
     }
   };
 
   const handlePrintPdf = async () => {
-    const targetEvalId = evaluation?.id;
-    if (!targetEvalId) return;
+    const targetEvalId = evaluation?.id || latestEval?.id;
+    const targetPatientId = patientIdParam || evaluation?.patientId;
+
+    if (!targetEvalId && !targetPatientId) {
+      setPdfError('No evaluation or patient found for printing.');
+      return;
+    }
     setDownloading(true);
+    setPdfError(null);
     try {
-      const response = await api.get(ENDPOINTS.REPORTS.PDF(targetEvalId), {
-        responseType: 'blob',
-        headers: { Accept: 'application/pdf' },
-      });
+      let response;
+      if (targetEvalId) {
+        response = await api.get(ENDPOINTS.REPORTS.PDF(targetEvalId), {
+          responseType: 'blob',
+          headers: { Accept: 'application/pdf' },
+        });
+      } else if (targetPatientId) {
+        response = await api.get(ENDPOINTS.REPORTS.PATIENT_REPORT_PDF(targetPatientId), {
+          responseType: 'blob',
+          headers: { Accept: 'application/pdf' },
+        });
+      }
+      if (!response || !response.data) throw new Error('No PDF data received from server');
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const iframe = document.createElement('iframe');
@@ -244,24 +302,44 @@ export function ReportGeneration() {
       setPdfError(null);
       setAction('print');
       setTimeout(() => setAction(null), 1500);
-    } catch {
-      setPdfError('Failed to generate PDF for printing.');
+    } catch (err: any) {
+      let msg = 'Failed to generate PDF for printing.';
+      if (err?.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+          msg = json.message || msg;
+        } catch (_) {}
+      } else if (err?.response?.data?.message) {
+        msg = err.response.data.message;
+      }
+      setPdfError(msg);
     } finally {
       setDownloading(false);
     }
   };
 
   const handleShare = async () => {
-    const targetEvalId = evaluation?.id;
-    if (!targetEvalId) return;
+    const targetEvalId = evaluation?.id || latestEval?.id;
+    const targetPatientId = patientIdParam || evaluation?.patientId;
+
+    if (!targetEvalId && !targetPatientId) {
+      setPdfError('No evaluation found to share.');
+      return;
+    }
 
     setDownloading(true);
+    setPdfError(null);
     try {
-      const response = await api.get(ENDPOINTS.REPORTS.PDF(targetEvalId), {
-        responseType: 'blob',
-      });
+      let response;
+      if (targetEvalId) {
+        response = await api.get(ENDPOINTS.REPORTS.PDF(targetEvalId), { responseType: 'blob' });
+      } else if (targetPatientId) {
+        response = await api.get(ENDPOINTS.REPORTS.PATIENT_REPORT_PDF(targetPatientId), { responseType: 'blob' });
+      }
+      if (!response || !response.data) throw new Error('No PDF data received');
       const blob = new Blob([response.data], { type: 'application/pdf' });
-      const filename = `Report-${patient?.name?.replace(/\s+/g, '-') ?? 'Patient'}-${targetEvalId.substring(0, 8)}.pdf`;
+      const filename = `Report-${patient?.name?.replace(/\s+/g, '-') ?? 'Patient'}-${(targetEvalId || targetPatientId || '').substring(0, 8)}.pdf`;
       const file = new File([blob], filename, { type: 'application/pdf' });
 
       const shareData: any = {
@@ -273,24 +351,24 @@ export function ReportGeneration() {
       if (navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        // Fallback to link if file share not supported
         await navigator.share({
           title: shareData.title,
           text: shareData.text,
           url: window.location.href,
         });
       }
-      setAction('share');
-      setTimeout(() => setAction(null), 1500);
-    } catch (err) {
-      // Fallback to clipboard if share fails entirely
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        setAction('share');
-        setTimeout(() => setAction(null), 1500);
-      } catch (e) {
-        console.error('Share failed', e);
+    } catch (err: any) {
+      let msg = 'Failed to share PDF report.';
+      if (err?.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+          msg = json.message || msg;
+        } catch (_) {}
+      } else if (err?.response?.data?.message) {
+        msg = err.response.data.message;
       }
+      setPdfError(msg);
     } finally {
       setDownloading(false);
     }
@@ -628,7 +706,7 @@ export function ReportGeneration() {
                 )}
 
               {/* Range of Motion & Muscle Power */}
-              {hasOrtho && romTableRows.length > 0 && (
+              {romTableRows.length > 0 && (
                 <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                     <Activity size={16} className="text-[#3B3E66] dark:text-slate-355" />

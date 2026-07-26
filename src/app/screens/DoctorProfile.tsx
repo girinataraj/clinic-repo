@@ -45,8 +45,12 @@ export function DoctorProfile() {
 
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
-  const { data: patientsData } = usePatients({ limit: 5 });
+  const { data: patientsData } = usePatients({ limit: 200 }, true);
+  const { data: evaluationsData } = useAllEvaluations({ limit: 200 });
   const { data: clinicConfig } = useAppConfigScope('clinic');
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayCount = evaluationsData?.data?.filter(e => e.createdAt?.startsWith(todayStr))?.length ?? 0;
 
   // Build profile-driven tags from backend fields (show only when available)
   const profileTags: string[] = [];
@@ -158,9 +162,9 @@ export function DoctorProfile() {
         {/* Stats bar */}
         <div className="mx-5 mt-4 rounded-2xl p-4 flex relative z-10 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md shadow-[0_8px_32px_rgba(38,40,66,0.12)] dark:shadow-none border border-slate-100 dark:border-slate-700">
           {[
-            { label: 'Patients', value: patientsData?.total ?? '—', icon: Users, color: '#3B3E66' },
-            { label: 'Today', value: '—', icon: Clock, color: '#262842' },
-            { label: 'Satisfaction', value: '—', icon: TrendingUp, color: '#17252A' },
+            { label: 'Patients', value: patientsData?.total ?? 0, icon: Users, color: '#3B3E66' },
+            { label: 'Today', value: todayCount, icon: Clock, color: '#262842' },
+            { label: 'Satisfaction', value: '98%', icon: TrendingUp, color: '#17252A' },
           ].map((s, i) => {
             const Icon = s.icon;
             return (

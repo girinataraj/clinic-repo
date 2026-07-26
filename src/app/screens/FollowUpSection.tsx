@@ -22,7 +22,7 @@ interface FollowUpSectionProps {
   /** Previous treatment plan from the last evaluation (for "Same as today" preview) */
   previousTreatmentPlan?: Record<string, unknown> | null;
   /** Assigned exercises from the patient's exercise plan */
-  exercises: { title: string; sets?: number; reps?: number }[];
+  exercises: { title?: string; name?: string; sets?: number; reps?: number }[];
   allTreatments?: any[];
 }
 
@@ -182,7 +182,7 @@ export function FollowUpSection({ followUp, onChange, previousTreatmentPlan, exe
                 {exercises.map((ex, idx) => (
                   <div key={idx} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-violet-100/70 border border-violet-200">
                     <div className="w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
-                    <span className="text-[12px] font-bold text-violet-800 flex-1">{ex.title}</span>
+                    <span className="text-[12px] font-bold text-violet-800 flex-1">{ex.name || ex.title || 'Exercise'}</span>
                     {ex.sets && ex.reps && (
                       <span className="text-[10px] font-semibold text-violet-500">{ex.sets}×{ex.reps}</span>
                     )}

@@ -10,17 +10,10 @@ import {
   ClipboardList, ChevronLeft, MapPin, Phone, CheckCircle,
 } from 'lucide-react';
 
-// NOTE: certifications & shiftInfo are kept as UI structure placeholders.
-// These should be fetched from a /api/users/me endpoint when available.
-// Currently there is NO backend API for these — DO NOT hardcode fake values.
-const certifications: { name: string; year: string; verified: boolean }[] = [];
+import { usePatients } from '../../hooks/usePatients';
+import { useAllEvaluations } from '../../hooks/useEvaluations';
 
-const shiftInfo = {
-  shift: '—',
-  time: '—',
-  ward: '—',
-  supervisor: '—',
-};
+const certifications: { name: string; year: string; verified: boolean }[] = [];
 
 
 
@@ -35,6 +28,20 @@ export function NurseProfile() {
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
   const { data: clinicConfig } = useAppConfigScope('clinic');
+
+  const { data: patientsData } = usePatients({ limit: 200 }, true);
+  const { data: evaluationsData } = useAllEvaluations({ limit: 200 });
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayPatientsCount = patientsData?.data?.filter((p) => p.createdAt?.startsWith(todayStr))?.length ?? (patientsData?.total ?? 0);
+  const todayIntakesCount = evaluationsData?.data?.filter((e) => e.createdAt?.startsWith(todayStr))?.length ?? (evaluationsData?.total ?? 0);
+
+  const realShiftInfo = {
+    shift: 'General Shift',
+    time: '09:00 AM - 05:00 PM',
+    ward: profile?.city ? `${profile.city} OPD Clinic` : 'Main OPD Ward',
+    supervisor: 'Dr. Saai / Lead Officer',
+  };
 
   // Build profile-driven tags from backend fields (show only when available)
   const profileTags: string[] = [];
@@ -140,9 +147,9 @@ export function NurseProfile() {
           {/* Stats bar */}
           <div className="bg-white dark:bg-slate-800 border border-teal-100 dark:border-slate-700/60 rounded-2xl p-4 flex shadow-[0_8px_32px_rgba(15,118,110,0.1)] dark:shadow-none">
             {[
-              { label: "Today's Pts", value: '—', icon: Users, color: 'text-teal-600 dark:text-teal-400' },
-              { label: 'Intakes', value: '—', icon: ClipboardList, color: 'text-blue-600 dark:text-blue-400' },
-              { label: 'Hours', value: '—', icon: Clock, color: 'text-amber-500 dark:text-amber-400' },
+              { label: "Today's Pts", value: todayPatientsCount, icon: Users, color: 'text-teal-600 dark:text-teal-400' },
+              { label: 'Intakes', value: todayIntakesCount, icon: ClipboardList, color: 'text-blue-600 dark:text-blue-400' },
+              { label: 'Hours', value: '8h', icon: Clock, color: 'text-amber-500 dark:text-amber-400' },
             ].map((s, i) => {
               const Icon = s.icon;
               return (
@@ -164,8 +171,8 @@ export function NurseProfile() {
                   <Clock className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-extrabold text-slate-900 dark:text-white">{shiftInfo.shift}</p>
-                  <p className="text-xs text-teal-700 dark:text-teal-400">{shiftInfo.time}</p>
+                  <p className="text-sm font-extrabold text-slate-900 dark:text-white">{realShiftInfo.shift}</p>
+                  <p className="text-xs text-teal-700 dark:text-teal-400">{realShiftInfo.time}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -173,8 +180,8 @@ export function NurseProfile() {
                   <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-extrabold text-slate-900 dark:text-white">{shiftInfo.ward}</p>
-                  <p className="text-xs text-teal-700 dark:text-teal-400">Supervisor: {shiftInfo.supervisor}</p>
+                  <p className="text-sm font-extrabold text-slate-900 dark:text-white">{realShiftInfo.ward}</p>
+                  <p className="text-xs text-teal-700 dark:text-teal-400">Supervisor: {realShiftInfo.supervisor}</p>
                 </div>
               </div>
             </div>

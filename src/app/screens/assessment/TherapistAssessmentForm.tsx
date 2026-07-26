@@ -7,7 +7,7 @@ import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEval
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search, ChevronDown, ChevronUp, Phone } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search, ChevronDown, ChevronUp, Phone, RotateCcw } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount, type CardioExamData, getEmptyCardioExam } from './clinicalConfig';
 import { SectionCard, FormField, inputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
@@ -178,6 +178,10 @@ export function TherapistAssessmentForm() {
             ...(previousEval.cardioData.exercisePrescription || {})
           }
         });
+      }
+      const prevRom = previousEval.musclePowerRom || previousEval.muscle_power_rom;
+      if (prevRom && typeof prevRom === 'object') {
+        setRomData(prevRom as RomData);
       }
     }
   }, [previousEval]);
@@ -479,12 +483,27 @@ export function TherapistAssessmentForm() {
                 </FormField>
                 
                 <FormField label="Bill Amount">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] text-slate-500 font-medium">Session charge / treatment fee</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSubmitError(null);
+                        setIsManualBillEdit(true);
+                        setBillAmount(0);
+                        setBillAmountInput('0');
+                      }}
+                      className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-1 transition-colors"
+                    >
+                      <RotateCcw size={11} /> Reset to ₹0
+                    </button>
+                  </div>
                   <div className="flex items-center gap-3 px-4 py-3 rounded-[14px] border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-teal-500">
                     <span className="text-[16px] font-black text-slate-500 dark:text-slate-400">₹</span>
                     <input 
                       type="text"
                       inputMode="numeric"
-                      value={isManualBillEdit ? billAmountInput : (billTotal > 0 ? formatRupees(billTotal) : '')}
+                      value={isManualBillEdit ? billAmountInput : (billTotal > 0 ? formatRupees(billTotal) : '0')}
                       onChange={(e) => handleBillAmountChange(e.target.value)}
                       className="flex-1 bg-transparent text-[16px] font-extrabold text-slate-900 dark:text-white outline-none"
                       placeholder="0"
@@ -493,7 +512,7 @@ export function TherapistAssessmentForm() {
                   {isManualBillEdit && (
                     <div className="flex items-center justify-between mt-1.5">
                       <p className="text-[11px] text-teal-600 dark:text-teal-400 font-semibold">
-                        Manually edited.
+                        {billAmount === 0 ? 'Amount set to ₹0.' : 'Manually edited.'}
                       </p>
                       <button
                         type="button"

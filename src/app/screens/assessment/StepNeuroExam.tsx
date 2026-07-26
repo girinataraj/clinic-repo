@@ -527,9 +527,11 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <td className="p-2 border-r border-slate-200 dark:border-slate-800">
                               <input
                                 type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 maxLength={3}
                                 value={neuroData.muscleGirth?.[row.key]?.rt || ''}
-                                onChange={(e) => updateNested(['muscleGirth', row.key, 'rt'], e.target.value.slice(0, 3))}
+                                onChange={(e) => updateNested(['muscleGirth', row.key, 'rt'], e.target.value.replace(/\D/g, '').slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Rt"
                               />
@@ -537,9 +539,11 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <td className="p-2">
                               <input
                                 type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 maxLength={3}
                                 value={neuroData.muscleGirth?.[row.key]?.lt || ''}
-                                onChange={(e) => updateNested(['muscleGirth', row.key, 'lt'], e.target.value.slice(0, 3))}
+                                onChange={(e) => updateNested(['muscleGirth', row.key, 'lt'], e.target.value.replace(/\D/g, '').slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Lt"
                               />
@@ -571,9 +575,11 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <td className="p-2 border-r border-slate-200 dark:border-slate-800">
                               <input
                                 type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 maxLength={3}
                                 value={neuroData.voluntaryControl?.[row.key]?.rt || ''}
-                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'rt'], e.target.value.slice(0, 3))}
+                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'rt'], e.target.value.replace(/\D/g, '').slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Rt Control"
                               />
@@ -581,9 +587,11 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <td className="p-2">
                               <input
                                 type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 maxLength={3}
                                 value={neuroData.voluntaryControl?.[row.key]?.lt || ''}
-                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'lt'], e.target.value.slice(0, 3))}
+                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'lt'], e.target.value.replace(/\D/g, '').slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Lt Control"
                               />
