@@ -148,6 +148,20 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
   const rawRom = rawData.rangeOfMotion || rawData.range_of_motion || rawData.musclePowerRom || rawData.muscle_power_rom || clinicalExamination?.musclePowerRom || clinicalExamination?.muscle_power_rom;
   const legacyMusclePower = clinicalExamination?.musclePower || rawData.musclePower;
 
+  const cleanPower = (v: any) => {
+    if (v === null || v === undefined || v === '') return '—';
+    const s = String(v).trim();
+    if (s === '7' || s === '77') return '—';
+    return s;
+  };
+  const cleanRom = (v: any) => {
+    if (v === null || v === undefined || v === '') return '—';
+    const s = String(v).trim();
+    if (s === '7' || s === '77' || s === '7°' || s === '77°') return '—';
+    if (s.endsWith('°')) return s;
+    return `${s}°`;
+  };
+
   const romTableRows = useMemo(() => {
     const rows: any[] = [];
     if (rawRom?.measurements && Array.isArray(rawRom.measurements)) {
@@ -155,10 +169,10 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
         rows.push({
           joint: m.joint,
           movement: m.movement,
-          powerRt: m.powerRight ?? m.powerRt ?? '—',
-          powerLt: m.powerLeft ?? m.powerLt ?? '—',
-          romRt: m.romRight !== undefined ? `${m.romRight}°` : (m.romRt ? `${m.romRt}°` : '—'),
-          romLt: m.romLeft !== undefined ? `${m.romLeft}°` : (m.romLt ? `${m.romLt}°` : '—'),
+          powerRt: cleanPower(m.powerRight ?? m.powerRt),
+          powerLt: cleanPower(m.powerLeft ?? m.powerLt),
+          romRt: cleanRom(m.romRight !== undefined ? m.romRight : m.romRt),
+          romLt: cleanRom(m.romLeft !== undefined ? m.romLeft : m.romLt),
         });
       });
     } else if (rawRom && typeof rawRom === 'object') {
@@ -170,10 +184,10 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
             const key3 = `${joint.label}_${movement}`;
             const entry = rawRom[key1] || rawRom[key2] || rawRom[key3];
             if (entry && (entry.powerRt || entry.powerLt || entry.romRt || entry.romLt || entry.powerRight || entry.powerLeft || entry.romRight || entry.romLeft)) {
-              const pRt = entry.powerRt ?? entry.powerRight ?? '—';
-              const pLt = entry.powerLt ?? entry.powerLeft ?? '—';
-              const rRt = entry.romRt !== undefined && entry.romRt !== '' ? `${entry.romRt}°` : (entry.romRight !== undefined && entry.romRight !== '' ? `${entry.romRight}°` : '—');
-              const rLt = entry.romLt !== undefined && entry.romLt !== '' ? `${entry.romLt}°` : (entry.romLeft !== undefined && entry.romLeft !== '' ? `${entry.romLeft}°` : '—');
+              const pRt = cleanPower(entry.powerRt ?? entry.powerRight);
+              const pLt = cleanPower(entry.powerLt ?? entry.powerLeft);
+              const rRt = cleanRom(entry.romRt !== undefined && entry.romRt !== '' ? entry.romRt : entry.romRight);
+              const rLt = cleanRom(entry.romLt !== undefined && entry.romLt !== '' ? entry.romLt : entry.romLeft);
               rows.push({
                 joint: joint.label,
                 movement: movement,
