@@ -5,6 +5,7 @@ import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPl
 import { ClinicalExamination } from './ClinicalExamination';
 import { RomMatrix } from './RomMatrix';
 import { MusclePower } from './MusclePower';
+import { ExerciseSection } from '../../components/ExerciseSection';
 
 // ── Step 0: Patient Info ──────────────────────────────────────────────────────
 export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handlePhotoChange, handlePhotoRemove, photoInputKey, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user }: any) {
@@ -404,7 +405,7 @@ export function StepDiagnosis({ diagnosis, setDiagnosis, isDoctorRole, selectedD
 }
 
 // ── Step 7: Treatment Plan ────────────────────────────────────────────────────
-export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatmentPlan, setTreatmentPlan, treatmentsList }: any) {
+export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatmentPlan, setTreatmentPlan, treatmentsList, patientId }: any) {
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const accent = isDoctorRole ? 'doctor' : 'emerald';
   const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-emerald-600';
@@ -471,52 +472,8 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
         </div>
       </SectionCard>
 
-      <SectionCard icon={<CalendarDays size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Schedule & Follow-up" subtitle="Visits, frequency & planning" accent={accent}>
-        <div className="grid grid-cols-2 gap-3 mb-3.5">
-          <FormField label="Visits Required">
-            <input
-              type="text"
-              inputMode="numeric"
-              value={tp.visitsRequired}
-              onChange={e => update({ visitsRequired: e.target.value.replace(/[^0-9]/g, '') })}
-              placeholder="e.g. 12"
-              className={ic}
-            />
-          </FormField>
-          <FormField label="Gap Days (Frequency)">
-            <input
-              type="text"
-              inputMode="numeric"
-              value={tp.frequencyGapDays}
-              onChange={e => update({ frequencyGapDays: e.target.value.replace(/[^0-9]/g, '') })}
-              placeholder="e.g. 2"
-              className={ic}
-            />
-          </FormField>
-        </div>
-
-        {tp.frequencyGapDays && Number(tp.frequencyGapDays) > 0 && (
-          <div className={`mb-3.5 px-3 py-2 rounded-xl border ${
-            isDoctorRole
-              ? 'bg-indigo-50/50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-900/30'
-              : 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30'
-          }`}>
-            <p className={`text-[11px] font-bold ${isDoctorRole ? 'text-[#262842] dark:text-indigo-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
-              📅 Every <span className="font-extrabold">{tp.frequencyGapDays}</span> day{Number(tp.frequencyGapDays) !== 1 ? 's' : ''}
-              {tp.visitsRequired && Number(tp.visitsRequired) > 0 ? ` × ${tp.visitsRequired} visits` : ''}
-            </p>
-          </div>
-        )}
-
-        <FormField label="Suggested Start Date (Optional)">
-          <input
-            type="date"
-            value={tp.suggestedStartDate}
-            onChange={e => update({ suggestedStartDate: e.target.value })}
-            className={ic}
-          />
-        </FormField>
-      </SectionCard>
+      {/* Home Exercise Programme (Optional) */}
+      <ExerciseSection patientId={patientId || 'draft-session-patient'} />
 
       <SectionCard icon={<ClipboardList size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Additional Notes" subtitle="Follow-up & management remarks" accent={accent}>
         <FormField label="Management / Follow-up Notes">

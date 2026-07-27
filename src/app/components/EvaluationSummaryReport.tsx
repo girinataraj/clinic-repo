@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { NeuroSummaryView } from './NeuroSummaryView';
 import { useExercises } from '../../hooks/useExercises';
+import { ExerciseSection } from './ExerciseSection';
 
 interface EvaluationSummaryReportProps {
   evaluation: any;

@@ -1037,22 +1037,26 @@ export function ReportGeneration() {
                 </section>
               )}
 
-              {/* Exercise Prescription — from backend */}
+              {/* Home Exercise Programme */}
               {exerciseItems.length > 0 && (
                 <section>
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b-[1.5px] border-[#262842] dark:border-slate-600">
+                    <Dumbbell size={16} className="text-[#3B3E66] dark:text-slate-300" />
                     <span className="text-[12px] font-extrabold text-[#262842] dark:text-slate-300 uppercase tracking-wide">Home Exercise Programme</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     {exerciseItems.map((ex, i) => (
-                      <div key={ex.id} className={`flex items-center justify-between py-2 ${i < exerciseItems.length - 1 ? "border-b border-dashed border-[#E8E9F1] dark:border-slate-700" : ""}`}>
+                      <div key={ex.id || i} className={`flex items-center justify-between py-2 ${i < exerciseItems.length - 1 ? "border-b border-dashed border-[#E8E9F1] dark:border-slate-700" : ""}`}>
                         <div className="flex items-center gap-3">
-                          <Dumbbell size={14} color="#262842" />
-                          <span className="text-[13px] font-semibold text-[#17252A] dark:text-white">{ex.name}</span>
+                          <span className="text-[13px] font-bold text-[#17252A] dark:text-white">{i + 1}. {ex.name}</span>
+                          {ex.category && <span className="text-[11px] text-teal-600 dark:text-teal-400 font-semibold bg-teal-50 dark:bg-teal-900/30 px-2 py-0.5 rounded">{ex.category}</span>}
                         </div>
-                        <span className="text-[12px] text-[#262842] dark:text-slate-400">
-                          {ex.sets && ex.reps ? `${ex.sets} × ${ex.reps} reps` : ex.duration ?? ''}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-[12px] font-bold text-[#262842] dark:text-slate-300">
+                            {ex.sets && ex.reps ? `${ex.sets} sets × ${ex.reps}` : ex.duration ?? ''}
+                          </span>
+                          {ex.frequency && <span className="block text-[10px] text-slate-500">{ex.frequency}</span>}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1095,9 +1099,6 @@ export function ReportGeneration() {
               </div>
             </div>
           </div>
-
-          {/* Real-time Home Exercise Programme Section */}
-          <ExerciseSection patientId={targetPatientId} assessmentId={targetEvalId} />
         </div>
       )}
 

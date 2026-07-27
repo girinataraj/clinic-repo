@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dumbbell, Plus, ChevronDown, ChevronUp, AlertCircle, BookOpen, Search, X, Check } from 'lucide-react';
+import { Dumbbell, Plus, ChevronDown, ChevronUp, AlertCircle, BookOpen, Search, X, Check, Filter, CheckSquare, Square, Loader2 } from 'lucide-react';
 import { useExercises } from '../../hooks/useExercises';
 import type { PatientExercise } from '../../hooks/useExercises';
 import { useExerciseTemplates } from '../../hooks/useExerciseLibrary';
@@ -22,12 +22,17 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySearch, setLibrarySearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [difficultyFilter, setDifficultyFilter] = useState('All');
+  const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<PatientExercise | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   const {
     exercises,
     isLoading,
     createExercise,
+    importBatchExercises,
     updateExercise,
     deleteExercise,
     duplicateExercise,
@@ -35,7 +40,12 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
     isSaving,
   } = useExercises(patientId, assessmentId);
 
-  const { data: templates } = useExerciseTemplates({ search: librarySearch.trim() || undefined });
+  const { data: templates, isLoading: isTemplatesLoading } = useExerciseTemplates({ search: librarySearch.trim() || undefined });
+
+  const showToast = (text: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   const MAX_EXERCISES = 15;
   const WARNING_THRESHOLD = 10;
@@ -51,35 +61,92 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
   };
 
   const handleSaveModal = async (payload: Partial<PatientExercise>) => {
-    if (selectedExercise) {
-      await updateExercise({ exerciseId: selectedExercise.id, payload });
-    } else {
-      await createExercise(payload);
+    try {
+      if (selectedExercise) {
+        await updateExercise({ exerciseId: selectedExercise.id, payload });
+        showToast('Exercise Updated Successfully', 'success');
+      } else {
+        await createExercise(payload);
+        showToast('Exercise Added Successfully', 'success');
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Unable to Save Exercise', 'error');
     }
   };
 
-  const handleImportTemplate = async (tmpl: ExerciseTemplate) => {
-    await createExercise({
-      exercise_name: tmpl.name,
-      exerciseName: tmpl.name,
-      body_part: tmpl.category || 'General',
-      bodyPart: tmpl.category || 'General',
-      sets: tmpl.sets || 3,
-      reps: tmpl.reps ? String(tmpl.reps) : (tmpl.duration ? String(tmpl.duration) : '10-15'),
-      frequency: '2x daily',
-      difficulty_level: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
-      difficultyLevel: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
-      description: tmpl.instructions || '',
-      video_url: tmpl.videoUrl || '',
-    });
+  const handleSingleImport = async (tmpl: ExerciseTemplate) => {
+    try {
+      await createExercise({
+        exercise_name: tmpl.name,
+        exerciseName: tmpl.name,
+        category: tmpl.category || 'General',
+        body_part: tmpl.category || 'General',
+        bodyPart: tmpl.category || 'General',
+        sets: tmpl.sets || 3,
+        repetitions: tmpl.reps ? String(tmpl.reps) : '10-15',
+        reps: tmpl.reps ? String(tmpl.reps) : '10-15',
+        frequency: 'Once daily',
+        difficulty_level: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
+        difficultyLevel: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
+        description: tmpl.instructions || '',
+        video_url: tmpl.videoUrl || '',
+      });
+      showToast('Exercise Imported Successfully', 'success');
+    } catch (err: any) {
+      showToast('Import Failed', 'error');
+    }
+  };
+
+  const handleBatchImport = async () => {
+    if (selectedTemplateIds.length === 0 || !templates) return;
+    const selectedTemplates = templates.filter(t => selectedTemplateIds.includes(t.id));
+    try {
+      const payloadItems = selectedTemplates.map(tmpl => ({
+        exercise_name: tmpl.name,
+        exerciseName: tmpl.name,
+        category: tmpl.category || 'General',
+        body_part: tmpl.category || 'General',
+        bodyPart: tmpl.category || 'General',
+        sets: tmpl.sets || 3,
+        repetitions: tmpl.reps ? String(tmpl.reps) : '10-15',
+        reps: tmpl.reps ? String(tmpl.reps) : '10-15',
+        frequency: 'Once daily',
+        difficulty_level: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
+        difficultyLevel: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
+        description: tmpl.instructions || '',
+        video_url: tmpl.videoUrl || '',
+      }));
+      await importBatchExercises(payloadItems);
+      setSelectedTemplateIds([]);
+      setIsLibraryOpen(false);
+      showToast(`${payloadItems.length} Exercise(s) Imported Successfully`, 'success');
+    } catch (err: any) {
+      showToast('Import Failed', 'error');
+    }
+  };
+
+  const toggleTemplateSelection = (tmplId: string) => {
+    setSelectedTemplateIds(prev =>
+      prev.includes(tmplId) ? prev.filter(id => id !== tmplId) : [...prev, tmplId]
+    );
   };
 
   const handleDuplicateClick = async (ex: PatientExercise) => {
-    await duplicateExercise(ex.id);
+    try {
+      await duplicateExercise(ex.id);
+      showToast('Exercise Duplicated Successfully', 'success');
+    } catch (err: any) {
+      showToast('Unable to Duplicate Exercise', 'error');
+    }
   };
 
   const handleDeleteClick = async (exerciseId: string) => {
-    await deleteExercise(exerciseId);
+    try {
+      await deleteExercise(exerciseId);
+      showToast('Exercise Deleted Successfully', 'success');
+    } catch (err: any) {
+      showToast('Unable to Delete Exercise', 'error');
+    }
   };
 
   const handleMoveUp = async (index: number) => {
@@ -112,14 +179,34 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
     await reorderExercises(reorderedPayload);
   };
 
-  if (!patientId) {
-    return null;
-  }
+
 
   const existingNames = new Set(exercises.map(e => (e.exerciseName || e.exercise_name || '').toLowerCase()));
 
+  // Filter templates
+  const filteredTemplates = (templates || []).filter(tmpl => {
+    if (categoryFilter !== 'All' && tmpl.category !== categoryFilter) return false;
+    if (difficultyFilter !== 'All' && tmpl.difficulty !== difficultyFilter) return false;
+    return true;
+  });
+
+  const categoriesList = ['All', ...Array.from(new Set((templates || []).map(t => t.category).filter(Boolean)))];
+  const difficultiesList = ['All', 'Easy', 'Moderate', 'Hard'];
+
   return (
     <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 font-sans">
+      {/* Toast Notification Banner */}
+      {toastMessage && (
+        <div className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-between animate-in fade-in slide-in-from-top-2 ${
+          toastMessage.type === 'error'
+            ? 'bg-rose-500/10 text-rose-600 border-rose-500/20 dark:text-rose-400'
+            : 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-300'
+        }`}>
+          <span>{toastMessage.text}</span>
+          <button onClick={() => setToastMessage(null)}><X className="w-4 h-4" /></button>
+        </div>
+      )}
+
       {/* Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div
@@ -150,6 +237,7 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
           {!readOnly && (
             <>
               <button
+                type="button"
                 onClick={() => setIsLibraryOpen(true)}
                 disabled={exercises.length >= MAX_EXERCISES}
                 className="px-3.5 py-2 text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50 border border-slate-200 dark:border-slate-700"
@@ -157,6 +245,7 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
                 <BookOpen className="w-4 h-4 text-teal-600 dark:text-teal-400" /> Import from Library
               </button>
               <button
+                type="button"
                 onClick={handleAddClick}
                 disabled={exercises.length >= MAX_EXERCISES}
                 className="px-4 py-2 text-xs font-semibold bg-teal-600 hover:bg-teal-500 text-white rounded-xl shadow-md shadow-teal-600/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
@@ -167,6 +256,7 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
           )}
 
           <button
+            type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
@@ -191,8 +281,8 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
       {!isCollapsed && (
         <div>
           {isLoading ? (
-            <div className="py-8 text-center text-xs text-slate-400 animate-pulse">
-              Loading prescribed home exercises...
+            <div className="py-8 text-center text-xs text-slate-400 animate-pulse flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-teal-500" /> Loading prescribed home exercises...
             </div>
           ) : exercises.length === 0 ? (
             <div className="py-10 text-center bg-slate-50 dark:bg-slate-950/50 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
@@ -203,12 +293,14 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
               {!readOnly && (
                 <div className="flex items-center justify-center gap-3 pt-1">
                   <button
+                    type="button"
                     onClick={() => setIsLibraryOpen(true)}
                     className="px-4 py-2 text-xs font-semibold bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 border border-teal-500/30 rounded-xl shadow-sm hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors flex items-center gap-1.5"
                   >
                     <BookOpen className="w-3.5 h-3.5" /> Import from Library
                   </button>
                   <button
+                    type="button"
                     onClick={handleAddClick}
                     className="px-4 py-2 text-xs font-semibold bg-teal-600 hover:bg-teal-500 text-white rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
                   >
@@ -249,7 +341,7 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
 
       {/* Import from Master Library Modal */}
       {isLibraryOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 font-sans">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
@@ -261,11 +353,12 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
                     Import from Exercise Library
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Select exercises from clinic template library to add to home programme
+                    Search, filter, and import exercises to patient home programme
                   </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsLibraryOpen(false)}
                 className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
@@ -273,48 +366,91 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
               </button>
             </div>
 
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-              <input
-                type="text"
-                value={librarySearch}
-                onChange={(e) => setLibrarySearch(e.target.value)}
-                placeholder="Search templates by exercise name or category..."
-                className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30"
-              />
+            {/* Search & Filter Controls */}
+            <div className="space-y-2">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  value={librarySearch}
+                  onChange={(e) => setLibrarySearch(e.target.value)}
+                  placeholder="Search templates by exercise name or instructions..."
+                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 text-xs flex-wrap">
+                <div className="flex items-center gap-1 text-slate-400 font-semibold">
+                  <Filter className="w-3.5 h-3.5" /> Filters:
+                </div>
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 font-medium"
+                >
+                  {categoriesList.map(cat => <option key={cat} value={cat}>Category: {cat}</option>)}
+                </select>
+                <select
+                  value={difficultyFilter}
+                  onChange={(e) => setDifficultyFilter(e.target.value)}
+                  className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 font-medium"
+                >
+                  {difficultiesList.map(d => <option key={d} value={d}>Difficulty: {d}</option>)}
+                </select>
+              </div>
             </div>
 
             {/* Template List */}
             <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-              {templates && templates.length > 0 ? (
-                templates.map((tmpl) => {
+              {isTemplatesLoading ? (
+                <div className="py-8 text-center text-xs text-slate-400 animate-pulse flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-teal-500" /> Loading library exercises...
+                </div>
+              ) : filteredTemplates && filteredTemplates.length > 0 ? (
+                filteredTemplates.map((tmpl) => {
                   const isAdded = existingNames.has(tmpl.name.toLowerCase());
+                  const isSelected = selectedTemplateIds.includes(tmpl.id);
                   return (
                     <div
                       key={tmpl.id}
-                      className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex items-center justify-between gap-3 hover:border-teal-500/30 transition-colors"
+                      onClick={() => !isAdded && toggleTemplateSelection(tmpl.id)}
+                      className={`p-3.5 rounded-2xl border transition-colors flex items-center justify-between gap-3 cursor-pointer ${
+                        isSelected
+                          ? 'bg-teal-500/10 border-teal-500/50'
+                          : 'bg-slate-50/50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-teal-500/30'
+                      }`}
                     >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs text-slate-900 dark:text-white">
-                            {tmpl.name}
-                          </span>
-                          <span className="px-2 py-0.5 text-[10px] font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md">
-                            {tmpl.category}
-                          </span>
-                        </div>
-                        {tmpl.instructions && (
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
-                            {tmpl.instructions}
-                          </p>
+                      <div className="flex items-center gap-3">
+                        {!isAdded && (
+                          <div className="text-teal-600 dark:text-teal-400">
+                            {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-slate-400" />}
+                          </div>
                         )}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-xs text-slate-900 dark:text-white">
+                              {tmpl.name}
+                            </span>
+                            <span className="px-2 py-0.5 text-[10px] font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md">
+                              {tmpl.category}
+                            </span>
+                          </div>
+                          {tmpl.instructions && (
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                              {tmpl.instructions}
+                            </p>
+                          )}
+                        </div>
                       </div>
 
                       <button
-                        onClick={() => handleImportTemplate(tmpl)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isAdded) handleSingleImport(tmpl);
+                        }}
                         disabled={isAdded}
-                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-1 shrink-0 ${
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-1 shrink-0 ${
                           isAdded
                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 cursor-default'
                             : 'bg-teal-600 hover:bg-teal-500 text-white shadow-sm'
@@ -335,18 +471,35 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
                 })
               ) : (
                 <div className="py-8 text-center text-xs text-slate-400">
-                  No exercise templates found in library.
+                  No exercise templates found matching search criteria.
                 </div>
               )}
             </div>
 
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-              <button
-                onClick={() => setIsLibraryOpen(false)}
-                className="px-5 py-2 text-xs font-semibold bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl hover:opacity-90 transition-opacity"
-              >
-                Done
-              </button>
+            {/* Footer with Batch Import Action */}
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <span className="text-xs text-slate-500 font-medium">
+                {selectedTemplateIds.length} exercise(s) selected
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsLibraryOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                {selectedTemplateIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleBatchImport}
+                    disabled={isSaving}
+                    className="px-5 py-2 text-xs font-semibold bg-teal-600 hover:bg-teal-500 text-white rounded-xl shadow-md shadow-teal-600/30 transition-all flex items-center gap-1.5"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" /> Import Selected ({selectedTemplateIds.length})
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -445,7 +445,7 @@ export function TherapistAssessmentForm() {
                 {currentStepKey === 'cardio_exam_1' && <StepCardioExam data={cardioData} onChange={setCardioData} isDoctorRole={isDoctorRole} anthropometrics={anthropometrics} onAnthropometricsChange={setAnthropometrics} page={1} />}
                 {currentStepKey === 'cardio_exam_2' && <StepCardioExam data={cardioData} onChange={setCardioData} isDoctorRole={isDoctorRole} anthropometrics={anthropometrics} onAnthropometricsChange={setAnthropometrics} page={2} />}
                 {currentStepKey === 'diagnosis' && <StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} selectedDiagnoses={selectedDiagnoses} setSelectedDiagnoses={setSelectedDiagnoses} chiefComplaints={chiefComplaints} diagnosisList={diagnosisList} relevanceMap={relevanceMap} />}
-                {currentStepKey === 'treatment' && <StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} treatmentsList={treatments} />}
+                {currentStepKey === 'treatment' && <StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} treatmentsList={treatments} patientId={resolvedPatientId} />}
                 {currentStepKey === 'review' && (
                   <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
               <SectionCard icon={<Save size={20} className="text-teal-600 dark:text-teal-400" />} title="Final Review" accent="teal">
@@ -531,9 +531,6 @@ export function TherapistAssessmentForm() {
                   )}
                 </FormField>
               </SectionCard>
-
-              {/* Optional Home Exercise Programme Section */}
-              <ExerciseSection patientId={resolvedPatientId} />
 
               <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-4 rounded-[18px] flex items-center justify-center gap-2 text-white text-[15px] font-black shadow-lg shadow-teal-600/20 disabled:opacity-60 bg-teal-600 hover:bg-teal-700 transition-transform active:scale-[0.98]">
                 {createEvaluation.isPending?<><Loader2 size={20} className="animate-spin" /> Submitting…</>:<><Save size={20} /> Finalize & Start Session</>}
