@@ -5,7 +5,6 @@ import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPl
 import { ClinicalExamination } from './ClinicalExamination';
 import { RomMatrix } from './RomMatrix';
 import { MusclePower } from './MusclePower';
-import { ExerciseSection } from '../../components/ExerciseSection';
 
 // ── Step 0: Patient Info ──────────────────────────────────────────────────────
 export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handlePhotoChange, handlePhotoRemove, photoInputKey, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user }: any) {
@@ -472,8 +471,7 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
         </div>
       </SectionCard>
 
-      {/* Home Exercise Programme (Optional) */}
-      <ExerciseSection patientId={patientId || 'draft-session-patient'} />
+
 
       <SectionCard icon={<ClipboardList size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Additional Notes" subtitle="Follow-up & management remarks" accent={accent}>
         <FormField label="Management / Follow-up Notes">

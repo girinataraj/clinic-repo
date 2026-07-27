@@ -15,7 +15,6 @@ import { StepNeuroExam, getEmptyNeuroData } from './StepNeuroExam';
 import { StepCardioExam } from './StepCardioExam';
 
 import { AnthropometricSection } from './AnthropometricSection';
-import { ExerciseSection } from '../../components/ExerciseSection';
 
 export function TherapistAssessmentForm() {
   const navigate = useNavigate();

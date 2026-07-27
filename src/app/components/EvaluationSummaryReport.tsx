@@ -770,57 +770,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
         </section>
       )}
 
-      {/* Home Exercise Programme */}
-      {prescribedExercises && prescribedExercises.length > 0 && (
-        <section className="p-5 rounded-2xl border border-teal-200 dark:border-teal-900/50 bg-[#F1EFE8] dark:bg-slate-900/40 border-l-[4px] border-l-[#1D9E75]">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-300 dark:border-slate-800">
-            <Dumbbell size={18} className="text-[#1D9E75]" />
-            <span className="text-[13px] font-extrabold uppercase tracking-wide text-slate-900 dark:text-slate-100">
-              Home Exercise Programme
-            </span>
-          </div>
 
-          <div className="overflow-hidden rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm mb-3">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left text-xs font-semibold">
-                <thead className="bg-[#1D9E75] text-white">
-                  <tr>
-                    <th className="px-3 py-2.5">Exercise</th>
-                    <th className="px-3 py-2.5 text-center">Sets</th>
-                    <th className="px-3 py-2.5 text-center">Reps</th>
-                    <th className="px-3 py-2.5 text-center">Frequency</th>
-                    <th className="px-3 py-2.5">Instructions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
-                  {prescribedExercises.map((ex, i) => (
-                    <tr key={ex.id || i} className="hover:bg-slate-50 dark:hover:bg-slate-850/50">
-                      <td className="px-3 py-2.5 font-bold text-slate-900 dark:text-white">
-                        {i + 1}. {ex.exerciseName || ex.exercise_name}
-                        {(ex.bodyPart || ex.body_part) && (
-                          <span className="block text-[10px] font-normal text-teal-600 dark:text-teal-400">
-                            Target: {ex.bodyPart || ex.body_part}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5 text-center font-bold">{ex.sets}</td>
-                      <td className="px-3 py-2.5 text-center">{ex.reps}</td>
-                      <td className="px-3 py-2.5 text-center font-semibold text-teal-700 dark:text-teal-300">{ex.frequency}</td>
-                      <td className="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-300 italic">
-                        {ex.description || ex.notes || 'As instructed by physical therapist.'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 italic">
-            <strong>General Instructions:</strong> Perform exercises as prescribed. Stop if pain increases beyond 3/10. Contact therapist if unsure about form or progression.
-          </p>
-        </section>
-      )}
 
       {/* Clinician Remarks & Assessment Notes */}
       {(assessmentNotes || clinicalFindings || therapyNotes || progressNotes || doctorRemarks || therapistRemarks || finalClinicalSummary) && (
