@@ -1,8 +1,7 @@
-import React, { useMemo } from 'react';
-import { ROM_CONFIG, BORG_SCALE_MAP, formatBorgRatings } from '../screens/assessment/clinicalConfig';
+import { useMemo } from 'react';
+import { ROM_CONFIG } from '../screens/assessment/clinicalConfig';
 import { 
   Activity, 
-  Scale, 
   Stethoscope, 
   CheckSquare, 
   Dumbbell, 
@@ -10,11 +9,7 @@ import {
   Heart,
   StickyNote,
   Brain,
-  Zap,
-  Building2,
-  UserCheck,
-  Calendar,
-  FileText
+  Building2
 } from 'lucide-react';
 import { NeuroSummaryView } from './NeuroSummaryView';
 import { useExercises } from '../../hooks/useExercises';
