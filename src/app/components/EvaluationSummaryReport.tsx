@@ -139,34 +139,29 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
     rawPains.forEach(p => painAreasList.push(formatDisplayValue(p)));
   }
 
-  // Clinical Examination
+  // Clinical Examination & Legacy Muscle Power
   const clinicalExamination = rawData.clinicalExamination || rawData.clinical_examination;
-  const specialPhysicalTestsList: any[] = Array.isArray(clinicalExamination?.specialPhysicalTests)
-    ? clinicalExamination.specialPhysicalTests
-    : [];
-
-  const testsObj = clinicalExamination?.tests;
+  const legacyMusclePower = clinicalExamination?.musclePower || rawData.musclePower;
+  const rawSpecialTests = clinicalExamination?.specialPhysicalTests || clinicalExamination?.special_tests || clinicalExamination?.tests || rawData.specialPhysicalTests || rawData.special_tests;
+  const specialPhysicalTestsList: any[] = Array.isArray(rawSpecialTests)
+    ? rawSpecialTests
+    : (typeof rawSpecialTests === 'object' && rawSpecialTests !== null
+        ? Object.entries(rawSpecialTests).map(([k, v]: [string, any]) => ({
+            name: k.replace(/([A-Z])/g, ' $1').trim(),
+            testName: k.replace(/([A-Z])/g, ' $1').trim(),
+            result: typeof v === 'object' ? (v?.result || v?.status || 'Not Tested') : String(v)
+          }))
+        : []);
+  const testsObj = typeof clinicalExamination?.tests === 'object' ? clinicalExamination.tests : null;
 
   // Range of Motion & Muscle Power
   const rawRom = rawData.rangeOfMotion || rawData.range_of_motion || rawData.musclePowerRom || rawData.muscle_power_rom || clinicalExamination?.musclePowerRom || clinicalExamination?.muscle_power_rom;
-  const legacyMusclePower = clinicalExamination?.musclePower || rawData.musclePower;
-
-  const cleanPower = (v: any) => {
-    if (v === null || v === undefined || v === '') return '—';
-    const s = String(v).trim();
-    if (s === '7' || s === '77') return '—';
-    return s;
-  };
-  const cleanRom = (v: any) => {
-    if (v === null || v === undefined || v === '') return '—';
-    const s = String(v).trim();
-    if (s === '7' || s === '77' || s === '7°' || s === '77°') return '—';
-    if (s.endsWith('°')) return s;
-    return `${s}°`;
-  };
+  const cleanPower = (v: any) => (v === null || v === undefined || v === '' || v === '7' || v === '77' ? '—' : String(v).trim());
+  const cleanRom = (v: any) => (v === null || v === undefined || v === '' || v === '7' || v === '77' || v === '7°' || v === '77°' ? '—' : (String(v).trim().endsWith('°') ? String(v).trim() : `${String(v).trim()}°`));
 
   const romTableRows = useMemo(() => {
     const rows: any[] = [];
+    const addedKeys = new Set<string>();
     if (rawRom?.measurements && Array.isArray(rawRom.measurements)) {
       rawRom.measurements.forEach((m: any) => {
         rows.push({
@@ -185,27 +180,44 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
             const key1 = `${joint.label}_${movement}`.replace(/\s+/g, '_');
             const key2 = `${joint.label.toLowerCase().replace(/[^a-z0-9]/g, '')}_${movement.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
             const key3 = `${joint.label}_${movement}`;
-            const entry = rawRom[key1] || rawRom[key2] || rawRom[key3];
+            const key4 = `${joint.label} ${movement}`;
+            const entry = rawRom[key1] || rawRom[key2] || rawRom[key3] || rawRom[key4];
             if (entry && (entry.powerRt || entry.powerLt || entry.romRt || entry.romLt || entry.powerRight || entry.powerLeft || entry.romRight || entry.romLeft)) {
-              const pRt = cleanPower(entry.powerRt ?? entry.powerRight);
-              const pLt = cleanPower(entry.powerLt ?? entry.powerLeft);
-              const rRt = cleanRom(entry.romRt !== undefined && entry.romRt !== '' ? entry.romRt : entry.romRight);
-              const rLt = cleanRom(entry.romLt !== undefined && entry.romLt !== '' ? entry.romLt : entry.romLeft);
               rows.push({
                 joint: joint.label,
                 movement: movement,
-                powerRt: pRt,
-                powerLt: pLt,
-                romRt: rRt,
-                romLt: rLt,
+                powerRt: cleanPower(entry.powerRt ?? entry.powerRight),
+                powerLt: cleanPower(entry.powerLt ?? entry.powerLeft),
+                romRt: cleanRom(entry.romRt !== undefined && entry.romRt !== '' ? entry.romRt : entry.romRight),
+                romLt: cleanRom(entry.romLt !== undefined && entry.romLt !== '' ? entry.romLt : entry.romLeft),
               });
+              addedKeys.add(key1); addedKeys.add(key2); addedKeys.add(key3); addedKeys.add(key4);
             }
           });
         });
       });
+      Object.entries(rawRom).forEach(([key, entry]: [string, any]) => {
+        if (!addedKeys.has(key) && entry && typeof entry === 'object') {
+          if (entry.powerRt || entry.powerLt || entry.romRt || entry.romLt || entry.powerRight || entry.powerLeft || entry.romRight || entry.romLeft) {
+            const parts = key.split('_');
+            rows.push({
+              joint: parts.length > 1 ? parts.slice(0, -1).join(' ') : key,
+              movement: parts.length > 1 ? parts[parts.length - 1] : '',
+              powerRt: cleanPower(entry.powerRt ?? entry.powerRight),
+              powerLt: cleanPower(entry.powerLt ?? entry.powerLeft),
+              romRt: cleanRom(entry.romRt !== undefined && entry.romRt !== '' ? entry.romRt : entry.romRight),
+              romLt: cleanRom(entry.romLt !== undefined && entry.romLt !== '' ? entry.romLt : entry.romLeft),
+            });
+          }
+        }
+      });
     }
     return rows;
   }, [rawRom]);
+
+  // Cardio & Anthropometrics
+  const rawCardio = rawData.cardioData || rawData.cardio_data || rawData.cardiorespiratoryAssessment || rawData.cardiorespiratory_assessment;
+  const rawAnthro = rawData.anthropometrics || rawData.anthropometrics_data;
 
   // Neurological Examination
   const rawNeuro = rawData.neurologicalExamination || rawData.neurological_examination || rawData.neuroData || rawData.neuro_data;
@@ -584,6 +596,141 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
             <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Neurological Examination</span>
           </div>
           <NeuroSummaryView neuroData={neuroData} />
+        </section>
+      )}
+
+      {/* Anthropometrics */}
+      {rawAnthro && typeof rawAnthro === 'object' && Object.values(rawAnthro).some(v => v !== null && v !== undefined && v !== '') && (
+        <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <Scale size={16} className={accentColor} />
+            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Anthropometric Profile</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-xs font-semibold">
+            {rawAnthro.height && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-center shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Height</span>
+                <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200">{rawAnthro.height} cm</span>
+              </div>
+            )}
+            {rawAnthro.weight && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-center shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Weight</span>
+                <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200">{rawAnthro.weight} kg</span>
+              </div>
+            )}
+            {rawAnthro.bmi && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-center shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">BMI</span>
+                <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200">{rawAnthro.bmi}</span>
+              </div>
+            )}
+            {rawAnthro.waist && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-center shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Waist</span>
+                <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200">{rawAnthro.waist} cm</span>
+              </div>
+            )}
+            {rawAnthro.hip && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-center shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Hip</span>
+                <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200">{rawAnthro.hip} cm</span>
+              </div>
+            )}
+            {rawAnthro.whRatio && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-center shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">W/H Ratio</span>
+                <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200">{rawAnthro.whRatio}</span>
+              </div>
+            )}
+            {rawAnthro.excessWeight && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-center shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Excess Weight</span>
+                <span className="font-extrabold text-sm text-rose-600 dark:text-rose-400">{rawAnthro.excessWeight} kg</span>
+              </div>
+            )}
+            {rawAnthro.excessCalorie && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-center shadow-sm">
+                <span className="text-[10px] text-slate-400 block mb-0.5 font-bold">Excess Calorie</span>
+                <span className="font-extrabold text-sm text-amber-600 dark:text-amber-400">{rawAnthro.excessCalorie} kcal</span>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Cardiorespiratory Assessment */}
+      {rawCardio && typeof rawCardio === 'object' && (rawCardio.borgRating || rawCardio.vo2Max || rawCardio.sixMinWalk || rawCardio.rockportWalk || rawCardio.harvardStep || (rawCardio.exercisePrescription && Object.values(rawCardio.exercisePrescription).some(Boolean))) && (
+        <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <Heart size={16} className={accentColor} />
+            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Cardiorespiratory Assessment</span>
+          </div>
+
+          {rawCardio.borgRating && (
+            <div className="mb-4 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Borg Rating (Perceived Exertion):</span>
+              <span className="px-2.5 py-1 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
+                {formatBorgRatings(rawCardio.borgRating)}
+              </span>
+            </div>
+          )}
+
+          {(rawCardio.vo2Max || rawCardio.sixMinWalk || rawCardio.rockportWalk || rawCardio.harvardStep) && (
+            <div className="mb-4 overflow-hidden rounded-xl border border-slate-150 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+              <table className="w-full border-collapse text-left text-xs font-semibold">
+                <thead className="bg-slate-50 dark:bg-slate-850 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="px-3 py-2 text-slate-700 dark:text-slate-300">Cardio Test</th>
+                    <th className="px-3 py-2 text-slate-700 dark:text-slate-300">Result / Score</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {rawCardio.vo2Max && (
+                    <tr>
+                      <td className="px-3 py-2.5 font-bold text-slate-800 dark:text-slate-200">VO2 Max</td>
+                      <td className="px-3 py-2.5 font-extrabold text-slate-900 dark:text-white">{rawCardio.vo2Max}</td>
+                    </tr>
+                  )}
+                  {rawCardio.sixMinWalk && (
+                    <tr>
+                      <td className="px-3 py-2.5 font-bold text-slate-800 dark:text-slate-200">6 Min Walk Test</td>
+                      <td className="px-3 py-2.5 font-extrabold text-slate-900 dark:text-white">{rawCardio.sixMinWalk}</td>
+                    </tr>
+                  )}
+                  {rawCardio.rockportWalk && (
+                    <tr>
+                      <td className="px-3 py-2.5 font-bold text-slate-800 dark:text-slate-200">Rockport Walk Test</td>
+                      <td className="px-3 py-2.5 font-extrabold text-slate-900 dark:text-white">{rawCardio.rockportWalk}</td>
+                    </tr>
+                  )}
+                  {rawCardio.harvardStep && (
+                    <tr>
+                      <td className="px-3 py-2.5 font-bold text-slate-800 dark:text-slate-200">Harvard Step Test</td>
+                      <td className="px-3 py-2.5 font-extrabold text-slate-900 dark:text-white">{rawCardio.harvardStep}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {rawCardio.exercisePrescription && Object.values(rawCardio.exercisePrescription).some(Boolean) && (
+            <div>
+              <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Exercise Prescription</span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {Object.entries(rawCardio.exercisePrescription).map(([name, val]: [string, any]) => {
+                  if (!val) return null;
+                  return (
+                    <div key={name} className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-xs">
+                      <span className="text-[10px] text-slate-400 capitalize block font-bold">{name.replace(/([A-Z])/g, ' $1')}</span>
+                      <span className="font-extrabold text-slate-850 dark:text-slate-100">{val}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </section>
       )}
 

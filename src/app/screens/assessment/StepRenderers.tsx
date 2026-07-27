@@ -15,25 +15,6 @@ export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handl
 
   return (
     <SectionCard icon={<User size={18} className={`${iconColor} dark:text-indigo-400`} />} title="Patient Information" subtitle="Demographics & assignment" accent={accent}>
-      {/* Photo upload */}
-      <div className="mb-4 p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <ImagePlus size={15} className={isDoctorRole ? 'text-[#262842]' : 'text-teal-600'} />
-            <span className="text-[12px] font-bold text-slate-700 dark:text-white">Assessment Photo</span>
-          </div>
-          {intakePhotoUrl && <button onClick={handlePhotoRemove} className="text-[11px] font-bold text-slate-500 hover:text-slate-700 flex items-center gap-1"><X size={11} /> Remove</button>}
-        </div>
-        {intakePhotoUrl ? (
-          <img src={intakePhotoUrl} alt="Upload preview" className="w-full max-h-44 object-cover rounded-lg border border-slate-200 dark:border-slate-700" />
-        ) : (
-          <label htmlFor="intake-photo" className="flex flex-col items-center gap-1 py-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer hover:bg-slate-50 transition-colors">
-            <ImagePlus size={18} className={isDoctorRole ? 'text-[#262842]' : 'text-teal-600'} />
-            <span className="text-[11px] font-bold text-slate-600">Tap to upload</span>
-          </label>
-        )}
-        <input key={photoInputKey} id="intake-photo" type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
-      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0">
         {[
           { key: 'name', label: 'Full Name', placeholder: 'e.g. Priya Sharma', type: 'text' },

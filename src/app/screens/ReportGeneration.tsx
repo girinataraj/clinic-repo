@@ -513,32 +513,37 @@ export function ReportGeneration() {
 
               {/* Patient list */}
               <div className="flex flex-col gap-2 max-h-80 overflow-y-auto">
-                {patientsList.length === 0 && (
-                  <p className="text-center py-6 text-[13px] text-[#262842] dark:text-slate-400">
-                    {patientSearch ? 'No patients found.' : 'Type to search patients.'}
+                {!patientSearch.trim() ? (
+                  <p className="text-center py-6 text-[13px] text-[#262842] dark:text-slate-400 font-semibold">
+                    Type to search patients by name or phone.
                   </p>
+                ) : patientsList.length === 0 ? (
+                  <p className="text-center py-6 text-[13px] text-[#262842] dark:text-slate-400 font-semibold">
+                    No patients found matching "{patientSearch}".
+                  </p>
+                ) : (
+                  patientsList.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        // Navigate to the patient report page by setting patientId param
+                        setSearchParams({ patientId: p.id });
+                      }}
+                      className="flex items-center gap-3 p-3 rounded-xl text-left transition-colors hover:bg-slate-50 border border-[#E8E9F1] dark:border-slate-800"
+                    >
+                      <div className="rounded-xl flex items-center justify-center shrink-0 w-10 h-10 bg-[#E8E9F1] dark:bg-slate-800">
+                        <span className="text-[14px] font-bold text-[#262842] dark:text-slate-200">
+                          {p.name.split(' ').map(n => n[0]).join('')}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[14px] font-semibold text-[#17252A] dark:text-white truncate">{p.name}</p>
+                        <p className="text-[12px] text-[#262842] dark:text-slate-400">{p.phone} · {p.age} yrs · {p.condition ?? '—'}</p>
+                      </div>
+                      <span className="text-[11px] font-semibold text-[#262842] dark:text-slate-400">{p.displayId}</span>
+                    </button>
+                  ))
                 )}
-                {patientsList.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => {
-                      // Navigate to the patient report page by setting patientId param
-                      setSearchParams({ patientId: p.id });
-                    }}
-                    className="flex items-center gap-3 p-3 rounded-xl text-left transition-colors hover:bg-slate-50 border border-[#E8E9F1] dark:border-slate-800"
-                  >
-                    <div className="rounded-xl flex items-center justify-center shrink-0 w-10 h-10 bg-[#E8E9F1] dark:bg-slate-800">
-                      <span className="text-[14px] font-bold text-[#262842] dark:text-slate-200">
-                        {p.name.split(' ').map(n => n[0]).join('')}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-[#17252A] dark:text-white truncate">{p.name}</p>
-                      <p className="text-[12px] text-[#262842] dark:text-slate-400">{p.phone} · {p.age} yrs · {p.condition ?? '—'}</p>
-                    </div>
-                    <span className="text-[11px] font-semibold text-[#262842] dark:text-slate-400">{p.displayId}</span>
-                  </button>
-                ))}
               </div>
             </div>
           </div>
@@ -833,7 +838,7 @@ export function ReportGeneration() {
               )}
 
               {/* Cardio Exam (Cardio-specific) */}
-              {hasCardio && mergedCardioData && (mergedCardioData.borgRating || mergedCardioData.vo2Max || mergedCardioData.sixMinWalk || mergedCardioData.rockportWalk || mergedCardioData.harvardStep || (mergedCardioData.exercisePrescription && Object.values(mergedCardioData.exercisePrescription).some(Boolean))) && (
+              {(hasCardio || Boolean(mergedCardioData)) && mergedCardioData && (mergedCardioData.borgRating || mergedCardioData.vo2Max || mergedCardioData.sixMinWalk || mergedCardioData.rockportWalk || mergedCardioData.harvardStep || (mergedCardioData.exercisePrescription && Object.values(mergedCardioData.exercisePrescription).some(Boolean))) && (
                 <section className="bg-slate-50/30 dark:bg-slate-900/10 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                     <Activity size={16} className="text-[#3B3E66] dark:text-slate-350" />

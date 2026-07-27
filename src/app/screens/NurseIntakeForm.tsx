@@ -245,13 +245,28 @@ export function NurseIntakeForm() {
   }, [foundPatient, phoneToFetch]);
 
   const handleCreateNewPatient = async () => {
-    if (!newPatient.name || !newPatient.age) return;
+    setSubmitError(null);
+    if (!newPatient.name || newPatient.name.trim().length < 2) {
+      setSubmitError('Patient name must be at least 2 characters.');
+      return;
+    }
+    const numAge = Number(newPatient.age);
+    if (!newPatient.age || isNaN(numAge) || numAge <= 0 || numAge > 120) {
+      setSubmitError('Valid age between 1 and 120 is required.');
+      return;
+    }
+    const cleanPhone = phoneInput.trim().replace(/[\s-]/g, '');
+    if (!cleanPhone || !/^\d{10}$/.test(cleanPhone)) {
+      setSubmitError('Phone number must be exactly 10 digits.');
+      return;
+    }
+
     try {
       const created = await createPatientMutation.mutateAsync({
-        name: newPatient.name,
-        age: Number(newPatient.age),
+        name: newPatient.name.trim(),
+        age: numAge,
         gender: newPatient.gender as 'Male' | 'Female' | 'Other',
-        phone: phoneInput.trim(),
+        phone: cleanPhone,
         condition: newPatient.condition || undefined,
         therapistId: isDoctorRole ? (selectedTherapistId || undefined) : (user?.id || undefined),
       });
@@ -259,7 +274,7 @@ export function NurseIntakeForm() {
       setPatientInfo({
         name: created.name,
         age: String(created.age),
-        phone: created.phone ?? phoneInput.trim(),
+        phone: created.phone ?? cleanPhone,
         gender: created.gender as 'Male' | 'Female' | 'Other',
         address: created.city ?? '',
       });
@@ -816,58 +831,6 @@ export function NurseIntakeForm() {
               </div>
               <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Patient Information</h2>
             </div>
-            <div className="mb-4 p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="rounded-lg flex items-center justify-center w-8 h-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
-                    <ImagePlus size={16} className="text-indigo-900 dark:text-indigo-400" />
-                  </div>
-                  <div>
-                    <p className="text-[12px] font-extrabold text-slate-700 dark:text-white">Intake Photo</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
-                      Upload a form or photo to skip manual entry
-                    </p>
-                  </div>
-                </div>
-                {intakePhoto && (
-                  <button
-                    onClick={handlePhotoRemove}
-                    className="flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                  >
-                    <X size={12} />
-                    Remove
-                  </button>
-                )}
-              </div>
-              {intakePhotoUrl ? (
-                <div className="flex flex-col gap-2">
-                  <img
-                    src={intakePhotoUrl}
-                    alt="Intake upload preview"
-                    className="w-full max-h-56 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
-                  />
-                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                    Photo uploaded. You can skip to payment below.
-                  </p>
-                </div>
-              ) : (
-                <label
-                  htmlFor="intake-photo"
-                  className="flex flex-col items-center justify-center gap-1.5 px-3 py-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <ImagePlus size={18} className="text-indigo-900 dark:text-indigo-400" />
-                  <span className="text-[12px] font-bold text-slate-700 dark:text-white">Tap to upload a photo</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">JPG, PNG, HEIC</span>
-                </label>
-              )}
-              <input
-                key={photoInputKey}
-                id="intake-photo"
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoChange}
-                className="hidden"
-              />
             </div>
             {[
               { key: 'name', label: 'Full Name', placeholder: 'e.g. Priya Sharma', type: 'text' },

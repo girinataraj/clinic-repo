@@ -5,6 +5,7 @@ import { ThemeToggle } from '../components/ThemeToggle';
 import { BottomNav } from '../components/BottomNav';
 import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
 import { usePatients } from '../../hooks/usePatients';
+import { useAllEvaluations } from '../../hooks/useEvaluations';
 import { useAppConfigScope } from '../../hooks/useAppConfig';
 import {
   LogOut,

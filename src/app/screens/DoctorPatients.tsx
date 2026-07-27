@@ -83,7 +83,10 @@ export function DoctorPatients() {
   const updatePatient = useUpdatePatient();
   const deletePatient = useDeletePatient();
 
-  const patients = patientsData?.data ?? [];
+  const rawPatients = patientsData?.data ?? [];
+  const patients = statusFilter === 'all'
+    ? rawPatients.filter((p) => p.status !== 'completed')
+    : rawPatients;
 
   const handleDeletePatient = async (id: string) => {
     try {
@@ -410,17 +413,26 @@ export function DoctorPatients() {
                         </div>
                       </div>
 
-                      <div className="flex gap-2 mt-4">
+                      <div className="flex flex-wrap md:flex-nowrap gap-2 mt-4">
                         <button
-                          onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-colors bg-[#E8E9F1] dark:bg-slate-800 text-[#262842] dark:text-slate-200 text-[13px] font-semibold hover:bg-slate-200 dark:hover:bg-slate-700"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/doctor/patient/${patient.id}`); }}
+                          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 transition-colors bg-[#E8E9F1] dark:bg-slate-800 text-[#262842] dark:text-slate-200 text-[13px] font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap"
                         >
-                          <FileText size={16} />
+                          <FileText size={15} />
                           View chart
                         </button>
+                        {patient.status !== 'completed' && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); navigate(`/doctor/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`); }}
+                            className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 transition-colors bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800/60 text-[13px] font-semibold hover:bg-teal-100 dark:hover:bg-teal-900/50 whitespace-nowrap"
+                          >
+                            <Stethoscope size={15} />
+                            Assess
+                          </button>
+                        )}
                         <button
-                          onClick={() => navigate(`/doctor/patient/${patient.id}/exercise`)}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 transition-shadow hover:shadow-md"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/doctor/patient/${patient.id}/exercise`); }}
+                          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 transition-shadow hover:shadow-md whitespace-nowrap"
                           style={{
                             background: 'linear-gradient(135deg, #262842, #3B3E66)',
                             color: '#FEFFFF',
@@ -428,12 +440,12 @@ export function DoctorPatients() {
                             fontWeight: 600,
                           }}
                         >
-                          <ChevronRight size={16} />
+                          <ChevronRight size={15} />
                           Write Rx
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setDeletePatientId(patient.id); }}
-                          className="flex items-center justify-center rounded-xl p-2.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors border border-rose-100 dark:border-rose-900/50"
+                          className="flex items-center justify-center rounded-xl p-2.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors border border-rose-100 dark:border-rose-900/50 shrink-0"
                           title="Delete Patient"
                         >
                           <Trash2 size={16} />

@@ -60,9 +60,11 @@ export function PatientForm() {
   // ── Validation ───────────────────────────────────────────────────────────
   const resolvedTherapistId = isDoctorRole ? therapistId : (user?.id ?? therapistId);
   const validate = () => {
-    if (!name.trim()) return 'Patient name is required.';
-    if (!age.trim() || isNaN(Number(age)) || Number(age) <= 0) return 'Valid age is required.';
-    if (!phone.trim() || phone.trim().length < 7) return 'Valid phone number is required.';
+    if (!name.trim() || name.trim().length < 2) return 'Patient name must be at least 2 characters.';
+    const numAge = Number(age);
+    if (!age.trim() || isNaN(numAge) || numAge <= 0 || numAge > 120) return 'Valid age between 1 and 120 is required.';
+    const cleanPhone = phone.trim().replace(/[\s-]/g, '');
+    if (!cleanPhone || !/^\d{10}$/.test(cleanPhone)) return 'Phone number must be exactly 10 digits.';
     if (isDoctorRole && !resolvedTherapistId) return 'Please assign a therapist.';
     return null;
   };
@@ -73,6 +75,8 @@ export function PatientForm() {
     if (err) { setError(err); return; }
     setError(null);
 
+    const cleanPhone = phone.trim().replace(/[\s-]/g, '');
+
     try {
       if (isEdit && editId) {
         await updatePatient.mutateAsync({
@@ -80,7 +84,7 @@ export function PatientForm() {
           name: name.trim(),
           age: Number(age),
           gender,
-          phone: phone.trim(),
+          phone: cleanPhone,
           city: city.trim() || undefined,
           therapistId: resolvedTherapistId || undefined,
         });
@@ -89,7 +93,7 @@ export function PatientForm() {
           name: name.trim(),
           age: Number(age),
           gender,
-          phone: phone.trim(),
+          phone: cleanPhone,
           city: city.trim() || undefined,
           therapistId: resolvedTherapistId || undefined,
         });

@@ -71,6 +71,7 @@ export function DoctorAssessmentForm() {
   const [paymentMode, setPaymentMode] = useState<'Cash'|'UPI'|''>('');
   const [billAmount, setBillAmount] = useState<number|null>(null);
   const [billAmountInput, setBillAmountInput] = useState('');
+  const [isManualBillEdit, setIsManualBillEdit] = useState(false);
   const [visitType, setVisitType] = useState<'Clinic'|'Home Visit'|'IP'|'Day Care'>('Clinic');
   const [neuroData, setNeuroData] = useState<any>(getEmptyNeuroData());
   const [cardioData, setCardioData] = useState<CardioExamData>(getEmptyCardioExam());
@@ -78,6 +79,20 @@ export function DoctorAssessmentForm() {
   // Follow-up
   const { data: previousEval } = useLatestEvaluation(resolvedPatientId || null);
   const isFollowUp = Boolean(previousEval);
+
+  const handleBillAmountChange = (v: string) => {
+    setSubmitError(null);
+    setIsManualBillEdit(true);
+    const d = v.replace(/[^\d]/g, '');
+    if (!d) {
+      setBillAmount(0);
+      setBillAmountInput('');
+      return;
+    }
+    const n = Number(d);
+    setBillAmount(n);
+    setBillAmountInput(String(n));
+  };
 
   // Billing calculation
   const { data: treatments = [] } = useTreatments();
@@ -120,77 +135,42 @@ export function DoctorAssessmentForm() {
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);
 
-  // Pre-fill clinical data from previous assessment
+  // Fully clear form fields whenever a patient is resolved/looked up
   useEffect(() => {
-    if (previousEval) {
-      // Vitals
-      setVitals({
-        bp_sys: previousEval.bp?.split('/')[0] || '',
-        bp_dia: previousEval.bp?.split('/')[1] || '',
-        pr: previousEval.pr ? String(previousEval.pr) : '',
-        spo2: previousEval.spo2 ? String(previousEval.spo2) : '',
-        temp: previousEval.temperature ? String(previousEval.temperature) : '',
-        ef: previousEval.ef ? String(previousEval.ef) : '',
-      });
-      // Chief Complaints
-      if (previousEval.chiefComplaints) {
-        setComplaintsText(previousEval.chiefComplaints);
-      }
-      // Symptoms
-      if (previousEval.associatedSymptoms) {
-        setAssociatedSymptoms(previousEval.associatedSymptoms);
-      }
-      // Medical History
-      if (previousEval.medicalHistory) {
-        setSelectedMedicalHistory(previousEval.medicalHistory);
-      }
-      // Pain Level
-      if (previousEval.painLevel != null) {
-        setPainLevel(previousEval.painLevel);
-      }
-      // Diagnosis
-      if (previousEval.diagnosis) {
-        setDiagnosisNotes(previousEval.diagnosis);
-      }
-      if (previousEval.diagnosisList) {
-        setSelectedDiagnoses(previousEval.diagnosisList);
-      }
-      // Treatment Plan
-      if (previousEval.treatmentPlan) {
-        const tp = previousEval.treatmentPlan as any;
-        setTreatmentPlanData({
-          modalities: tp.modalities || [],
-          manualTherapy: tp.manualTherapy || [],
-          rehabilitation: tp.rehabilitation || [],
-          visitsRequired: tp.visitsRequired ? String(tp.visitsRequired) : '',
-          frequencyGapDays: tp.frequencyGapDays ? String(tp.frequencyGapDays) : '',
-          suggestedStartDate: tp.suggestedStartDate || '',
-          xrayFindings: previousEval.xrayFindings || tp.xrayFindings || '',
-          mriFindings: previousEval.mriFindings || tp.mriFindings || '',
-          pftFindings: previousEval.pftFindings || tp.pftFindings || '',
-        });
-      }
-      if (previousEval.neuroData) {
-        setNeuroData({ ...getEmptyNeuroData(), ...previousEval.neuroData });
-      }
-      if (previousEval.cardioData) {
-        setCardioData({
-          ...getEmptyCardioExam(),
-          ...previousEval.cardioData,
-          exercisePrescription: {
-            ...getEmptyCardioExam().exercisePrescription,
-            ...(previousEval.cardioData.exercisePrescription || {})
-          }
-        });
-      }
-      const prevRom = previousEval.musclePowerRom || previousEval.muscle_power_rom;
-      if (prevRom && typeof prevRom === 'object') {
-        setRomData(prevRom as RomData);
-      }
+    if (resolvedPatientId) {
+      setVitals({ bp_sys: '', bp_dia: '', pr: '', spo2: '', temp: '', ef: '' });
+      setChiefComplaints([]);
+      setComplaintsText('');
+      setSpecificProblems({});
+      setAssociatedSymptoms([]);
+      setSelectedMedicalHistory([]);
+      setOtherMedicalHistory('');
+      setShowOtherMedicalHistory(false);
+      setPainLevel(0);
+      setExaminationNotes('');
+      setDiagnosisNotes('');
+      setSelectedDiagnoses([]);
+      setTreatmentNotes('');
+      setTreatmentPlanData(getEmptyTreatmentPlan());
+      setFuncRatings({});
+      setRomData({});
+      setAnthropometrics({ height: '', weight: '', bmi: '', excessWeight: '', excessCalorie: '', duration: '', waist: '', hip: '', whRatio: '' });
+      setClinicalExamData(getEmptyClinicalExam());
+      setIntakePhoto(null);
+      setIntakePhotoUrl(null);
+      setPaymentMode('');
+      setBillAmount(null);
+      setBillAmountInput('');
+      setIsManualBillEdit(false);
+      setVisitType('Clinic');
+      setNeuroData(getEmptyNeuroData());
+      setCardioData(getEmptyCardioExam());
     }
-  }, [previousEval]);
+  }, [resolvedPatientId]);
 
   useEffect(() => { if (!intakePhoto) { setIntakePhotoUrl(null); return; } const u=URL.createObjectURL(intakePhoto); setIntakePhotoUrl(u); return ()=>URL.revokeObjectURL(u); }, [intakePhoto]);
+
+  const formatRupees = (n: number) => new Intl.NumberFormat('en-IN').format(n);
 
   const handlePhoneLookup = useCallback(() => { if (phoneInput.trim().length<7) return; setPhoneToFetch(phoneInput.trim()); setLookupDone(true); setShowNewPatientForm(false); }, [phoneInput]);
   const handleUseFoundPatient = useCallback(() => { if (!foundPatient) return; setResolvedPatientId(foundPatient.id); setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??''}); }, [foundPatient, phoneToFetch]);
@@ -207,10 +187,6 @@ export function DoctorAssessmentForm() {
 
   const handlePhotoChange = (e:ChangeEvent<HTMLInputElement>) => { const f=e.target.files?.[0]; if (!f) return; if (!f.type.startsWith('image/')) { setSubmitError('Please upload an image.'); return; } setSubmitError(null); setIntakePhoto(f); };
   const handlePhotoRemove = () => { setIntakePhoto(null); setPhotoInputKey(p=>p+1); };
-  const formatRupees = (n:number) => new Intl.NumberFormat('en-IN').format(n);
-
-  const handleBillAmountChange = (v:string) => { setSubmitError(null); const d=v.replace(/[^\d]/g,''); if (!d) { setBillAmount(null); setBillAmountInput(''); return; } const n=Number(d); setBillAmount(n); setBillAmountInput(formatRupees(n)); };
-
   const handleSave = async () => {
     setSubmitError(null);
     if (!resolvedPatientId) { setSubmitError('No patient resolved.'); return; }
@@ -259,7 +235,7 @@ export function DoctorAssessmentForm() {
         } : undefined,
         management: examinationNotes.trim() || undefined,
         status: 'submitted',
-        paymentMode, billAmount: billAmount !== null ? billAmount : billTotal, visitType,
+        paymentMode, billAmount: isManualBillEdit ? (billAmount !== null ? billAmount : 0) : (billAmount !== null ? billAmount : billTotal), visitType,
         associatedPains: chiefComplaints.length>0 ? chiefComplaints : undefined,
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
@@ -461,7 +437,7 @@ export function DoctorAssessmentForm() {
             const currentStepKey = stepsList[step]?.key;
             return (
               <>
-                {currentStepKey === 'patient' && <StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} selectedTherapistId={selectedTherapistId} setSelectedTherapistId={setSelectedTherapistId} therapistsList={therapistsList} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
+                {currentStepKey === 'patient' && <StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} isDoctorRole={isDoctorRole} selectedTherapistId={selectedTherapistId} setSelectedTherapistId={setSelectedTherapistId} therapistsList={therapistsList} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
                 {currentStepKey === 'vitals' && <StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
                 {currentStepKey === 'history' && <StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} medicalHistoryList={medicalHistoryList} />}
                 {currentStepKey === 'complaints' && <StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} chiefComplaintsList={dynamicChiefComplaintsList} associatedSymptomsList={associatedSymptomsList} />}
@@ -518,18 +494,18 @@ export function DoctorAssessmentForm() {
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => { setSubmitError(null); setBillAmount(0); setBillAmountInput('0'); }}
+                        onClick={() => { setSubmitError(null); setIsManualBillEdit(true); setBillAmount(0); setBillAmountInput('0'); }}
                         className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-1 transition-colors"
                       >
                         <RotateCcw size={11} /> Reset to ₹0
                       </button>
-                      {billAmount !== null && (
+                      {isManualBillEdit && (
                         <button
                           type="button"
-                          onClick={() => { setSubmitError(null); setBillAmount(null); setBillAmountInput(''); }}
+                          onClick={() => { setSubmitError(null); setIsManualBillEdit(false); setBillAmount(null); setBillAmountInput(''); }}
                           className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 transition-colors"
                         >
-                          Auto-fill (₹{formatRupees(billTotal)})
+                          Auto-fill (₹{billTotal})
                         </button>
                       )}
                     </div>
@@ -539,14 +515,14 @@ export function DoctorAssessmentForm() {
                     <input 
                       type="text"
                       inputMode="numeric"
-                      value={billAmount !== null ? billAmountInput : (billTotal > 0 ? formatRupees(billTotal) : '0')}
+                      value={isManualBillEdit ? billAmountInput : (billTotal > 0 ? String(billTotal) : '0')}
                       onChange={(e) => handleBillAmountChange(e.target.value)}
                       className="flex-1 bg-transparent text-[18px] font-extrabold text-slate-900 dark:text-white outline-none"
                       placeholder="0"
                     />
                   </div>
                   <p className="text-[12px] text-[#262842] dark:text-indigo-400 font-semibold mt-1.5">
-                    {billAmount === 0 ? 'Amount set to ₹0.' : (billAmount !== null ? 'Manually edited.' : (billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7. You can edit this amount or reset to zero.' : 'Enter fee or select treatments.'))}
+                    {isManualBillEdit ? (billAmount === 0 ? 'Amount set to ₹0.' : 'Manually edited.') : (billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7. You can edit this amount or reset to zero.' : 'Enter fee or select treatments.')}
                   </p>
                 </FormField>
               </SectionCard>

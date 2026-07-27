@@ -448,10 +448,13 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                                   <td key={side} className="p-1 border-r border-slate-200 dark:border-slate-850">
                                     <input
                                       type="text"
+                                      inputMode="numeric"
+                                      pattern="[0-9]*"
                                       maxLength={3}
                                       value={neuroData.sensory?.[r.key]?.[side] || ''}
-                                      onChange={(e) => updateNested(['sensory', r.key, side], e.target.value.slice(0, 3))}
+                                      onChange={(e) => updateNested(['sensory', r.key, side], e.target.value.replace(/\D/g, '').slice(0, 3))}
                                       className={tableInputClass}
+                                      placeholder="0-10"
                                     />
                                   </td>
                                 ))}
@@ -646,7 +649,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                                 type="text"
                                 maxLength={3}
                                 value={neuroData.reflexes?.[row.key]?.lt || ''}
-                                onChange={(e) => updateNested(['reflexes', row.key, 'lt'], e.target.value.slice(0, 3))}
+                                onChange={(e) => updateNested(['reflexes', row.key, 'lt'], e.target.value.replace(/[^0-9\+\-]/g, '').slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Left score"
                               />
@@ -656,7 +659,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                                 type="text"
                                 maxLength={3}
                                 value={neuroData.reflexes?.[row.key]?.rt || ''}
-                                onChange={(e) => updateNested(['reflexes', row.key, 'rt'], e.target.value.slice(0, 3))}
+                                onChange={(e) => updateNested(['reflexes', row.key, 'rt'], e.target.value.replace(/[^0-9\+\-]/g, '').slice(0, 3))}
                                 className={tableInputClass}
                                 placeholder="Right score"
                               />
@@ -722,9 +725,11 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                               <td className="p-1 border-r border-slate-200 dark:border-slate-800">
                                 <input
                                   type="text"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
                                   maxLength={3}
                                   value={neuroData.coordination?.[row.key]?.rt || ''}
-                                  onChange={(e) => updateNested(['coordination', row.key, 'rt'], e.target.value.slice(0, 3))}
+                                  onChange={(e) => updateNested(['coordination', row.key, 'rt'], e.target.value.replace(/\D/g, '').slice(0, 3))}
                                   className={tableInputClass}
                                   placeholder="Rt"
                                 />
@@ -732,9 +737,11 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                               <td className="p-1">
                                 <input
                                   type="text"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
                                   maxLength={3}
                                   value={neuroData.coordination?.[row.key]?.lt || ''}
-                                  onChange={(e) => updateNested(['coordination', row.key, 'lt'], e.target.value.slice(0, 3))}
+                                  onChange={(e) => updateNested(['coordination', row.key, 'lt'], e.target.value.replace(/\D/g, '').slice(0, 3))}
                                   className={tableInputClass}
                                   placeholder="Lt"
                                 />

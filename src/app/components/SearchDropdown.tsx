@@ -64,11 +64,8 @@ export function SearchDropdown({
       return;
     }
 
-    // Stripping formatting specifically for patients mobile search
-    let queryToSend = cleanedQuery;
-    if (module === 'patients') {
-      queryToSend = cleanedQuery.replace(/\D/g, '');
-    }
+    // Preserve full query text for searching by name, display ID, or phone
+    const queryToSend = cleanedQuery;
 
     // Check cache
     const moduleCache = globalSearchCache[module] || [];
@@ -175,7 +172,7 @@ export function SearchDropdown({
   };
 
   const handleSelect = (item: any) => {
-    const displayVal = module === 'patients' ? item.mobile || item.phone : item.name;
+    const displayVal = module === 'patients' ? item.name || item.mobile || item.phone : item.name;
     onChange(displayVal || '');
     onSelect(item);
     setIsOpen(false);
@@ -183,7 +180,7 @@ export function SearchDropdown({
 
   const highlightText = (text: string) => {
     if (!value) return <span>{text}</span>;
-    const cleanSearch = module === 'patients' ? value.replace(/\D/g, '') : value.trim();
+    const cleanSearch = value.trim();
     if (!cleanSearch) return <span>{text}</span>;
 
     const regex = new RegExp(`(${escapeRegExp(cleanSearch)})`, 'gi');

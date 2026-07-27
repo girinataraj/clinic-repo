@@ -116,75 +116,38 @@ export function TherapistAssessmentForm() {
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);
 
-  // Pre-fill clinical data from previous assessment
+  // Fully clear form fields whenever a patient is resolved/looked up
   useEffect(() => {
-    if (previousEval) {
-      // Vitals
-      setVitals({
-        bp_sys: previousEval.bp?.split('/')[0] || '',
-        bp_dia: previousEval.bp?.split('/')[1] || '',
-        pr: previousEval.pr ? String(previousEval.pr) : '',
-        spo2: previousEval.spo2 ? String(previousEval.spo2) : '',
-        temp: previousEval.temperature ? String(previousEval.temperature) : '',
-        ef: previousEval.ef ? String(previousEval.ef) : '',
-      });
-      // Chief Complaints
-      if (previousEval.chiefComplaints) {
-        setComplaintsText(previousEval.chiefComplaints);
-      }
-      // Symptoms
-      if (previousEval.associatedSymptoms) {
-        setAssociatedSymptoms(previousEval.associatedSymptoms);
-      }
-      // Medical History
-      if (previousEval.medicalHistory) {
-        setSelectedMedicalHistory(previousEval.medicalHistory);
-      }
-      // Pain Level
-      if (previousEval.painLevel != null) {
-        setPainLevel(previousEval.painLevel);
-      }
-      // Diagnosis
-      if (previousEval.diagnosis) {
-        setDiagnosisNotes(previousEval.diagnosis);
-      }
-      if (previousEval.diagnosisList) {
-        setSelectedDiagnoses(previousEval.diagnosisList);
-      }
-      // Treatment Plan
-      if (previousEval.treatmentPlan) {
-        const tp = previousEval.treatmentPlan as any;
-        setTreatmentPlanData({
-          modalities: tp.modalities || [],
-          manualTherapy: tp.manualTherapy || [],
-          rehabilitation: tp.rehabilitation || [],
-          visitsRequired: tp.visitsRequired ? String(tp.visitsRequired) : '',
-          frequencyGapDays: tp.frequencyGapDays ? String(tp.frequencyGapDays) : '',
-          suggestedStartDate: tp.suggestedStartDate || '',
-          xrayFindings: previousEval.xrayFindings || tp.xrayFindings || '',
-          mriFindings: previousEval.mriFindings || tp.mriFindings || '',
-          pftFindings: previousEval.pftFindings || tp.pftFindings || '',
-        });
-      }
-      if (previousEval.neuroData) {
-        setNeuroData({ ...getEmptyNeuroData(), ...previousEval.neuroData });
-      }
-      if (previousEval.cardioData) {
-        setCardioData({
-          ...getEmptyCardioExam(),
-          ...previousEval.cardioData,
-          exercisePrescription: {
-            ...getEmptyCardioExam().exercisePrescription,
-            ...(previousEval.cardioData.exercisePrescription || {})
-          }
-        });
-      }
-      const prevRom = previousEval.musclePowerRom || previousEval.muscle_power_rom;
-      if (prevRom && typeof prevRom === 'object') {
-        setRomData(prevRom as RomData);
-      }
+    if (resolvedPatientId) {
+      setVitals({ bp_sys: '', bp_dia: '', pr: '', spo2: '', temp: '', ef: '' });
+      setChiefComplaints([]);
+      setComplaintsText('');
+      setSpecificProblems({});
+      setAssociatedSymptoms([]);
+      setSelectedMedicalHistory([]);
+      setOtherMedicalHistory('');
+      setShowOtherMedicalHistory(false);
+      setPainLevel(0);
+      setExaminationNotes('');
+      setDiagnosisNotes('');
+      setSelectedDiagnoses([]);
+      setTreatmentNotes('');
+      setTreatmentPlanData(getEmptyTreatmentPlan());
+      setFuncRatings({});
+      setRomData({});
+      setAnthropometrics({ height: '', weight: '', bmi: '', excessWeight: '', excessCalorie: '', duration: '', waist: '', hip: '', whRatio: '' });
+      setClinicalExamData(getEmptyClinicalExam());
+      setIntakePhoto(null);
+      setIntakePhotoUrl(null);
+      setPaymentMode('');
+      setBillAmount(null);
+      setBillAmountInput('');
+      setIsManualBillEdit(false);
+      setVisitType('Clinic');
+      setNeuroData(getEmptyNeuroData());
+      setCardioData(getEmptyCardioExam());
     }
-  }, [previousEval]);
+  }, [resolvedPatientId]);
 
   useEffect(() => { if (!intakePhoto) { setIntakePhotoUrl(null); return; } const u=URL.createObjectURL(intakePhoto); setIntakePhotoUrl(u); return ()=>URL.revokeObjectURL(u); }, [intakePhoto]);
 
@@ -205,7 +168,7 @@ export function TherapistAssessmentForm() {
   const handlePhotoRemove = () => { setIntakePhoto(null); setPhotoInputKey(p=>p+1); };
   const formatRupees = (n:number) => new Intl.NumberFormat('en-IN').format(n);
 
-  const handleBillAmountChange = (v:string) => { setSubmitError(null); setIsManualBillEdit(true); const d=v.replace(/[^\d]/g,''); if (!d) { setBillAmount(null); setBillAmountInput(''); return; } const n=Number(d); setBillAmount(n); setBillAmountInput(formatRupees(n)); };
+  const handleBillAmountChange = (v:string) => { setSubmitError(null); setIsManualBillEdit(true); const d=v.replace(/[^\d]/g,''); if (!d) { setBillAmount(0); setBillAmountInput(''); return; } const n=Number(d); setBillAmount(n); setBillAmountInput(String(n)); };
 
   const handleSave = async () => {
     setSubmitError(null);
@@ -431,7 +394,7 @@ export function TherapistAssessmentForm() {
             const currentStepKey = stepsList[step]?.key;
             return (
               <>
-                {currentStepKey === 'patient' && <StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} intakePhotoUrl={intakePhotoUrl} handlePhotoChange={handlePhotoChange} handlePhotoRemove={handlePhotoRemove} photoInputKey={photoInputKey} isDoctorRole={isDoctorRole} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
+                {currentStepKey === 'patient' && <StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} isDoctorRole={isDoctorRole} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
                 {currentStepKey === 'vitals' && <StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
                 {currentStepKey === 'history' && <StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} medicalHistoryList={medicalHistoryList} />}
                 {currentStepKey === 'complaints' && <StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} chiefComplaintsList={dynamicChiefComplaintsList} associatedSymptomsList={associatedSymptomsList} />}
@@ -503,7 +466,7 @@ export function TherapistAssessmentForm() {
                     <input 
                       type="text"
                       inputMode="numeric"
-                      value={isManualBillEdit ? billAmountInput : (billTotal > 0 ? formatRupees(billTotal) : '0')}
+                      value={isManualBillEdit ? billAmountInput : (billTotal > 0 ? String(billTotal) : '0')}
                       onChange={(e) => handleBillAmountChange(e.target.value)}
                       className="flex-1 bg-transparent text-[16px] font-extrabold text-slate-900 dark:text-white outline-none"
                       placeholder="0"
