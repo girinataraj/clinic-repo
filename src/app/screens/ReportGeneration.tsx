@@ -15,6 +15,8 @@ import {
 
 import { BORG_SCALE_MAP, formatBorgRatings } from './assessment/clinicalConfig';
 import { NeuroSummaryView } from '../components/NeuroSummaryView';
+import { Antigravity3DReport } from '../components/Antigravity3DReport';
+import { useExercises } from '../../hooks/useExercises';
 
 export function ReportGeneration() {
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ export function ReportGeneration() {
   const [downloading, setDownloading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [patientSearch, setPatientSearch] = useState('');
+  const [reportViewMode, setReportViewMode] = useState<'3d' | 'standard'>('3d');
 
   // ── Patient picker (when no evaluationId provided) ─────────────────────
   const { data: patientsData } = usePatients({
@@ -56,7 +59,27 @@ export function ReportGeneration() {
     return null;
   }, [evaluation]);
 
-  const exerciseItems = plansData?.data?.[0]?.items ?? [];
+  const targetPatientId = patientIdParam || evaluation?.patientId || (evaluation as any)?.patient_id || null;
+  const targetEvalId = evaluationId || evaluation?.id || null;
+  const { exercises: prescribedExercises } = useExercises(targetPatientId, targetEvalId);
+
+  const exerciseItems = useMemo(() => {
+    const listFromPlans = plansData?.data?.[0]?.items ?? [];
+    if (prescribedExercises && prescribedExercises.length > 0) {
+      const formattedPrescribed = prescribedExercises.map((e) => ({
+        id: e.id,
+        name: e.exerciseName || e.exercise_name,
+        sets: e.sets,
+        reps: e.reps,
+        frequency: e.frequency,
+        instructions: e.description || e.notes || 'Perform as prescribed',
+        category: e.bodyPart || e.body_part || 'General',
+        difficulty: e.difficultyLevel || e.difficulty_level || 'Moderate',
+      }));
+      return formattedPrescribed;
+    }
+    return listFromPlans;
+  }, [prescribedExercises, plansData]);
   const isLoading = evalLoading || patientLoading;
   const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -523,7 +546,57 @@ export function ReportGeneration() {
         )}
 
         {!isLoading && evaluation && (
-          <div className="rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-xl dark:shadow-none border border-[#E8E9F1] dark:border-slate-800">
+          <div className="space-y-4">
+            {/* View Mode Selector Bar */}
+            <div className="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-2xl p-2 sm:px-4 sm:py-3 shadow-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider hidden sm:inline">Report Visualization:</span>
+                <button
+                  onClick={() => setReportViewMode('3d')}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all flex items-center gap-2 ${
+                    reportViewMode === '3d'
+                      ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 shadow-lg shadow-teal-500/20'
+                      : 'text-slate-400 hover:text-white bg-slate-800/50'
+                  }`}
+                >
+                  ✨ Google Antigravity 3D Report
+                </button>
+                <button
+                  onClick={() => setReportViewMode('standard')}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all flex items-center gap-2 ${
+                    reportViewMode === 'standard'
+                      ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 shadow-lg shadow-teal-500/20'
+                      : 'text-slate-400 hover:text-white bg-slate-800/50'
+                  }`}
+                >
+                  📄 Standard Printable Report
+                </button>
+              </div>
+              <span className="text-[11px] text-teal-400 font-semibold hidden md:inline">
+                SAAI Physiotherapy Clinic • Interactive 3D Medical Engine
+              </span>
+            </div>
+
+            {reportViewMode === '3d' ? (
+              <Antigravity3DReport
+                evaluation={evaluation}
+                patient={patient}
+                mergedVitals={mergedVitals}
+                mergedChiefComplaints={mergedChiefComplaints}
+                mergedDiagnosisList={mergedDiagnosisList}
+                mergedDiagnosis={mergedDiagnosis}
+                mergedTreatmentPlan={mergedTreatmentPlan}
+                mergedNeuroData={mergedNeuroData}
+                mergedCardioData={mergedCardioData}
+                mergedAnthropometrics={mergedCardioData?.anthropometrics || (evaluation as any)?.anthropometrics}
+                exerciseItems={exerciseItems}
+                onDownloadPdf={handleDownloadPdf}
+                onPrintPdf={handlePrintPdf}
+                onSharePdf={handleShare}
+                downloading={downloading}
+              />
+            ) : (
+              <div className="rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-xl dark:shadow-none border border-[#E8E9F1] dark:border-slate-800">
             {/* Clinic letterhead */}
             <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}>
               <div className="flex items-center gap-4">
@@ -1073,6 +1146,8 @@ export function ReportGeneration() {
             </div>
           </div>
         )}
+      </div>
+    )}
 
         {/* Action buttons at bottom */}
         {!isLoading && evaluation && (

@@ -15,6 +15,7 @@ import { StepNeuroExam, getEmptyNeuroData } from './StepNeuroExam';
 import { StepCardioExam } from './StepCardioExam';
 
 import { AnthropometricSection } from './AnthropometricSection';
+import { ExerciseSection } from '../../components/ExerciseSection';
 
 export function TherapistAssessmentForm() {
   const navigate = useNavigate();
@@ -530,6 +531,10 @@ export function TherapistAssessmentForm() {
                   )}
                 </FormField>
               </SectionCard>
+
+              {/* Optional Home Exercise Programme Section */}
+              <ExerciseSection patientId={resolvedPatientId} />
+
               <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-4 rounded-[18px] flex items-center justify-center gap-2 text-white text-[15px] font-black shadow-lg shadow-teal-600/20 disabled:opacity-60 bg-teal-600 hover:bg-teal-700 transition-transform active:scale-[0.98]">
                 {createEvaluation.isPending?<><Loader2 size={20} className="animate-spin" /> Submitting…</>:<><Save size={20} /> Finalize & Start Session</>}
               </button>

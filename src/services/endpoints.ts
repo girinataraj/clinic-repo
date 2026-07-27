@@ -57,6 +57,17 @@ export const ENDPOINTS = {
     DELETE: (planId: string) => `/exercise-plans/${planId}`,
   },
 
+  PATIENT_EXERCISES: {
+    LIST: (patientId: string, assessmentId?: string) =>
+      assessmentId ? `/patients/${patientId}/exercises?assessment_id=${assessmentId}` : `/patients/${patientId}/exercises`,
+    CREATE: (patientId: string) => `/patients/${patientId}/exercises`,
+    DETAIL: (patientId: string, exerciseId: string) => `/patients/${patientId}/exercises/${exerciseId}`,
+    UPDATE: (patientId: string, exerciseId: string) => `/patients/${patientId}/exercises/${exerciseId}`,
+    DELETE: (patientId: string, exerciseId: string) => `/patients/${patientId}/exercises/${exerciseId}`,
+    DUPLICATE: (patientId: string, exerciseId: string) => `/patients/${patientId}/exercises/${exerciseId}/duplicate`,
+    REORDER: (patientId: string) => `/patients/${patientId}/exercises/reorder`,
+  },
+
   EXERCISE_LIBRARY: {
     LIST: '/exercise-library',
     CREATE: '/exercise-library',
