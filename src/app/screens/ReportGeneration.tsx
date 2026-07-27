@@ -15,7 +15,7 @@ import {
 
 import { BORG_SCALE_MAP, formatBorgRatings } from './assessment/clinicalConfig';
 import { NeuroSummaryView } from '../components/NeuroSummaryView';
-import { Antigravity3DReport } from '../components/Antigravity3DReport';
+import { ExerciseSection } from '../components/ExerciseSection';
 import { useExercises } from '../../hooks/useExercises';
 
 export function ReportGeneration() {
@@ -28,7 +28,6 @@ export function ReportGeneration() {
   const [downloading, setDownloading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [patientSearch, setPatientSearch] = useState('');
-  const [reportViewMode, setReportViewMode] = useState<'3d' | 'standard'>('3d');
 
   // ── Patient picker (when no evaluationId provided) ─────────────────────
   const { data: patientsData } = usePatients({
@@ -547,57 +546,8 @@ export function ReportGeneration() {
 
         {!isLoading && evaluation && (
           <div className="space-y-4">
-            {/* View Mode Selector Bar */}
-            <div className="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-2xl p-2 sm:px-4 sm:py-3 shadow-lg">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider hidden sm:inline">Report Visualization:</span>
-                <button
-                  onClick={() => setReportViewMode('3d')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all flex items-center gap-2 ${
-                    reportViewMode === '3d'
-                      ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 shadow-lg shadow-teal-500/20'
-                      : 'text-slate-400 hover:text-white bg-slate-800/50'
-                  }`}
-                >
-                  ✨ Google Antigravity 3D Report
-                </button>
-                <button
-                  onClick={() => setReportViewMode('standard')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all flex items-center gap-2 ${
-                    reportViewMode === 'standard'
-                      ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 shadow-lg shadow-teal-500/20'
-                      : 'text-slate-400 hover:text-white bg-slate-800/50'
-                  }`}
-                >
-                  📄 Standard Printable Report
-                </button>
-              </div>
-              <span className="text-[11px] text-teal-400 font-semibold hidden md:inline">
-                SAAI Physiotherapy Clinic • Interactive 3D Medical Engine
-              </span>
-            </div>
-
-            {reportViewMode === '3d' ? (
-              <Antigravity3DReport
-                evaluation={evaluation}
-                patient={patient}
-                mergedVitals={mergedVitals}
-                mergedChiefComplaints={mergedChiefComplaints}
-                mergedDiagnosisList={mergedDiagnosisList}
-                mergedDiagnosis={mergedDiagnosis}
-                mergedTreatmentPlan={mergedTreatmentPlan}
-                mergedNeuroData={mergedNeuroData}
-                mergedCardioData={mergedCardioData}
-                mergedAnthropometrics={mergedCardioData?.anthropometrics || (evaluation as any)?.anthropometrics}
-                exerciseItems={exerciseItems}
-                onDownloadPdf={handleDownloadPdf}
-                onPrintPdf={handlePrintPdf}
-                onSharePdf={handleShare}
-                downloading={downloading}
-              />
-            ) : (
-              <div className="rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-xl dark:shadow-none border border-[#E8E9F1] dark:border-slate-800">
-            {/* Clinic letterhead */}
+            <div className="rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-xl dark:shadow-none border border-[#E8E9F1] dark:border-slate-800">
+              {/* Clinic letterhead */}
             <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}>
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center rounded-2xl shrink-0" style={{ width: '48px', height: '48px', background: 'rgba(254,255,255,0.2)' }}>
@@ -1145,9 +1095,11 @@ export function ReportGeneration() {
               </div>
             </div>
           </div>
-        )}
-      </div>
-    )}
+
+          {/* Real-time Home Exercise Programme Section */}
+          <ExerciseSection patientId={targetPatientId} assessmentId={targetEvalId} />
+        </div>
+      )}
 
         {/* Action buttons at bottom */}
         {!isLoading && evaluation && (
