@@ -82,10 +82,10 @@ export function AnthropometricSection({ data, onChange, isDoctorRole }: Props) {
           <input
             type="text"
             inputMode="numeric"
-            maxLength={2}
+            maxLength={6}
             value={data.excessCalorie || ''}
-            onChange={e => update('excessCalorie', e.target.value, 2)}
-            placeholder="kcal (max 2 digits)"
+            onChange={e => update('excessCalorie', e.target.value, 6)}
+            placeholder="kcal (max 6 digits)"
             className={ic}
           />
         </FormField>

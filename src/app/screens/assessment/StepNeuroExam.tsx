@@ -27,7 +27,7 @@ function NeuroAccordionSection({ title, isOpen, onToggle, children }: NeuroSecti
 
 export function getEmptyNeuroData() {
   return {
-    gcs: { e_v_m: '', total: '' },
+    gcs: { e: '', v: '', m: '', total: '' },
     mmse: {
       q1: '', q2: '', q3: '', q4: '', q5: '',
       q6: '', q7: '', q8: '', q9: '', q10: '', q11: '',
@@ -175,6 +175,35 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
 
   const tableInputClass = "w-full text-center px-2 py-1 text-xs border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500";
   const commentInputClass = "w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-slate-900 dark:text-white placeholder:text-slate-450 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+  const tableSelectClass = "w-full text-center px-1.5 py-1 text-xs border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer font-semibold";
+
+  const handleGCSChange = (field: 'e' | 'v' | 'm', val: string) => {
+    const maxScores = { e: 4, v: 5, m: 6 };
+    let numStr = val.replace(/\D/g, '');
+    if (numStr !== '') {
+      let num = parseInt(numStr, 10);
+      if (num > maxScores[field]) num = maxScores[field];
+      if (num < 1) num = 1;
+      numStr = String(num);
+    }
+
+    const currentGCS = neuroData.gcs || { e: '', v: '', m: '', e_v_m: '', total: '' };
+    const updatedGCS = { ...currentGCS, [field]: numStr };
+
+    const eVal = parseInt(updatedGCS.e || '0', 10);
+    const vVal = parseInt(updatedGCS.v || '0', 10);
+    const mVal = parseInt(updatedGCS.m || '0', 10);
+
+    const hasAnyVal = updatedGCS.e !== '' || updatedGCS.v !== '' || updatedGCS.m !== '';
+    const sum = (updatedGCS.e ? eVal : 0) + (updatedGCS.v ? vVal : 0) + (updatedGCS.m ? mVal : 0);
+
+    updatedGCS.total = hasAnyVal ? String(sum) : '';
+    updatedGCS.e_v_m = hasAnyVal ? `E${updatedGCS.e || '-'} V${updatedGCS.v || '-'} M${updatedGCS.m || '-'}` : '';
+
+    const updatedAll = JSON.parse(JSON.stringify(neuroData));
+    updatedAll.gcs = updatedGCS;
+    onChange(updatedAll);
+  };
 
   const cnerveList = [
     { key: 'cn1', label: 'I - Olfactory' },
@@ -231,30 +260,55 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
               >
                 <div className="flex flex-col gap-2.5">
                   <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wide">On Examination</span>
-                  <div className="flex flex-wrap items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
+                  <div className="flex flex-wrap items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
                     <span className="text-sm font-black text-slate-800 dark:text-slate-100">GCS :</span>
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-350">E V M =</span>
-                    <input
-                      type="text"
-                      value={neuroData.gcs?.e_v_m || ''}
-                      placeholder="..."
-                      maxLength={10}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        const trimmed = raw.trim();
-                        if (/^\d+$/.test(trimmed)) {
-                          const num = parseInt(trimmed, 10);
-                          if (num > 15) {
-                            updateNested(['gcs', 'e_v_m'], '15');
-                            return;
-                          }
-                        }
-                        updateNested(['gcs', 'e_v_m'], raw);
-                      }}
-                      className="w-32 text-center px-3 py-1.5 border border-slate-250 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-                    <span className="text-sm font-black text-slate-800 dark:text-slate-200">/ 15</span>
-                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 ml-1">(Max score: 15)</span>
+                    
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">E (Eye):</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="4"
+                        value={neuroData.gcs?.e ?? ''}
+                        placeholder="1-4"
+                        onChange={(e) => handleGCSChange('e', e.target.value)}
+                        className="w-16 text-center px-2 py-1.5 border border-slate-250 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">V (Verbal):</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="5"
+                        value={neuroData.gcs?.v ?? ''}
+                        placeholder="1-5"
+                        onChange={(e) => handleGCSChange('v', e.target.value)}
+                        className="w-16 text-center px-2 py-1.5 border border-slate-250 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">M (Motor):</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="6"
+                        value={neuroData.gcs?.m ?? ''}
+                        placeholder="1-6"
+                        onChange={(e) => handleGCSChange('m', e.target.value)}
+                        className="w-16 text-center px-2 py-1.5 border border-slate-250 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200 dark:border-slate-700">
+                      <span className="text-xs font-extrabold text-slate-500 uppercase">Total:</span>
+                      <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">
+                        {neuroData.gcs?.total !== undefined && neuroData.gcs?.total !== '' ? neuroData.gcs.total : '0'} / 15
+                      </span>
+                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 ml-1">(Max score: 15)</span>
+                    </div>
                   </div>
                 </div>
               </NeuroAccordionSection>
@@ -337,9 +391,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-1/4 uppercase tracking-wider">Nerves</th>
-                        <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-1/4 uppercase tracking-wider">Comments</th>
+                        <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-1/4 uppercase tracking-wider">Status</th>
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-1/4 uppercase tracking-wider">Nerves</th>
-                        <th className="p-3 uppercase tracking-wider">Comments</th>
+                        <th className="p-3 uppercase tracking-wider">Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -354,23 +408,27 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                         <tr key={idx} className="border-b border-slate-200 dark:border-slate-800">
                           <td className="p-2.5 border-r border-slate-200 dark:border-slate-800 font-bold bg-slate-50/30 dark:bg-slate-900/10">{row.leftName}</td>
                           <td className="p-2 border-r border-slate-200 dark:border-slate-800">
-                            <input
-                              type="text"
+                            <select
                               value={neuroData.cranialNerves?.[row.leftKey] || ''}
                               onChange={(e) => updateNested(['cranialNerves', row.leftKey], e.target.value)}
-                              className={commentInputClass}
-                              placeholder="..."
-                            />
+                              className={tableSelectClass}
+                            >
+                              <option value="">Select</option>
+                              <option value="Normal">Normal</option>
+                              <option value="Abnormal">Abnormal</option>
+                            </select>
                           </td>
                           <td className="p-2.5 border-r border-slate-200 dark:border-slate-800 font-bold bg-slate-50/30 dark:bg-slate-900/10">{row.rightName}</td>
                           <td className="p-2">
-                            <input
-                              type="text"
+                            <select
                               value={neuroData.cranialNerves?.[row.rightKey] || ''}
                               onChange={(e) => updateNested(['cranialNerves', row.rightKey], e.target.value)}
-                              className={commentInputClass}
-                              placeholder="..."
-                            />
+                              className={tableSelectClass}
+                            >
+                              <option value="">Select</option>
+                              <option value="Normal">Normal</option>
+                              <option value="Abnormal">Abnormal</option>
+                            </select>
                           </td>
                         </tr>
                       ))}
@@ -446,16 +504,15 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                                 <td className="p-2 border-r border-slate-200 dark:border-slate-800 font-medium pl-4">{r.name}</td>
                                 {['ueRt', 'ueLt', 'leRt', 'leLt', 'tRt', 'tLt'].map((side) => (
                                   <td key={side} className="p-1 border-r border-slate-200 dark:border-slate-850">
-                                    <input
-                                      type="text"
-                                      inputMode="numeric"
-                                      pattern="[0-9]*"
-                                      maxLength={3}
+                                    <select
                                       value={neuroData.sensory?.[r.key]?.[side] || ''}
-                                      onChange={(e) => updateNested(['sensory', r.key, side], e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                      className={tableInputClass}
-                                      placeholder="0-10"
-                                    />
+                                      onChange={(e) => updateNested(['sensory', r.key, side], e.target.value)}
+                                      className={tableSelectClass}
+                                    >
+                                      <option value="">Select</option>
+                                      <option value="Normal">Normal</option>
+                                      <option value="Abnormal">Abnormal</option>
+                                    </select>
                                   </td>
                                 ))}
                                 <td className="p-1">
@@ -576,28 +633,26 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                           <tr key={row.key} className="border-b border-slate-200 dark:border-slate-800">
                             <td className="p-2.5 border-r border-slate-200 dark:border-slate-800 font-bold bg-slate-50/20 dark:bg-slate-900/5">{row.name}</td>
                             <td className="p-2 border-r border-slate-200 dark:border-slate-800">
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                maxLength={3}
+                              <select
                                 value={neuroData.voluntaryControl?.[row.key]?.rt || ''}
-                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'rt'], e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                className={tableInputClass}
-                                placeholder="Rt Control"
-                              />
+                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'rt'], e.target.value)}
+                                className={tableSelectClass}
+                              >
+                                <option value="">Select</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                              </select>
                             </td>
                             <td className="p-2">
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                maxLength={3}
+                              <select
                                 value={neuroData.voluntaryControl?.[row.key]?.lt || ''}
-                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'lt'], e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                className={tableInputClass}
-                                placeholder="Lt Control"
-                              />
+                                onChange={(e) => updateNested(['voluntaryControl', row.key, 'lt'], e.target.value)}
+                                className={tableSelectClass}
+                              >
+                                <option value="">Select</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                              </select>
                             </td>
                           </tr>
                         ))}
@@ -723,28 +778,26 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <tr key={row.key} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/20">
                               <td className="p-2 border-r border-slate-200 dark:border-slate-800 font-bold bg-slate-50/10 dark:bg-slate-900/5">{row.name}</td>
                               <td className="p-1 border-r border-slate-200 dark:border-slate-800">
-                                <input
-                                  type="text"
-                                  inputMode="numeric"
-                                  pattern="[0-9]*"
-                                  maxLength={3}
+                                <select
                                   value={neuroData.coordination?.[row.key]?.rt || ''}
-                                  onChange={(e) => updateNested(['coordination', row.key, 'rt'], e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                  className={tableInputClass}
-                                  placeholder="Rt"
-                                />
+                                  onChange={(e) => updateNested(['coordination', row.key, 'rt'], e.target.value)}
+                                  className={tableSelectClass}
+                                >
+                                  <option value="">Select</option>
+                                  <option value="Normal">Normal</option>
+                                  <option value="Abnormal">Abnormal</option>
+                                </select>
                               </td>
                               <td className="p-1">
-                                <input
-                                  type="text"
-                                  inputMode="numeric"
-                                  pattern="[0-9]*"
-                                  maxLength={3}
+                                <select
                                   value={neuroData.coordination?.[row.key]?.lt || ''}
-                                  onChange={(e) => updateNested(['coordination', row.key, 'lt'], e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                  className={tableInputClass}
-                                  placeholder="Lt"
-                                />
+                                  onChange={(e) => updateNested(['coordination', row.key, 'lt'], e.target.value)}
+                                  className={tableSelectClass}
+                                >
+                                  <option value="">Select</option>
+                                  <option value="Normal">Normal</option>
+                                  <option value="Abnormal">Abnormal</option>
+                                </select>
                               </td>
                             </tr>
                           ))}
@@ -779,13 +832,15 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                             <tr key={row.key} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/20">
                               <td className="p-2 border-r border-slate-200 dark:border-slate-800 font-bold bg-slate-50/10 dark:bg-slate-900/5">{row.name}</td>
                               <td className="p-1">
-                                <input
-                                  type="text"
+                                <select
                                   value={neuroData.coordination?.[row.key] || ''}
                                   onChange={(e) => updateNested(['coordination', row.key], e.target.value)}
-                                  className={tableInputClass}
-                                  placeholder="Grade/Comments"
-                                />
+                                  className={tableSelectClass}
+                                >
+                                  <option value="">Select</option>
+                                  <option value="Normal">Normal</option>
+                                  <option value="Abnormal">Abnormal</option>
+                                </select>
                               </td>
                             </tr>
                           ))}
@@ -796,13 +851,15 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
 
                   <div className="flex items-center gap-3 text-xs mt-2 border-t border-slate-200 dark:border-slate-800 pt-3">
                     <span className="font-extrabold w-44 text-slate-650 dark:text-slate-400 uppercase tracking-wider">Involuntary Movements :</span>
-                    <input
-                      type="text"
+                    <select
                       value={neuroData.coordination?.involuntaryMovements || ''}
                       onChange={(e) => updateNested(['coordination', 'involuntaryMovements'], e.target.value)}
-                      className={commentInputClass}
-                      placeholder="Describe tremors, chorea, etc..."
-                    />
+                      className="w-48 px-2.5 py-1.5 text-xs border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer font-semibold"
+                    >
+                      <option value="">Select</option>
+                      <option value="Normal">Normal</option>
+                      <option value="Abnormal">Abnormal</option>
+                    </select>
                   </div>
                 </div>
               </NeuroAccordionSection>

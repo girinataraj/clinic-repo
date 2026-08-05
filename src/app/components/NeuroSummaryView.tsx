@@ -90,12 +90,16 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
   return (
     <div className="flex flex-col gap-4 text-xs">
       {/* Mental / GCS / MMSE */}
-      {(neuroData.gcs?.e_v_m || neuroData.gcs?.total || neuroData.mmse?.total || (neuroData.mental && Object.values(neuroData.mental).some(Boolean))) && (
+      {(neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m || neuroData.gcs?.e_v_m || neuroData.gcs?.total || neuroData.mmse?.total || (neuroData.mental && Object.values(neuroData.mental).some(Boolean))) && (
         <div className="flex flex-wrap gap-3">
-          {neuroData.gcs?.e_v_m && (
+          {(neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m || neuroData.gcs?.e_v_m || neuroData.gcs?.total) && (
             <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase">GCS Score:</span>
-              <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">EVM = {neuroData.gcs.e_v_m} / 15</span>
+              <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">
+                {neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m
+                  ? `E:${neuroData.gcs.e || '-'} V:${neuroData.gcs.v || '-'} M:${neuroData.gcs.m || '-'} (${neuroData.gcs.total || '0'}/15)`
+                  : `EVM = ${neuroData.gcs?.e_v_m || neuroData.gcs?.total} / 15`}
+              </span>
             </div>
           )}
           {neuroData.mmse?.total && (
