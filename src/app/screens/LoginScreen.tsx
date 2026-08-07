@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import type { UserRole } from '../contexts/AuthContext';
 import {
   Eye, EyeOff, Mail, Lock, Phone,
-  ChevronRight, UserCheck, HeartPulse, Stethoscope,
+  ChevronRight, HeartPulse, Stethoscope,
   CheckCircle, Shield, Users, Star, AlertCircle,
 } from 'lucide-react';
 
@@ -43,15 +43,15 @@ const roles: RoleOption[] = [
 ];
 
 const features = [
-  { icon: CheckCircle, text: 'NABH Accredited Clinic', color: '#10b981' },
-  { icon: Shield, text: 'HIPAA Compliant & Secure', color: '#3b82f6' },
-  { icon: Users, text: 'Trusted by 10,000+ Patients', color: '#8b5cf6' },
-  { icon: Star, text: '4.9★ Rated by Patients', color: '#f59e0b' },
+  { icon: CheckCircle, text: 'Dr. SV. Sathish Kumar (Consultant Physiotherapist)', color: '#10b981' },
+  { icon: Shield, text: 'Qualifications: MPT (Cardio-Resp), PGDFM, DYT, CDNT', color: '#3b82f6' },
+  { icon: Users, text: '20A/10, Sakthi Nagar, Sengodapalayam, Thindal, Erode', color: '#8b5cf6' },
+  { icon: Star, text: 'Phone: 94864 05778 | Email: saaiphysioclinicerode@gmail.com', color: '#f59e0b' },
 ];
 
 export function LoginScreen() {
   const [role, setRole] = useState<UserRole>('nurse');
-  const [identifier, setIdentifier] = useState(''); // phone for patient, email for staff
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, loginError } = useAuth();
@@ -62,7 +62,7 @@ export function LoginScreen() {
 
   const handleRoleChange = (r: UserRole) => {
     setRole(r);
-    setIdentifier(''); // clear field when switching role type
+    setIdentifier('');
   };
 
   const handleLogin = async () => {
@@ -89,6 +89,50 @@ export function LoginScreen() {
         input {
           background-color: #ffffff !important;
         }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(24px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.96);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        @keyframes pulseGlow {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.08;
+          }
+          50% {
+            transform: scale(1.15) translate(15px, -15px);
+            opacity: 0.14;
+          }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .animate-scale-in {
+          animation: scaleIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .animate-pulse-glow {
+          animation: pulseGlow 8s ease-in-out infinite;
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
       `}</style>
 
       {/* ── LEFT BRANDING PANEL — desktop only ── */}
@@ -99,20 +143,20 @@ export function LoginScreen() {
         }}
       >
         {/* Ambient blobs */}
-        <div className="absolute -right-20 -top-20 rounded-full opacity-10"
+        <div className="absolute -right-20 -top-20 rounded-full opacity-10 animate-pulse-glow"
           style={{ width: '300px', height: '300px', background: 'radial-gradient(circle, #38bdf8, transparent)' }} />
-        <div className="absolute -left-16 bottom-1/4 rounded-full opacity-10"
-          style={{ width: '250px', height: '250px', background: 'radial-gradient(circle, #10b981, transparent)' }} />
-        <div className="absolute right-8 bottom-16 rounded-full opacity-10"
-          style={{ width: '180px', height: '180px', background: 'radial-gradient(circle, #8b5cf6, transparent)' }} />
+        <div className="absolute -left-16 bottom-1/4 rounded-full opacity-10 animate-pulse-glow"
+          style={{ width: '250px', height: '250px', background: 'radial-gradient(circle, #10b981, transparent)', animationDelay: '2s' }} />
+        <div className="absolute right-8 bottom-16 rounded-full opacity-10 animate-pulse-glow"
+          style={{ width: '180px', height: '180px', background: 'radial-gradient(circle, #8b5cf6, transparent)', animationDelay: '4s' }} />
 
         {/* Top logo */}
-        <div className="px-10 pt-12">
+        <div className="px-10 pt-12 animate-fade-in-up">
           <div className="flex items-center gap-4 mb-10">
             <div
               className="overflow-hidden shrink-0"
               style={{
-                width: '56px', height: '56px',
+                width: '60px', height: '60px',
                 borderRadius: '18px',
                 boxShadow: '0 16px 40px rgba(0,0,0,0.3)',
               }}
@@ -124,36 +168,47 @@ export function LoginScreen() {
               />
             </div>
             <div>
-              <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>
-                SAAI Physiotherapy
+              <h1 style={{ fontSize: '24px', fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>
+                Saai Physiotherapy Clinic
               </h1>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>
-                Advanced Rehabilitation Centre
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>
+                "Getting better every day"
               </p>
             </div>
           </div>
 
-          <h2 style={{ fontSize: '36px', fontWeight: 900, color: 'white', lineHeight: 1.2, letterSpacing: '-1px', marginBottom: '16px' }}>
-            Your Recovery,<br />
-            <span style={{ background: 'linear-gradient(90deg, #38bdf8, #10b981)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Our Commitment
-            </span>
-          </h2>
-          <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: '36px' }}>
-            India's most trusted physiotherapy platform connecting patients, therapists, and doctors for seamless care delivery.
-          </p>
+          {/* Doctor Name Section */}
+          <div className="animate-fade-in-up delay-200">
+            <h2 style={{ fontSize: '38px', fontWeight: 900, color: 'white', lineHeight: 1.15, letterSpacing: '-1px', marginBottom: '10px' }}>
+              Dr. SV. Sathish Kumar
+            </h2>
+          </div>
+
+          {/* Title Section */}
+          <div className="animate-fade-in-up delay-300">
+            <p style={{ fontSize: '16px', color: '#38bdf8', fontWeight: 700, marginBottom: '6px' }}>
+              Consultant Physiotherapist
+            </p>
+          </div>
+
+          {/* Qualifications Section */}
+          <div className="animate-fade-in-up delay-400">
+            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.85)', fontWeight: 600, marginBottom: '28px' }}>
+              MPT (Cardio-Resp), PGDFM, DYT, CDNT
+            </p>
+          </div>
 
           {/* Features */}
-          <div className="flex flex-col gap-3">
-            {features.map((f) => {
+          <div className="flex flex-col gap-3.5 animate-fade-in-up delay-500">
+            {features.map((f, index) => {
               const Icon = f.icon;
               return (
                 <div key={f.text} className="flex items-center gap-3">
                   <div className="flex items-center justify-center rounded-xl shrink-0"
-                    style={{ width: '36px', height: '36px', background: `${f.color}20` }}>
-                    <Icon size={17} color={f.color} />
+                    style={{ width: '38px', height: '38px', background: `${f.color}20` }}>
+                    <Icon size={18} color={f.color} />
                   </div>
-                  <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>{f.text}</span>
+                  <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>{f.text}</span>
                 </div>
               );
             })}
@@ -161,32 +216,20 @@ export function LoginScreen() {
         </div>
 
         {/* Bottom testimonial */}
-        <div className="px-10 pb-10">
+        <div className="px-10 pb-10 animate-fade-in-up delay-500" style={{ animationDelay: '600ms' }}>
           <div
-            className="p-5 rounded-2xl"
-            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}
+            className="p-5 rounded-2xl animate-fade-in-up delay-500"
+            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', animationDelay: '700ms' }}
           >
-            <div className="flex mb-2">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <Star key={n} size={14} color="#fbbf24" fill="#fbbf24" />
-              ))}
-            </div>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, marginBottom: '12px' }}>
-              "SAAI Physiotherapy completely transformed my post-surgery recovery. The digital tracking and exercise plans are exceptional."
+            <p style={{ fontSize: '13px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', tracking: '0.5px', marginBottom: '6px' }}>
+              Patient Testimonials
             </p>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center rounded-full"
-                style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.2)', fontSize: '16px' }}>
-                🏃
-              </div>
-              <div>
-                <p style={{ fontSize: '12px', fontWeight: 700, color: 'white' }}>Arjun Mehta</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Recovered from ACL Tear · 2025</p>
-              </div>
-            </div>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: '#fbbf24', lineHeight: 1.6 }}>
+              Need to get info from client
+            </p>
           </div>
-          <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>
-            © 2025 SAAI Physiotherapy Clinic · All rights reserved
+          <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
+            © 2025 Saai Physiotherapy Clinic · All rights reserved
           </p>
         </div>
       </div>
@@ -218,25 +261,28 @@ export function LoginScreen() {
             />
           </div>
           <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'white', textAlign: 'center', letterSpacing: '-0.5px' }}>
-            SAAI Physiotherapy
+            Saai Physiotherapy Clinic
           </h1>
-          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginTop: '4px', textAlign: 'center' }}>
-            Your Recovery, Our Commitment
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '4px', textAlign: 'center' }}>
+            "Getting better every day"
+          </p>
+          <p style={{ fontSize: '11px', color: '#38bdf8', marginTop: '4px', textAlign: 'center', fontWeight: 700 }}>
+            Dr. SV. Sathish Kumar · Consultant Physiotherapist
           </p>
           <div
             className="flex items-center gap-2 mt-4 px-4 py-2 rounded-full"
             style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}
           >
             <div className="rounded-full" style={{ width: '6px', height: '6px', background: '#10b981' }} />
-            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
-              Trusted by 10,000+ patients · NABH Accredited
+            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
+              20A/10, Sakthi Nagar, Sengodapalayam, Thindal, Erode
             </span>
           </div>
         </div>
 
         {/* Form card */}
         <div
-          className="w-full max-w-md mx-auto px-6 py-8 lg:px-8"
+          className="w-full max-w-md mx-auto px-6 py-8 lg:px-8 animate-scale-in"
           style={{
             background: 'white',
             borderRadius: '28px 28px 0 0',
@@ -298,7 +344,7 @@ export function LoginScreen() {
                     <span style={{ fontSize: '12px', fontWeight: 800, color: isSelected ? r.color : '#94a3b8' }}>
                       {r.label}
                     </span>
-                    <span style={{ fontSize: '10px', color: isSelected ? r.color : '#cbd5e1', fontWeight: 500 }}>
+                    <span style={{ fontSize: '10px', color: isSelected ? r.color : '#cbd5e1', font500: 'true' }}>
                       {r.sublabel}
                     </span>
                   </button>
@@ -448,7 +494,7 @@ export function LoginScreen() {
           </div>
 
           <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#cbd5e1' }}>
-            © 2025 SAAI Physiotherapy Clinic · v2.0
+            © 2025 Saai Physiotherapy Clinic · v2.0
           </p>
         </div>
       </div>

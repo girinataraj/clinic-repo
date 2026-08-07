@@ -284,34 +284,32 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
   const therapistRemarks = rawData.therapistRemarks || rawData.therapist_remarks;
   const finalClinicalSummary = rawData.finalClinicalSummary || rawData.final_clinical_summary;
 
-  const therapistName = clinician?.name || rawData.therapistName || rawData.doctor_name || rawData.createdBy?.name || 'Clinic Physiotherapist';
+  const therapistName = clinician?.name || rawData.therapistName || rawData.doctor_name || rawData.createdBy?.name || 'Dr. SV. Sathish Kumar';
+  const clinicianQualifications = clinician?.qualifications || 'MPT (Cardio-Resp), PGDFM, DYT, CDNT';
+  const clinicName = hospitalInfo?.name || 'Saai Physiotherapy Clinic';
+  const clinicAddress = hospitalInfo?.address || '20A/10, Sakthi Nagar, Sengodapalayam, Thindal, Erode Dt – 638012';
+  const clinicPhone = hospitalInfo?.phone || '94864 05778';
   const accentColor = isDoctorRole ? 'text-[#262842]' : 'text-teal-700';
 
   return (
     <div className="flex flex-col gap-6 w-full text-left font-sans">
-      {/* Hospital Banner (if hospital metadata present) */}
-      {hospitalInfo && (
-        <section className="bg-gradient-to-r from-teal-900 via-teal-800 to-indigo-900 text-white p-5 rounded-2xl shadow-md border border-teal-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-teal-300" />
-              <h3 className="text-lg font-black tracking-tight">{hospitalInfo.name}</h3>
-            </div>
-            {hospitalInfo.specialization && (
-              <p className="text-xs text-teal-200 font-medium mt-0.5">{hospitalInfo.specialization}</p>
-            )}
-            {hospitalInfo.address && (
-              <p className="text-[11px] text-teal-300/80 mt-1">{hospitalInfo.address} · {hospitalInfo.phone}</p>
-            )}
+      {/* Hospital Banner */}
+      <section className="bg-gradient-to-r from-teal-900 via-teal-800 to-indigo-900 text-white p-5 rounded-2xl shadow-md border border-teal-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-teal-300" />
+            <h3 className="text-lg font-black tracking-tight">{clinicName}</h3>
           </div>
-          {metadata && (
-            <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 text-right">
-              {metadata.reportId && <p className="text-xs font-black tracking-wider text-teal-100">{metadata.reportId}</p>}
-              {metadata.reportDate && <p className="text-[11px] font-semibold text-teal-200">{metadata.reportDate}</p>}
-            </div>
-          )}
-        </section>
-      )}
+          <p className="text-xs text-teal-200 font-medium mt-0.5">"Getting better every day"</p>
+          <p className="text-[11px] text-teal-300/80 mt-1">{clinicAddress} · Phone: {clinicPhone}</p>
+        </div>
+        {metadata && (
+          <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 text-right">
+            {metadata.reportId && <p className="text-xs font-black tracking-wider text-teal-100">{metadata.reportId}</p>}
+            {metadata.reportDate && <p className="text-[11px] font-semibold text-teal-200">{metadata.reportDate}</p>}
+          </div>
+        )}
+      </section>
 
       {/* Clinician & Patient Summary Header */}
       <section className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
@@ -319,7 +317,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
           <div>
             <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Conducting Clinician</span>
             <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{therapistName}</span>
-            {clinician?.specialization && <span className="text-[11px] text-teal-600 dark:text-teal-400 block font-medium">{clinician.specialization}</span>}
+            <span className="text-[11px] text-teal-600 dark:text-teal-400 block font-medium">{clinician?.specialization || clinicianQualifications}</span>
           </div>
           {(patientInfo?.patientId || rawData.patientId) && (
             <div>

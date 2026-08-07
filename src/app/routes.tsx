@@ -17,19 +17,13 @@ import { DoctorPatients } from './screens/DoctorPatients';
 import { DoctorProfile } from './screens/DoctorProfile';
 import { DoctorRevenue } from './screens/DoctorRevenue';
 import { PatientDetailPage } from './screens/PatientDetailPage';
-import { ExercisePrescription } from './screens/ExercisePrescription';
-import { ExerciseLibrary } from './screens/ExerciseLibrary';
-import { ReportGeneration } from './screens/ReportGeneration';
 import { TreatmentDetailPage } from '../features/patients/pages/TreatmentDetailPage';
 import { SessionPage } from './screens/SessionPage';
 import { PatientHistorySearch } from './screens/PatientHistorySearch';
 import { AssessmentFormComponent } from './screens/assessment/AssessmentFormComponent';
-
 import { PatientForm } from './screens/PatientForm';
 import { TherapistHierarchy } from './screens/TherapistHierarchy';
 import { TherapistDetailPage } from './screens/TherapistDetailPage';
-import { DailyReportPage } from './screens/DailyReportPage';
-import { ManageStaff } from './screens/ManageStaff';
 import { FollowUpPage } from './screens/FollowUpPage';
 
 // ── Session Loader: waits for auth initialization before routing ─────────────
@@ -66,7 +60,6 @@ export const router = createBrowserRouter([
             children: [
               { path: 'patient', Component: PatientDashboard },
               { path: 'patient/appointment', Component: AppointmentBooking },
-              { path: 'patient/exercise', Component: ExercisePrescription },
               { path: 'patient/records', Component: PatientRecords },
               { path: 'patient/profile', Component: PatientProfile },
 
@@ -83,11 +76,7 @@ export const router = createBrowserRouter([
               { path: 'nurse/patient-form', Component: PatientForm },
               { path: 'nurse/patient/:id', Component: PatientDetailPage },
               { path: 'nurse/patient/:id/assessment-form', Component: AssessmentFormComponent },
-              { path: 'nurse/patient/:patientId/exercise', Component: ExercisePrescription },
               { path: 'nurse/session/:patientId', Component: SessionPage },
-              { path: 'nurse/exercise', Component: ExercisePrescription },
-              { path: 'nurse/exercise-library', Component: ExerciseLibrary },
-              { path: 'nurse/report', Component: ReportGeneration },
               { path: 'nurse/patient-history', Component: PatientHistorySearch },
               { path: 'nurse/follow-up', Component: FollowUpPage },
               { path: 'nurse/profile', Component: NurseProfile },
@@ -102,7 +91,6 @@ export const router = createBrowserRouter([
             children: [
               { path: 'doctor', Component: DoctorDashboard },
               { path: 'doctor/therapists', Component: TherapistHierarchy },
-              { path: 'doctor/staff', Component: ManageStaff },
               { path: 'doctor/therapist/:id', Component: TherapistDetailPage },
               { path: 'doctor/patient-form', Component: PatientForm },
               { path: 'doctor/intake', Component: DoctorAssessmentForm },
@@ -110,11 +98,7 @@ export const router = createBrowserRouter([
               { path: 'doctor/patient/:id', Component: PatientDetailPage },
               { path: 'doctor/patient/:id/assessment-form', Component: AssessmentFormComponent },
               { path: 'doctor/patient/:patientId/treatment', Component: TreatmentDetailPage },
-              { path: 'doctor/patient/:patientId/exercise', Component: ExercisePrescription },
               { path: 'doctor/session/:patientId', Component: SessionPage },
-              { path: 'doctor/exercise', Component: ExercisePrescription },
-              { path: 'doctor/exercise-library', Component: ExerciseLibrary },
-              { path: 'doctor/report', Component: ReportGeneration },
               { path: 'doctor/revenue', Component: DoctorRevenue },
               { path: 'doctor/patient-history', Component: PatientHistorySearch },
               { path: 'doctor/profile', Component: DoctorProfile },

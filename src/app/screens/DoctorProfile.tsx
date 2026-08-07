@@ -22,11 +22,66 @@ import {
   MapPin,
 } from 'lucide-react';
 
-// NOTE: These are UI structure placeholders.
-// Should be fetched from /api/users/me when the backend exposes them.
-// Currently NO backend API for these — DO NOT hardcode fake values.
-const specializations: string[] = [];
-const education: { degree: string; institution: string; year: string }[] = [];
+const doctorDetails = {
+  name: 'Dr. SV. Sathish Kumar',
+  qualifications: 'MPT (Cardio-Resp), PGDFM, DYT, CDNT',
+  role: 'Consultant Physiotherapist',
+  clinicName: 'Saai Physiotherapy Clinic',
+  tagline: '"Getting better every day"',
+  about: [
+    '16 years of clinical experience',
+    '16 years as HOD at Erode Sudha Hospitals',
+    'Strong professional network',
+    'Author of 3 awareness books',
+    '6000+ pain cases treated',
+  ],
+  contact: {
+    address: '20A/10, Sakthi Nagar, Sengodapalayam, Thindal, Erode Dt – 638012, Tamil Nadu, India',
+    email: 'saaiphysioclinicerode@gmail.com',
+    phone: '94864 05778',
+    timings: '9:00 AM – 2:00 PM | 3:00 PM – 8:00 PM',
+    sunday: 'By Appointment',
+    services: 'OPD, IPD, Day Care, Home Visit, VIP Care',
+  },
+};
+
+const specializations: string[] = [
+  'Pain Rehabilitation',
+  'Orthopaedic Rehabilitation',
+  'Neurological Rehabilitation',
+  'Cardio & Respiratory Rehabilitation',
+  'Specialized Services',
+];
+
+const scopeOfServices = [
+  {
+    category: 'Pain Rehabilitation',
+    items: ['Joint Pain', 'Fibromyalgia', 'Chronic Pain Disorders'],
+  },
+  {
+    category: 'Orthopaedic Rehabilitation',
+    items: ['Post-operative Stiffness', 'Post-surgical Conditions', 'TKR & THR', 'Poly Trauma'],
+  },
+  {
+    category: 'Neurological Rehabilitation',
+    items: ['Bells Palsy', 'Stroke', 'Parkinsonism', 'GBS', 'Spinal Cord Injury'],
+  },
+  {
+    category: 'Cardio & Respiratory Rehabilitation',
+    items: ['Post PTCA', 'Pre & Post CABG', 'Valvular Heart Surgery Care', 'COPD', 'Ventilator & BiPAP Care'],
+  },
+  {
+    category: 'Specialized Services',
+    items: ['Geriatric', 'Gynaecological', 'Paediatric', 'Sports', 'Tracheostomy'],
+  },
+];
+
+const education = [
+  { degree: 'MPT (Cardio-Resp)' },
+  { degree: 'PGDFM' },
+  { degree: 'DYT' },
+  { degree: 'CDNT' },
+];
 
 const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
   'in-session': { color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/30', label: 'Active' },
@@ -113,24 +168,18 @@ export function DoctorProfile() {
 
           {/* Profile hero */}
           <div className="relative z-30 flex flex-col items-center text-center mt-4 pb-12 px-6">
-            <h2 className="text-[32px] font-extrabold text-white tracking-tight leading-tight">
-              {profile?.name || user?.name || 'Doctor'}
+            <h2 className="text-[28px] md:text-[32px] font-extrabold text-white tracking-tight leading-tight">
+              {doctorDetails.name}
             </h2>
-            <p className="text-[14px] text-white/90 mt-1">
-              {profile?.specialization || profile?.role || 'Physiotherapist'}
+            <p className="text-[14px] text-teal-200 font-semibold mt-1">
+              {doctorDetails.qualifications}
             </p>
-            {profileTags.length > 0 && (
-              <div className="flex items-center flex-wrap justify-center gap-2 mt-4">
-                {profileTags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-3 py-1.5 rounded-xl backdrop-blur-sm bg-white/20 border border-white/30 text-[12px] font-semibold text-white"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
+            <p className="text-[13px] text-white/90 font-medium mt-0.5">
+              {doctorDetails.role} · {doctorDetails.clinicName}
+            </p>
+            <p className="text-[12px] italic text-teal-100/80 mt-1">
+              {doctorDetails.tagline}
+            </p>
           </div>
           {editMode && (
             <div className="relative z-30 flex flex-col items-center px-6 pb-6 gap-3">
@@ -165,7 +214,7 @@ export function DoctorProfile() {
           {[
             { label: 'Patients', value: patientsData?.total ?? 0, icon: Users, color: '#3B3E66' },
             { label: 'Today', value: todayCount, icon: Clock, color: '#262842' },
-            { label: 'Satisfaction', value: '98%', icon: TrendingUp, color: '#17252A' },
+            { label: 'Experience', value: '16+ Yrs', icon: TrendingUp, color: '#17252A' },
           ].map((s, i) => {
             const Icon = s.icon;
             return (
@@ -181,47 +230,66 @@ export function DoctorProfile() {
         </div>
 
         <div className="px-5 pt-6 pb-6 flex flex-col gap-5">
-          {/* About */}
+          {/* About the Doctor */}
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
-            <p className="text-[15px] font-bold text-slate-900 dark:text-white mb-2">About</p>
-            {profile?.specialization || profile?.experience ? (
-              <div className="flex flex-col gap-2 text-[14px] text-slate-700 dark:text-slate-300 leading-relaxed">
-                {profile?.specialization && (
-                  <p><strong>Specialization:</strong> {profile.specialization}</p>
-                )}
-                {profile?.experience && (
-                  <p><strong>Experience:</strong> {profile.experience}</p>
-                )}
-                {profile?.city && (
-                  <p><strong>Location:</strong> {profile.city}</p>
-                )}
-              </div>
-            ) : (
-              <p className="text-[13px] text-slate-400 dark:text-slate-500 italic">Profile details not provided yet.</p>
-            )}
+            <p className="text-[15px] font-bold text-slate-900 dark:text-white mb-3">About the Doctor</p>
+            <ul className="flex flex-col gap-2">
+              {doctorDetails.about.map((bullet, idx) => (
+                <li key={idx} className="flex items-start gap-2.5 text-[13px] text-slate-700 dark:text-slate-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-teal-600 dark:bg-teal-400 mt-1.5 shrink-0" />
+                  <span>{bullet}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Clinic Info */}
+          {/* Clinic Location & Details */}
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-2 mb-3">
-              <MapPin size={16} className="text-indigo-500 dark:text-indigo-400" />
-              <p className="text-[15px] font-bold text-slate-900 dark:text-white">Clinic Info</p>
+              <MapPin size={18} className="text-teal-600 dark:text-teal-400" />
+              <p className="text-[15px] font-bold text-slate-900 dark:text-white">Clinic Location & Details</p>
             </div>
-            <p className="text-[13px] text-slate-500 dark:text-slate-400 italic">
-              Clinic address will be available from admin settings.
-            </p>
+            <div className="flex flex-col gap-2 text-[13px] text-slate-700 dark:text-slate-300">
+              <p className="font-bold text-slate-900 dark:text-white text-[14px]">{doctorDetails.clinicName}</p>
+              <p>{doctorDetails.contact.address}</p>
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-1 text-[12px]">
+                <p><strong>Timings:</strong> {doctorDetails.contact.timings}</p>
+                <p><strong>Sunday:</strong> {doctorDetails.contact.sunday}</p>
+                <p><strong>Services:</strong> {doctorDetails.contact.services}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Scope of Services */}
+          <div>
+            <p className="text-[15px] font-bold text-slate-900 dark:text-white mb-3">Scope of Services</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {scopeOfServices.map((cat) => (
+                <div key={cat.category} className="p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
+                  <p className="text-[13px] font-bold text-teal-700 dark:text-teal-400 mb-2">{cat.category}</p>
+                  <ul className="flex flex-col gap-1 text-[12px] text-slate-600 dark:text-slate-300">
+                    {cat.items.map((item) => (
+                      <li key={item} className="flex items-center gap-1.5">
+                        <CheckCircle size={12} className="text-teal-600 dark:text-teal-400 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Specializations */}
           <div>
-            <p className="text-[15px] font-bold text-slate-900 dark:text-white mb-3">Specializations</p>
+            <p className="text-[15px] font-bold text-slate-900 dark:text-white mb-3">Core Specializations</p>
             <div className="flex flex-wrap gap-2">
               {specializations.map((s) => (
                 <span
                   key={s}
                   className="px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-colors bg-slate-100 dark:bg-slate-700 border border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[13px] font-semibold"
                 >
-                  <CheckCircle size={14} className="text-slate-500 dark:text-slate-400" />
+                  <CheckCircle size={14} className="text-teal-600 dark:text-teal-400" />
                   {s}
                 </span>
               ))}
@@ -270,7 +338,7 @@ export function DoctorProfile() {
 
           {/* Education */}
           <div>
-            <p className="text-[15px] font-bold text-slate-900 dark:text-white mb-3">Education & Training</p>
+            <p className="text-[15px] font-bold text-slate-900 dark:text-white mb-3">Education & Qualifications</p>
             <div className="flex flex-col gap-0 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
               {education.map((edu, i) => (
                 <div
@@ -282,7 +350,7 @@ export function DoctorProfile() {
                   </div>
                   <div className="flex-1">
                     <p className="text-[14px] font-semibold text-slate-900 dark:text-white">{edu.degree}</p>
-                    <p className="text-[12px] text-slate-600 dark:text-slate-400 mt-0.5">{edu.institution} · {edu.year}</p>
+                    <p className="text-[12px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">Need to get info from client</p>
                   </div>
                   <Award size={18} className="text-slate-600 dark:text-slate-400" />
                 </div>
@@ -298,10 +366,10 @@ export function DoctorProfile() {
             <div className="flex-1">
               <p className="text-[12px] text-slate-600 dark:text-slate-400 font-semibold tracking-wide">CLINIC CONTACT</p>
               <p className="text-[18px] font-bold text-slate-900 dark:text-white">
-                {clinicConfig?.contact?.phone || profile?.phone || '—'}
+                {doctorDetails.contact.phone}
               </p>
               <p className="text-[13px] text-slate-600 dark:text-slate-400">
-                {clinicConfig?.contact?.email || profile?.email || 'Not provided'}
+                {doctorDetails.contact.email}
               </p>
             </div>
           </div>

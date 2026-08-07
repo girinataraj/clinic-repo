@@ -264,9 +264,14 @@ export function PatientDetailPage() {
               <ClipboardList size={18} color="#FEFFFF" />
             </button>
             <button
-              onClick={() => navigate(evaluation?.id ? `/doctor/report?evaluationId=${evaluation.id}` : '/doctor/report')}
-              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 bg-white/15">
-              <FileText size={18} color="#FEFFFF" />
+              onClick={() => {
+                const rolePath = user?.role === 'nurse' ? 'nurse' : 'doctor';
+                navigate(`/${rolePath}/patient-history?search=${encodeURIComponent(patient?.name || '')}`);
+              }}
+              className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-10 h-10 bg-white/15"
+              title="View Patient History & Reports"
+            >
+              <FileSearch size={18} color="#FEFFFF" />
             </button>
           </div>
         </div>
@@ -527,10 +532,13 @@ export function PatientDetailPage() {
                           </p>
                         )}
                         <button 
-                          onClick={() => navigate(`/doctor/report?evaluationId=${ev.id}`)}
+                          onClick={() => {
+                            const rolePath = user?.role === 'nurse' ? 'nurse' : 'doctor';
+                            navigate(`/${rolePath}/patient-history?search=${encodeURIComponent(patient?.name || '')}`);
+                          }}
                           className="text-[12px] font-bold text-teal-600 dark:text-teal-400 mt-3 flex items-center gap-1 hover:underline"
                         >
-                          <FileText size={14} /> View Report
+                          <FileSearch size={14} /> View Patient History
                         </button>
                       </div>
                     </div>

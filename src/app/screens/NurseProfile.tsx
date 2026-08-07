@@ -40,7 +40,7 @@ export function NurseProfile() {
     shift: 'General Shift',
     time: '09:00 AM - 05:00 PM',
     ward: profile?.city ? `${profile.city} OPD Clinic` : 'Main OPD Ward',
-    supervisor: 'Dr. Saai / Lead Officer',
+    supervisor: 'Dr. SV. Sathish Kumar',
   };
 
   // Build profile-driven tags from backend fields (show only when available)

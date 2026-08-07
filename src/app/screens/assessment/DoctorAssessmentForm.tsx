@@ -254,7 +254,7 @@ export function DoctorAssessmentForm() {
         pftFindings: treatmentPlanData.pftFindings || undefined,
       });
       setSaved(true);
-      setTimeout(() => navigate(`/${currentRole}/report?patientId=${resolvedPatientId}`), 2000);
+      setTimeout(() => navigate(`/${currentRole}/patient-history`), 2000);
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to save.'); }
   };
 
