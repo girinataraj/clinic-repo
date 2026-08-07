@@ -21,16 +21,6 @@ interface RoleOption {
 
 const roles: RoleOption[] = [
   {
-    value: 'patient',
-    label: 'Patient',
-    sublabel: 'Book & track',
-    icon: UserCheck,
-    color: '#2563eb',
-    bg: '#eff6ff',
-    border: '#bfdbfe',
-    gradient: 'linear-gradient(135deg, #2563eb, #38bdf8)',
-  },
-  {
     value: 'nurse',
     label: 'Therapist',
     sublabel: 'Therapy & care',
@@ -60,7 +50,7 @@ const features = [
 ];
 
 export function LoginScreen() {
-  const [role, setRole] = useState<UserRole>('patient');
+  const [role, setRole] = useState<UserRole>('nurse');
   const [identifier, setIdentifier] = useState(''); // phone for patient, email for staff
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -442,12 +432,6 @@ export function LoginScreen() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => { setRole('patient'); setIdentifier('9876543210'); setPassword('Password@123'); }}
-                style={{ flex: 1, padding: '7px 4px', borderRadius: '12px', background: '#eff6ff', border: '1.5px solid #bfdbfe', fontSize: '11px', fontWeight: 700, color: '#2563eb' }}
-              >
-                Patient
-              </button>
               <button
                 onClick={() => { setRole('nurse'); setIdentifier('nurse@saai.com'); setPassword('Password@123'); }}
                 style={{ flex: 1, padding: '7px 4px', borderRadius: '12px', background: '#f0fdfa', border: '1.5px solid #99f6e4', fontSize: '11px', fontWeight: 700, color: '#0f766e' }}
