@@ -5,6 +5,7 @@ import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPl
 import { ClinicalExamination } from './ClinicalExamination';
 import { RomMatrix } from './RomMatrix';
 import { MusclePower } from './MusclePower';
+import { TreatmentExerciseModule } from './TreatmentExerciseModule';
 
 // ── Step 0: Patient Info ──────────────────────────────────────────────────────
 export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handlePhotoChange, handlePhotoRemove, photoInputKey, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user }: any) {
@@ -422,6 +423,15 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
         <ChipGroup label="Manual Therapy" items={manualTherapy} field="manualTherapy" />
         <ChipGroup label="Rehabilitation" items={rehab} field="rehabilitation" />
       </SectionCard>
+
+      {/* Exercise Adding & Prescribing Module */}
+      <TreatmentExerciseModule
+        treatmentPlan={tp}
+        setTreatmentPlan={(newTp: TreatmentPlanData) => {
+          if (setTreatmentPlan) setTreatmentPlan(newTp);
+        }}
+        isDoctorRole={isDoctorRole}
+      />
 
       <SectionCard icon={<ImagePlus size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Imaging Findings" subtitle="X-Ray, MRI, PFT reports" accent={accent}>
         <div className="flex flex-col gap-3">

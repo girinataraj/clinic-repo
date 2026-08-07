@@ -208,10 +208,11 @@ export function TherapistAssessmentForm() {
         diagnosis: diagnosisNotes.trim() || undefined,
         diagnosisList: selectedDiagnoses.length > 0 ? selectedDiagnoses : undefined,
         plan: treatmentNotes.trim() || undefined,
-        treatmentPlan: getTreatmentSelectionCount(treatmentPlanData) > 0 || treatmentPlanData.visitsRequired || treatmentPlanData.frequencyGapDays || treatmentPlanData.suggestedStartDate ? {
+        treatmentPlan: (getTreatmentSelectionCount(treatmentPlanData) > 0 || treatmentPlanData.visitsRequired || treatmentPlanData.frequencyGapDays || treatmentPlanData.suggestedStartDate || (treatmentPlanData.exercises && treatmentPlanData.exercises.length > 0)) ? {
           modalities: treatmentPlanData.modalities.length > 0 ? treatmentPlanData.modalities : undefined,
           manualTherapy: treatmentPlanData.manualTherapy.length > 0 ? treatmentPlanData.manualTherapy : undefined,
           rehabilitation: treatmentPlanData.rehabilitation.length > 0 ? treatmentPlanData.rehabilitation : undefined,
+          exercises: treatmentPlanData.exercises?.length ? treatmentPlanData.exercises : undefined,
           visitsRequired: treatmentPlanData.visitsRequired ? Number(treatmentPlanData.visitsRequired) : undefined,
           frequencyGapDays: treatmentPlanData.frequencyGapDays ? Number(treatmentPlanData.frequencyGapDays) : undefined,
           suggestedStartDate: treatmentPlanData.suggestedStartDate || undefined,

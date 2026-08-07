@@ -13,21 +13,74 @@ export const ROM_CONFIG: RomSection[] = [
   {
     label: 'Upper Limb',
     joints: [
-      { label: 'Shoulder', movements: ['Flexion', 'Extension', 'Abduction', 'Adduction'] },
+      { label: 'Shoulder', movements: ['Flexion', 'Extension', 'Abduction', 'Adduction', 'Medial Rotation', 'Lateral Rotation'] },
       { label: 'Elbow', movements: ['Flexion', 'Extension'] },
-      { label: 'Forearm', movements: ['Supination', 'Pronation'] },
-      { label: 'Wrist', movements: ['Flexion', 'Extension'] },
+      { label: 'Forearm', movements: ['Pronation', 'Supination'] },
+      { label: 'Wrist', movements: ['Flexion', 'Extension', 'Abduction', 'Adduction'] },
     ],
   },
   {
     label: 'Lower Limb',
     joints: [
-      { label: 'Hip', movements: ['Flexion', 'Extension', 'Abduction', 'Adduction'] },
+      { label: 'Hip', movements: ['Flexion', 'Extension', 'Abduction', 'Adduction', 'Medial Rotation', 'Lateral Rotation'] },
       { label: 'Knee', movements: ['Flexion', 'Extension'] },
-      { label: 'Ankle', movements: ['Dorsi Flexion', 'Plantar Flexion', 'Inversion', 'Eversion', 'EHL'] },
+      { label: 'Ankle', movements: ['Plantar Flexion', 'Dorsi Flexion'] },
+      { label: 'Foot', movements: ['Inversion', 'Eversion'] },
     ],
   },
 ];
+
+export const ROM_DEGREES_MAP: Record<string, string> = {
+  // Shoulder
+  'Shoulder_Flexion': '0 - 180°',
+  'Shoulder_Extension': '0 - 50°',
+  'Shoulder_Abduction': '0 - 180°',
+  'Shoulder_Adduction': '0 - 50°',
+  'Shoulder_Medial_Rotation': '0 - 90°',
+  'Shoulder_Lateral_Rotation': '0 - 90°',
+  'Shoulder_Medial_rotation': '0 - 90°',
+  'Shoulder_Lateral_rotation': '0 - 90°',
+  // Elbow
+  'Elbow_Flexion': '0 - 160°',
+  'Elbow_Extension': '0°',
+  // Forearm
+  'Forearm_Pronation': '0 - 90°',
+  'Forearm_Supination': '0 - 90°',
+  // Wrist
+  'Wrist_Flexion': '0 - 90°',
+  'Wrist_Extension': '0 - 70°',
+  'Wrist_Abduction': '0 - 25°',
+  'Wrist_Adduction': '0 - 65°',
+  // Hip
+  'Hip_Flexion': '0 - 125°',
+  'Hip_Extension': '0 - 15°',
+  'Hip_Abduction': '0 - 45°',
+  'Hip_Adduction': '0 - 15°',
+  'Hip_Medial_Rotation': '0 - 45°',
+  'Hip_Lateral_Rotation': '0 - 45°',
+  'Hip_Medial_rotation': '0 - 45°',
+  'Hip_Lateral_rotation': '0 - 45°',
+  // Knee
+  'Knee_Flexion': '0 - 140°',
+  'Knee_Extension': '0°',
+  // Ankle
+  'Ankle_Plantar_Flexion': '0 - 45°',
+  'Ankle_Dorsi_Flexion': '0 - 20°',
+  'Ankle_Dorsiflexion': '0 - 20°',
+  'Ankle_Plantar_flexion': '0 - 45°',
+  'Ankle_Inversion': '0 - 30°',
+  'Ankle_Eversion': '0 - 10°',
+  'Ankle_EHL': '0 - 5°',
+  // Foot
+  'Foot_Inversion': '0 - 30°',
+  'Foot_Eversion': '0 - 10°',
+};
+
+export function getRomDegreesPlaceholder(joint: string, movement: string): string {
+  const key1 = `${joint}_${movement}`.replace(/\s+/g, '_');
+  const key2 = `${joint}_${movement}`;
+  return ROM_DEGREES_MAP[key1] || ROM_DEGREES_MAP[key2] || '0 - 180°';
+}
 
 // ── Chief Complaints & Associated Symptoms ────────────────────────────────────
 
@@ -227,14 +280,32 @@ export function calcWHRatio(waist: string, hip: string): string {
   return (w / h).toFixed(2);
 }
 
-// ── Treatment Plan Options ────────────────────────────────────────────────────
+export interface TreatmentPlanExerciseAttachment {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  dataUrl: string;
+}
 
-
+export interface TreatmentPlanExerciseItem {
+  id: string;
+  exerciseName: string;
+  category?: string;
+  sets?: number | string;
+  reps?: string;
+  holdTime?: string;
+  frequency?: string;
+  notes?: string;
+  instructions?: string;
+  attachments?: TreatmentPlanExerciseAttachment[];
+}
 
 export interface TreatmentPlanData {
   modalities: string[];
   manualTherapy: string[];
   rehabilitation: string[];
+  exercises?: TreatmentPlanExerciseItem[];
   visitsRequired: string;           // stored as string for input control; parsed to number on save
   frequencyGapDays: string;         // same approach
   suggestedStartDate: string;       // ISO date string or ''
@@ -249,6 +320,7 @@ export function getEmptyTreatmentPlan(): TreatmentPlanData {
     modalities: [],
     manualTherapy: [],
     rehabilitation: [],
+    exercises: [],
     visitsRequired: '',
     frequencyGapDays: '',
     suggestedStartDate: '',
@@ -261,7 +333,7 @@ export function getEmptyTreatmentPlan(): TreatmentPlanData {
 
 /** Count how many treatment items have been selected across all groups */
 export function getTreatmentSelectionCount(tp: TreatmentPlanData): number {
-  return tp.modalities.length + tp.manualTherapy.length + tp.rehabilitation.length;
+  return tp.modalities.length + tp.manualTherapy.length + tp.rehabilitation.length + (tp.exercises?.length || 0);
 }
 
 

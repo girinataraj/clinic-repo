@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePatients, usePatient } from '../../hooks/usePatients';
 import { ROM_CONFIG, getRomKey } from './assessment/clinicalConfig';
 import { EvaluationSummaryReport } from '../components/EvaluationSummaryReport';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { VitalSignsTable, SymptomChecklist, ClinicalExaminationTable } from './assessment/AssessmentTableDisplay';
 import api from '../../services/api';
 import { ENDPOINTS } from '../../services/endpoints';
@@ -524,7 +525,9 @@ export function PatientHistorySearch() {
                               </div>
 
                               {/* Reusable Clinical Report Blocks */}
-                              <EvaluationSummaryReport evaluation={item} isDoctorRole={item.doctor_role === 'doctor'} />
+                              <ErrorBoundary fallbackMessage="Could not display full clinical report.">
+                                <EvaluationSummaryReport evaluation={item} isDoctorRole={item.doctor_role === 'doctor'} />
+                              </ErrorBoundary>
 
 
                               {/* 8. Billing & Payment logs */}
@@ -775,7 +778,7 @@ export function PatientHistorySearch() {
                               </div>
 
                               {/* Treatment & Rehabilitation Plan Details */}
-                              {(item.treatmentModalities?.length > 0 || item.treatmentFrequency || item.treatmentDuration) && (
+                              {(item.treatmentModalities?.length > 0 || item.treatmentFrequency || item.treatmentDuration || item.treatmentPlan?.exercises?.length > 0 || item.treatment_plan?.exercises?.length > 0) && (
                                 <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-3 text-xs">
                                   <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-2">
                                     <Dumbbell size={14} className="text-emerald-500" /> Prescribed Rehabilitation & Modalities Plan
@@ -804,6 +807,35 @@ export function PatientHistorySearch() {
                                       </div>
                                     )}
                                   </div>
+
+                                  {/* Exercise prescriptions in history */}
+                                  {((item.treatmentPlan?.exercises && item.treatmentPlan.exercises.length > 0) || (item.treatment_plan?.exercises && item.treatment_plan.exercises.length > 0)) && (
+                                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+                                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Prescribed Exercises & Home Program ({((item.treatmentPlan?.exercises || item.treatment_plan?.exercises) || []).length})</span>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {((item.treatmentPlan?.exercises || item.treatment_plan?.exercises) || []).map((ex: any, idx: number) => (
+                                          <div key={ex.id || idx} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800">
+                                            <div className="flex items-center justify-between">
+                                              <span className="font-extrabold text-slate-800 dark:text-slate-100">{ex.exerciseName || ex.name}</span>
+                                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 uppercase">{ex.category || 'General'}</span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-500 font-medium mt-1">
+                                              {ex.sets ? `${ex.sets} sets` : ''} {ex.reps ? `• ${ex.reps}` : ''} {ex.holdTime ? `• Hold: ${ex.holdTime}` : ''} {ex.frequency ? `• ${ex.frequency}` : ''}
+                                            </p>
+                                            {ex.attachments?.length > 0 && (
+                                              <div className="flex flex-wrap gap-1 mt-2">
+                                                {ex.attachments.map((att: any) => (
+                                                  <a key={att.id} href={att.dataUrl} download={att.name} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-[9px] font-bold text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                                                    📎 {att.name}
+                                                  </a>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               )}
 

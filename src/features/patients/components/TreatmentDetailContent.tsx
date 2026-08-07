@@ -325,6 +325,33 @@ export function TreatmentDetailContent({
               editable={canEdit}
               onSave={savePlan}
             />
+            {evaluation.treatmentPlan?.exercises && evaluation.treatmentPlan.exercises.length > 0 && (
+              <div className="py-2.5 border-b border-slate-700/50">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Prescribed Exercises & Attachments</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {evaluation.treatmentPlan.exercises.map((ex: any, idx: number) => (
+                    <div key={ex.id || idx} className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-white">{ex.exerciseName || ex.name}</span>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 uppercase">{ex.category || 'General'}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        {ex.sets ? `${ex.sets} sets` : ''} {ex.reps ? `• ${ex.reps}` : ''} {ex.holdTime ? `• Hold: ${ex.holdTime}` : ''} {ex.frequency ? `• ${ex.frequency}` : ''}
+                      </p>
+                      {ex.attachments?.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {ex.attachments.map((att: any) => (
+                            <a key={att.id} href={att.dataUrl} download={att.name} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-teal-950/60 text-[9px] font-bold text-teal-300 border border-teal-800">
+                              📎 {att.name}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <FieldRow
               label="Medical History"
               value={evaluation.medicalHistory?.join(', ')}

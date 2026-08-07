@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ROM_CONFIG, getRomKey, type RomData, type RomEntry } from './clinicalConfig';
+import { ROM_CONFIG, getRomKey, getRomDegreesPlaceholder, type RomData, type RomEntry } from './clinicalConfig';
 import { SectionCard } from './FormComponents';
 import { Activity, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -136,17 +136,18 @@ export function RomMatrix({ data, onChange, isDoctorRole }: RomMatrixProps) {
                             {joint.movements.map(movement => {
                               const key = getRomKey(joint.label, movement);
                               const entry = data[key] ?? {};
+                              const ph = getRomDegreesPlaceholder(joint.label, movement);
                               return (
                                 <div key={key} className="px-3 py-3">
                                   <p className="text-[12px] font-extrabold text-slate-700 dark:text-slate-300 mb-2">{movement}</p>
                                   <div className="grid grid-cols-2 gap-4">
                                     <div className="flex flex-col gap-1">
                                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">ROM RT</span>
-                                      <RomInput value={entry.romRt ?? ''} onChange={v => updateEntry(key, 'romRt', v)} placeholder="—" isDoctorRole={isDoctorRole} />
+                                      <RomInput value={entry.romRt ?? ''} onChange={v => updateEntry(key, 'romRt', v)} placeholder={ph} isDoctorRole={isDoctorRole} />
                                     </div>
                                     <div className="flex flex-col gap-1">
                                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">ROM LT</span>
-                                      <RomInput value={entry.romLt ?? ''} onChange={v => updateEntry(key, 'romLt', v)} placeholder="—" isDoctorRole={isDoctorRole} />
+                                      <RomInput value={entry.romLt ?? ''} onChange={v => updateEntry(key, 'romLt', v)} placeholder={ph} isDoctorRole={isDoctorRole} />
                                     </div>
                                   </div>
                                 </div>

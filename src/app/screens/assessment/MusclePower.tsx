@@ -1,4 +1,4 @@
-import { ROM_CONFIG, getRomKey, type RomData, type RomEntry } from './clinicalConfig';
+import { ROM_CONFIG, getRomKey, getRomDegreesPlaceholder, type RomData, type RomEntry } from './clinicalConfig';
 import { SectionCard } from './FormComponents';
 import { Activity } from 'lucide-react';
 
@@ -90,10 +90,10 @@ export function MusclePower({ data, onChange, isDoctorRole }: MusclePowerProps) 
                 <th className="border-r border-slate-200 dark:border-slate-800 px-2 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[70px] bg-slate-50/50 dark:bg-slate-900/20">
                   LT
                 </th>
-                <th className="border-r border-slate-200 dark:border-slate-800 px-2 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[70px] bg-slate-50/50 dark:bg-slate-900/20">
+                <th className="border-r border-slate-200 dark:border-slate-800 px-2 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[75px] bg-slate-50/50 dark:bg-slate-900/20">
                   RT
                 </th>
-                <th className="px-2 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[70px] bg-slate-50/50 dark:bg-slate-900/20">
+                <th className="px-2 py-2 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider w-[75px] bg-slate-50/50 dark:bg-slate-900/20">
                   LT
                 </th>
               </tr>
@@ -101,6 +101,7 @@ export function MusclePower({ data, onChange, isDoctorRole }: MusclePowerProps) 
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {rows.map((row, index) => {
                 const entry = data[row.romKey] ?? {};
+                const romPlaceholder = getRomDegreesPlaceholder(row.joint, row.movement);
 
                 return (
                   <tr key={index} className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10 transition-colors">
@@ -123,8 +124,8 @@ export function MusclePower({ data, onChange, isDoctorRole }: MusclePowerProps) 
                         value={entry.powerRt ?? ''}
                         onChange={e => handlePowerChange(row.romKey, 'powerRt', e.target.value)}
                         maxLength={1}
-                        placeholder="—"
-                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusBorder} transition-colors`}
+                        placeholder="0-5"
+                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400/70 ${focusBorder} transition-colors`}
                       />
                     </td>
                     <td className="border-r border-slate-200 dark:border-slate-800 p-1 w-[70px]">
@@ -133,28 +134,28 @@ export function MusclePower({ data, onChange, isDoctorRole }: MusclePowerProps) 
                         value={entry.powerLt ?? ''}
                         onChange={e => handlePowerChange(row.romKey, 'powerLt', e.target.value)}
                         maxLength={1}
-                        placeholder="—"
-                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusBorder} transition-colors`}
+                        placeholder="0-5"
+                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400/70 ${focusBorder} transition-colors`}
                       />
                     </td>
-                    <td className="border-r border-slate-200 dark:border-slate-800 p-1 w-[70px]">
+                    <td className="border-r border-slate-200 dark:border-slate-800 p-1 w-[75px]">
                       <input
                         type="text"
                         value={entry.romRt ?? ''}
                         onChange={e => handleRomChange(row.romKey, 'romRt', e.target.value)}
-                        maxLength={3}
-                        placeholder="—"
-                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusBorder} transition-colors`}
+                        maxLength={6}
+                        placeholder={romPlaceholder}
+                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-900 dark:text-white placeholder:text-slate-400/70 ${focusBorder} transition-colors`}
                       />
                     </td>
-                    <td className="p-1 w-[70px]">
+                    <td className="p-1 w-[75px]">
                       <input
                         type="text"
                         value={entry.romLt ?? ''}
                         onChange={e => handleRomChange(row.romKey, 'romLt', e.target.value)}
-                        maxLength={3}
-                        placeholder="—"
-                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusBorder} transition-colors`}
+                        maxLength={6}
+                        placeholder={romPlaceholder}
+                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-900 dark:text-white placeholder:text-slate-400/70 ${focusBorder} transition-colors`}
                       />
                     </td>
                   </tr>

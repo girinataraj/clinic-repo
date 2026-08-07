@@ -987,6 +987,55 @@ export function ReportGeneration() {
                           </div>
                         </div>
                       )}
+                      {mergedTreatmentPlan.exercises?.length > 0 && (
+                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+                          <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2.5">Prescribed Home Exercises ({mergedTreatmentPlan.exercises.length})</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {mergedTreatmentPlan.exercises.map((ex: any, idx: number) => {
+                              const name = ex.exerciseName || ex.exercise_name || ex.name || 'Exercise';
+                              const cat = ex.category || ex.bodyPart || ex.body_part || 'General';
+                              const setsVal = ex.sets !== undefined && ex.sets !== null && ex.sets !== '' ? ex.sets : '—';
+                              const repsVal = ex.reps || ex.repetitions || '—';
+                              const holdVal = ex.holdTime || ex.hold_time || '';
+                              const freqVal = ex.frequency || '';
+                              const inst = ex.notes || ex.instructions || ex.description || '';
+                              const attachments = ex.attachments || [];
+
+                              return (
+                                <div key={ex.id || idx} className="p-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-150 dark:border-slate-700 text-[11px] flex flex-col justify-between gap-2 shadow-xs">
+                                  <div>
+                                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                                      <span className="font-extrabold text-[#3B3E66] dark:text-slate-100 text-xs">{name}</span>
+                                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 uppercase">{cat}</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1 text-[10px] font-bold">
+                                      <span className="px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded">{setsVal} Sets</span>
+                                      <span className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded">{repsVal}</span>
+                                      {holdVal && <span className="px-1.5 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 rounded">Hold: {holdVal}</span>}
+                                      {freqVal && <span className="px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 rounded">{freqVal}</span>}
+                                    </div>
+                                    {inst && (
+                                      <p className="text-[10px] text-slate-500 italic mt-1.5 bg-slate-50 dark:bg-slate-900 p-1.5 rounded border border-slate-100 dark:border-slate-800">&quot;{inst}&quot;</p>
+                                    )}
+                                  </div>
+                                  {attachments.length > 0 && (
+                                    <div className="pt-1.5 border-t border-slate-100 dark:border-slate-700/60">
+                                      <span className="text-[9px] font-bold text-slate-400 block mb-1">Attached PDFs/Files ({attachments.length}):</span>
+                                      <div className="flex flex-wrap gap-1">
+                                        {attachments.map((att: any) => (
+                                          <a key={att.id || att.name} href={att.dataUrl} download={att.name} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-[9px] font-bold text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                                            📎 {att.name}
+                                          </a>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                       {mergedTreatmentPlan.visitsRequired && (
                         <div className="flex items-center justify-between p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50">
                           <span className="text-[13px] font-bold text-indigo-700 dark:text-indigo-300">Total Visits Required</span>

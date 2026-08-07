@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ROM_CONFIG } from '../screens/assessment/clinicalConfig';
+import { ROM_CONFIG, formatBorgRatings } from '../screens/assessment/clinicalConfig';
 import { 
   Activity, 
   Stethoscope, 
@@ -9,7 +9,8 @@ import {
   Heart,
   StickyNote,
   Brain,
-  Building2
+  Building2,
+  Scale
 } from 'lucide-react';
 import { NeuroSummaryView } from './NeuroSummaryView';
 import { useExercises } from '../../hooks/useExercises';
@@ -260,6 +261,13 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
   const rawTreatmentPlan = rawData.treatmentPlan || rawData.treatment_plan;
   const treatmentPlanModalities: any[] = Array.isArray(rawTreatmentPlan?.modalities)
     ? rawTreatmentPlan.modalities
+    : [];
+  const treatmentPlanExercises: any[] = Array.isArray(rawTreatmentPlan?.exercises)
+    ? rawTreatmentPlan.exercises
+    : Array.isArray(rawData.exercises)
+    ? rawData.exercises
+    : Array.isArray(rawData.treatmentExercises)
+    ? rawData.treatmentExercises
     : [];
   const visitsRequired = rawTreatmentPlan?.visitsRequired;
   const treatmentDuration = rawTreatmentPlan?.treatmentDuration;
@@ -914,6 +922,99 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
               {expectedOutcome && <div className="col-span-1 sm:col-span-3"><span className="text-[10px] text-slate-400 font-bold uppercase block">Expected Outcome</span><span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{expectedOutcome}</span></div>}
             </div>
           )}
+        </section>
+      )}
+
+      {/* Prescribed Exercises & Home Programme */}
+      {treatmentPlanExercises.length > 0 && (
+        <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <Dumbbell size={16} className={accentColor} />
+            <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Prescribed Exercises & Home Programme ({treatmentPlanExercises.length})</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {treatmentPlanExercises.map((ex: any, idx: number) => {
+              const name = ex.exerciseName || ex.exercise_name || ex.name || 'Exercise';
+              const cat = ex.category || ex.bodyPart || ex.body_part || 'General';
+              const setsVal = ex.sets !== undefined && ex.sets !== null && ex.sets !== '' ? ex.sets : '—';
+              const repsVal = ex.reps || ex.repetitions || '—';
+              const holdVal = ex.holdTime || ex.hold_time || '';
+              const freqVal = ex.frequency || '';
+              const durVal = ex.duration || '';
+              const inst = ex.notes || ex.instructions || ex.description || '';
+              const attachments = ex.attachments || [];
+
+              return (
+                <div key={ex.id || idx} className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between gap-3">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">{name}</h4>
+                      <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-extrabold uppercase tracking-wider shrink-0">
+                        {cat}
+                      </span>
+                    </div>
+
+                    {/* Meta Fields Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] font-bold">
+                      <div className="px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-center">
+                        <span className="text-[9px] uppercase block text-slate-400 font-bold">Sets</span>
+                        {setsVal}
+                      </div>
+                      <div className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-center">
+                        <span className="text-[9px] uppercase block text-slate-400 font-bold">Reps</span>
+                        {repsVal}
+                      </div>
+                      {holdVal && (
+                        <div className="px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 rounded-lg text-center">
+                          <span className="text-[9px] uppercase block text-slate-400 font-bold">Hold Time</span>
+                          {holdVal}
+                        </div>
+                      )}
+                      {freqVal && (
+                        <div className="px-2.5 py-1 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 rounded-lg text-center">
+                          <span className="text-[9px] uppercase block text-slate-400 font-bold">Frequency</span>
+                          {freqVal}
+                        </div>
+                      )}
+                      {durVal && (
+                        <div className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 rounded-lg text-center">
+                          <span className="text-[9px] uppercase block text-slate-400 font-bold">Duration</span>
+                          {durVal}
+                        </div>
+                      )}
+                    </div>
+
+                    {inst && (
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 italic mt-2.5 bg-slate-50 dark:bg-slate-850 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                        &quot;{inst}&quot;
+                      </p>
+                    )}
+                  </div>
+
+                  {attachments.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <span className="text-[10px] font-bold text-slate-400 block mb-1.5">Attached Exercise PDFs & Files ({attachments.length}):</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {attachments.map((att: any) => (
+                          <a
+                            key={att.id || att.name}
+                            href={att.dataUrl}
+                            download={att.name}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/50 hover:bg-teal-100 text-[11px] font-bold text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 transition-colors"
+                          >
+                            📎 {att.name}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </section>
       )}
 

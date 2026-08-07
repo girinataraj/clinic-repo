@@ -4,6 +4,7 @@ import { BottomNav } from '../components/BottomNav';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import { PatientHistoryUpload } from '../components/PatientHistoryUpload';
 import { EvaluationSummaryReport } from '../components/EvaluationSummaryReport';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { PatientAssessmentForm } from '../components/PatientAssessmentForm';
 import { usePatient, useAssignTherapist } from '../../hooks/usePatients';
 import { useAuth } from '../contexts/AuthContext';
@@ -784,10 +785,12 @@ export function PatientDetailPage() {
 
                 {/* 3. Clinical Findings, Examinations, ROM & Details */}
                 {reportData.evaluations[0] && (
-                  <EvaluationSummaryReport 
-                    evaluation={reportData.evaluations[0]} 
-                    isDoctorRole={reportData.evaluations[0]?.doctor_role === 'doctor'} 
-                  />
+                  <ErrorBoundary fallbackMessage="Could not render clinical evaluation report.">
+                    <EvaluationSummaryReport 
+                      evaluation={reportData.evaluations[0]} 
+                      isDoctorRole={reportData.evaluations[0]?.doctor_role === 'doctor'} 
+                    />
+                  </ErrorBoundary>
                 )}
 
                 {/* 4. Home Exercise Programs */}
