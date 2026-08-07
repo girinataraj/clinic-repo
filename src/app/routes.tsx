@@ -30,6 +30,7 @@ import { TherapistHierarchy } from './screens/TherapistHierarchy';
 import { TherapistDetailPage } from './screens/TherapistDetailPage';
 import { DailyReportPage } from './screens/DailyReportPage';
 import { ManageStaff } from './screens/ManageStaff';
+import { FollowUpPage } from './screens/FollowUpPage';
 
 // ── Session Loader: waits for auth initialization before routing ─────────────
 function SessionLoader({ children }: { children: React.ReactNode }) {
@@ -88,6 +89,7 @@ export const router = createBrowserRouter([
               { path: 'nurse/exercise-library', Component: ExerciseLibrary },
               { path: 'nurse/report', Component: ReportGeneration },
               { path: 'nurse/patient-history', Component: PatientHistorySearch },
+              { path: 'nurse/follow-up', Component: FollowUpPage },
               { path: 'nurse/profile', Component: NurseProfile },
 
               { path: 'nurse/patient/:patientId/treatment', Component: TreatmentDetailPage },
@@ -99,12 +101,12 @@ export const router = createBrowserRouter([
             element: <RoleGuard allowed={['doctor', 'admin']} />,
             children: [
               { path: 'doctor', Component: DoctorDashboard },
-              { path: 'doctor/patients', Component: DoctorPatients },
               { path: 'doctor/therapists', Component: TherapistHierarchy },
               { path: 'doctor/staff', Component: ManageStaff },
               { path: 'doctor/therapist/:id', Component: TherapistDetailPage },
               { path: 'doctor/patient-form', Component: PatientForm },
               { path: 'doctor/intake', Component: DoctorAssessmentForm },
+              { path: 'doctor/follow-up', Component: FollowUpPage },
               { path: 'doctor/patient/:id', Component: PatientDetailPage },
               { path: 'doctor/patient/:id/assessment-form', Component: AssessmentFormComponent },
               { path: 'doctor/patient/:patientId/treatment', Component: TreatmentDetailPage },
@@ -113,7 +115,6 @@ export const router = createBrowserRouter([
               { path: 'doctor/exercise', Component: ExercisePrescription },
               { path: 'doctor/exercise-library', Component: ExerciseLibrary },
               { path: 'doctor/report', Component: ReportGeneration },
-              { path: 'doctor/daily-report', Component: DailyReportPage },
               { path: 'doctor/revenue', Component: DoctorRevenue },
               { path: 'doctor/patient-history', Component: PatientHistorySearch },
               { path: 'doctor/profile', Component: DoctorProfile },

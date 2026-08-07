@@ -72,7 +72,7 @@ export function SessionPage() {
       }
       try {
         // Build follow-up payload
-        const followUpPayload = followUp.followUpModes.length > 0 ? {
+        const followUpPayload = (followUp.followUpModes.length > 0 || !!followUp.notes?.trim()) ? {
           followUpModes: followUp.followUpModes,
           sameAsTodayPreview: followUp.followUpModes.includes('same_as_today') && latestEvaluation?.treatmentPlan
             ? latestEvaluation.treatmentPlan
@@ -81,6 +81,7 @@ export function SessionPage() {
             ? exercises.map((ex: any) => ex.name || ex.title)
             : undefined,
           otherTreatments: followUp.otherTreatments.length > 0 ? followUp.otherTreatments : undefined,
+          notes: followUp.notes?.trim() || undefined,
         } : undefined;
 
         await createEvaluation.mutateAsync({

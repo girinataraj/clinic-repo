@@ -225,7 +225,8 @@ export function DoctorAssessmentForm() {
         diagnosis: diagnosisNotes.trim() || undefined,
         diagnosisList: selectedDiagnoses.length > 0 ? selectedDiagnoses : undefined,
         plan: treatmentNotes.trim() || undefined,
-        treatmentPlan: (getTreatmentSelectionCount(treatmentPlanData) > 0 || treatmentPlanData.visitsRequired || treatmentPlanData.frequencyGapDays || treatmentPlanData.suggestedStartDate || (treatmentPlanData.exercises && treatmentPlanData.exercises.length > 0)) ? {
+        followUpPlan: treatmentPlanData.followUpNotes?.trim() || (treatmentPlanData.visitsRequired ? `Follow-up prescribed for ${treatmentPlanData.visitsRequired} days` : undefined),
+        treatmentPlan: (getTreatmentSelectionCount(treatmentPlanData) > 0 || treatmentPlanData.visitsRequired || treatmentPlanData.frequencyGapDays || treatmentPlanData.suggestedStartDate || treatmentPlanData.followUpNotes || (treatmentPlanData.exercises && treatmentPlanData.exercises.length > 0)) ? {
           modalities: treatmentPlanData.modalities.length > 0 ? treatmentPlanData.modalities : undefined,
           manualTherapy: treatmentPlanData.manualTherapy.length > 0 ? treatmentPlanData.manualTherapy : undefined,
           rehabilitation: treatmentPlanData.rehabilitation.length > 0 ? treatmentPlanData.rehabilitation : undefined,
@@ -233,6 +234,7 @@ export function DoctorAssessmentForm() {
           visitsRequired: treatmentPlanData.visitsRequired ? Number(treatmentPlanData.visitsRequired) : undefined,
           frequencyGapDays: treatmentPlanData.frequencyGapDays ? Number(treatmentPlanData.frequencyGapDays) : undefined,
           suggestedStartDate: treatmentPlanData.suggestedStartDate || undefined,
+          followUpNotes: treatmentPlanData.followUpNotes || undefined,
         } : undefined,
         management: examinationNotes.trim() || undefined,
         status: 'submitted',

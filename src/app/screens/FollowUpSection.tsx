@@ -271,6 +271,17 @@ export function FollowUpSection({ followUp, onChange, previousTreatmentPlan, exe
           </div>
         )}
 
+        {/* Notes input */}
+        <div className="mt-3">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Follow-up Notes / Progress Remarks</p>
+          <textarea
+            value={followUp.notes || ''}
+            onChange={e => onChange({ ...followUp, notes: e.target.value })}
+            placeholder="Enter session notes, progress remarks, or treatment observations..."
+            className="w-full p-3 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 h-20 resize-none"
+          />
+        </div>
+
         {/* Summary when modes selected */}
         {followUp.followUpModes.length > 0 && (
           <div className="mt-3 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100">

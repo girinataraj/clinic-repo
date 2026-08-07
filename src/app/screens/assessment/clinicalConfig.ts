@@ -309,6 +309,7 @@ export interface TreatmentPlanData {
   visitsRequired: string;           // stored as string for input control; parsed to number on save
   frequencyGapDays: string;         // same approach
   suggestedStartDate: string;       // ISO date string or ''
+  followUpNotes?: string;           // follow up session notes
   notes: string;
   xrayFindings: string;
   mriFindings: string;
@@ -324,6 +325,7 @@ export function getEmptyTreatmentPlan(): TreatmentPlanData {
     visitsRequired: '',
     frequencyGapDays: '',
     suggestedStartDate: '',
+    followUpNotes: '',
     notes: '',
     xrayFindings: '',
     mriFindings: '',
@@ -345,12 +347,14 @@ export type FollowUpMode = 'same_as_today' | 'assigned_exercise' | 'others';
 export interface FollowUpSessionData {
   followUpModes: FollowUpMode[];
   otherTreatments: string[];        // custom/selected items from "Others" mode
+  notes?: string;                   // session notes made during follow up
 }
 
 export function getEmptyFollowUp(): FollowUpSessionData {
   return {
     followUpModes: [],
     otherTreatments: [],
+    notes: '',
   };
 }
 

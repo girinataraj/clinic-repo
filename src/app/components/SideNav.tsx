@@ -4,7 +4,7 @@ import type { UserRole } from '../contexts/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import {
   Home, Calendar, FileText, User, Users, ClipboardList, BarChart2,
-  Activity, LogOut, ChevronRight, IndianRupee, UserCog, FileSearch,
+  Activity, LogOut, ChevronRight, IndianRupee, UserCog, FileSearch, RefreshCw,
 } from 'lucide-react';
 
 interface NavItem {
@@ -22,17 +22,17 @@ const navConfig: Record<UserRole, NavItem[]> = {
   ],
   nurse: [
     { label: 'Dashboard', Icon: Home, path: '/nurse' },
-
     { label: 'Patients', Icon: Users, path: '/nurse/patients' },
+    { label: 'Follow Ups', Icon: RefreshCw, path: '/nurse/follow-up' },
     { label: 'Patient History', Icon: FileSearch, path: '/nurse/patient-history' },
     { label: 'Exercises', Icon: Activity, path: '/nurse/exercise' },
     { label: 'Profile', Icon: User, path: '/nurse/profile' },
   ],
   doctor: [
     { label: 'Dashboard', Icon: Home, path: '/doctor' },
-    { label: 'Patients', Icon: Users, path: '/doctor/patients' },
     { label: 'Therapists', Icon: Users, path: '/doctor/therapists' },
     { label: 'Manage Staff', Icon: UserCog, path: '/doctor/staff' },
+    { label: 'Follow Ups', Icon: RefreshCw, path: '/doctor/follow-up' },
     { label: 'Intake Form', Icon: ClipboardList, path: '/doctor/intake' },
     { label: 'Patient History', Icon: FileSearch, path: '/doctor/patient-history' },
     { label: 'Reports', Icon: BarChart2, path: '/doctor/report' },

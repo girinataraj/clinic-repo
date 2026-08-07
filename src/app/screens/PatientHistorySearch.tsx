@@ -465,6 +465,11 @@ export function PatientHistorySearch() {
                                   }`}>
                                     {item.status}
                                   </span>
+                                  {item.treatmentPlan?.visitsRequired && (
+                                    <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wide bg-teal-100 text-teal-800 dark:bg-teal-950/40 dark:text-teal-300">
+                                      Follow-up: {item.treatmentPlan.visitsRequired} Days
+                                    </span>
+                                  )}
                                 </div>
                                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                                   {dateFormatted} · Clinician: <span className="font-bold text-slate-700 dark:text-slate-300">{item.therapistName || '—'}</span>

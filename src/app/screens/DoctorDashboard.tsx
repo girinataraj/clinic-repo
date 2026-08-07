@@ -26,9 +26,9 @@ export function DoctorDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   
-  // Search and active tabs (remain inline)
+  // Search and active filter ('in-session' | 'all')
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState<'in-session' | 'all' | string>('in-session');
 
   // Filter Modal states (Priority removed)
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -49,12 +49,10 @@ export function DoctorDashboard() {
   // ── Live data from backend ─────────────────────────────────────────────────
   const { data: patientsData, isLoading, isError } = usePatients({
     search: debouncedSearch.trim() || undefined,
-    status: activeTab !== 'all' ? activeTab : undefined,
-    bookedOnly: activeTab === 'waiting' ? 'true' : undefined,
     therapistId: therapistFilter !== 'all' ? therapistFilter : undefined,
     date: dateFilter || undefined,
     days: daysFilter !== 'all' ? daysFilter : undefined,
-    limit: 20,
+    limit: 50,
   }, true); // ← 10s polling for live patient queue
 
   const { data: therapists = [] } = useStaffUsers({ role: 'nurse' });
@@ -68,7 +66,12 @@ export function DoctorDashboard() {
     }
   };
 
-  const patients = patientsData?.data ?? [];
+  const rawPatients = patientsData?.data ?? [];
+  // If 'in-session' selected: show only patients who have NOT been assessed yet ('waiting')
+  // If 'all' selected: show all patients
+  const patients = activeTab === 'in-session'
+    ? rawPatients.filter(p => p.status === 'waiting')
+    : rawPatients;
 
   const actualName = user?.name || 'Doctor';
   const firstName = actualName.replace('Dr. ', '');
@@ -170,7 +173,7 @@ export function DoctorDashboard() {
           {/* Quick actions */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <button
-              onClick={() => navigate('/doctor/daily-report')}
+              onClick={() => navigate('/doctor/revenue')}
               className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
             >
               <div className="rounded-xl flex items-center justify-center shrink-0 w-10 h-10 bg-slate-100 dark:bg-slate-700">
@@ -195,60 +198,57 @@ export function DoctorDashboard() {
             </button>
           </div>
 
-          {/* Search + Tabs */}
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-4 shadow-sm mb-6 space-y-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex gap-2 flex-1 items-center">
-                <div
-                  className="flex items-center gap-3 px-4 flex-1 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
-                >
-                  <Search size={18} className="text-slate-400 dark:text-slate-500" />
-                  <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search patients or conditions..."
-                    className="flex-1 outline-none bg-transparent py-3.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                  />
-                </div>
-                <button
-                  onClick={() => {
-                    setTempTherapistFilter(therapistFilter);
-                    setTempDateFilter(dateFilter);
-                    setTempDaysFilter(daysFilter);
-                    setIsFilterModalOpen(true);
-                  }}
-                  className={`flex items-center justify-center p-2.5 border rounded-xl hover:bg-slate-100 dark:hover:bg-slate-750 transition-all ${
-                    therapistFilter !== 'all' || dateFilter !== '' || daysFilter !== 'all'
-                      ? 'bg-slate-900/10 dark:bg-slate-700/30 border-slate-900 dark:border-slate-700 text-slate-900 dark:text-slate-200 font-bold'
-                      : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
-                  }`}
-                  title="Filter Records"
-                  aria-label="Filter Records"
-                >
-                  <Filter className="h-5 w-5" />
-                </button>
+          {/* Search Bar & Timeframe Filters */}
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-4 shadow-sm mb-6 space-y-3">
+            <div className="flex gap-2 items-center">
+              <div
+                className="flex items-center gap-3 px-4 flex-1 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
+              >
+                <Search size={18} className="text-slate-400 dark:text-slate-500" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search patients by name, display ID, or phone..."
+                  className="flex-1 outline-none bg-transparent py-3.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                />
               </div>
+              <button
+                onClick={() => {
+                  setTempTherapistFilter(therapistFilter);
+                  setTempDateFilter(dateFilter);
+                  setTempDaysFilter(daysFilter);
+                  setIsFilterModalOpen(true);
+                }}
+                className={`flex items-center justify-center p-3 border rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-750 transition-all ${
+                  therapistFilter !== 'all' || dateFilter !== '' || daysFilter !== 'all'
+                    ? 'bg-slate-900/10 dark:bg-slate-700/30 border-slate-900 dark:border-slate-700 text-slate-900 dark:text-slate-200 font-bold'
+                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
+                }`}
+                title="Filter Records"
+                aria-label="Filter Records"
+              >
+                <Filter className="h-5 w-5" />
+              </button>
+            </div>
 
-              <div className="flex gap-2 p-1 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
-                {[
-                  { key: 'all', label: `All (${patientsData?.total ?? 0})` },
-                  { key: 'waiting', label: `Wait (${waiting})` },
-                  { key: 'in-session', label: 'Active' },
-                  { key: 'completed', label: 'Done' },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`px-4 py-2.5 rounded-xl transition-all duration-200 text-[13px] font-semibold ${
-                      activeTab === tab.key
-                        ? 'bg-slate-900 text-white dark:bg-slate-700'
-                        : 'bg-transparent text-slate-655 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+            {/* Filter Toggle Chips: In Session & All */}
+            <div className="flex items-center gap-2 pt-1">
+              {[
+                { key: 'in-session', label: 'In Session' },
+                { key: 'all', label: 'All' },
+              ].map(opt => (
+                <button
+                  key={opt.key}
+                  onClick={() => setActiveTab(opt.key)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                    activeTab === opt.key
+                      ? 'bg-slate-900 text-white dark:bg-slate-700 border-slate-900 dark:border-slate-700 shadow-md'
+                      : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -301,9 +301,6 @@ export function DoctorDashboard() {
                   <div className="flex items-center gap-4 p-5 pb-4">
                     <div className="rounded-2xl flex items-center justify-center shrink-0 relative w-14 h-14 bg-slate-100 dark:bg-slate-700">
                       <span className="text-lg font-bold text-slate-800 dark:text-white">{getInitials(patient.name)}</span>
-                      {patient.status === 'in-session' && (
-                        <div className="absolute -top-1 -right-1 rounded-full w-3.5 h-3.5 bg-indigo-500 border-2 border-white dark:border-slate-800" />
-                      )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
@@ -311,18 +308,6 @@ export function DoctorDashboard() {
                           <p className="text-base font-bold text-slate-900 dark:text-white">{patient.name}</p>
                           <p className="text-[13px] text-slate-600 dark:text-slate-400 mt-0.5">{patient.condition ?? '—'} · {patient.age} yrs</p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-xs font-semibold ${
-                          patient.status === 'in-session' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' : 
-                          patient.status === 'completed' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 
-                          'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                        }`}>
-                          <div className={`rounded-full w-1.5 h-1.5 ${
-                            patient.status === 'in-session' ? 'bg-indigo-500' : 
-                            patient.status === 'completed' ? 'bg-emerald-500' : 
-                            'bg-amber-500'
-                          }`} />
-                          {config.label}
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -351,39 +336,22 @@ export function DoctorDashboard() {
 
                   {/* Actions */}
                   <div className="border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                    {patient.status === 'in-session' ? (
+                    <div className="flex divide-x divide-slate-200 dark:divide-slate-700">
                       <button
-                        onClick={() => navigate(`/doctor/session/${patient.id}`)}
-                        className="w-full flex items-center justify-center gap-2 py-4 transition-colors text-[13px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
+                        onClick={() => navigate(`/doctor/patient/${patient.id}`)}
+                        className="flex-1 flex items-center justify-center gap-2 py-3.5 transition-colors text-[13px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                       >
-                        <ClipboardList size={16} />
-                        SESSION
+                        <Eye size={15} />
+                        View
                       </button>
-                    ) : (
-                      <div className="flex divide-x divide-slate-200 dark:divide-slate-700">
-                        <button
-                          onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors text-[13px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                        >
-                          <Eye size={16} />
-                          View
-                        </button>
-                        <button
-                          onClick={() => navigate(`/doctor/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors text-[13px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-                        >
-                          <ClipboardList size={16} />
-                          Assess
-                        </button>
-                        <button
-                          onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 py-4 transition-colors text-[13px] font-semibold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
-                        >
-                          <FileText size={16} />
-                          Report
-                        </button>
-                      </div>
-                    )}
+                      <button
+                        onClick={() => navigate(`/doctor/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
+                        className="flex-1 flex items-center justify-center gap-2 py-3.5 transition-colors text-[13px] font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                      >
+                        <ClipboardList size={15} />
+                        Assess
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

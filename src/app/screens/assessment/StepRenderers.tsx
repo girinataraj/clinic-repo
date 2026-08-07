@@ -464,16 +464,16 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
 
 
 
-      <SectionCard icon={<ClipboardList size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Additional Notes" subtitle="Follow-up & management remarks" accent={accent}>
-        <FormField label="Management / Follow-up Notes">
+      <SectionCard icon={<ClipboardList size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Additional Notes" subtitle="General management remarks" accent={accent}>
+        <FormField label="Management Notes">
           <textarea
             value={tp.notes || treatment}
             onChange={e => {
               update({ notes: e.target.value });
               setTreatment(e.target.value);
             }}
-            placeholder="Additional treatment management, follow-up instructions, precautions…"
-            className={`${ic} h-[120px] resize-none`}
+            placeholder="Additional treatment management, general precautions…"
+            className={`${ic} h-[100px] resize-none`}
           />
         </FormField>
       </SectionCard>

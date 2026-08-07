@@ -48,10 +48,6 @@ export function NurseDashboard() {
   const updatePatient = useUpdatePatient();
 
   const handleCheckIn = async (patientId: string) => {
-    if (inProgress >= 2) {
-      alert('Therapist capacity exceeded! You cannot have more than 2 active patients at a time.');
-      return;
-    }
     try {
       await updatePatient.mutateAsync({ id: patientId, status: 'in-session', checkInTime: new Date().toISOString() });
     } catch (err) {
@@ -59,7 +55,11 @@ export function NurseDashboard() {
     }
   };
 
-  const patients = patientsData?.data ?? [];
+  const rawPatients = patientsData?.data ?? [];
+  // Only display unassessed/waiting patients on the dashboard by default, unless searching
+  const patients = search.trim() !== ''
+    ? rawPatients
+    : rawPatients.filter(p => p.status === 'waiting');
 
   const firstName = user?.name?.split(' ')[0] || 'Therapist';
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -181,27 +181,7 @@ export function NurseDashboard() {
             />
           </div>
 
-          {/* Filter tabs */}
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              { key: 'all', label: `All (${patientsData?.total ?? 0})` },
-              { key: 'waiting', label: 'Waiting' },
-              { key: 'in-session', label: 'Active' },
-              { key: 'completed', label: 'Done' },
-            ].map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className={`py-2 rounded-xl text-[11px] font-bold border transition-colors ${
-                  filter === f.key
-                    ? 'bg-teal-700 text-white border-teal-700'
-                    : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+
 
           {/* Date and Days filters */}
           <div className="flex flex-wrap gap-4 px-1 py-1">
@@ -279,19 +259,12 @@ export function NurseDashboard() {
               return (
                 <div key={patient.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                   <div className="flex items-center gap-3 p-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 relative font-extrabold text-sm ${av.bg} ${av.darkBg} ${av.color} ${av.darkColor}`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 font-extrabold text-sm ${av.bg} ${av.darkBg} ${av.color} ${av.darkColor}`}>
                       {patient.name.split(' ').map(n => n[0]).join('')}
-                      {patient.status === 'in-session' && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border-2 border-white dark:border-slate-800" />
-                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
                         <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{patient.name}</p>
-                        <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold shrink-0 ${config.lightBg} ${config.lightColor} ${config.darkBg} ${config.darkColor}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-                          {config.label}
-                        </span>
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{patient.condition ?? '—'} · Age {patient.age}</p>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -325,40 +298,16 @@ export function NurseDashboard() {
                       )}
                     </div>
                   </div>
-                  {patient.status !== 'completed' && (
-                    <div className="border-t border-slate-100 dark:border-slate-700 flex">
-                      {patient.status === 'waiting' && !patient.checkInTime && (
-                        <button
-                          onClick={() => handleCheckIn(patient.id)}
-                          disabled={updatePatient.isPending}
-                          className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 disabled:opacity-50 border-r border-slate-100 dark:border-slate-700"
-                        >
-                          <LogIn className="w-3.5 h-3.5" />
-                          CHECK IN
-                        </button>
-                      )}
-                      {patient.status === 'waiting' && (
-                        <button
-                          onClick={() => navigate(`/nurse/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/30"
-                        >
-                          <ClipboardList className="w-3.5 h-3.5" />
-                          Start Intake
-                          <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
-                        </button>
-                      )}
-                      {patient.status === 'in-session' && (
-                        <button
-                          onClick={() => navigate(`/nurse/session/${patient.id}`)}
-                          className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
-                        >
-                          <ClipboardList className="w-3.5 h-3.5" />
-                          SESSION
-                          <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  <div className="border-t border-slate-100 dark:border-slate-700 flex">
+                    <button
+                      onClick={() => navigate(`/nurse/intake?phone=${encodeURIComponent(patient.phone)}&patientId=${patient.id}`)}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold transition-colors bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/30"
+                    >
+                      <ClipboardList className="w-3.5 h-3.5" />
+                      Start Assessment
+                      <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
+                    </button>
+                  </div>
                 </div>
               );
             })}

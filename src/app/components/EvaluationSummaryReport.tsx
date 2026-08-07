@@ -272,6 +272,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
   const visitsRequired = rawTreatmentPlan?.visitsRequired;
   const treatmentDuration = rawTreatmentPlan?.treatmentDuration;
   const expectedOutcome = rawTreatmentPlan?.expectedOutcome;
+  const followUpNotes = rawTreatmentPlan?.followUpNotes || rawData.followUpPlan || rawData.follow_up_plan;
   const planText = rawData.plan;
 
   // Assessment Notes & Clinician Remarks
@@ -915,11 +916,19 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
             </div>
           )}
 
-          {(visitsRequired || treatmentDuration || expectedOutcome) && (
+          {(visitsRequired || treatmentDuration || expectedOutcome || followUpNotes) && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-850 shadow-sm">
-              {visitsRequired && <div><span className="text-[10px] text-slate-400 font-bold uppercase block">Visits Required</span><span className="text-xs font-extrabold text-slate-800 dark:text-white">{visitsRequired} visits</span></div>}
+              {visitsRequired && <div><span className="text-[10px] text-slate-400 font-bold uppercase block">Follow Up Visits Required</span><span className="text-xs font-extrabold text-teal-700 dark:text-teal-400">{visitsRequired} days / visits</span></div>}
               {treatmentDuration && <div><span className="text-[10px] text-slate-400 font-bold uppercase block">Treatment Duration</span><span className="text-xs font-extrabold text-slate-800 dark:text-white">{treatmentDuration}</span></div>}
               {expectedOutcome && <div className="col-span-1 sm:col-span-3"><span className="text-[10px] text-slate-400 font-bold uppercase block">Expected Outcome</span><span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{expectedOutcome}</span></div>}
+              {followUpNotes && (
+                <div className="col-span-1 sm:col-span-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Follow Up Notes & Instructions</span>
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-850 p-2.5 rounded-lg border border-slate-150 dark:border-slate-800 whitespace-pre-wrap">
+                    {followUpNotes}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </section>
