@@ -171,7 +171,19 @@ export function DoctorDashboard() {
 
 
           {/* Quick actions */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <button
+              onClick={() => navigate('/doctor/patient-form')}
+              className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
+            >
+              <div className="rounded-xl flex items-center justify-center shrink-0 w-10 h-10 bg-slate-100 dark:bg-slate-700">
+                <UserPlus size={18} className="text-slate-600 dark:text-slate-300" />
+              </div>
+              <div className="text-left">
+                <p className="text-[13px] font-bold text-slate-900 dark:text-white">Add Patient</p>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400">Register new patient</p>
+              </div>
+            </button>
             <button
               onClick={() => navigate('/doctor/revenue')}
               className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"

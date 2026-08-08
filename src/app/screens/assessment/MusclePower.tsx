@@ -1,6 +1,70 @@
+import { useState, useEffect } from 'react';
 import { ROM_CONFIG, getRomKey, getRomDegreesPlaceholder, type RomData, type RomEntry } from './clinicalConfig';
 import { SectionCard } from './FormComponents';
 import { Activity } from 'lucide-react';
+
+function parseRange(placeholder: string) {
+  const clean = placeholder.replace('°', '').trim();
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    const min = parseInt(parts[0].trim(), 10);
+    const max = parseInt(parts[1].trim(), 10);
+    return { min, max };
+  } else {
+    const val = parseInt(clean, 10);
+    if (!isNaN(val)) {
+      return { min: val, max: val };
+    }
+  }
+  return null;
+}
+
+function ValidatedTableInput({ value, onChange, placeholder, focusBorder, isRom }: { value: string; onChange: (v: string) => void; placeholder: string; focusBorder: string; isRom: boolean }) {
+  const [localValue, setLocalValue] = useState(value);
+  const [isInvalid, setIsInvalid] = useState(false);
+
+  useEffect(() => {
+    setLocalValue(value);
+    setIsInvalid(false);
+  }, [value]);
+
+  const range = parseRange(placeholder);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const clean = raw.replace(/\D/g, ''); // only allow digits
+    
+    if (clean === '') {
+      setLocalValue('');
+      onChange('');
+      setIsInvalid(false);
+    } else {
+      const num = parseInt(clean, 10);
+      if (range && !isNaN(num) && num >= range.min && num <= range.max) {
+        setLocalValue(clean);
+        onChange(clean);
+        setIsInvalid(false);
+      } else {
+        // Reject input value completely but show red border
+        setIsInvalid(true);
+      }
+    }
+  };
+
+  const borderColor = isInvalid 
+    ? "border-red-500 dark:border-red-500 focus:border-red-500 focus:ring-red-500 focus:ring-1" 
+    : "border-slate-100 dark:border-slate-800 " + focusBorder;
+
+  return (
+    <input
+      type="text"
+      value={localValue}
+      onChange={handleChange}
+      placeholder={placeholder}
+      className={`w-full text-center outline-none py-1.5 rounded-md border bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder:text-slate-400/70 ${borderColor} transition-colors ${isRom ? 'text-[10px] font-bold' : 'text-[11px] font-black'}`}
+    />
+  );
+}
 
 interface MusclePowerProps {
   data: RomData;
@@ -119,43 +183,39 @@ export function MusclePower({ data, onChange, isDoctorRole }: MusclePowerProps) 
                       {row.movement}
                     </td>
                     <td className="border-r border-slate-200 dark:border-slate-800 p-1 w-[70px]">
-                      <input
-                        type="text"
+                      <ValidatedTableInput
                         value={entry.powerRt ?? ''}
-                        onChange={e => handlePowerChange(row.romKey, 'powerRt', e.target.value)}
-                        maxLength={1}
+                        onChange={v => updateEntry(row.romKey, 'powerRt', v)}
                         placeholder="0-5"
-                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400/70 ${focusBorder} transition-colors`}
+                        focusBorder={focusBorder}
+                        isRom={false}
                       />
                     </td>
                     <td className="border-r border-slate-200 dark:border-slate-800 p-1 w-[70px]">
-                      <input
-                        type="text"
+                      <ValidatedTableInput
                         value={entry.powerLt ?? ''}
-                        onChange={e => handlePowerChange(row.romKey, 'powerLt', e.target.value)}
-                        maxLength={1}
+                        onChange={v => updateEntry(row.romKey, 'powerLt', v)}
                         placeholder="0-5"
-                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400/70 ${focusBorder} transition-colors`}
+                        focusBorder={focusBorder}
+                        isRom={false}
                       />
                     </td>
                     <td className="border-r border-slate-200 dark:border-slate-800 p-1 w-[75px]">
-                      <input
-                        type="text"
+                      <ValidatedTableInput
                         value={entry.romRt ?? ''}
-                        onChange={e => handleRomChange(row.romKey, 'romRt', e.target.value)}
-                        maxLength={6}
+                        onChange={v => updateEntry(row.romKey, 'romRt', v)}
                         placeholder={romPlaceholder}
-                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-900 dark:text-white placeholder:text-slate-400/70 ${focusBorder} transition-colors`}
+                        focusBorder={focusBorder}
+                        isRom={true}
                       />
                     </td>
                     <td className="p-1 w-[75px]">
-                      <input
-                        type="text"
+                      <ValidatedTableInput
                         value={entry.romLt ?? ''}
-                        onChange={e => handleRomChange(row.romKey, 'romLt', e.target.value)}
-                        maxLength={6}
+                        onChange={v => updateEntry(row.romKey, 'romLt', v)}
                         placeholder={romPlaceholder}
-                        className={`w-full text-center outline-none py-1.5 rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-900 dark:text-white placeholder:text-slate-400/70 ${focusBorder} transition-colors`}
+                        focusBorder={focusBorder}
+                        isRom={true}
                       />
                     </td>
                   </tr>

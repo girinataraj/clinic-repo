@@ -105,6 +105,31 @@ export function PatientForm() {
     }
   };
 
+  const isDoctor = role === 'doctor';
+  const theme = isDoctor ? {
+    gradientHeader: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
+    headerText: 'text-indigo-100/80',
+    iconBg: 'bg-indigo-50 dark:bg-indigo-900/30',
+    iconText: 'text-[#262842] dark:text-indigo-400',
+    focusBorder: 'focus-within:border-[#262842] focus-within:ring-1 focus-within:ring-[#262842]',
+    focusInput: 'focus:border-[#262842] focus:ring-1 focus:ring-[#262842]',
+    genderActive: 'border-[#262842] dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-[#262842] dark:text-indigo-350',
+    submitBg: 'linear-gradient(135deg, #262842, #3B3E66)',
+    submitShadow: 'shadow-indigo-950/30',
+    loaderText: 'text-[#262842]'
+  } : {
+    gradientHeader: 'linear-gradient(135deg, #0d2b27 0%, #0f766e 100%)',
+    headerText: 'text-teal-100/80',
+    iconBg: 'bg-teal-50 dark:bg-teal-900/30',
+    iconText: 'text-teal-600 dark:text-teal-400',
+    focusBorder: 'focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500',
+    focusInput: 'focus:border-teal-500 focus:ring-1 focus:ring-teal-500',
+    genderActive: 'border-teal-700 dark:border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300',
+    submitBg: 'linear-gradient(135deg, #0f766e, #0d9488)',
+    submitShadow: 'shadow-teal-700/30',
+    loaderText: 'text-teal-600'
+  };
+
   const isPending = createPatient.isPending || updatePatient.isPending;
 
   // ── Loading state for edit ────────────────────────────────────────────────
@@ -112,7 +137,7 @@ export function PatientForm() {
     return (
       <div className="flex items-center justify-center h-full bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+          <Loader2 className={`w-8 h-8 ${theme.loaderText} animate-spin`} />
           <p className="text-sm font-semibold text-slate-500">Loading patient data…</p>
         </div>
       </div>
@@ -125,7 +150,7 @@ export function PatientForm() {
         {/* Header */}
         <div
           className="px-6 pt-8 pb-10 relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #0d2b27 0%, #0f766e 100%)' }}
+          style={{ background: theme.gradientHeader }}
         >
           <div className="max-w-2xl mx-auto relative z-10">
             <div className="flex items-center gap-3 mb-4">
@@ -139,7 +164,7 @@ export function PatientForm() {
                 <h1 className="text-xl font-extrabold text-white tracking-tight">
                   {isEdit ? 'Edit Patient' : 'Add New Patient'}
                 </h1>
-                <p className="text-sm text-teal-100/80 mt-0.5">
+                <p className={`text-sm ${theme.headerText} mt-0.5`}>
                   {isEdit ? 'Update patient information' : 'Fill in the details to register a new patient'}
                 </p>
               </div>
@@ -169,8 +194,8 @@ export function PatientForm() {
           {/* Form Card */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-9 h-9 rounded-xl bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
-                <User size={18} className="text-teal-600 dark:text-teal-400" />
+              <div className={`w-9 h-9 rounded-xl ${theme.iconBg} flex items-center justify-center`}>
+                <User size={18} className={theme.iconText} />
               </div>
               <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Patient Details</h2>
             </div>
@@ -181,7 +206,7 @@ export function PatientForm() {
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
                   Full Name <span className="text-red-500">*</span>
                 </label>
-                <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 transition-colors">
+                <div className={`flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 ${theme.focusBorder} transition-colors`}>
                   <User size={16} className="text-slate-400 shrink-0" />
                   <input
                     value={name}
@@ -203,7 +228,7 @@ export function PatientForm() {
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
                     placeholder="e.g. 45"
-                    className="w-full px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                    className={`w-full px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 outline-none ${theme.focusInput}`}
                   />
                 </div>
                 <div>
@@ -215,7 +240,7 @@ export function PatientForm() {
                         onClick={() => setGender(g)}
                         className={`flex-1 py-2.5 rounded-xl text-[12px] font-bold border-2 transition-colors ${
                           gender === g
-                            ? 'border-teal-700 dark:border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
+                            ? theme.genderActive
                             : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                         }`}
                       >
@@ -231,7 +256,7 @@ export function PatientForm() {
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
                   Phone Number <span className="text-red-500">*</span>
                 </label>
-                <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 transition-colors">
+                <div className={`flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 ${theme.focusBorder} transition-colors`}>
                   <Phone size={16} className="text-slate-400 shrink-0" />
                   <input
                     value={phone}
@@ -245,7 +270,7 @@ export function PatientForm() {
               {/* City */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">City</label>
-                <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 transition-colors">
+                <div className={`flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 ${theme.focusBorder} transition-colors`}>
                   <MapPin size={16} className="text-slate-400 shrink-0" />
                   <input
                     value={city}
@@ -264,7 +289,7 @@ export function PatientForm() {
                   <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
                     Assign Therapist <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 transition-colors relative">
+                  <div className={`flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 ${theme.focusBorder} transition-colors relative`}>
                     <UserCog size={16} className="text-slate-400 shrink-0" />
                     <select
                       value={therapistId}
@@ -294,8 +319,8 @@ export function PatientForm() {
           <button
             onClick={handleSubmit}
             disabled={isPending || success}
-            className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-white text-base font-extrabold shadow-lg shadow-teal-700/30 disabled:opacity-60 transition-opacity"
-            style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}
+            className={`w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-white text-base font-extrabold ${theme.submitShadow} disabled:opacity-60 transition-opacity`}
+            style={{ background: theme.submitBg }}
           >
             {isPending ? (
               <><Loader2 size={18} className="animate-spin" /> Saving…</>
