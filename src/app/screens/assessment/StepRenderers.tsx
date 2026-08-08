@@ -45,7 +45,7 @@ export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handl
                 <option value={user.id}>Self (Doctor)</option>
               )}
               {therapistsList
-                .filter((t: any) => t.id !== user?.id && !t.name?.toLowerCase().includes('sathish') && t.role !== 'self')
+                .filter((t: any) => t.id !== user?.id && t.role !== 'self')
                 .map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
             <ChevronDown size={12} className="text-slate-400 shrink-0" />
@@ -418,6 +418,12 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
   const manualTherapy = (treatmentsList || []).filter((t: any) => t.category === 'Manual Therapy').map((t: any) => t.treatmentName);
   const rehab = (treatmentsList || []).filter((t: any) => t.category === 'Rehabilitation').map((t: any) => t.treatmentName);
 
+  const hasExerciseSelected =
+    (tp.rehabilitation && tp.rehabilitation.length > 0) ||
+    (tp.exercises && tp.exercises.length > 0) ||
+    tp.modalities.some((m: string) => m.toLowerCase().includes('exercise')) ||
+    tp.manualTherapy.some((m: string) => m.toLowerCase().includes('exercise'));
+
   return (
     <div className="flex flex-col gap-4">
       <SectionCard icon={<PenTool size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Treatment Plan" subtitle="Management & follow-up" accent={accent}>
@@ -427,13 +433,19 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
       </SectionCard>
 
       {/* Exercise Adding & Prescribing Module */}
-      <TreatmentExerciseModule
-        treatmentPlan={tp}
-        setTreatmentPlan={(newTp: TreatmentPlanData) => {
-          if (setTreatmentPlan) setTreatmentPlan(newTp);
-        }}
-        isDoctorRole={isDoctorRole}
-      />
+      {hasExerciseSelected ? (
+        <TreatmentExerciseModule
+          treatmentPlan={tp}
+          setTreatmentPlan={(newTp: TreatmentPlanData) => {
+            if (setTreatmentPlan) setTreatmentPlan(newTp);
+          }}
+          isDoctorRole={isDoctorRole}
+        />
+      ) : (
+        <div className="p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2">
+          <span>💡 Select an exercise or rehabilitation option in the Treatment Plan above to enable exercise prescription.</span>
+        </div>
+      )}
 
       <SectionCard icon={<ImagePlus size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Imaging Findings" subtitle="X-Ray, MRI, PFT reports" accent={accent}>
         <div className="flex flex-col gap-3">

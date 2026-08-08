@@ -178,7 +178,7 @@ export function DoctorAssessmentForm() {
   const handleCreateNewPatient = async () => {
     if (!newPatient.name||!newPatient.age) return;
     try {
-      const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),condition:newPatient.condition||undefined,therapistId:selectedTherapistId||undefined});
+      const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),condition:newPatient.condition||undefined,referredBy:newPatient.referredBy.trim()||undefined,therapistId:selectedTherapistId||undefined});
       setResolvedPatientId(created.id);
       setPatientInfo({name:created.name,age:String(created.age),phone:created.phone??phoneInput.trim(),gender:created.gender as any,address:created.city??''});
       setShowNewPatientForm(false); setStep(1);
@@ -423,6 +423,7 @@ export function DoctorAssessmentForm() {
                 <input placeholder="Full Name *" value={newPatient.name} onChange={e=>setNewPatient(p=>({...p,name:e.target.value}))} className="col-span-2 px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
                 <input placeholder="Age *" type="number" value={newPatient.age} onChange={e=>setNewPatient(p=>({...p,age:e.target.value}))} className="px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
                 <select value={newPatient.gender} onChange={e=>setNewPatient(p=>({...p,gender:e.target.value as any}))} className="px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] transition-colors"><option>Male</option><option>Female</option><option>Other</option></select>
+                <input placeholder="Referred By (e.g. Dr. Smith / Self)" value={newPatient.referredBy} onChange={e=>setNewPatient(p=>({...p,referredBy:e.target.value}))} className="col-span-2 px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
               </div>
               <div className="flex gap-4 mt-2">
                 <button onClick={()=>setShowNewPatientForm(false)} className="flex-1 py-3.5 rounded-2xl border border-slate-200 text-[14px] font-black text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
