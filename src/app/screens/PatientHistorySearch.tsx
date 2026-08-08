@@ -132,18 +132,20 @@ export function PatientHistorySearch() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Assessment_${displayId}.pdf`);
+      link.setAttribute('download', `Assessment_${displayId || evId.substring(0, 8)}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       alert('Failed to download assessment PDF.');
     }
   };
 
   const handleDownloadAssessmentModulePdf = async (patId: string, assId: string) => {
+    const targetPatientId = patId || selectedPatientId || 'patient';
     try {
-      const response = await api.get(`/assessments/${patId}/download`, {
+      const response = await api.get(`/assessments/${targetPatientId}/download`, {
         params: { assessmentId: assId },
         responseType: 'blob',
       });
@@ -155,8 +157,29 @@ export function PatientHistorySearch() {
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       alert('Failed to download assessment PDF.');
+    }
+  };
+
+  const handleDownloadPatientReportPdf = async () => {
+    if (!selectedPatientId) return;
+    try {
+      const response = await api.get(ENDPOINTS.REPORTS.PATIENT_REPORT_PDF(selectedPatientId), {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Patient_Report_${patient?.name ? patient.name.replace(/\s+/g, '_') : 'Comprehensive'}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Failed to download comprehensive patient report PDF.');
     }
   };
 
@@ -332,21 +355,31 @@ export function PatientHistorySearch() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-850 pt-4 md:pt-0 md:pl-6 text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Phone</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-extrabold">{patient.phone}</span>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-850 pt-4 md:pt-0 md:pl-6 text-xs">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 flex-1">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Phone</span>
+                      <span className="text-slate-800 dark:text-slate-200 font-extrabold">{patient.phone}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Visit Count</span>
+                      <span className="text-slate-800 dark:text-slate-200 font-extrabold">{patient.sessionCount ?? 0} sessions</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Assigned Therapist</span>
+                      <span className="text-slate-800 dark:text-slate-200 font-extrabold truncate max-w-[120px] block">
+                        {patient.therapistName || 'None'}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Visit Count</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-extrabold">{patient.sessionCount ?? 0} sessions</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Assigned Therapist</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-extrabold truncate max-w-[120px] block">
-                      {patient.therapistName || 'None'}
-                    </span>
-                  </div>
+                  <button
+                    onClick={handleDownloadPatientReportPdf}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs bg-[#262842] text-white hover:bg-slate-800 dark:bg-teal-700 dark:hover:bg-teal-800 transition-all shadow-sm active:scale-95 shrink-0"
+                    title="Download Comprehensive Report PDF"
+                  >
+                    <Download size={14} />
+                    <span>Download Report PDF</span>
+                  </button>
                 </div>
               </div>
             )}

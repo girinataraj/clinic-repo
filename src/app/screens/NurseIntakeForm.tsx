@@ -895,10 +895,15 @@ export function NurseIntakeForm() {
                     className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white appearance-none cursor-pointer"
                   >
                     <option value="">Select a therapist…</option>
+                    {user?.role === 'doctor' && user?.id && (
+                      <option value={user.id}>Self (Doctor)</option>
+                    )}
                     {therapistsLoading && <option disabled>Loading…</option>}
-                    {therapistsList.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
+                    {therapistsList
+                      .filter((t) => (user?.role === 'doctor' ? t.id !== user?.id && !t.name?.toLowerCase().includes('sathish') && (t as any).role !== 'self' : true))
+                      .map((t) => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
                   </select>
                   <ChevronDown size={13} className="text-slate-400 shrink-0 pointer-events-none" />
                 </div>

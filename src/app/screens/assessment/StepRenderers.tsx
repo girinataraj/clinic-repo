@@ -44,7 +44,9 @@ export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handl
               {user?.role === 'doctor' && (
                 <option value={user.id}>Self (Doctor)</option>
               )}
-              {therapistsList.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              {therapistsList
+                .filter((t: any) => t.id !== user?.id && !t.name?.toLowerCase().includes('sathish') && t.role !== 'self')
+                .map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
             <ChevronDown size={12} className="text-slate-400 shrink-0" />
           </div>

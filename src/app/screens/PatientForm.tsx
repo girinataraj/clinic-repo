@@ -276,9 +276,11 @@ export function PatientForm() {
                         <option value={user.id}>Self ({user.name || 'Doctor'})</option>
                       )}
                       {therapistsLoading && <option disabled>Loading…</option>}
-                      {therapists.map((t) => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
+                      {therapists
+                        .filter((t) => t.id !== user?.id && !t.name?.toLowerCase().includes('sathish') && (t as any).role !== 'self')
+                        .map((t) => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
                     </select>
                     <ChevronDown size={14} className="text-slate-400 shrink-0 pointer-events-none" />
                   </div>
