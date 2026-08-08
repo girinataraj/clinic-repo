@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { usePatients, usePatient } from '../../hooks/usePatients';
 import { ROM_CONFIG, getRomKey } from './assessment/clinicalConfig';
@@ -56,11 +56,19 @@ interface RomEntry {
 
 export function PatientHistorySearch() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const isDoctorRole = user?.role === 'doctor';
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(searchParams.get('patientId') || null);
+
+  useEffect(() => {
+    const pId = searchParams.get('patientId');
+    if (pId) {
+      setSelectedPatientId(pId);
+    }
+  }, [searchParams]);
   const [expandedEvalId, setExpandedEvalId] = useState<string | null>(null);
 
   // Timeline Filters

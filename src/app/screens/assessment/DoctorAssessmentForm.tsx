@@ -44,6 +44,7 @@ export function DoctorAssessmentForm() {
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
   const [saved, setSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string|null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const createEvaluation = useCreateEvaluation();
 
   const [patientInfo, setPatientInfo] = useState<{name:string;age:string;phone:string;gender:'Male'|'Female'|'Other';address:string;condition:string[]}>({name:'',age:'',phone:'',gender:'Male',address:'',condition:[]});
@@ -188,9 +189,11 @@ export function DoctorAssessmentForm() {
   const handlePhotoChange = (e:ChangeEvent<HTMLInputElement>) => { const f=e.target.files?.[0]; if (!f) return; if (!f.type.startsWith('image/')) { setSubmitError('Please upload an image.'); return; } setSubmitError(null); setIntakePhoto(f); };
   const handlePhotoRemove = () => { setIntakePhoto(null); setPhotoInputKey(p=>p+1); };
   const handleSave = async () => {
+    if (isSubmitting || createEvaluation.isPending || updatePatientMutation.isPending) return;
+    setIsSubmitting(true);
     setSubmitError(null);
-    if (!resolvedPatientId) { setSubmitError('No patient resolved.'); return; }
-    if (!paymentMode || billTotal <= 0) { setSubmitError('Please select treatments and a payment mode.'); return; }
+    if (!resolvedPatientId) { setSubmitError('No patient resolved.'); setIsSubmitting(false); return; }
+    if (!paymentMode || billTotal <= 0) { setSubmitError('Please select treatments and a payment mode.'); setIsSubmitting(false); return; }
     const vitalsPayload: Record<string,unknown> = {};
     if (vitals.bp_sys&&vitals.bp_dia) vitalsPayload.bp=`${vitals.bp_sys}/${vitals.bp_dia}`;
     if (vitals.pr) vitalsPayload.pr=Number(vitals.pr);
@@ -254,8 +257,11 @@ export function DoctorAssessmentForm() {
         pftFindings: treatmentPlanData.pftFindings || undefined,
       });
       setSaved(true);
-      setTimeout(() => navigate(`/${currentRole}/patient-history`), 2000);
-    } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to save.'); }
+      setTimeout(() => navigate(`/${currentRole}/patient-history?patientId=${resolvedPatientId}`), 1000);
+    } catch (err:any) { 
+      setSubmitError(err?.response?.data?.message??'Failed to save.');
+      setIsSubmitting(false);
+    }
   };
 
   const hasNeuro = patientInfo.condition?.includes('Neuro');
@@ -372,8 +378,17 @@ export function DoctorAssessmentForm() {
             value={phoneInput}
             onChange={setPhoneInput}
             onSelect={(patient: any) => {
-              setPhoneInput(patient.mobile);
-              setPhoneToFetch(patient.mobile);
+              setPhoneInput(patient.mobile || patient.phone);
+              setPhoneToFetch(patient.mobile || patient.phone);
+              setResolvedPatientId(patient.id);
+              setPatientInfo({
+                name: patient.name ?? '',
+                age: patient.age ? String(patient.age) : '',
+                phone: patient.phone || patient.mobile || '',
+                gender: (patient.gender as any) ?? 'Male',
+                address: patient.city ?? '',
+                condition: patient.condition ? patient.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x)) : []
+              });
               setLookupDone(true);
               setShowNewPatientForm(false);
             }}
@@ -530,8 +545,8 @@ export function DoctorAssessmentForm() {
                 </FormField>
               </SectionCard>
 
-              <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-5 rounded-[22px] flex items-center justify-center gap-3 text-white text-[16px] font-black shadow-xl shadow-indigo-600/30 disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] transition-all active:scale-[0.98]">
-                {createEvaluation.isPending?<><Loader2 size={22} className="animate-spin" /> Submitting…</>:<><Save size={22} /> Finalize & Start Session</>}
+              <button onClick={handleSave} disabled={isSubmitting || createEvaluation.isPending || updatePatientMutation.isPending} className="w-full mt-2 py-5 rounded-[22px] flex items-center justify-center gap-3 text-white text-[16px] font-black shadow-xl shadow-indigo-600/30 disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] transition-all active:scale-[0.98]">
+                {(isSubmitting || createEvaluation.isPending || updatePatientMutation.isPending) ? <><Loader2 size={22} className="animate-spin" /> Submitting…</> : <><Save size={22} /> Finalize & Start Session</>}
               </button>
             </div>
           )}

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ROM_CONFIG, formatBorgRatings } from '../screens/assessment/clinicalConfig';
+import { ROM_CONFIG, formatBorgRatings, SPECIFIC_PROBLEMS_BY_COMPLAINT, SPECIFIC_PROBLEM_OPTIONS } from '../screens/assessment/clinicalConfig';
 import { 
   Activity, 
   Stethoscope, 
@@ -243,6 +243,50 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
   const functionalScoresObj = typeof rawFunc === 'object' && !Array.isArray(rawFunc?.limitations)
     ? (rawFunc.scores || rawFunc)
     : null;
+
+  // Separate nurse ratings and doctor specific problems
+  const { nurseRatings, doctorProblems } = useMemo(() => {
+    const nRatings: Array<{ key: string; value: number }> = [];
+    const dProblemsMap: Record<string, Array<{ label: string; values: string[] }>> = {};
+
+    if (functionalScoresObj) {
+      Object.entries(functionalScoresObj).forEach(([key, val]: [string, any]) => {
+        if (key.includes('_') || (val && typeof val === 'object' && ('enabled' in val || 'values' in val))) {
+          if (val && val.enabled) {
+            const parts = key.split('_');
+            const complaint = parts[0];
+            const problemKey = parts.slice(1).join('_');
+            
+            const options = SPECIFIC_PROBLEMS_BY_COMPLAINT[complaint] || SPECIFIC_PROBLEM_OPTIONS || [];
+            const match = options.find((opt: any) => opt.key === problemKey);
+            const label = match?.label || problemKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            
+            let values: string[] = [];
+            if (Array.isArray(val.values)) {
+              values = val.values;
+            } else if (match && Array.isArray(match.options) && match.options.length > 0) {
+              values = [match.options[0]];
+            } else {
+              values = ['Yes'];
+            }
+
+            if (!dProblemsMap[complaint]) {
+              dProblemsMap[complaint] = [];
+            }
+            dProblemsMap[complaint].push({ label, values });
+          }
+        } else {
+          const value = Number(val);
+          if (!isNaN(value)) {
+            nRatings.push({ key, value });
+          }
+        }
+      });
+    }
+    return { nurseRatings: nRatings, doctorProblems: dProblemsMap };
+  }, [functionalScoresObj]);
+
+  const hasFunctionalData = functionalLimitationsList.length > 0 || nurseRatings.length > 0 || Object.keys(doctorProblems).length > 0;
 
   // Diagnoses
   const rawDiagnosis = rawData.diagnosis;
@@ -742,7 +786,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
       )}
 
       {/* Functional Limitations */}
-      {(functionalLimitationsList.length > 0 || (functionalScoresObj && Object.keys(functionalScoresObj).length > 0)) && (
+      {hasFunctionalData && (
         <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-150 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <CheckSquare size={16} className={accentColor} />
@@ -797,13 +841,10 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
             </div>
           )}
 
-          {functionalScoresObj && (
+          {nurseRatings.length > 0 && (
             <div className="flex flex-col gap-2 mt-3">
-              {Object.entries(functionalScoresObj).map(([key, val]: [string, any]) => {
-                const value = typeof val === 'object' ? val.score : Number(val);
-                if (isNaN(value)) return null;
-                
-                const labels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
+              {nurseRatings.map(({ key, value }) => {
+                const labels: Record<number, string> = { 0: 'No Difficulty', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
                 const colors: Record<number, string> = { 
                   0: 'text-green-600 bg-green-50 border-green-150 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900', 
                   1: 'text-yellow-600 bg-yellow-50 border-yellow-150 dark:bg-yellow-950/20 dark:text-yellow-400 dark:border-yellow-900', 
@@ -818,6 +859,32 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false }: Ev
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {Object.keys(doctorProblems).length > 0 && (
+            <div className="flex flex-col gap-3 mt-3">
+              {Object.entries(doctorProblems).map(([complaint, problems]) => (
+                <div key={complaint} className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 shadow-sm">
+                  <h4 className="text-[12px] font-black text-indigo-700 dark:text-indigo-400 mb-2 border-b pb-1.5 border-slate-100 dark:border-slate-800 uppercase tracking-wider">
+                    {complaint} Details
+                  </h4>
+                  <div className="flex flex-col gap-2">
+                    {problems.map((p, idx) => (
+                      <div key={idx} className="text-xs flex flex-col sm:flex-row sm:items-start gap-1">
+                        <span className="font-extrabold text-slate-400 dark:text-slate-500 min-w-[150px] uppercase text-[10px] tracking-wider pt-0.5">{p.label}:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {p.values.map((val, vidx) => (
+                            <span key={vidx} className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold">
+                              {val}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </section>

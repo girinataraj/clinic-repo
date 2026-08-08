@@ -289,6 +289,7 @@ export function NurseIntakeForm() {
   const [step, setStep] = useState(0);
   const [saved, setSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createEvaluation = useCreateEvaluation();
 
@@ -479,16 +480,20 @@ export function NurseIntakeForm() {
   };
 
   const handleSave = async () => {
+    if (isSubmitting || createEvaluation.isPending || updatePatientMutation.isPending) return;
+    setIsSubmitting(true);
     setSubmitError(null);
 
     const patientId = resolvedPatientId;
     if (!patientId) {
       setSubmitError('No patient resolved. Please complete the phone lookup step first.');
+      setIsSubmitting(false);
       return;
     }
 
     if (!paymentMode || billTotal <= 0) {
       setSubmitError('Please select at least one treatment and choose a payment mode.');
+      setIsSubmitting(false);
       return;
     }
 
@@ -540,9 +545,10 @@ export function NurseIntakeForm() {
         } : undefined
       });
       setSaved(true);
-      setTimeout(() => navigate(`/${currentRole}`), 2000);
+      setTimeout(() => navigate(`/${currentRole}/patient-history?patientId=${patientId}`), 1000);
     } catch (err: any) {
       setSubmitError(err?.response?.data?.message ?? 'Failed to save evaluation. Please try again.');
+      setIsSubmitting(false);
     }
   };
 
@@ -640,8 +646,16 @@ export function NurseIntakeForm() {
             value={phoneInput}
             onChange={setPhoneInput}
             onSelect={(patient: any) => {
-              setPhoneInput(patient.mobile);
-              setPhoneToFetch(patient.mobile);
+              setPhoneInput(patient.mobile || patient.phone);
+              setPhoneToFetch(patient.mobile || patient.phone);
+              setResolvedPatientId(patient.id);
+              setPatientInfo({
+                name: patient.name ?? '',
+                age: patient.age ? String(patient.age) : '',
+                phone: patient.phone || patient.mobile || '',
+                gender: (patient.gender as any) ?? 'Male',
+                address: patient.city ?? '',
+              });
               setLookupDone(true);
               setShowNewPatientForm(false);
             }}
@@ -1525,11 +1539,11 @@ export function NurseIntakeForm() {
 
             <button
               onClick={handleSave}
-              disabled={createEvaluation.isPending}
+              disabled={isSubmitting || createEvaluation.isPending || updatePatientMutation.isPending}
               className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-white text-base font-extrabold shadow-lg shadow-indigo-700/30 group disabled:opacity-60"
               style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}
             >
-              {createEvaluation.isPending ? (
+              {(isSubmitting || createEvaluation.isPending || updatePatientMutation.isPending) ? (
                 <><Loader2 size={18} className="animate-spin" /> Submitting…</>
               ) : (
                 <><Save size={18} className="group-hover:scale-110 transition-transform" /> Save Patient Intake Form</>
