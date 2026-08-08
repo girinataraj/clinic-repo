@@ -9,15 +9,69 @@ interface RomMatrixProps {
   isDoctorRole?: boolean;
 }
 
+function parseRange(placeholder: string) {
+  const clean = placeholder.replace('°', '').trim();
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    const min = parseInt(parts[0].trim(), 10);
+    const max = parseInt(parts[1].trim(), 10);
+    return { min, max };
+  } else {
+    const val = parseInt(clean, 10);
+    if (!isNaN(val)) {
+      return { min: val, max: val };
+    }
+  }
+  return null;
+}
+
 function RomInput({ value, onChange, placeholder, isDoctorRole }: { value: string; onChange: (v: string) => void; placeholder: string; isDoctorRole?: boolean }) {
-  const focusRing = isDoctorRole ? "focus:border-[#262842] focus:ring-[#262842]" : "focus:border-teal-500 focus:ring-1 focus:ring-teal-500";
+  const [localValue, setLocalValue] = useState(value);
+  const [isInvalid, setIsInvalid] = useState(false);
+
+  useEffect(() => {
+    setLocalValue(value);
+    setIsInvalid(false);
+  }, [value]);
+
+  const range = parseRange(placeholder);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const clean = raw.replace(/\D/g, ''); // only allow digits
+    
+    if (clean === '') {
+      setLocalValue('');
+      onChange('');
+      setIsInvalid(false);
+    } else {
+      const num = parseInt(clean, 10);
+      if (range && !isNaN(num) && num >= range.min && num <= range.max) {
+        setLocalValue(clean);
+        onChange(clean);
+        setIsInvalid(false);
+      } else {
+        // Reject the input value (do not update localValue) but show red border
+        setIsInvalid(true);
+      }
+    }
+  };
+
+  const focusRing = isDoctorRole 
+    ? "focus:border-[#262842] focus:ring-[#262842]" 
+    : "focus:border-teal-500 focus:ring-1 focus:ring-teal-500";
+
+  const borderColor = isInvalid 
+    ? "border-red-500 dark:border-red-500 focus:border-red-500 focus:ring-red-500 focus:ring-1" 
+    : "border-slate-200 dark:border-slate-700 " + focusRing;
+
   return (
     <input
       type="text"
-      value={value}
-      onChange={e => onChange(e.target.value)}
+      value={localValue}
+      onChange={handleChange}
       placeholder={placeholder}
-      className={`w-full text-center outline-none px-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${focusRing} transition-colors`}
+      className={`w-full text-center outline-none px-1 py-1.5 rounded-lg border bg-slate-50 dark:bg-slate-800 text-[11px] font-black text-slate-900 dark:text-white placeholder:text-slate-400 ${borderColor} transition-colors`}
     />
   );
 }
