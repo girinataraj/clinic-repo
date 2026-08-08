@@ -268,6 +268,7 @@ export function NurseIntakeForm() {
         gender: newPatient.gender as 'Male' | 'Female' | 'Other',
         phone: cleanPhone,
         condition: newPatient.condition || undefined,
+        referredBy: ((patientInfo as any).referredBy || newPatient.referredBy || '').trim() || undefined,
         therapistId: isDoctorRole ? (selectedTherapistId || undefined) : (user?.id || undefined),
       });
       setResolvedPatientId(created.id);
@@ -851,6 +852,7 @@ export function NurseIntakeForm() {
               { key: 'age', label: 'Age', placeholder: 'e.g. 32', type: 'number' },
               { key: 'phone', label: 'Phone Number', placeholder: 'e.g. 9876543210', type: 'tel' },
               { key: 'address', label: 'Address', placeholder: 'Enter address', type: 'text' },
+              { key: 'referredBy', label: 'Referred By / Referral Source', placeholder: 'e.g. Dr. Kumar / Self', type: 'text' },
             ].map((field) => (
               <div key={field.key} className="mb-3">
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
@@ -914,7 +916,7 @@ export function NurseIntakeForm() {
                     )}
                     {therapistsLoading && <option disabled>Loading…</option>}
                     {therapistsList
-                      .filter((t) => (user?.role === 'doctor' ? t.id !== user?.id && !t.name?.toLowerCase().includes('sathish') && (t as any).role !== 'self' : true))
+                      .filter((t) => (user?.role === 'doctor' ? t.id !== user?.id && (t as any).role !== 'self' : true))
                       .map((t) => (
                         <option key={t.id} value={t.id}>{t.name}</option>
                       ))}

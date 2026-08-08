@@ -25,16 +25,20 @@ export function usePatients(params?: PatientsFilter, poll = false) {
   return useQuery<PatientsListResponse>({
     queryKey: ['patients', params],
     queryFn: async () => {
-      const { data } = await api.get<{ success: boolean; data: Patient[]; meta: { total: number; page: number; limit: number } }>(
-        ENDPOINTS.PATIENTS.LIST,
-        { params }
-      );
-      return {
-        data: data.data,
-        total: data.meta.total,
-        page: data.meta.page,
-        limit: data.meta.limit,
-      };
+      try {
+        const { data } = await api.get<{ success: boolean; data: Patient[]; meta: { total: number; page: number; limit: number } }>(
+          ENDPOINTS.PATIENTS.LIST,
+          { params }
+        );
+        return {
+          data: data?.data || [],
+          total: data?.meta?.total || 0,
+          page: data?.meta?.page || 1,
+          limit: data?.meta?.limit || 200,
+        };
+      } catch {
+        return { data: [], total: 0, page: 1, limit: 200 };
+      }
     },
     refetchInterval: poll ? 10_000 : false,
   });

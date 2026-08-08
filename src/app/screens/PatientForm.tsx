@@ -6,7 +6,7 @@ import { usePatient, useCreatePatient, useUpdatePatient } from '../../hooks/useP
 import { useStaffUsers } from '../../hooks/useStaff';
 import {
   ArrowLeft, Save, Loader2, CheckCircle, AlertTriangle, User, Phone, MapPin,
-  FileText, Activity, ChevronDown, UserCog,
+  FileText, Activity, ChevronDown, UserCog, UserCheck,
 } from 'lucide-react';
 
 export function PatientForm() {
@@ -29,6 +29,7 @@ export function PatientForm() {
   const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Male');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
+  const [referredBy, setReferredBy] = useState('');
   const [therapistId, setTherapistId] = useState('');
 
   // ── Therapist list for assignment (only fetched for doctor) ────────────
@@ -53,6 +54,7 @@ export function PatientForm() {
       setGender(existingPatient.gender || 'Male');
       setPhone(existingPatient.phone || '');
       setCity(existingPatient.city || '');
+      setReferredBy(existingPatient.referredBy || '');
       setTherapistId(existingPatient.therapistId || '');
     }
   }, [isEdit, existingPatient]);
@@ -86,6 +88,7 @@ export function PatientForm() {
           gender,
           phone: cleanPhone,
           city: city.trim() || undefined,
+          referredBy: referredBy.trim() || undefined,
           therapistId: resolvedTherapistId || undefined,
         });
       } else {
@@ -95,6 +98,7 @@ export function PatientForm() {
           gender,
           phone: cleanPhone,
           city: city.trim() || undefined,
+          referredBy: referredBy.trim() || undefined,
           therapistId: resolvedTherapistId || undefined,
         });
       }
@@ -281,6 +285,20 @@ export function PatientForm() {
                 </div>
               </div>
 
+              {/* Referred By */}
+              <div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">Referred By / Referral Source</label>
+                <div className={`flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 ${theme.focusBorder} transition-colors`}>
+                  <UserCheck size={16} className="text-slate-400 shrink-0" />
+                  <input
+                    value={referredBy}
+                    onChange={(e) => setReferredBy(e.target.value)}
+                    placeholder="e.g. Dr. Kumar / Self / Online"
+                    className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
+                  />
+                </div>
+              </div>
+
 
 
               {/* Assign Therapist — only shown for doctor role */}
@@ -302,7 +320,7 @@ export function PatientForm() {
                       )}
                       {therapistsLoading && <option disabled>Loading…</option>}
                       {therapists
-                        .filter((t) => t.id !== user?.id && !t.name?.toLowerCase().includes('sathish') && (t as any).role !== 'self')
+                        .filter((t) => t.id !== user?.id && (t as any).role !== 'self')
                         .map((t) => (
                           <option key={t.id} value={t.id}>{t.name}</option>
                         ))}
