@@ -31,7 +31,7 @@ export function DoctorAssessmentForm() {
   const [resolvedPatientId, setResolvedPatientId] = useState(searchParams.get('patientId') ?? '');
   const [lookupDone, setLookupDone] = useState(Boolean(searchParams.get('patientId') || searchParams.get('phone')));
   const [showNewPatientForm, setShowNewPatientForm] = useState(false);
-  const [newPatient, setNewPatient] = useState<{name:string;age:string;gender:'Male'|'Female'|'Other';condition:string}>({name:'',age:'',gender:'Male',condition:''});
+  const [newPatient, setNewPatient] = useState<{name:string;age:string;gender:'Male'|'Female'|'Other';referredBy:string;condition:string}>({name:'',age:'',gender:'Male',referredBy:'',condition:''});
 
   const { data: foundPatient, isLoading: lookingUp } = usePatientByPhone(phoneToFetch.trim().length >= 7 ? phoneToFetch.trim() : null);
   const createPatientMutation = useCreatePatient();
@@ -181,14 +181,14 @@ export function DoctorAssessmentForm() {
   const formatRupees = (n: number) => new Intl.NumberFormat('en-IN').format(n);
 
   const handlePhoneLookup = useCallback(() => { if (phoneInput.trim().length<7) return; setPhoneToFetch(phoneInput.trim()); setLookupDone(true); setShowNewPatientForm(false); }, [phoneInput]);
-  const handleUseFoundPatient = useCallback(() => { if (!foundPatient) return; setResolvedPatientId(foundPatient.id); setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??''}); }, [foundPatient, phoneToFetch]);
+  const handleUseFoundPatient = useCallback(() => { if (!foundPatient) return; setResolvedPatientId(foundPatient.id); setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??'',referredBy:foundPatient.referredBy}); }, [foundPatient, phoneToFetch]);
 
   const handleCreateNewPatient = async () => {
     if (!newPatient.name||!newPatient.age) return;
     try {
-      const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),condition:newPatient.condition||undefined,therapistId:selectedTherapistId||undefined});
+      const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),referredBy:newPatient.referredBy.trim()||undefined,condition:newPatient.condition||undefined,therapistId:selectedTherapistId||undefined});
       setResolvedPatientId(created.id);
-      setPatientInfo({name:created.name,age:String(created.age),phone:created.phone??phoneInput.trim(),gender:created.gender as any,address:created.city??''});
+      setPatientInfo({name:created.name,age:String(created.age),phone:created.phone??phoneInput.trim(),gender:created.gender as any,address:created.city??'',referredBy:created.referredBy});
       setShowNewPatientForm(false); setStep(1);
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to create patient.'); }
   };

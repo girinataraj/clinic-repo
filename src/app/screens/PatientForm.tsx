@@ -29,6 +29,7 @@ export function PatientForm() {
   const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Male');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
+  const [referredBy, setReferredBy] = useState('');
   const [therapistId, setTherapistId] = useState('');
 
   // ── Therapist list for assignment (only fetched for doctor) ────────────
@@ -53,6 +54,7 @@ export function PatientForm() {
       setGender(existingPatient.gender || 'Male');
       setPhone(existingPatient.phone || '');
       setCity(existingPatient.city || '');
+      setReferredBy(existingPatient.referredBy || (existingPatient as any).referred_by || '');
       setTherapistId(existingPatient.therapistId || '');
     }
   }, [isEdit, existingPatient]);
@@ -86,6 +88,7 @@ export function PatientForm() {
           gender,
           phone: cleanPhone,
           city: city.trim() || undefined,
+          referredBy: referredBy.trim() || undefined,
           therapistId: resolvedTherapistId || undefined,
         });
       } else {
@@ -95,6 +98,7 @@ export function PatientForm() {
           gender,
           phone: cleanPhone,
           city: city.trim() || undefined,
+          referredBy: referredBy.trim() || undefined,
           therapistId: resolvedTherapistId || undefined,
         });
       }
@@ -276,6 +280,20 @@ export function PatientForm() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="e.g. Erode"
+                    className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
+                  />
+                </div>
+              </div>
+
+              {/* Referred By */}
+              <div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">Referred By</label>
+                <div className={`flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 ${theme.focusBorder} transition-colors`}>
+                  <User size={16} className="text-slate-400 shrink-0" />
+                  <input
+                    value={referredBy}
+                    onChange={(e) => setReferredBy(e.target.value)}
+                    placeholder="e.g. Self, Dr. Kumar, Hospital"
                     className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                   />
                 </div>
