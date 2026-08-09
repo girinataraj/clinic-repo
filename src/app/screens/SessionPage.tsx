@@ -39,7 +39,6 @@ export function SessionPage() {
   const [billAmountInput, setBillAmountInput] = useState('');
   const [submitError, setSubmitError] = useState<string|null>(null);
   const [checkedOut, setCheckedOut] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [followUp, setFollowUp] = useState<FollowUpSessionData>(getEmptyFollowUp());
 
   const formatRupees = (n: number) => new Intl.NumberFormat('en-IN').format(n);
@@ -62,15 +61,13 @@ export function SessionPage() {
   };
 
   const handleCheckout = async () => {
-    if (!patientId || isSubmitting || checkoutPatient.isPending || createEvaluation.isPending) return;
-    setIsSubmitting(true);
+    if (!patientId) return;
     setSubmitError(null);
 
     // If payment details exist, create an evaluation record for the revenue
     if (billAmount && billAmount > 0) {
       if (!paymentMode) {
         setSubmitError('Please select a mode of payment.');
-        setIsSubmitting(false);
         return;
       }
       try {
@@ -96,12 +93,10 @@ export function SessionPage() {
         } as any);
       } catch (err: any) {
         setSubmitError(err?.response?.data?.message ?? 'Failed to save payment details.');
-        setIsSubmitting(false);
         return;
       }
     } else if (paymentMode && (!billAmount || billAmount <= 0)) {
        setSubmitError('Please enter a valid bill amount.');
-       setIsSubmitting(false);
        return;
     }
 
@@ -111,7 +106,6 @@ export function SessionPage() {
       setTimeout(() => navigate(`/${currentRole}`), 2000);
     } catch (err: any) {
       setSubmitError(err?.response?.data?.message ?? 'Failed to checkout session.');
-      setIsSubmitting(false);
     }
   };
 
@@ -261,7 +255,7 @@ export function SessionPage() {
 
         <button
           onClick={handleCheckout}
-          disabled={isSubmitting || checkoutPatient.isPending || createEvaluation.isPending}
+          disabled={checkoutPatient.isPending || createEvaluation.isPending}
           className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-white text-[15px] font-extrabold shadow-lg disabled:opacity-60 transition-all"
           style={{ background: 'linear-gradient(135deg, #0f766e, #14b8a6)' }}
         >
