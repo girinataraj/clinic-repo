@@ -404,6 +404,8 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
   const manualTherapy = (treatmentsList || []).filter((t: any) => t.category === 'Manual Therapy').map((t: any) => t.treatmentName);
   const rehab = (treatmentsList || []).filter((t: any) => t.category === 'Rehabilitation').map((t: any) => t.treatmentName);
 
+  const isExerciseSelected = (tp.rehabilitation || []).some((item: string) => item.trim().toLowerCase() === 'exercise');
+
   return (
     <div className="flex flex-col gap-4">
       <SectionCard icon={<PenTool size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Treatment Plan" subtitle="Management & follow-up" accent={accent}>
@@ -412,14 +414,16 @@ export function StepTreatment({ treatment, setTreatment, isDoctorRole, treatment
         <ChipGroup label="Rehabilitation" items={rehab} field="rehabilitation" />
       </SectionCard>
 
-      {/* Exercise Adding & Prescribing Module */}
-      <TreatmentExerciseModule
-        treatmentPlan={tp}
-        setTreatmentPlan={(newTp: TreatmentPlanData) => {
-          if (setTreatmentPlan) setTreatmentPlan(newTp);
-        }}
-        isDoctorRole={isDoctorRole}
-      />
+      {/* Exercise Adding & Prescribing Module — only shown when Exercise is selected in Rehabilitation */}
+      {isExerciseSelected && (
+        <TreatmentExerciseModule
+          treatmentPlan={tp}
+          setTreatmentPlan={(newTp: TreatmentPlanData) => {
+            if (setTreatmentPlan) setTreatmentPlan(newTp);
+          }}
+          isDoctorRole={isDoctorRole}
+        />
+      )}
 
       <SectionCard icon={<ImagePlus size={18} className={`${iconColor} dark:text-emerald-400`} />} title="Imaging Findings" subtitle="X-Ray, MRI, PFT reports" accent={accent}>
         <div className="flex flex-col gap-3">
