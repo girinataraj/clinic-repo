@@ -57,6 +57,10 @@ export function TherapistHierarchy() {
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState(false);
 
+  // Delete therapist state
+  const [therapistToDelete, setTherapistToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   // Debounced search query
   const debouncedSearch = useDebounce(search, 300);
 
@@ -71,6 +75,7 @@ export function TherapistHierarchy() {
   });
   const updatePatient = useUpdatePatient();
   const createStaffUser = useCreateStaffUser();
+  const deleteStaffUser = useDeleteStaffUser();
 
   const allPatients = patientsData?.data ?? [];
 
@@ -130,6 +135,18 @@ export function TherapistHierarchy() {
       setTimeout(() => { setShowAddForm(false); setAddSuccess(false); }, 1500);
     } catch (e: any) {
       setAddError(e?.response?.data?.message ?? 'Failed to create therapist.');
+    }
+  };
+
+  // ── Delete therapist ──────────────────────────────────────────────────────
+  const handleDeleteTherapist = async () => {
+    if (!therapistToDelete) return;
+    setDeleteError(null);
+    try {
+      await deleteStaffUser.mutateAsync(therapistToDelete.id);
+      setTherapistToDelete(null);
+    } catch (err: any) {
+      setDeleteError(err?.response?.data?.message ?? 'Failed to remove therapist.');
     }
   };
 
@@ -286,12 +303,22 @@ export function TherapistHierarchy() {
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-bold text-[#17252A] dark:text-white truncate">{node.name}</p>
                         <p className="text-[10px] text-[#262842] dark:text-slate-400">{node.displayId} · {node.patients.length} patient{node.patients.length !== 1 ? 's' : ''}</p>
-                        <span
-                          onClick={(e) => { e.stopPropagation(); navigate(`/doctor/therapist/${node.id}`); }}
-                          className="inline-block mt-1 cursor-pointer hover:underline text-[11px] font-bold text-[#3B3E66] dark:text-blue-400"
-                        >
-                          View Profile →
-                        </span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span
+                            onClick={(e) => { e.stopPropagation(); navigate(`/doctor/therapist/${node.id}`); }}
+                            className="cursor-pointer hover:underline text-[11px] font-bold text-[#3B3E66] dark:text-blue-400"
+                          >
+                            View Profile →
+                          </span>
+                          <span className="text-slate-300 dark:text-slate-600">•</span>
+                          <span
+                            onClick={(e) => { e.stopPropagation(); setTherapistToDelete({ id: node.id, name: node.name }); setDeleteError(null); }}
+                            className="cursor-pointer hover:underline text-[11px] font-bold text-red-600 dark:text-red-400 flex items-center gap-0.5"
+                            title="Remove Therapist"
+                          >
+                            <Trash2 size={11} /> Remove
+                          </span>
+                        </div>
                       </div>
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 shrink-0">
                         {node.activeCount} active
@@ -472,6 +499,44 @@ export function TherapistHierarchy() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Remove Therapist Modal ───────────────────────────────── */}
+      {therapistToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-3xl p-5 bg-white dark:bg-slate-800 shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-600 shrink-0">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-extrabold text-slate-900 dark:text-white">Remove Therapist</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Confirm therapist removal</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+              Are you sure you want to remove <strong className="text-slate-900 dark:text-white">{therapistToDelete.name}</strong>? Their login credentials will stop working immediately, and any assigned patients will become unassigned.
+            </p>
+            {deleteError && (
+              <p className="text-[11px] font-semibold text-red-600 mb-3">{deleteError}</p>
+            )}
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => { setTherapistToDelete(null); setDeleteError(null); }}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteTherapist}
+                disabled={deleteStaffUser.isPending}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
+              >
+                {deleteStaffUser.isPending ? 'Removing...' : 'Remove'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -29,9 +29,10 @@ export function FollowUpPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  // Search patients
+  // Search patients assigned to current therapist
   const { data: patientsData, isLoading: searchingPatients } = usePatients({
     search: searchQuery.trim() || undefined,
+    therapistId: currentRole === 'nurse' ? user?.id : undefined,
     limit: 15,
   });
   const patientsList = patientsData?.data ?? [];

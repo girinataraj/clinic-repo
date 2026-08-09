@@ -25,6 +25,7 @@ import { PatientForm } from './screens/PatientForm';
 import { TherapistHierarchy } from './screens/TherapistHierarchy';
 import { TherapistDetailPage } from './screens/TherapistDetailPage';
 import { FollowUpPage } from './screens/FollowUpPage';
+import { AssignPatientPage } from './screens/AssignPatientPage';
 
 // ── Session Loader: waits for auth initialization before routing ─────────────
 function SessionLoader({ children }: { children: React.ReactNode }) {
@@ -90,6 +91,8 @@ export const router = createBrowserRouter([
             element: <RoleGuard allowed={['doctor', 'admin']} />,
             children: [
               { path: 'doctor', Component: DoctorDashboard },
+              { path: 'doctor/patients', Component: DoctorPatients },
+              { path: 'doctor/assign-patient', Component: AssignPatientPage },
               { path: 'doctor/therapists', Component: TherapistHierarchy },
               { path: 'doctor/therapist/:id', Component: TherapistDetailPage },
               { path: 'doctor/patient-form', Component: PatientForm },

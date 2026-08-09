@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -11,7 +11,7 @@ import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import {
   Search, Eye, Edit3, FileText, CheckCircle, ClipboardList,
   Users, ChevronRight, Dumbbell, Calendar, User, UserPlus,
-  TrendingUp, Zap, Activity, BarChart2, UserCog, Filter, X
+  TrendingUp, Zap, Activity, BarChart2, UserCog, Filter, X, UserCheck
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string; border: string }> = {
@@ -27,8 +27,11 @@ export function DoctorDashboard() {
   const navigate = useNavigate();
   
   // Search and active filter ('in-session' | 'all')
+  // Search and view modes ('today' | 'all')
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<'in-session' | 'all' | string>('in-session');
+  const [viewMode, setViewMode] = useState<'today' | 'all'>('today');
+  const [todaySubTab, setTodaySubTab] = useState<'todays_all' | 'todays_in_session' | 'todays_completed'>('todays_all');
+  const [allSubTab, setAllSubTab] = useState<'all_total' | 'all_in_session' | 'all_completed'>('all_total');
 
   // Filter Modal states (Priority removed)
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -67,19 +70,54 @@ export function DoctorDashboard() {
   };
 
   const rawPatients = patientsData?.data ?? [];
-  // If 'in-session' selected: show only patients who have NOT been assessed yet ('waiting')
-  // If 'all' selected: show all patients
-  const patients = activeTab === 'in-session'
-    ? rawPatients.filter(p => p.status === 'waiting')
-    : rawPatients;
+
+  const isToday = (dateStr?: string | null) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    const now = new Date();
+    return d.getFullYear() === now.getFullYear() &&
+           d.getMonth() === now.getMonth() &&
+           d.getDate() === now.getDate();
+  };
+
+  // ── Today's Patients ──
+  const todaysPatients = useMemo(() => {
+    return rawPatients.filter(p => isToday(p.createdAt) || isToday(p.lastSession) || isToday(p.checkInTime));
+  }, [rawPatients]);
+
+  const todaysInSession = useMemo(() => {
+    return todaysPatients.filter(p => p.status === 'in-session' || p.status === 'waiting');
+  }, [todaysPatients]);
+
+  const todaysCompleted = useMemo(() => {
+    return todaysPatients.filter(p => p.status === 'completed');
+  }, [todaysPatients]);
+
+  // ── All Patients till today ──
+  const allInSession = useMemo(() => {
+    return rawPatients.filter(p => p.status === 'in-session' || p.status === 'waiting');
+  }, [rawPatients]);
+
+  const allCompleted = useMemo(() => {
+    return rawPatients.filter(p => p.status === 'completed');
+  }, [rawPatients]);
+
+  const patients = useMemo(() => {
+    if (viewMode === 'today') {
+      if (todaySubTab === 'todays_in_session') return todaysInSession;
+      if (todaySubTab === 'todays_completed') return todaysCompleted;
+      return todaysPatients; // 'todays_all' -> all patients added or assessed today
+    } else {
+      // viewMode === 'all'
+      if (allSubTab === 'all_in_session') return allInSession;
+      if (allSubTab === 'all_completed') return allCompleted;
+      return rawPatients; // 'all_total' -> all total patients till today and their details
+    }
+  }, [viewMode, todaySubTab, allSubTab, rawPatients, todaysPatients, todaysInSession, todaysCompleted, allInSession, allCompleted]);
 
   const actualName = user?.name || 'Doctor';
   const firstName = actualName.replace('Dr. ', '');
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
-
-  const waiting = patients.filter((p) => p.status === 'waiting').length;
-  const inSession = patients.filter((p) => p.status === 'in-session').length;
-  const completed = patients.filter((p) => p.status === 'completed').length;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -151,37 +189,69 @@ export function DoctorDashboard() {
         </div>
 
         <div className="px-5 pb-8 max-w-6xl mx-auto w-full mt-6">
-          {/* Stats */}
+          {/* Stats Cards */}
           <div className="flex gap-4 mb-6">
-            {[
-              { label: "Today's Patients", value: patientsData?.total ?? 0, icon: Users },
-              { label: 'In Session', value: inSession, icon: Zap },
-              { label: 'Completed', value: completed, icon: CheckCircle },
-            ].map((s, i) => {
-              const Icon = s.icon;
-              return (
-                <div key={s.label} className="flex-1 rounded-2xl p-4 flex flex-col items-center justify-center transition-transform hover:-translate-y-1 duration-300 bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700">
-                  <span className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{s.value}</span>
-                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-1.5 text-center">{s.label}</span>
-                </div>
-              );
-            })}
+            {viewMode === 'today' ? (
+              [
+                { key: 'todays_all', label: "Today's Patients", value: todaysPatients.length, icon: Users },
+                { key: 'todays_in_session', label: 'In Session', value: todaysInSession.length, icon: Zap },
+                { key: 'todays_completed', label: 'Completed', value: todaysCompleted.length, icon: CheckCircle },
+              ].map((s) => {
+                const Icon = s.icon;
+                const isSelected = todaySubTab === s.key;
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => setTodaySubTab(s.key as any)}
+                    className={`flex-1 rounded-2xl p-4 flex flex-col items-center justify-center transition-all duration-300 border text-left cursor-pointer active:scale-95 ${
+                      isSelected
+                        ? 'bg-indigo-50 dark:bg-slate-700 border-indigo-300 dark:border-indigo-600 shadow-md ring-2 ring-indigo-500'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-sm'
+                    }`}
+                  >
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{s.value}</span>
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-1.5 text-center">{s.label}</span>
+                  </button>
+                );
+              })
+            ) : (
+              [
+                { key: 'all_total', label: "Total Patients", value: rawPatients.length, icon: Users },
+                { key: 'all_in_session', label: 'In Session', value: allInSession.length, icon: Zap },
+                { key: 'all_completed', label: 'Completed', value: allCompleted.length, icon: CheckCircle },
+              ].map((s) => {
+                const Icon = s.icon;
+                const isSelected = allSubTab === s.key;
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => setAllSubTab(s.key as any)}
+                    className={`flex-1 rounded-2xl p-4 flex flex-col items-center justify-center transition-all duration-300 border text-left cursor-pointer active:scale-95 ${
+                      isSelected
+                        ? 'bg-indigo-50 dark:bg-slate-700 border-indigo-300 dark:border-indigo-600 shadow-md ring-2 ring-indigo-500'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-sm'
+                    }`}
+                  >
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{s.value}</span>
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-1.5 text-center">{s.label}</span>
+                  </button>
+                );
+              })
+            )}
           </div>
-
-
 
           {/* Quick actions */}
           <div className="grid grid-cols-3 gap-3 mb-6">
             <button
-              onClick={() => navigate('/doctor/patient-form')}
-              className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
+              onClick={() => navigate('/doctor/assign-patient')}
+              className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20 shadow-sm"
             >
-              <div className="rounded-xl flex items-center justify-center shrink-0 w-10 h-10 bg-slate-100 dark:bg-slate-700">
-                <UserPlus size={18} className="text-slate-600 dark:text-slate-300" />
+              <div className="rounded-xl flex items-center justify-center shrink-0 w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50">
+                <UserCheck size={18} className="text-indigo-600 dark:text-indigo-400" />
               </div>
               <div className="text-left">
-                <p className="text-[13px] font-bold text-slate-900 dark:text-white">Add Patient</p>
-                <p className="text-[10px] text-slate-600 dark:text-slate-400">Register new patient</p>
+                <p className="text-[13px] font-bold text-slate-900 dark:text-white">Assign Patient</p>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400">Assign old or new patient</p>
               </div>
             </button>
             <button
@@ -205,7 +275,7 @@ export function DoctorDashboard() {
               </div>
               <div className="text-left">
                 <p className="text-[13px] font-bold text-slate-900 dark:text-white">Therapists</p>
-                <p className="text-[10px] text-slate-600 dark:text-slate-400">Assign & manage</p>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400">Manage & hierarchy</p>
               </div>
             </button>
           </div>
@@ -243,17 +313,17 @@ export function DoctorDashboard() {
               </button>
             </div>
 
-            {/* Filter Toggle Chips: In Session & All */}
+            {/* ONLY TWO MAIN OPTIONS: Today & All */}
             <div className="flex items-center gap-2 pt-1">
               {[
-                { key: 'in-session', label: 'In Session' },
+                { key: 'today', label: 'Today' },
                 { key: 'all', label: 'All' },
               ].map(opt => (
                 <button
                   key={opt.key}
-                  onClick={() => setActiveTab(opt.key)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                    activeTab === opt.key
+                  onClick={() => setViewMode(opt.key as any)}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all border ${
+                    viewMode === opt.key
                       ? 'bg-slate-900 text-white dark:bg-slate-700 border-slate-900 dark:border-slate-700 shadow-md'
                       : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
@@ -314,14 +384,26 @@ export function DoctorDashboard() {
                     <div className="rounded-2xl flex items-center justify-center shrink-0 relative w-14 h-14 bg-slate-100 dark:bg-slate-700">
                       <span className="text-lg font-bold text-slate-800 dark:text-white">{getInitials(patient.name)}</span>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-base font-bold text-slate-900 dark:text-white">{patient.name}</p>
-                          <p className="text-[13px] text-slate-600 dark:text-slate-400 mt-0.5">{patient.condition ?? '—'} · {patient.age} yrs</p>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-base font-bold text-slate-900 dark:text-white">{patient.name}</p>
+                              {patient.therapistName ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
+                                  <UserCheck size={12} />
+                                  Therapist: {patient.therapistName}
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                                  Unassigned
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[13px] text-slate-600 dark:text-slate-400 mt-0.5">{patient.condition ?? '—'} · {patient.age} yrs</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
                   </div>
 
                   {/* Info row */}

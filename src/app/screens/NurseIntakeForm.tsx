@@ -10,10 +10,11 @@ import { useAppConfigScope } from '../../hooks/useAppConfig';
 import { useTreatments } from '../../hooks/useTreatments';
 import type { Treatment } from '../../hooks/useTreatments';
 import type { AppConfigScopes } from '../../hooks/useAppConfig';
+import { EvaluationSummaryReport } from '../components/EvaluationSummaryReport';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, User, Heart, Phone, Search, UserPlus,
   Activity, Sliders, CheckSquare, ClipboardList, Save, Check, Loader2, AlertTriangle,
-  CreditCard, ImagePlus, X, UserCog, ChevronDown,
+  CreditCard, ImagePlus, X, UserCog, ChevronDown, Printer,
 } from 'lucide-react';
 
 const stepIconMap = { User, Heart, Activity, Sliders, ClipboardList, CheckSquare, Save };
@@ -291,6 +292,7 @@ export function NurseIntakeForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const createEvaluation = useCreateEvaluation();
+  const updatePatient = useUpdatePatient();
 
   const [patientInfo, setPatientInfo] = useState<{ name: string; age: string; phone: string; gender: 'Male' | 'Female' | 'Other'; address: string }>({ name: '', age: '', phone: '', gender: 'Male', address: '' });
   const [vitals, setVitals] = useState({ bp_sys: '', bp_dia: '', pr: '', spo2: '', temp: '', ef: '' });
@@ -539,8 +541,8 @@ export function NurseIntakeForm() {
             .map(t => t.treatmentName)
         } : undefined
       });
+      await updatePatient.mutateAsync({ id: patientId, status: 'completed' });
       setSaved(true);
-      setTimeout(() => navigate(`/${currentRole}`), 2000);
     } catch (err: any) {
       setSubmitError(err?.response?.data?.message ?? 'Failed to save evaluation. Please try again.');
     }
@@ -548,6 +550,12 @@ export function NurseIntakeForm() {
 
   const handleNext = () => {
     setSubmitError(null);
+
+    // Validation for Patient Step (Step 0)
+    if (step === 0 && (!patientInfo.condition || patientInfo.condition.length === 0)) {
+      setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
+      return;
+    }
 
     // Validation for Symptoms Step (Step 3, index 2)
     if (step === 2) {
@@ -569,18 +577,65 @@ export function NurseIntakeForm() {
   };
 
   if (saved) {
+    const summaryData = {
+      patientInfo: {
+        name: patientInfo.name || foundPatient?.name || 'Patient',
+        age: patientInfo.age || foundPatient?.age || '',
+        gender: patientInfo.gender || foundPatient?.gender || 'Male',
+        phone: patientInfo.phone || foundPatient?.phone || '',
+        patientId: resolvedPatientId,
+        visitType: visitType,
+        paymentMode: paymentMode,
+        billAmount: billTotal,
+        status: 'submitted',
+      },
+      bp: vitals.bp_sys && vitals.bp_dia ? `${vitals.bp_sys}/${vitals.bp_dia}` : undefined,
+      pr: vitals.pr ? Number(vitals.pr) : undefined,
+      spo2: vitals.spo2 ? Number(vitals.spo2) : undefined,
+      temperature: vitals.temp ? Number(vitals.temp) : undefined,
+      ef: vitals.ef ? Number(vitals.ef) : undefined,
+      painScale: painLevel,
+      chiefComplaints: complaints.trim() ? [complaints.trim()] : (checkedSymptoms.length > 0 ? checkedSymptoms : undefined),
+      medicalHistory: selectedMedicalHistory,
+      associatedSymptoms: checkedSymptoms,
+      associatedPains: associatedPains,
+      treatmentPlan: selectedTreatmentIds.length > 0 ? {
+        modalities: treatments
+          .filter(t => selectedTreatmentIds.includes(t.id))
+          .map(t => t.treatmentName)
+      } : undefined
+    };
+
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-indigo-50 dark:bg-slate-950 font-sans">
-        <div className="flex flex-col items-center p-8 rounded-[24px] mx-6 bg-white dark:bg-slate-900 shadow-xl dark:shadow-none border border-slate-100 dark:border-slate-800 border-opacity-50">
-          <div className="rounded-full flex items-center justify-center mb-4 w-20 h-20 bg-emerald-50 dark:bg-emerald-900/30">
-            <Check className="w-11 h-11 text-emerald-500" />
+      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-y-auto p-4 md:p-8">
+        <div className="max-w-4xl mx-auto w-full bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col gap-6">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <Check className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Patient Intake Summary</h2>
+                <p className="text-xs text-slate-500 font-medium">Successfully saved and generated clinical summary.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
+              >
+                <Printer size={14} /> Print Report
+              </button>
+              <button
+                onClick={() => navigate(`/${currentRole}`)}
+                className="px-5 py-2.5 rounded-xl bg-[#262842] hover:bg-[#3B3E66] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-sm"
+              >
+                Back to Dashboard <ChevronRight size={14} />
+              </button>
+            </div>
           </div>
-          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white text-center">
-            Form Saved!
-          </h2>
-          <p className="text-[13px] text-slate-500 dark:text-slate-400 text-center mt-2">
-            Patient intake data saved successfully.
-          </p>
+
+          <EvaluationSummaryReport evaluation={summaryData} isDoctorRole={currentRole === 'doctor'} />
         </div>
       </div>
     );

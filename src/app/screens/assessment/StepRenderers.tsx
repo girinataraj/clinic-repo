@@ -35,25 +35,13 @@ export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handl
           ))}
         </div>
       </FormField>
-      <FormField label={isDoctorRole ? 'Assigned Therapist *' : 'Assigned Therapist'}>
-        {isDoctorRole ? (
-          <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-[#262842]`}>
-            <UserCog size={14} className="text-slate-400 shrink-0" />
-            <select value={selectedTherapistId} onChange={(e: any) => { setSelectedTherapistId(e.target.value); if (resolvedPatientId && e.target.value) updatePatientMutation.mutate({ id: resolvedPatientId, therapistId: e.target.value }); }} className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white appearance-none cursor-pointer">
-              <option value="">Select therapist…</option>
-              {user?.role === 'doctor' && (
-                <option value={user.id}>Self (Doctor)</option>
-              )}
-              {therapistsList.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
-            <ChevronDown size={12} className="text-slate-400 shrink-0" />
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
-            <UserCog size={14} className="text-teal-600 shrink-0" />
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{user?.name ?? 'You'} (auto)</span>
-          </div>
-        )}
+      <FormField label="Assigned Therapist">
+        <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 opacity-90 cursor-not-allowed">
+          <UserCog size={15} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+          <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
+            Self (Doctor: {user?.name || 'Doctor'})
+          </span>
+        </div>
       </FormField>
       <FormField label="Condition (Check all that apply)">
         <div className="flex gap-4 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">

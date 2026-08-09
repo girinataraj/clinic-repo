@@ -5,6 +5,7 @@ import { ThemeToggle } from './ThemeToggle';
 import {
   Home, Calendar, FileText, User, Users, ClipboardList,
   Activity, LogOut, ChevronRight, IndianRupee, FileSearch, RefreshCw,
+  UserPlus, UserCheck
 } from 'lucide-react';
 
 interface NavItem {
@@ -22,13 +23,16 @@ const navConfig: Record<UserRole, NavItem[]> = {
   ],
   nurse: [
     { label: 'Dashboard', Icon: Home, path: '/nurse' },
-    { label: 'Patients', Icon: Users, path: '/nurse/patients' },
+    { label: 'New Intake', Icon: ClipboardList, path: '/nurse/intake' },
+    { label: 'Add Patient', Icon: UserPlus, path: '/nurse/patient-form' },
     { label: 'Follow Ups', Icon: RefreshCw, path: '/nurse/follow-up' },
     { label: 'Patient History', Icon: FileSearch, path: '/nurse/patient-history' },
     { label: 'Profile', Icon: User, path: '/nurse/profile' },
   ],
   doctor: [
     { label: 'Dashboard', Icon: Home, path: '/doctor' },
+    { label: 'Add Patient', Icon: UserPlus, path: '/doctor/patient-form' },
+    { label: 'Assign Patient', Icon: UserCheck, path: '/doctor/assign-patient' },
     { label: 'Intake Form', Icon: ClipboardList, path: '/doctor/intake' },
     { label: 'Follow Ups', Icon: RefreshCw, path: '/doctor/follow-up' },
     { label: 'Patient History', Icon: FileSearch, path: '/doctor/patient-history' },

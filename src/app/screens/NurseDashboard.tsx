@@ -56,10 +56,10 @@ export function NurseDashboard() {
   };
 
   const rawPatients = patientsData?.data ?? [];
-  // Only display unassessed/waiting patients on the dashboard by default, unless searching
-  const patients = search.trim() !== ''
+  // Display waiting & in-session patients on the dashboard queue by default
+  const patients = search.trim() !== '' || filter !== 'all'
     ? rawPatients
-    : rawPatients.filter(p => p.status === 'waiting');
+    : rawPatients.filter(p => p.status === 'waiting' || p.status === 'in-session');
 
   const firstName = user?.name?.split(' ')[0] || 'Therapist';
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -103,9 +103,8 @@ export function NurseDashboard() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {[
-                { label: 'Waiting', value: waiting, color: 'text-amber-300' },
                 { label: 'In Progress', value: inProgress, color: 'text-blue-300' },
                 { label: 'Completed', value: done, color: 'text-emerald-300' },
               ].map((s) => (
@@ -122,54 +121,6 @@ export function NurseDashboard() {
         <div className="flex-1 overflow-y-auto min-h-0 pb-20 md:pb-6" style={{ scrollbarGutter: 'stable' }}>
         <div className="px-6 max-w-5xl mx-auto w-full mt-6 space-y-5">
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* New Intake */}
-            <button
-              onClick={() => navigate('/nurse/intake')}
-              className="flex items-center gap-3 p-4 rounded-2xl text-left group bg-gradient-to-br from-teal-800 to-teal-500 dark:from-teal-900 dark:to-teal-700 shadow-lg shadow-teal-900/20 dark:shadow-none"
-            >
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                <UserPlus className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-extrabold text-white">New Intake</p>
-                <p className="text-xs text-white/70 mt-0.5">Start patient form</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-white/70 shrink-0" />
-            </button>
-
-            {/* Add Patient */}
-            <button
-              onClick={() => navigate('/nurse/patient-form')}
-              className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
-            >
-              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-900/40 flex items-center justify-center shrink-0">
-                <UserPlus className="w-5 h-5 text-teal-700 dark:text-teal-400" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-extrabold text-slate-900 dark:text-white">Add Patient</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Register new patient</p>
-              </div>
-            </button>
-          </div>
-
-          {/* Status chips */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-              <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{waiting} waiting</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-              <Zap className="w-3 h-3 text-blue-500 fill-blue-500 shrink-0" />
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{inProgress} active</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-              <CheckCircle className="w-3 h-3 text-emerald-500 shrink-0" />
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{done} done</span>
-            </div>
-          </div>
-
           {/* Search */}
           <div className="flex items-center gap-2 px-4 py-1 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <Search className="w-4 h-4 text-slate-400 shrink-0" />
@@ -179,40 +130,6 @@ export function NurseDashboard() {
               placeholder="Search patients or conditions..."
               className="flex-1 outline-none bg-transparent py-3 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
-          </div>
-
-
-
-          {/* Date and Days filters */}
-          <div className="flex flex-wrap gap-4 px-1 py-1">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Date:</span>
-              <input
-                type="date"
-                value={dateFilter}
-                onChange={(e) => {
-                  setDateFilter(e.target.value);
-                  if (e.target.value) setDaysFilter('all');
-                }}
-                className="rounded-xl px-3 py-1.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Days:</span>
-              <select
-                value={daysFilter}
-                onChange={(e) => {
-                  setDaysFilter(e.target.value);
-                  if (e.target.value !== 'all') setDateFilter('');
-                }}
-                className="rounded-xl px-3 py-2 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
-              >
-                <option value="all">Any Day</option>
-                <option value="1">Today</option>
-                <option value="3">Next 3 Days</option>
-                <option value="7">Next 7 Days</option>
-              </select>
-            </div>
           </div>
 
           {/* Patient Queue heading */}
@@ -265,6 +182,11 @@ export function NurseDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
                         <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{patient.name}</p>
+                        {patient.therapistName && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-800 shrink-0">
+                            Therapist: {patient.therapistName}
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{patient.condition ?? '—'} · Age {patient.age}</p>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">

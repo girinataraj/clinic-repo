@@ -99,7 +99,7 @@ export function PatientForm() {
         });
       }
       setSuccess(true);
-      setTimeout(() => navigate(`${basePath}/patients`), 1200);
+      setTimeout(() => navigate(role === 'doctor' ? '/doctor' : '/nurse/patients'), 1200);
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to save patient. Please try again.');
     }

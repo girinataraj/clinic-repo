@@ -12,8 +12,6 @@ export interface StaffUser {
   name: string;
 }
 
-const ALLOWED_THERAPIST_NAMES = ['Sathish', 'Rahul', 'Yokesh', 'Dr. Sathish'];
-
 export function useStaffUsers(params?: { role?: 'doctor' | 'nurse'; search?: string }) {
   return useQuery<StaffUser[]>({
     queryKey: ['staff-users', params],
@@ -23,7 +21,7 @@ export function useStaffUsers(params?: { role?: 'doctor' | 'nurse'; search?: str
         if (therapistRes?.success && Array.isArray(therapistRes.data)) {
           return therapistRes.data.map(t => ({
             id: t.id,
-            displayId: t.id.slice(0, 8),
+            displayId: t.displayId || t.id.slice(0, 8),
             role: (t.role === 'self' ? 'doctor' : 'nurse') as any,
             name: t.name,
           }));
@@ -36,9 +34,7 @@ export function useStaffUsers(params?: { role?: 'doctor' | 'nurse'; search?: str
         ENDPOINTS.USERS.STAFF,
         { params }
       );
-      const filtered = (data.data || []).filter(u => 
-        ALLOWED_THERAPIST_NAMES.some(allowed => u.name.toLowerCase().includes(allowed.toLowerCase()))
-      );
+      const staffList = data.data || [];
 
       const getOrderIndex = (name: string) => {
         const lower = name.toLowerCase();
@@ -48,7 +44,7 @@ export function useStaffUsers(params?: { role?: 'doctor' | 'nurse'; search?: str
         return 4;
       };
 
-      return filtered.sort((a, b) => getOrderIndex(a.name) - getOrderIndex(b.name));
+      return [...staffList].sort((a, b) => getOrderIndex(a.name) - getOrderIndex(b.name));
     },
   });
 }

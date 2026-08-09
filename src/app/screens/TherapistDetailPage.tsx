@@ -1,11 +1,11 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
-import { useStaffUsers } from '../../hooks/useStaff';
+import { useStaffUsers, useDeleteStaffUser } from '../../hooks/useStaff';
 import { usePatients } from '../../hooks/usePatients';
 import {
   ArrowLeft, UserCog, Users, User, Activity, Zap, CheckCircle,
-  Phone, Clock, Eye, ClipboardList, FileText, Loader2,
+  Phone, Clock, Eye, ClipboardList, FileText, Loader2, Trash2,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; darkColor: string; bg: string; darkBg: string; dot: string }> = {
@@ -22,6 +22,21 @@ export function TherapistDetailPage() {
 
   const { data: therapists = [], isLoading: therapistsLoading } = useStaffUsers({ role: 'nurse' });
   const { data: patientsData, isLoading: patientsLoading } = usePatients({ limit: 200 });
+  const deleteStaffUser = useDeleteStaffUser();
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDeleteTherapist = async () => {
+    if (!id) return;
+    setDeleteError(null);
+    try {
+      await deleteStaffUser.mutateAsync(id);
+      navigate('/doctor/therapists');
+    } catch (err: any) {
+      setDeleteError(err?.response?.data?.message ?? 'Failed to remove therapist.');
+    }
+  };
 
   const therapist = useMemo(() => therapists.find(t => t.id === id), [therapists, id]);
   const allPatients = patientsData?.data ?? [];
@@ -107,6 +122,12 @@ export function TherapistDetailPage() {
               {therapist.displayId} · Therapist · SAAI Clinic
             </p>
           </div>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-red-500/20 text-red-100 border border-red-300/30 hover:bg-red-500/30 transition-colors"
+          >
+            <Trash2 size={14} /> Remove
+          </button>
         </div>
       </div>
 
@@ -232,6 +253,44 @@ export function TherapistDetailPage() {
       <div className="md:hidden" style={{ borderTop: '1px solid #E8E9F1', background: '#FEFFFF' }}>
         <BottomNav role="doctor" />
       </div>
+
+      {/* Remove Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-3xl p-5 bg-white dark:bg-slate-800 shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-600 shrink-0">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-extrabold text-slate-900 dark:text-white">Remove Therapist</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Confirm removal</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+              Are you sure you want to remove <strong className="text-slate-900 dark:text-white">{therapist.name}</strong>? Their credentials will be deactivated immediately, and any assigned patients will become unassigned.
+            </p>
+            {deleteError && (
+              <p className="text-[11px] font-semibold text-red-600 mb-3">{deleteError}</p>
+            )}
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteTherapist}
+                disabled={deleteStaffUser.isPending}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
+              >
+                {deleteStaffUser.isPending ? 'Removing...' : 'Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
