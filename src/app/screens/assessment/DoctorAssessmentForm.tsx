@@ -8,8 +8,7 @@ import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } fro
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
 import { useStaffUsers } from '../../../hooks/useStaff';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone, RotateCcw, UserCheck, Printer } from 'lucide-react';
-import { EvaluationSummaryReport } from '../../components/EvaluationSummaryReport';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone, RotateCcw } from 'lucide-react';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount, type CardioExamData, getEmptyCardioExam } from './clinicalConfig';
 import { SectionCard, FormField, doctorInputClass } from './FormComponents';
 import { StepPatient, StepVitals, StepComplaints, StepPainScale, StepHistory, StepExamination, StepDiagnosis, StepTreatment } from './StepRenderers';
@@ -37,13 +36,7 @@ export function DoctorAssessmentForm() {
   const createPatientMutation = useCreatePatient();
   const updatePatientMutation = useUpdatePatient();
   const { data: therapistsList = [] } = useStaffUsers({ role: 'nurse' });
-  const [selectedTherapistId, setSelectedTherapistId] = useState(user?.id || '');
-
-  useEffect(() => {
-    if (user?.id) {
-      setSelectedTherapistId(user.id);
-    }
-  }, [user]);
+  const [selectedTherapistId, setSelectedTherapistId] = useState('');
   const { data: patientById } = usePatient(resolvedPatientId && !foundPatient ? resolvedPatientId : null);
 
   // Form state
@@ -51,8 +44,8 @@ export function DoctorAssessmentForm() {
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
   const [saved, setSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string|null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const createEvaluation = useCreateEvaluation();
-  const updatePatient = useUpdatePatient();
 
   const [patientInfo, setPatientInfo] = useState<{name:string;age:string;phone:string;gender:'Male'|'Female'|'Other';address:string;condition:string[]}>({name:'',age:'',phone:'',gender:'Male',address:'',condition:[]});
   const [vitals, setVitals] = useState({bp_sys:'',bp_dia:'',pr:'',spo2:'',temp:'',ef:''});
@@ -186,7 +179,7 @@ export function DoctorAssessmentForm() {
   const handleCreateNewPatient = async () => {
     if (!newPatient.name||!newPatient.age) return;
     try {
-      const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),condition:newPatient.condition||undefined,therapistId:selectedTherapistId||undefined});
+      const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),condition:newPatient.condition||undefined,referredBy:newPatient.referredBy.trim()||undefined,therapistId:selectedTherapistId||undefined});
       setResolvedPatientId(created.id);
       setPatientInfo({name:created.name,age:String(created.age),phone:created.phone??phoneInput.trim(),gender:created.gender as any,address:created.city??''});
       setShowNewPatientForm(false); setStep(1);
@@ -196,10 +189,11 @@ export function DoctorAssessmentForm() {
   const handlePhotoChange = (e:ChangeEvent<HTMLInputElement>) => { const f=e.target.files?.[0]; if (!f) return; if (!f.type.startsWith('image/')) { setSubmitError('Please upload an image.'); return; } setSubmitError(null); setIntakePhoto(f); };
   const handlePhotoRemove = () => { setIntakePhoto(null); setPhotoInputKey(p=>p+1); };
   const handleSave = async () => {
+    if (isSubmitting || createEvaluation.isPending || updatePatientMutation.isPending) return;
+    setIsSubmitting(true);
     setSubmitError(null);
-    if (!resolvedPatientId) { setSubmitError('No patient resolved.'); return; }
-    if (!patientInfo.condition || patientInfo.condition.length === 0) { setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio).'); return; }
-    if (!paymentMode || billTotal <= 0) { setSubmitError('Please select treatments and a payment mode.'); return; }
+    if (!resolvedPatientId) { setSubmitError('No patient resolved.'); setIsSubmitting(false); return; }
+    if (!paymentMode || billTotal <= 0) { setSubmitError('Please select treatments and a payment mode.'); setIsSubmitting(false); return; }
     const vitalsPayload: Record<string,unknown> = {};
     if (vitals.bp_sys&&vitals.bp_dia) vitalsPayload.bp=`${vitals.bp_sys}/${vitals.bp_dia}`;
     if (vitals.pr) vitalsPayload.pr=Number(vitals.pr);
@@ -262,18 +256,12 @@ export function DoctorAssessmentForm() {
         mriFindings: treatmentPlanData.mriFindings || undefined,
         pftFindings: treatmentPlanData.pftFindings || undefined,
       });
-      if (resolvedPatientId) {
-        await updatePatient.mutateAsync({ id: resolvedPatientId, status: 'completed' });
-      }
       setSaved(true);
-      setTimeout(() => {
-        if (resolvedPatientId) {
-          navigate(`/${currentRole}/patient/${resolvedPatientId}`);
-        } else {
-          navigate(`/${currentRole}`);
-        }
-      }, 1500);
-    } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to save.'); }
+      setTimeout(() => navigate(`/${currentRole}/patient-history?patientId=${resolvedPatientId}`), 1000);
+    } catch (err:any) { 
+      setSubmitError(err?.response?.data?.message??'Failed to save.');
+      setIsSubmitting(false);
+    }
   };
 
   const hasNeuro = patientInfo.condition?.includes('Neuro');
@@ -307,64 +295,16 @@ export function DoctorAssessmentForm() {
   const isPhotoUploaded = Boolean(intakePhoto);
 
   if (saved) {
-    const summaryData = {
-      patientInfo: {
-        name: patientInfo.name || foundPatient?.name || 'Patient',
-        age: patientInfo.age || foundPatient?.age || '',
-        gender: patientInfo.gender || foundPatient?.gender || 'Male',
-        phone: patientInfo.phone || foundPatient?.phone || '',
-        patientId: resolvedPatientId,
-        visitType: visitType,
-        paymentMode: paymentMode,
-        billAmount: billAmount !== null ? billAmount : billTotal,
-        status: 'submitted',
-      },
-      bp: vitals.bp_sys && vitals.bp_dia ? `${vitals.bp_sys}/${vitals.bp_dia}` : undefined,
-      pr: vitals.pr ? Number(vitals.pr) : undefined,
-      spo2: vitals.spo2 ? Number(vitals.spo2) : undefined,
-      temperature: vitals.temp ? Number(vitals.temp) : undefined,
-      ef: vitals.ef ? Number(vitals.ef) : undefined,
-      painScale: painLevel,
-      chiefComplaints: chiefComplaints.length > 0 ? chiefComplaints : (complaintsText ? [complaintsText] : undefined),
-      medicalHistory: selectedMedicalHistory,
-      associatedSymptoms: associatedSymptoms,
-      rangeOfMotion: romData,
-      neurologicalExamination: neuroData,
-      cardioData: cardioData,
-      diagnosis: { notes: diagnosisNotes },
-      treatmentPlan: treatmentPlanData,
-    };
-
     return (
-      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-y-auto p-4 md:p-8">
-        <div className="max-w-4xl mx-auto w-full bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col gap-6">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                <Check className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div>
-                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Doctor Clinical Assessment Summary</h2>
-                <p className="text-xs text-slate-500 font-medium">Successfully saved clinical evaluation & assessment.</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => window.print()}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
-              >
-                <Printer size={14} /> Print Report
-              </button>
-              <button
-                onClick={() => navigate(`/${currentRole}`)}
-                className="px-5 py-2.5 rounded-xl bg-[#262842] hover:bg-[#3B3E66] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-sm"
-              >
-                Back to Dashboard <ChevronRight size={14} />
-              </button>
-            </div>
+      <div className="h-full flex flex-col items-center justify-center bg-[#E8E9F1] dark:bg-slate-950">
+        <div className="flex flex-col items-center p-8 rounded-[32px] mx-6 bg-white dark:bg-slate-900 shadow-xl shadow-indigo-500/10 border border-slate-100 dark:border-slate-800">
+          <div className="rounded-full flex items-center justify-center mb-5 w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30">
+            <Check className="w-11 h-11 text-indigo-600" />
           </div>
-
-          <EvaluationSummaryReport evaluation={summaryData} isDoctorRole={true} />
+          <h2 className="text-[22px] font-black text-slate-900 dark:text-white text-center tracking-tight">Assessment Saved!</h2>
+          <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 text-center mt-2 leading-relaxed">
+            Assessment saved and session started.
+          </p>
         </div>
       </div>
     );
@@ -438,8 +378,17 @@ export function DoctorAssessmentForm() {
             value={phoneInput}
             onChange={setPhoneInput}
             onSelect={(patient: any) => {
-              setPhoneInput(patient.mobile);
-              setPhoneToFetch(patient.mobile);
+              setPhoneInput(patient.mobile || patient.phone);
+              setPhoneToFetch(patient.mobile || patient.phone);
+              setResolvedPatientId(patient.id);
+              setPatientInfo({
+                name: patient.name ?? '',
+                age: patient.age ? String(patient.age) : '',
+                phone: patient.phone || patient.mobile || '',
+                gender: (patient.gender as any) ?? 'Male',
+                address: patient.city ?? '',
+                condition: patient.condition ? patient.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x)) : []
+              });
               setLookupDone(true);
               setShowNewPatientForm(false);
             }}
@@ -489,6 +438,7 @@ export function DoctorAssessmentForm() {
                 <input placeholder="Full Name *" value={newPatient.name} onChange={e=>setNewPatient(p=>({...p,name:e.target.value}))} className="col-span-2 px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
                 <input placeholder="Age *" type="number" value={newPatient.age} onChange={e=>setNewPatient(p=>({...p,age:e.target.value}))} className="px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
                 <select value={newPatient.gender} onChange={e=>setNewPatient(p=>({...p,gender:e.target.value as any}))} className="px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] transition-colors"><option>Male</option><option>Female</option><option>Other</option></select>
+                <input placeholder="Referred By (e.g. Dr. Smith / Self)" value={newPatient.referredBy} onChange={e=>setNewPatient(p=>({...p,referredBy:e.target.value}))} className="col-span-2 px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
               </div>
               <div className="flex gap-4 mt-2">
                 <button onClick={()=>setShowNewPatientForm(false)} className="flex-1 py-3.5 rounded-2xl border border-slate-200 text-[14px] font-black text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
@@ -596,8 +546,8 @@ export function DoctorAssessmentForm() {
                 </FormField>
               </SectionCard>
 
-              <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-5 rounded-[22px] flex items-center justify-center gap-3 text-white text-[16px] font-black shadow-xl shadow-indigo-600/30 disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] transition-all active:scale-[0.98]">
-                {createEvaluation.isPending?<><Loader2 size={22} className="animate-spin" /> Submitting…</>:<><Save size={22} /> Finalize & Start Session</>}
+              <button onClick={handleSave} disabled={isSubmitting || createEvaluation.isPending || updatePatientMutation.isPending} className="w-full mt-2 py-5 rounded-[22px] flex items-center justify-center gap-3 text-white text-[16px] font-black shadow-xl shadow-indigo-600/30 disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] transition-all active:scale-[0.98]">
+                {(isSubmitting || createEvaluation.isPending || updatePatientMutation.isPending) ? <><Loader2 size={22} className="animate-spin" /> Submitting…</> : <><Save size={22} /> Finalize & Start Session</>}
               </button>
             </div>
           )}
@@ -632,10 +582,6 @@ export function DoctorAssessmentForm() {
                 onClick={() => { 
                   if (step === 0 && !resolvedPatientId) {
                     setSubmitError('Please resolve a patient before continuing.');
-                    return;
-                  }
-                  if (step === 0 && (!patientInfo.condition || patientInfo.condition.length === 0)) {
-                    setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
                     return;
                   }
                   setSubmitError(null); 

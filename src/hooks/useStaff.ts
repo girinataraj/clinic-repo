@@ -15,36 +15,41 @@ export interface StaffUser {
 export function useStaffUsers(params?: { role?: 'doctor' | 'nurse'; search?: string }) {
   return useQuery<StaffUser[]>({
     queryKey: ['staff-users', params],
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       try {
-        const { data: therapistRes } = await api.get<{ success: boolean; data: any[] }>('/therapists/list');
-        if (therapistRes?.success && Array.isArray(therapistRes.data)) {
-          return therapistRes.data.map(t => ({
-            id: t.id,
-            displayId: t.displayId || t.id.slice(0, 8),
-            role: (t.role === 'self' ? 'doctor' : 'nurse') as any,
-            name: t.name,
+        const queryParams: Record<string, any> = { ...params };
+        if (queryParams.role === 'nurse') {
+          queryParams.role = 'therapist';
+        }
+        const { data } = await api.get<ApiEnvelope<StaffUser[]>>(
+          ENDPOINTS.USERS.STAFF,
+          { params: queryParams }
+        );
+        if (data?.success && Array.isArray(data.data)) {
+          return data.data.map(u => ({
+            ...u,
+            role: u.role === ('therapist' as any) ? 'nurse' : u.role
           }));
         }
       } catch {
-        // Fallback to staff endpoint
+        // Fallback to legacy endpoint if primary staff query encounters an issue
+        try {
+          const { data: therapistRes } = await api.get<{ success: boolean; data: any[] }>('/therapists/list');
+          if (therapistRes?.success && Array.isArray(therapistRes.data)) {
+            return therapistRes.data.map(t => ({
+              id: t.id,
+              displayId: t.id.slice(0, 8),
+              role: (t.role === 'self' ? 'doctor' : 'nurse') as any,
+              name: t.name,
+            }));
+          }
+        } catch {
+          // Ignore fallback error
+        }
       }
-
-      const { data } = await api.get<ApiEnvelope<StaffUser[]>>(
-        ENDPOINTS.USERS.STAFF,
-        { params }
-      );
-      const staffList = data.data || [];
-
-      const getOrderIndex = (name: string) => {
-        const lower = name.toLowerCase();
-        if (lower.includes('sathish')) return 1;
-        if (lower.includes('rahul')) return 2;
-        if (lower.includes('yokesh')) return 3;
-        return 4;
-      };
-
-      return [...staffList].sort((a, b) => getOrderIndex(a.name) - getOrderIndex(b.name));
+      return [];
     },
   });
 }
