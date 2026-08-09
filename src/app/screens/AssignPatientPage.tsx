@@ -246,14 +246,24 @@ export function AssignPatientPage() {
                 className="w-full rounded-2xl px-4 py-3.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 cursor-pointer"
               >
                 <option value="">-- Choose Therapist --</option>
-                {user?.role === 'doctor' && (
-                  <option value={user.id}>Self (Doctor Sathish)</option>
+                {user?.role === 'doctor' && user?.id && (
+                  <option value={user.id}>Self ({user.name || 'Doctor'})</option>
                 )}
-                {therapists.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
+                {therapists
+                  .filter((t) => {
+                    if (!user) return true;
+                    const norm = (s?: string) => (s || '').trim().toLowerCase().replace(/^dr\.?\s*/i, '');
+                    const isSameId = Boolean(t.id && user.id && String(t.id) === String(user.id));
+                    const tNorm = norm(t.name);
+                    const uNorm = norm(user.name);
+                    const isSameName = Boolean(tNorm && uNorm && tNorm === uNorm);
+                    return !isSameId && !isSameName;
+                  })
+                  .map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
               </select>
             </div>
 

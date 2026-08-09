@@ -301,9 +301,19 @@ export function PatientForm() {
                         <option value={user.id}>Self ({user.name || 'Doctor'})</option>
                       )}
                       {therapistsLoading && <option disabled>Loading…</option>}
-                      {therapists.map((t) => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
+                      {therapists
+                        .filter((t) => {
+                          if (!user) return true;
+                          const norm = (s?: string) => (s || '').trim().toLowerCase().replace(/^dr\.?\s*/i, '');
+                          const isSameId = Boolean(t.id && user.id && String(t.id) === String(user.id));
+                          const tNorm = norm(t.name);
+                          const uNorm = norm(user.name);
+                          const isSameName = Boolean(tNorm && uNorm && tNorm === uNorm);
+                          return !isSameId && !isSameName;
+                        })
+                        .map((t) => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
                     </select>
                     <ChevronDown size={14} className="text-slate-400 shrink-0 pointer-events-none" />
                   </div>
