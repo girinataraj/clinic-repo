@@ -132,7 +132,9 @@ export function PatientHistorySearch() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Assessment_${displayId}.pdf`);
+      const cleanName = (patient?.name || 'Patient').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+      const cleanId = displayId || patient?.display_id || 'ID';
+      link.setAttribute('download', `Patient_Report_${cleanName}_${cleanId}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
@@ -151,7 +153,9 @@ export function PatientHistorySearch() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Assessment_Report_${assId.substring(0, 8)}.pdf`);
+      const cleanName = (patient?.name || 'Patient').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+      const cleanId = patient?.display_id || assId.substring(0, 8);
+      link.setAttribute('download', `Patient_Report_${cleanName}_${cleanId}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);

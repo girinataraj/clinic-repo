@@ -450,24 +450,27 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
               >
                 <div className="flex flex-col gap-4">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-[11px] text-slate-800 dark:text-slate-200 text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                    <table
+                      className="w-full text-[11px] text-slate-800 dark:text-slate-200 text-left border border-slate-200 dark:border-slate-800"
+                      style={{ tableLayout: 'auto', borderCollapse: 'collapse', width: '100%' }}
+                    >
                       <thead>
                         <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-black">
-                          <th className="p-2.5 border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550 w-44">Sensation</th>
-                          <th className="p-2.5 border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550 text-center" colSpan={2}>Upper Extremity</th>
-                          <th className="p-2.5 border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550 text-center" colSpan={2}>Lower Extremity</th>
-                          <th className="p-2.5 border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550 text-center" colSpan={2}>Trunk</th>
-                          <th className="p-2.5 uppercase text-slate-550">Comments</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550" style={{ verticalAlign: 'middle', padding: '6px 8px' }}>Sensation</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550 text-center" colSpan={2} style={{ verticalAlign: 'middle', padding: '6px 4px' }}>Upper Extremity</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550 text-center" colSpan={2} style={{ verticalAlign: 'middle', padding: '6px 4px' }}>Lower Extremity</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550 text-center" colSpan={2} style={{ verticalAlign: 'middle', padding: '6px 4px' }}>Trunk</th>
+                          <th className="uppercase text-slate-550" style={{ verticalAlign: 'middle', padding: '6px 8px' }}>Comments</th>
                         </tr>
                         <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 font-bold">
-                          <th className="p-2 border-r border-slate-200 dark:border-slate-800">Location</th>
-                          <th className="p-1 border-r border-slate-200 dark:border-slate-850 text-center w-12">Rt</th>
-                          <th className="p-1 border-r border-slate-200 dark:border-slate-800 text-center w-12">Lt</th>
-                          <th className="p-1 border-r border-slate-200 dark:border-slate-850 text-center w-12">Rt</th>
-                          <th className="p-1 border-r border-slate-200 dark:border-slate-800 text-center w-12">Lt</th>
-                          <th className="p-1 border-r border-slate-200 dark:border-slate-850 text-center w-12">Rt</th>
-                          <th className="p-1 border-r border-slate-200 dark:border-slate-800 text-center w-12">Lt</th>
-                          <th className="p-2 font-black"></th>
+                          <th className="border-r border-slate-200 dark:border-slate-800" style={{ verticalAlign: 'middle', padding: '6px 8px' }}>Location</th>
+                          <th className="border-r border-slate-200 dark:border-slate-850 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Rt</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Lt</th>
+                          <th className="border-r border-slate-200 dark:border-slate-850 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Rt</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Lt</th>
+                          <th className="border-r border-slate-200 dark:border-slate-850 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Rt</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Lt</th>
+                          <th className="font-black" style={{ verticalAlign: 'middle', padding: '6px 8px' }}></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -495,19 +498,48 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                         ].map((section) => (
                           <React.Fragment key={section.cat}>
                             <tr className="bg-slate-100/60 dark:bg-slate-850/40 font-black">
-                              <td className="p-2 border-r border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-350" colSpan={8}>
+                              <td
+                                className="border-r border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-350"
+                                colSpan={8}
+                                style={{
+                                  paddingTop: '12px',
+                                  paddingBottom: '4px',
+                                  paddingLeft: '8px',
+                                  paddingRight: '8px',
+                                  fontWeight: 600,
+                                  fontSize: '12px',
+                                  verticalAlign: 'middle'
+                                }}
+                              >
                                 {section.cat}
                               </td>
                             </tr>
                             {section.rows.map((r) => (
                               <tr key={r.key} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/30 dark:hover:bg-slate-850/5">
-                                <td className="p-2 border-r border-slate-200 dark:border-slate-800 font-medium pl-4">{r.name}</td>
+                                <td
+                                  className="border-r border-slate-200 dark:border-slate-800 font-medium pl-3"
+                                  style={{ verticalAlign: 'middle', padding: '5px 8px' }}
+                                >
+                                  {r.name}
+                                </td>
                                 {['ueRt', 'ueLt', 'leRt', 'leLt', 'tRt', 'tLt'].map((side) => (
-                                  <td key={side} className="p-1 border-r border-slate-200 dark:border-slate-850">
+                                  <td
+                                    key={side}
+                                    className="border-r border-slate-200 dark:border-slate-850 text-center"
+                                    style={{ verticalAlign: 'middle', padding: '3px 2px', textAlign: 'center' }}
+                                  >
                                     <select
                                       value={neuroData.sensory?.[r.key]?.[side] || ''}
                                       onChange={(e) => updateNested(['sensory', r.key, side], e.target.value)}
-                                      className={tableSelectClass}
+                                      className="text-center text-[11px] text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded bg-white dark:bg-slate-950 cursor-pointer font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                      style={{
+                                        width: '74px',
+                                        minWidth: '74px',
+                                        maxWidth: '74px',
+                                        fontSize: '11px',
+                                        padding: '2px 1px',
+                                        boxSizing: 'border-box',
+                                      }}
                                     >
                                       <option value="">Select</option>
                                       <option value="Normal">Normal</option>
@@ -515,12 +547,19 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                                     </select>
                                   </td>
                                 ))}
-                                <td className="p-1">
+                                <td style={{ verticalAlign: 'middle', padding: '5px 8px' }}>
                                   <input
                                     type="text"
                                     value={neuroData.sensory?.[r.key]?.comments || ''}
                                     onChange={(e) => updateNested(['sensory', r.key, 'comments'], e.target.value)}
                                     className={commentInputClass}
+                                    style={{
+                                      width: '100%',
+                                      minWidth: 0,
+                                      fontSize: '11px',
+                                      padding: '3px 6px',
+                                      boxSizing: 'border-box',
+                                    }}
                                     placeholder="Add notes..."
                                   />
                                 </td>

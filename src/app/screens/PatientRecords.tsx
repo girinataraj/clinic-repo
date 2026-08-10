@@ -46,13 +46,24 @@ export function PatientRecords() {
     const id = recordId ?? selectedRecord?.id;
     if (!id) return;
 
-    const response = await api.get(ENDPOINTS.REPORTS.PDF(id), {
-      responseType: 'blob',
-    });
-    const blob = new Blob([response.data], { type: 'application/pdf' });
-    const url = window.URL.createObjectURL(blob);
-    window.open(url, '_blank', 'noopener,noreferrer');
-    window.setTimeout(() => window.URL.revokeObjectURL(url), 30_000);
+    try {
+      const response = await api.get(ENDPOINTS.REPORTS.PDF(id), {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const pName = (selectedRecord?.patient_name || 'Patient').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+      const pId = selectedRecord?.patient_display_id || selectedRecord?.patientId || 'ID';
+      link.setAttribute('download', `Patient_Report_${pName}_${pId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download PDF:', err);
+    }
   };
 
   // ── Detail View ───────────────────────────────────────────────────────────

@@ -388,10 +388,10 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
       }
 
       let response;
-      if (patId) {
-        response = await api.get(ENDPOINTS.REPORTS.PATIENT_REPORT_PDF(String(patId)), { responseType: 'blob' });
-      } else if (evalId) {
+      if (evalId) {
         response = await api.get(ENDPOINTS.REPORTS.PDF(String(evalId)), { responseType: 'blob' });
+      } else if (patId) {
+        response = await api.get(`/assessments/${patId}/download`, { responseType: 'blob' });
       }
 
       if (response && response.data) {
@@ -399,7 +399,9 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', `Report-${(patientName || 'Patient').replace(/\s+/g, '-')}-${String(evalId || patId || '').substring(0, 8)}.pdf`);
+        const cleanName = (patientName || 'Patient').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+        const cleanId = patientDisplayId || patId || evalId || 'ID';
+        link.setAttribute('download', `Patient_Report_${cleanName}_${cleanId}.pdf`);
         document.body.appendChild(link);
         link.click();
         link.remove();
