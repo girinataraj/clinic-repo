@@ -27,7 +27,8 @@ function getErrorInfo(error: unknown): { message: string; icon: React.ReactNode 
     };
   }
 
-  if (status === 404) {
+  // eslint-disable-next-line eqeqeq
+  if (status == 404) {
     return {
       message: serverMsg || 'The requested resource was not found.',
       icon: <AlertTriangle className="w-5 h-5 text-orange-500" />,
