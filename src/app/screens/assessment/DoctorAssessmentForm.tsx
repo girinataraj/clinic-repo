@@ -238,6 +238,7 @@ export function DoctorAssessmentForm() {
         phone: patientInfo.phone,
         city: patientInfo.address,
         condition: patientInfo.condition && patientInfo.condition.length > 0 ? patientInfo.condition.join(', ') : '',
+        referredBy: patientInfo.referredBy || undefined,
       });
 
       // 2. Create the evaluation record
@@ -264,7 +265,9 @@ export function DoctorAssessmentForm() {
         } : undefined,
         management: examinationNotes.trim() || undefined,
         status: 'submitted',
-        paymentMode, billAmount: isManualBillEdit ? (billAmount !== null ? billAmount : 0) : (billAmount !== null ? billAmount : billTotal), visitType,
+        paymentMode, billAmount: isManualBillEdit ? (billAmount !== null ? billAmount : 0) : (billAmount !== null ? billAmount : billTotal),
+        visitType,
+        referredBy: patientInfo.referredBy || undefined,
         associatedPains: chiefComplaints.length>0 ? chiefComplaints : undefined,
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,

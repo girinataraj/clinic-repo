@@ -22,6 +22,7 @@ export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selecte
           { key: 'age', label: 'Age', placeholder: 'e.g. 32', type: 'number' },
           { key: 'phone', label: 'Phone', placeholder: '9876543210', type: 'tel' },
           { key: 'address', label: 'Address', placeholder: 'City / area', type: 'text' },
+          { key: 'referredBy', label: 'Referred By', placeholder: 'e.g. Self, Dr. Kumar', type: 'text' },
         ].map(f => (
           <FormField key={f.key} label={f.label}>
             <input type={f.type} value={(patientInfo as any)[f.key]} onChange={e => setPatientInfo({ ...patientInfo, [f.key]: e.target.value })} placeholder={f.placeholder} className={ic} />

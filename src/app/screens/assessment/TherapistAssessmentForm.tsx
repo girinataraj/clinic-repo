@@ -98,20 +98,18 @@ export function TherapistAssessmentForm() {
 
   useEffect(() => {
     if (patientById && !foundPatient && resolvedPatientId) {
-      const cond = patientById.condition
-        ? patientById.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
-        : [];
-      setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??'',condition:cond});
+      const condStr = patientById.condition || '';
+      const cond = condStr.split(',').map(s=>s.trim()).filter(Boolean);
+      setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??'',condition:cond,referredBy:patientById.referredBy??patientById.referred_by??''});
       setPhoneInput(patientById.phone??phoneToFetch);
     }
   }, [patientById, foundPatient, resolvedPatientId, phoneToFetch]);
 
   useEffect(() => {
     if (foundPatient && resolvedPatientId && resolvedPatientId === foundPatient.id) {
-      const cond = foundPatient.condition
-        ? foundPatient.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
-        : [];
-      setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??'',condition:cond});
+      const condStr = foundPatient.condition || '';
+      const cond = condStr.split(',').map(s=>s.trim()).filter(Boolean);
+      setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??'',condition:cond,referredBy:foundPatient.referredBy??foundPatient.referred_by??''});
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);
 
@@ -150,9 +148,8 @@ export function TherapistAssessmentForm() {
   const handleUseFoundPatient = useCallback(() => {
     if (!foundPatient) return;
     setResolvedPatientId(foundPatient.id);
-    const cond = foundPatient.condition
-      ? foundPatient.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
-      : [];
+    const condStr = foundPatient.condition || '';
+    const cond = condStr.split(',').map(s=>s.trim()).filter(Boolean);
     setPatientInfo({
       name: foundPatient.name ?? '',
       age: foundPatient.age ? String(foundPatient.age) : '',
@@ -160,7 +157,7 @@ export function TherapistAssessmentForm() {
       gender: (foundPatient.gender as any) ?? 'Male',
       address: foundPatient.city ?? '',
       condition: cond,
-      referredBy: foundPatient.referredBy
+      referredBy: foundPatient.referredBy ?? foundPatient.referred_by ?? ''
     });
   }, [foundPatient, phoneToFetch]);
 
@@ -214,6 +211,7 @@ export function TherapistAssessmentForm() {
         phone: patientInfo.phone,
         city: patientInfo.address,
         condition: patientInfo.condition && patientInfo.condition.length > 0 ? patientInfo.condition.join(', ') : '',
+        referredBy: patientInfo.referredBy || undefined,
       });
 
       // 2. Create the evaluation record
@@ -241,6 +239,7 @@ export function TherapistAssessmentForm() {
         management: examinationNotes.trim() || undefined,
         status: 'submitted',
         paymentMode, billAmount: billAmount !== null ? billAmount : billTotal, visitType,
+        referredBy: patientInfo.referredBy || undefined,
         associatedPains: chiefComplaints.length>0 ? chiefComplaints : undefined,
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
@@ -310,6 +309,7 @@ export function TherapistAssessmentForm() {
         paymentMode: paymentMode,
         billAmount: billAmount !== null ? billAmount : billTotal,
         status: 'submitted',
+        referredBy: patientInfo.referredBy || foundPatient?.referredBy || foundPatient?.referred_by || '',
       },
       bp: vitals.bp_sys && vitals.bp_dia ? `${vitals.bp_sys}/${vitals.bp_dia}` : undefined,
       pr: vitals.pr ? Number(vitals.pr) : undefined,
@@ -604,7 +604,7 @@ export function TherapistAssessmentForm() {
                 Back
               </button>
             )}
-            {isPhotoUploaded && step < totalSteps - 1 && (
+            {step < totalSteps - 1 && (
               <button
                 onClick={() => { 
                   if (step === 0 && !resolvedPatientId) {

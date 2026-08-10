@@ -179,7 +179,7 @@ export function NurseIntakeForm() {
     Boolean(searchParams.get('patientId') || searchParams.get('phone'))
   );
   const [showNewPatientForm, setShowNewPatientForm] = useState(false);
-  const [newPatient, setNewPatient] = useState<{ name: string; age: string; gender: 'Male' | 'Female' | 'Other'; condition: string }>({ name: '', age: '', gender: 'Male', condition: '' });
+  const [newPatient, setNewPatient] = useState<{ name: string; age: string; gender: 'Male' | 'Female' | 'Other'; condition: string; referredBy: string }>({ name: '', age: '', gender: 'Male', condition: '', referredBy: '' });
 
   const { data: foundPatient, isLoading: lookingUp, isError: lookupError } = usePatientByPhone(
     phoneToFetch.trim().length >= 7 ? phoneToFetch.trim() : null
@@ -204,6 +204,9 @@ export function NurseIntakeForm() {
         phone: patientById.phone ?? phoneToFetch,
         gender: (patientById.gender as 'Male' | 'Female' | 'Other') ?? 'Male',
         address: patientById.city ?? '',
+        referredBy: patientById.referredBy ?? patientById.referred_by ?? '',
+        condition: patientById.condition ?? '',
+        fileNumber: patientById.fileNumber ?? '',
       });
       setPhoneInput(patientById.phone ?? phoneToFetch);
       setPhoneToFetch(patientById.phone ?? phoneToFetch);
@@ -220,6 +223,9 @@ export function NurseIntakeForm() {
         phone: foundPatient.phone ?? phoneToFetch,
         gender: (foundPatient.gender as 'Male' | 'Female' | 'Other') ?? 'Male',
         address: foundPatient.city ?? '',
+        referredBy: foundPatient.referredBy ?? foundPatient.referred_by ?? '',
+        condition: foundPatient.condition ?? '',
+        fileNumber: foundPatient.fileNumber ?? '',
       });
       if (foundPatient.therapistId) setSelectedTherapistId(foundPatient.therapistId);
     }
@@ -242,6 +248,9 @@ export function NurseIntakeForm() {
       phone: foundPatient.phone ?? phoneToFetch,
       gender: (foundPatient.gender as 'Male' | 'Female' | 'Other') ?? 'Male',
       address: foundPatient.city ?? '',
+      referredBy: foundPatient.referredBy ?? foundPatient.referred_by ?? '',
+      condition: foundPatient.condition ?? '',
+      fileNumber: foundPatient.fileNumber ?? '',
     });
   }, [foundPatient, phoneToFetch]);
 
@@ -269,6 +278,7 @@ export function NurseIntakeForm() {
         gender: newPatient.gender as 'Male' | 'Female' | 'Other',
         phone: cleanPhone,
         condition: newPatient.condition || undefined,
+        referredBy: newPatient.referredBy?.trim() || undefined,
         therapistId: isDoctorRole ? (selectedTherapistId || undefined) : (user?.id || undefined),
       });
       setResolvedPatientId(created.id);
@@ -294,7 +304,7 @@ export function NurseIntakeForm() {
   const createEvaluation = useCreateEvaluation();
   const updatePatient = useUpdatePatient();
 
-  const [patientInfo, setPatientInfo] = useState<{ name: string; age: string; phone: string; gender: 'Male' | 'Female' | 'Other'; address: string }>({ name: '', age: '', phone: '', gender: 'Male', address: '' });
+  const [patientInfo, setPatientInfo] = useState<{ name: string; age: string; phone: string; gender: 'Male' | 'Female' | 'Other'; address: string; referredBy?: string; condition?: string; fileNumber?: string }>({ name: '', age: '', phone: '', gender: 'Male', address: '', referredBy: '', condition: '', fileNumber: '' });
   const [vitals, setVitals] = useState({ bp_sys: '', bp_dia: '', pr: '', spo2: '', temp: '', ef: '' });
   const [checkedSymptoms, setCheckedSymptoms] = useState<string[]>([]);
   const [otherSymptom, setOtherSymptom] = useState('');
@@ -519,6 +529,7 @@ export function NurseIntakeForm() {
         phone: patientInfo.phone,
         city: patientInfo.address,
         condition: complaints.trim() || (checkedSymptoms.length > 0 ? checkedSymptoms[0] : undefined),
+        referredBy: patientInfo.referredBy,
       });
 
       // 2. Create the evaluation record
@@ -533,6 +544,7 @@ export function NurseIntakeForm() {
         paymentMode,
         billAmount: billTotal,
         visitType,
+        referredBy: patientInfo.referredBy || foundPatient?.referredBy || foundPatient?.referred_by || undefined,
         associatedPains: associatedPains.length > 0 ? associatedPains : undefined,
         functionalScores: Object.keys(funcRatings).length > 0 ? funcRatings : undefined,
         treatmentPlan: selectedTreatmentIds.length > 0 ? {
@@ -588,6 +600,7 @@ export function NurseIntakeForm() {
         paymentMode: paymentMode,
         billAmount: billTotal,
         status: 'submitted',
+        referredBy: patientInfo.referredBy || foundPatient?.referredBy || foundPatient?.referred_by || '',
       },
       bp: vitals.bp_sys && vitals.bp_dia ? `${vitals.bp_sys}/${vitals.bp_dia}` : undefined,
       pr: vitals.pr ? Number(vitals.pr) : undefined,
@@ -811,6 +824,12 @@ export function NurseIntakeForm() {
                 onChange={(e) => setNewPatient(p => ({ ...p, condition: e.target.value }))}
                 className="col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-[13px] text-slate-800 dark:text-white outline-none"
               />
+              <input
+                placeholder="Referred By (e.g. Self, Dr. Kumar)"
+                value={newPatient.referredBy}
+                onChange={(e) => setNewPatient(p => ({ ...p, referredBy: e.target.value }))}
+                className="col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-[13px] text-slate-800 dark:text-white outline-none"
+              />
             </div>
             <div className="flex gap-2">
               <button
@@ -892,6 +911,7 @@ export function NurseIntakeForm() {
               { key: 'age', label: 'Age', placeholder: 'e.g. 32', type: 'number' },
               { key: 'phone', label: 'Phone Number', placeholder: 'e.g. 9876543210', type: 'tel' },
               { key: 'address', label: 'Address', placeholder: 'Enter address', type: 'text' },
+              { key: 'referredBy', label: 'Referred By', placeholder: 'e.g. Self, Dr. Kumar, Hospital', type: 'text' },
             ].map((field) => (
               <div key={field.key} className="mb-3">
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">

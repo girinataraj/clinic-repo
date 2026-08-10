@@ -47,8 +47,11 @@ export function PatientForm() {
   const [error, setError] = useState<string | null>(null);
 
   // ── Prefill on edit ──────────────────────────────────────────────────────
+  const [loadedPatientId, setLoadedPatientId] = useState<string | null>(null);
+
   useEffect(() => {
-    if (isEdit && existingPatient) {
+    if (isEdit && existingPatient && loadedPatientId !== existingPatient.id) {
+      setLoadedPatientId(existingPatient.id);
       setName(existingPatient.name || '');
       setAge(String(existingPatient.age || ''));
       setGender(existingPatient.gender || 'Male');
@@ -57,7 +60,7 @@ export function PatientForm() {
       setReferredBy(existingPatient.referredBy || (existingPatient as any).referred_by || '');
       setTherapistId(existingPatient.therapistId || '');
     }
-  }, [isEdit, existingPatient]);
+  }, [isEdit, existingPatient, loadedPatientId]);
 
   // ── Validation ───────────────────────────────────────────────────────────
   const resolvedTherapistId = isDoctorRole ? therapistId : (user?.id ?? therapistId);

@@ -33,23 +33,26 @@ export function PatientDetailPage() {
 
   const evaluationData = useMemo(() => {
     if (!evaluation && !patient) return null;
-    const baseEval = evaluation || {};
+    const baseEval = evaluation || {} as any;
     return {
       ...baseEval,
       patient: {
-        name: patient?.name,
-        displayId: patient?.displayId || patient?.display_id,
-        age: patient?.age,
-        gender: patient?.gender,
-        phone: patient?.phone,
-        condition: patient?.condition,
+        name: patient?.name || baseEval.patientName,
+        displayId: patient?.displayId || patient?.display_id || baseEval.patientDisplayId,
+        age: patient?.age ?? baseEval.patientAge,
+        gender: patient?.gender || baseEval.patientGender,
+        phone: patient?.phone || baseEval.patientPhone,
+        condition: patient?.condition || baseEval.patientCondition,
+        city: patient?.city || baseEval.patientCity,
+        referredBy: patient?.referredBy || baseEval.patientReferredBy || baseEval.referredBy,
         status: patient?.status || 'submitted',
       },
-      name: patient?.name || baseEval.name,
-      phone: patient?.phone || baseEval.phone,
-      age: patient?.age || baseEval.age,
-      gender: patient?.gender || baseEval.gender,
-      displayId: patient?.displayId || patient?.display_id || baseEval.displayId,
+      name: patient?.name || baseEval.patientName || baseEval.name,
+      phone: patient?.phone || baseEval.patientPhone || baseEval.phone,
+      age: patient?.age ?? baseEval.patientAge ?? baseEval.age,
+      gender: patient?.gender || baseEval.patientGender || baseEval.gender,
+      displayId: patient?.displayId || patient?.display_id || baseEval.patientDisplayId || baseEval.displayId,
+      referredBy: patient?.referredBy || baseEval.patientReferredBy || baseEval.referredBy,
     };
   }, [evaluation, patient]);
 

@@ -51,6 +51,8 @@ export function usePatient(id: string | null | undefined) {
       return data.data;
     },
     enabled: Boolean(id),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 
@@ -139,6 +141,7 @@ export function useUpdatePatient() {
     },
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['patient', updated.id] });
       queryClient.setQueryData(['patient', updated.id], updated);
     },
   });

@@ -77,6 +77,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
   const patientAge = patientInfo.age ?? rawData.age ?? '—';
   const patientGender = patientInfo.gender || rawData.gender || '—';
   const patientPhone = patientInfo.phone || rawData.patientPhone || rawData.phone || '—';
+  const patientReferredBy = patientInfo.referredBy || patientInfo.referred_by || rawData.referredBy || rawData.referred_by || 'Self';
   const visitType = patientInfo.visitType || rawData.visitType || rawData.visit_type || 'Clinic';
   const billAmount = patientInfo.billAmount != null ? patientInfo.billAmount : (rawData.billAmount != null ? rawData.billAmount : (rawData.bill_amount != null ? rawData.bill_amount : '—'));
 
@@ -236,6 +237,17 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
       ...rawNeuro
     };
   }, [rawNeuro]);
+  // Only show neuro section if at least one field has a meaningful value
+  const hasNeuroData = useMemo(() => {
+    if (!neuroData) return false;
+    return Object.values(neuroData).some((v) => {
+      if (v === null || v === undefined || v === '') return false;
+      if (typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0) return false;
+      if (Array.isArray(v) && v.length === 0) return false;
+      return true;
+    });
+  }, [neuroData]);
+
 
   // Functional Limitations
   const rawFunc = rawData.functionalLimitations || rawData.functional_limitations || rawData.functionalScores || rawData.functional_scores;
@@ -514,7 +526,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Clinician & Patient Summary Header (Original Layout) */}
         <section className="bg-slate-50/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-semibold">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-xs font-semibold">
             <div>
               <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Conducting Clinician</span>
               <span className="text-slate-900 dark:text-white font-black text-sm">{therapistName}</span>
@@ -533,6 +545,10 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
               <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Visit / Bill</span>
               <span className="text-slate-900 dark:text-white font-bold text-xs">{visitType}</span>
               <span className="text-emerald-700 dark:text-emerald-400 font-black block text-sm">₹{billAmount}</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Referred By</span>
+              <span className="text-slate-900 dark:text-white font-black text-sm">{patientReferredBy}</span>
             </div>
           </div>
         </section>
@@ -837,6 +853,18 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                   <span className="text-slate-900 dark:text-white font-extrabold text-sm">{cardioData.sixMinWalk}</span>
                 </div>
               )}
+              {cardioData.rockportWalk && (
+                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Rockport Walk Test</span>
+                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{cardioData.rockportWalk}</span>
+                </div>
+              )}
+              {cardioData.harvardStep && (
+                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Harvard Step Test</span>
+                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{cardioData.harvardStep}</span>
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -880,7 +908,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
         )}
 
         {/* Neurological Examination */}
-        {neuroData && (
+        {hasNeuroData && (
           <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Brain size={16} className={accentColor} />

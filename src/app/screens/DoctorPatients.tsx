@@ -22,6 +22,7 @@ import {
   X,
   Trash2,
   Filter,
+  Pencil,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -420,6 +421,13 @@ export function DoctorPatients() {
                         >
                           <FileText size={15} />
                           View chart
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate(`/doctor/patient-form?id=${patient.id}`); }}
+                          className="flex items-center justify-center rounded-xl p-2.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors border border-indigo-100 dark:border-indigo-900/50 shrink-0"
+                          title="Edit Patient"
+                        >
+                          <Pencil size={15} />
                         </button>
                         {patient.status !== 'completed' && (
                           <button
