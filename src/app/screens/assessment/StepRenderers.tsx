@@ -8,7 +8,7 @@ import { MusclePower } from './MusclePower';
 import { TreatmentExerciseModule } from './TreatmentExerciseModule';
 
 // ── Step 0: Patient Info ──────────────────────────────────────────────────────
-export function StepPatient({ patientInfo, setPatientInfo, intakePhotoUrl, handlePhotoChange, handlePhotoRemove, photoInputKey, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user }: any) {
+export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user }: any) {
   const accent = isDoctorRole ? 'doctor' : 'teal';
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-teal-700';
@@ -157,13 +157,14 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
                 options: []
               };
             }
-            const optList = opt.options || [];
-            optList.forEach(val => {
-              groupedRows[opt.key].options.push({
-                complaint,
-                value: val
+            if (Array.isArray(opt.options)) {
+              opt.options.forEach(val => {
+                groupedRows[opt.key].options.push({
+                  complaint,
+                  value: val
+                });
               });
-            });
+            }
           });
         });
 

@@ -148,7 +148,7 @@ export function FollowUpPage() {
           dateRecorded: new Date().toISOString(),
         },
         followUpPlan: followUpNotes.trim() || 'Regular Follow Up Treatment Session',
-      } as any);
+      });
 
       setSavedSuccess(true);
       setSubmitting(false);

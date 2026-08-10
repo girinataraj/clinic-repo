@@ -33,6 +33,7 @@ export interface Patient {
   checkInTime?: string;
   checkOutTime?: string;
   sessionCount?: number;
+  referredBy?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -72,7 +73,7 @@ export interface Evaluation {
   temperature?: number;
   ef?: number;
   painLevel?: number;
-  functionalScores?: Record<string, unknown>;
+  functionalScores?: Record<string, any>;
   // Clinical text
   diagnosis?: string;
   diagnosisList?: string[];
@@ -86,11 +87,17 @@ export interface Evaluation {
   billAmount?: number;
   visitType?: VisitType;
   associatedPains?: string[];
-  musclePowerRom?: Record<string, unknown> | null;
-  anthropometrics?: Record<string, unknown> | null;
+  musclePowerRom?: Record<string, any> | null;
+  anthropometrics?: Record<string, any> | null;
   clinicalExamination?: Record<string, any> | null;
-  treatmentPlan?: Record<string, unknown> | null;
-  followUpSession?: Record<string, unknown> | null;
+  treatmentPlan?: Record<string, any> | null;
+  followUpSession?: Record<string, any> | null;
+  followUpPlan?: string | null;
+  neuroData?: Record<string, any> | null;
+  cardioData?: Record<string, any> | null;
+  xrayFindings?: string | null;
+  mriFindings?: string | null;
+  pftFindings?: string | null;
   // Meta
   createdBy: EvaluationCreatedBy;
   updatedBy?: EvaluationCreatedBy;
@@ -122,11 +129,17 @@ export interface UpdateEvaluationPayload {
   paymentMode?: string;
   billAmount?: number;
   visitType?: VisitType;
-  musclePowerRom?: Record<string, unknown>;
-  anthropometrics?: Record<string, unknown>;
-  clinicalExamination?: Record<string, unknown>;
-  treatmentPlan?: Record<string, unknown>;
-  followUpSession?: Record<string, unknown>;
+  musclePowerRom?: Record<string, any>;
+  anthropometrics?: Record<string, any>;
+  clinicalExamination?: Record<string, any>;
+  treatmentPlan?: Record<string, any>;
+  followUpSession?: Record<string, any>;
+  followUpPlan?: string;
+  neuroData?: Record<string, any>;
+  cardioData?: Record<string, any>;
+  xrayFindings?: string;
+  mriFindings?: string;
+  pftFindings?: string;
   status?: 'draft' | 'submitted' | 'reviewed';
 }
 
@@ -153,12 +166,18 @@ export interface CreateEvaluationPayload {
   billAmount?: number;
   visitType?: VisitType;
   associatedPains?: string[];
-  musclePowerRom?: Record<string, unknown>;
-  anthropometrics?: Record<string, unknown>;
-  clinicalExamination?: Record<string, unknown>;
-  treatmentPlan?: Record<string, unknown>;
-  followUpSession?: Record<string, unknown>;
-  functionalScores?: Record<string, unknown>;
+  musclePowerRom?: Record<string, any>;
+  anthropometrics?: Record<string, any>;
+  clinicalExamination?: Record<string, any>;
+  treatmentPlan?: Record<string, any>;
+  followUpSession?: Record<string, any>;
+  followUpPlan?: string;
+  functionalScores?: Record<string, any>;
+  neuroData?: Record<string, any>;
+  cardioData?: Record<string, any>;
+  xrayFindings?: string;
+  mriFindings?: string;
+  pftFindings?: string;
 }
 
 // ─── Appointment ───────────────────────────────────────────────────────────────

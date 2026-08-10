@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, type ChangeEvent } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
@@ -45,7 +45,7 @@ export function TherapistAssessmentForm() {
   const createEvaluation = useCreateEvaluation();
   const updatePatient = useUpdatePatient();
 
-  const [patientInfo, setPatientInfo] = useState<{name:string;age:string;phone:string;gender:'Male'|'Female'|'Other';address:string;condition:string[]}>({name:'',age:'',phone:'',gender:'Male',address:'',condition:[]});
+  const [patientInfo, setPatientInfo] = useState<{name:string;age:string;phone:string;gender:'Male'|'Female'|'Other';address:string;condition:string[];referredBy?:string}>({name:'',age:'',phone:'',gender:'Male',address:'',condition:[]});
   const [vitals, setVitals] = useState({bp_sys:'',bp_dia:'',pr:'',spo2:'',temp:'',ef:''});
   const [chiefComplaints, setChiefComplaints] = useState<string[]>([]);
   const [complaintsText, setComplaintsText] = useState('');
@@ -64,9 +64,6 @@ export function TherapistAssessmentForm() {
   const [romData, setRomData] = useState<RomData>({});
   const [anthropometrics, setAnthropometrics] = useState<Anthropometrics>({height:'',weight:'',bmi:'',excessWeight:'',excessCalorie:'',duration:'',waist:'',hip:'',whRatio:''});
   const [clinicalExamData, setClinicalExamData] = useState<ClinicalExamData>(getEmptyClinicalExam());
-  const [intakePhoto, setIntakePhoto] = useState<File|null>(null);
-  const [intakePhotoUrl, setIntakePhotoUrl] = useState<string|null>(null);
-  const [photoInputKey, setPhotoInputKey] = useState(0);
   const [paymentMode, setPaymentMode] = useState<'Cash'|'UPI'|''>('');
   const [billAmount, setBillAmount] = useState<number|null>(null);
   const [billAmountInput, setBillAmountInput] = useState('');
@@ -139,8 +136,6 @@ export function TherapistAssessmentForm() {
       setRomData({});
       setAnthropometrics({ height: '', weight: '', bmi: '', excessWeight: '', excessCalorie: '', duration: '', waist: '', hip: '', whRatio: '' });
       setClinicalExamData(getEmptyClinicalExam());
-      setIntakePhoto(null);
-      setIntakePhotoUrl(null);
       setPaymentMode('');
       setBillAmount(null);
       setBillAmountInput('');
@@ -151,23 +146,45 @@ export function TherapistAssessmentForm() {
     }
   }, [resolvedPatientId]);
 
-  useEffect(() => { if (!intakePhoto) { setIntakePhotoUrl(null); return; } const u=URL.createObjectURL(intakePhoto); setIntakePhotoUrl(u); return ()=>URL.revokeObjectURL(u); }, [intakePhoto]);
-
   const handlePhoneLookup = useCallback(() => { if (phoneInput.trim().length<7) return; setPhoneToFetch(phoneInput.trim()); setLookupDone(true); setShowNewPatientForm(false); }, [phoneInput]);
-  const handleUseFoundPatient = useCallback(() => { if (!foundPatient) return; setResolvedPatientId(foundPatient.id); setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??'',referredBy:foundPatient.referredBy}); }, [foundPatient, phoneToFetch]);
+  const handleUseFoundPatient = useCallback(() => {
+    if (!foundPatient) return;
+    setResolvedPatientId(foundPatient.id);
+    const cond = foundPatient.condition
+      ? foundPatient.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
+      : [];
+    setPatientInfo({
+      name: foundPatient.name ?? '',
+      age: foundPatient.age ? String(foundPatient.age) : '',
+      phone: foundPatient.phone ?? phoneToFetch,
+      gender: (foundPatient.gender as any) ?? 'Male',
+      address: foundPatient.city ?? '',
+      condition: cond,
+      referredBy: foundPatient.referredBy
+    });
+  }, [foundPatient, phoneToFetch]);
 
   const handleCreateNewPatient = async () => {
     if (!newPatient.name||!newPatient.age) return;
     try {
       const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),referredBy:newPatient.referredBy.trim()||undefined,condition:newPatient.condition||undefined,therapistId:user?.id||undefined});
       setResolvedPatientId(created.id);
-      setPatientInfo({name:created.name,age:String(created.age),phone:created.phone??phoneInput.trim(),gender:created.gender as any,address:created.city??'',referredBy:created.referredBy});
+      const cond = created.condition
+        ? created.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
+        : (newPatient.condition ? [newPatient.condition] : []);
+      setPatientInfo({
+        name: created.name,
+        age: String(created.age),
+        phone: created.phone ?? phoneInput.trim(),
+        gender: created.gender as any,
+        address: created.city ?? '',
+        condition: cond,
+        referredBy: created.referredBy
+      });
       setShowNewPatientForm(false); setStep(1);
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to create patient.'); }
   };
 
-  const handlePhotoChange = (e:ChangeEvent<HTMLInputElement>) => { const f=e.target.files?.[0]; if (!f) return; if (!f.type.startsWith('image/')) { setSubmitError('Please upload an image.'); return; } setSubmitError(null); setIntakePhoto(f); };
-  const handlePhotoRemove = () => { setIntakePhoto(null); setPhotoInputKey(p=>p+1); };
   const formatRupees = (n:number) => new Intl.NumberFormat('en-IN').format(n);
 
   const handleBillAmountChange = (v:string) => { setSubmitError(null); setIsManualBillEdit(true); const d=v.replace(/[^\d]/g,''); if (!d) { setBillAmount(0); setBillAmountInput(''); return; } const n=Number(d); setBillAmount(n); setBillAmountInput(String(n)); };
@@ -280,7 +297,6 @@ export function TherapistAssessmentForm() {
     { label: 'Review & Pay', key: 'review' }
   ];
   const totalSteps = stepsList.length;
-  const isPhotoUploaded = Boolean(intakePhoto);
 
   if (saved) {
     const summaryData = {
@@ -373,8 +389,8 @@ export function TherapistAssessmentForm() {
 
         {isHeaderExpanded && (
           <>
-            <div className="rounded-full h-1 bg-black/10 dark:bg-white/10 relative z-10 overflow-hidden">
-              <div className="h-full bg-white transition-all duration-500 rounded-full" style={{width:`${((step+1)/totalSteps)*100}%`}} />
+            <div className="rounded-full h-1.5 bg-black/10 dark:bg-white/10 relative z-10 overflow-hidden mb-1">
+              <div className="h-full bg-white transition-all duration-700 ease-out rounded-full shadow-[0_0_10px_rgba(255,255,255,0.4)]" style={{width:`${((step+1)/totalSteps)*100}%`}} />
             </div>
             {/* Step Indicators */}
             <div className="flex justify-center gap-1.5 mt-2.5 relative z-10">

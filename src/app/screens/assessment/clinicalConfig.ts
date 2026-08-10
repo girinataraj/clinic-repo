@@ -253,7 +253,7 @@ export function getRomKey(joint: string, movement: string) {
 }
 
 // ── Anthropometrics ───────────────────────────────────────────────────────────
-export interface Anthropometrics {
+export interface Anthropometrics extends Record<string, unknown> {
   height: string;    // cm
   weight: string;    // kg
   bmi: string;       // auto-calculated

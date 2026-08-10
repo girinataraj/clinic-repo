@@ -93,6 +93,7 @@ export function useCreatePatient() {
       fileNumber?: string;
       condition?: string;
       therapistId?: string;
+      referredBy?: string;
     }) => {
       const { data } = await api.post<{ success: boolean; data: Patient }>(
         ENDPOINTS.PATIENTS.CREATE,
@@ -128,6 +129,7 @@ export function useUpdatePatient() {
       checkInTime?: string;
       checkOutTime?: string;
       visitType?: string;
+      referredBy?: string;
     }) => {
       const { data } = await api.patch<{ success: boolean; data: Patient }>(
         ENDPOINTS.PATIENTS.UPDATE(id),
