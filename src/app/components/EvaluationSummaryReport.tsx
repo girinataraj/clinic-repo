@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ROM_CONFIG } from '../screens/assessment/clinicalConfig';
 import { 
   Activity, Scale, Stethoscope, CheckSquare, Dumbbell, ClipboardList,
-  Heart, StickyNote, Brain, Building2, Printer, Download, Share2, ArrowLeft, ShieldCheck, Loader2
+  Heart, StickyNote, Brain, Building2, Printer, Download, Share2, ArrowLeft, ShieldCheck, Loader2, FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { NeuroSummaryView } from './NeuroSummaryView';
@@ -1010,6 +1010,40 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                       {r}
                     </span>
                   ))}
+                </div>
+              </div>
+            )}
+            {treatmentPlanExercises.length > 0 && (
+              <div className="mb-4">
+                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">
+                  Prescribed Exercises & Home Programs ({treatmentPlanExercises.length})
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {treatmentPlanExercises.map((ex: any, idx: number) => {
+                    const exName = ex.exerciseName || ex.name || `Exercise ${idx + 1}`;
+                    const exCategory = ex.category || 'General';
+                    const instructionsText = ex.instructions || ex.notes || ex.description || '';
+                    return (
+                      <div key={ex.id || idx} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100">{exName}</span>
+                          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 uppercase">{exCategory}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-slate-600 dark:text-slate-400 border-y border-slate-100 dark:border-slate-800/80 py-1.5">
+                          {ex.sets && <span><strong className="text-slate-800 dark:text-slate-200">Sets:</strong> {ex.sets}</span>}
+                          {ex.reps && <span><strong className="text-slate-800 dark:text-slate-200">Reps:</strong> {ex.reps}</span>}
+                          {ex.holdTime && <span><strong className="text-slate-800 dark:text-slate-200">Hold:</strong> {ex.holdTime}</span>}
+                          {ex.frequency && <span><strong className="text-slate-800 dark:text-slate-200">Freq:</strong> {ex.frequency}</span>}
+                        </div>
+                        {instructionsText && (
+                          <div className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-150 dark:border-slate-800">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Exercise Instructions & Guidance:</span>
+                            <div className="whitespace-pre-wrap font-medium">{instructionsText}</div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

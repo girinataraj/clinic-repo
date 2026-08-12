@@ -37,6 +37,97 @@ const COMMON_EXERCISES_BY_CATEGORY: Record<string, string[]> = {
   Back: ['Cat-Cow Stretch', 'McKenzie Extension', 'Bird-Dog', 'Pelvic Tilts'],
 };
 
+export const PREDEFINED_EXERCISE_PROGRAMS = [
+  {
+    id: 'prog_facial',
+    name: 'Facial Retraining Exercises',
+    category: 'Facial',
+    sets: 3,
+    reps: '10 - 12 reps',
+    holdTime: '5 sec',
+    frequency: '2x daily',
+    description: 'Neuromuscular re-education and facial muscle exercises.',
+    instructions: `• Eyebrow Raise & Forehead Wrinkle: Gently raise both eyebrows up towards the hairline, hold for 5 seconds, and slowly relax.
+• Eye Closure & Lip Pucker: Close eyes gently without forcing, then pucker lips as if whistling for 5 seconds.
+• Smile & Cheek Elevation: Smile broadly keeping lips closed, lifting corners of mouth towards ears.
+• Precautions: Perform in front of a mirror with symmetric, slow movements. Avoid excessive force.`,
+  },
+  {
+    id: 'prog_knee',
+    name: 'Knee Exercises',
+    category: 'Knee',
+    sets: 3,
+    reps: '10 - 12 reps',
+    holdTime: '5 sec',
+    frequency: '2x daily',
+    description: 'Quadriceps, hamstring & knee joint rehabilitation program.',
+    instructions: `• Quad Sets (Isometric): Lie flat with legs straight. Tighten thigh muscle by pushing back of knee down against bed. Hold 5 sec.
+• Short Arc Quads (SAQ): Place rolled towel under knee. Lift lower leg until straight, pause 5 sec, lower slowly.
+• Straight Leg Raise (SLR): Lift leg 12 inches up keeping knee straight. Hold 5 sec and lower gently.
+• Terminal Knee Extension (TKE): Extend knee against resistance band.
+• Precautions: Maintain smooth rhythm. Do not lock knee forcefully.`,
+  },
+  {
+    id: 'prog_neck',
+    name: 'Neck Strengthening Exercises',
+    category: 'Neck',
+    sets: 3,
+    reps: '10 - 12 reps',
+    holdTime: '5 sec',
+    frequency: '2x daily',
+    description: 'Cervical spine stabilization and deep neck flexor strengthening.',
+    instructions: `• Chin Tucks (Cervical Retraction): Sit upright looking straight ahead. Draw chin backward horizontally (double chin). Hold 5 sec.
+• Isometric Neck Flexion & Extension: Place palm on forehead, press head forward into palm without moving head. Repeat for back of head.
+• Neck Lateral Flexion Stretch: Gently tilt ear toward shoulder until light stretch is felt. Hold 15-20 sec.
+• Precautions: Keep shoulders relaxed. Avoid rolling neck in circles or sudden jerks.`,
+  },
+  {
+    id: 'prog_shoulder',
+    name: 'Shoulder Exercises',
+    category: 'Shoulder',
+    sets: 3,
+    reps: '10 - 12 reps',
+    holdTime: '5 sec',
+    frequency: '2x daily',
+    description: 'Rotator cuff, glenohumeral & scapular rehab program.',
+    instructions: `• Pendulum Exercises: Lean forward resting non-affected arm on table. Let affected arm dangle and swing in small circles.
+• Wall Slides (Flexion): Stand facing wall. Slide fingers upward smoothly along wall as high as comfortable. Hold 5 sec.
+• Scapular Retraction: Pinch shoulder blades back and down together without shrugging shoulders. Hold 5 sec.
+• External Rotation with Band: Keep elbow tucked at side at 90°, pull resistance band outward smoothly.
+• Precautions: Avoid overhead lifting past pain threshold. Keep shoulders relaxed.`,
+  },
+  {
+    id: 'prog_spinal',
+    name: 'Spinal Flexion Exercises',
+    category: 'Back',
+    sets: 3,
+    reps: '10 - 12 reps',
+    holdTime: '5 sec',
+    frequency: '2x daily',
+    description: 'Lumbar spine flexion, core control and spinal flexibility.',
+    instructions: `• Pelvic Tilts: Lie on back with knees bent. Flatten lower back against floor by tightening abdominal muscles. Hold 5 sec.
+• Double Knee to Chest: Lie on back, bring both knees toward chest, hug gently. Hold 15-20 sec.
+• Cat-Cow Stretch: On hands and knees, arch back upward (Cat), then curve spine downward gently (Cow).
+• Partial Curl-ups: Lift head and shoulders slightly off floor engaging core. Hold 3 sec.
+• Precautions: Move within pain-free range. Stop immediately if sharp or radiating pain occurs.`,
+  },
+  {
+    id: 'prog_dos_donts',
+    name: "Dos and Don'ts Guide",
+    category: 'General',
+    sets: 1,
+    reps: 'Daily',
+    holdTime: 'Ongoing',
+    frequency: 'Daily',
+    description: 'Essential patient care guidelines, precautions & postural rules.',
+    instructions: `• DO: Maintain correct ergonomic posture while sitting, standing, and lifting objects.
+• DO: Warm up before exercises and apply cold pack for 10-15 mins if mild post-exercise soreness occurs.
+• DON'T: Bend forward from waist with straight legs when lifting heavy objects.
+• DON'T: Sit in soft, low sagging chairs without back support for long durations.
+• DON'T: Ignore sharp or increasing pain during any exercise routine.`,
+  },
+];
+
 export function TreatmentExerciseModule({
   treatmentPlan,
   setTreatmentPlan,
@@ -464,100 +555,58 @@ export function TreatmentExerciseModule({
                   />
                 </div>
 
-                {/* ── FILE ATTACHMENT SECTION (SINGLE & MULTIPLE FILES) ──────────────── */}
+                {/* ── PREDEFINED EXERCISE PROGRAMS LIBRARY (CLICK TO AUTO-FILL DATA) ──────────────── */}
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <Paperclip size={14} className="text-emerald-500" />
-                      Attach Files (Single or Multiple)
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 text-xs">
+                      <Sparkles size={14} className="text-emerald-500" />
+                      Quick Load Predefined Exercise Programs (Click to Auto-Fill Data)
                     </label>
-                    <span className="text-[10px] text-slate-400">
-                      Images, Videos, PDFs, Guides
+                    <span className="text-[10px] text-slate-400 font-semibold">
+                      Click any program to populate data & instructions
                     </span>
                   </div>
 
-                  {/* Hidden File Input with multiple attribute */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept="image/*,video/*,application/pdf,.doc,.docx"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-
-                  {/* Drag & Drop Zone */}
-                  <div
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`p-4 rounded-2xl border-2 border-dashed cursor-pointer transition-colors text-center ${
-                      dragActive
-                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30'
-                        : 'border-slate-200 dark:border-slate-800 hover:border-emerald-400 bg-slate-50/50 dark:bg-slate-950/50'
-                    }`}
-                  >
-                    <UploadCloud className="w-7 h-7 text-emerald-500 mx-auto mb-1 animate-bounce" />
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Click to choose files or drop single/multiple files here
-                    </p>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-                      Select one or multiple files from your system (PNG, JPG, MP4, PDF)
-                    </p>
-                  </div>
-
-                  {/* Attachments List */}
-                  {attachments.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        Selected Files ({attachments.length}):
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto p-1">
-                        {attachments.map((att) => (
-                          <div
-                            key={att.id}
-                            className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-800/70 flex items-center justify-between gap-2"
-                          >
-                            <div className="flex items-center gap-2 overflow-hidden">
-                              <div className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden shrink-0">
-                                {att.type.startsWith('image/') ? (
-                                  <img
-                                    src={att.dataUrl}
-                                    alt={att.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : att.type.startsWith('video/') ? (
-                                  <Film size={14} className="text-purple-500" />
-                                ) : (
-                                  <FileText size={14} className="text-blue-500" />
-                                )}
-                              </div>
-                              <div className="overflow-hidden">
-                                <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">
-                                  {att.name}
-                                </p>
-                                <p className="text-[9px] text-slate-400 font-medium">
-                                  {formatFileSize(att.size)}
-                                </p>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeAttachment(att.id);
-                              }}
-                              className="p-1 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                            >
-                              <X size={14} />
-                            </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[220px] overflow-y-auto p-1">
+                    {PREDEFINED_EXERCISE_PROGRAMS.map((prog) => {
+                      const isLoaded = exerciseName === prog.name;
+                      return (
+                        <div
+                          key={prog.id}
+                          onClick={() => {
+                            setExerciseName(prog.name);
+                            setCategory(prog.category);
+                            setSets(prog.sets);
+                            setReps(prog.reps);
+                            setHoldTime(prog.holdTime);
+                            setFrequency(prog.frequency);
+                            setNotes(prog.instructions);
+                          }}
+                          className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                            isLoaded
+                              ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40 shadow-sm'
+                              : 'border-slate-200 dark:border-slate-800 hover:border-emerald-400 bg-slate-50/50 dark:bg-slate-900/50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100 truncate">
+                              {prog.name}
+                            </span>
+                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                              {prog.category}
+                            </span>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2">
+                            {prog.description}
+                          </p>
+                          <div className="mt-2 pt-1.5 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                            <span>{prog.sets} sets · {prog.reps}</span>
+                            <span>{isLoaded ? '✓ Loaded into form' : '+ Click to load'}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Actions */}

@@ -286,6 +286,9 @@ export interface TreatmentPlanExerciseAttachment {
   type: string;
   size: number;
   dataUrl: string;
+  pdfUrl?: string;
+  imageUrl?: string;
+  fileName?: string;
 }
 
 export interface TreatmentPlanExerciseItem {
