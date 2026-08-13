@@ -6,6 +6,7 @@ import { useExerciseTemplates } from '../../hooks/useExerciseLibrary';
 import type { ExerciseTemplate } from '../../hooks/useExerciseLibrary';
 import { ExerciseCard } from './ExerciseCard';
 import { ExerciseModal } from './ExerciseModal';
+import { getExerciseImages } from '../../utils/exerciseImageMapper';
 
 interface ExerciseSectionProps {
   patientId: string | null;
@@ -66,9 +67,14 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
         await updateExercise({ exerciseId: selectedExercise.id, payload });
         showToast('Exercise Updated Successfully', 'success');
       } else {
-        await createExercise(payload);
+        const resolvedImages = getExerciseImages(payload.category || payload.bodyPart, payload.exerciseName || payload.exercise_name);
+        await createExercise({
+          ...payload,
+          images: payload.images && payload.images.length > 0 ? payload.images : resolvedImages,
+        });
         showToast('Exercise Added Successfully', 'success');
       }
+      setIsModalOpen(false);
     } catch (err: any) {
       showToast(err?.message || 'Unable to Save Exercise', 'error');
     }
@@ -76,6 +82,7 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
 
   const handleSingleImport = async (tmpl: ExerciseTemplate) => {
     try {
+      const resolvedImages = getExerciseImages(tmpl.category, tmpl.name);
       await createExercise({
         exercise_name: tmpl.name,
         exerciseName: tmpl.name,
@@ -90,6 +97,7 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
         difficultyLevel: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
         description: tmpl.instructions || '',
         video_url: tmpl.videoUrl || '',
+        images: resolvedImages,
       });
       showToast('Exercise Imported Successfully', 'success');
     } catch (err: any) {
@@ -101,21 +109,25 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
     if (selectedTemplateIds.length === 0 || !templates) return;
     const selectedTemplates = templates.filter(t => selectedTemplateIds.includes(t.id));
     try {
-      const payloadItems = selectedTemplates.map(tmpl => ({
-        exercise_name: tmpl.name,
-        exerciseName: tmpl.name,
-        category: tmpl.category || 'General',
-        body_part: tmpl.category || 'General',
-        bodyPart: tmpl.category || 'General',
-        sets: tmpl.sets || 3,
-        repetitions: tmpl.reps ? String(tmpl.reps) : '10-15',
-        reps: tmpl.reps ? String(tmpl.reps) : '10-15',
-        frequency: 'Once daily',
-        difficulty_level: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
-        difficultyLevel: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
-        description: tmpl.instructions || '',
-        video_url: tmpl.videoUrl || '',
-      }));
+      const payloadItems = selectedTemplates.map(tmpl => {
+        const resolvedImages = getExerciseImages(tmpl.category, tmpl.name);
+        return {
+          exercise_name: tmpl.name,
+          exerciseName: tmpl.name,
+          category: tmpl.category || 'General',
+          body_part: tmpl.category || 'General',
+          bodyPart: tmpl.category || 'General',
+          sets: tmpl.sets || 3,
+          repetitions: tmpl.reps ? String(tmpl.reps) : '10-15',
+          reps: tmpl.reps ? String(tmpl.reps) : '10-15',
+          frequency: 'Once daily',
+          difficulty_level: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
+          difficultyLevel: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
+          description: tmpl.instructions || '',
+          video_url: tmpl.videoUrl || '',
+          images: resolvedImages,
+        };
+      });
       await importBatchExercises(payloadItems);
       setSelectedTemplateIds([]);
       setIsLibraryOpen(false);

@@ -19,6 +19,7 @@ import type {
   TreatmentPlanExerciseItem,
   TreatmentPlanExerciseAttachment,
 } from './clinicalConfig';
+import { getExerciseImages } from '../../../utils/exerciseImageMapper';
 
 interface TreatmentExerciseModuleProps {
   treatmentPlan: TreatmentPlanData;
@@ -245,6 +246,25 @@ export function TreatmentExerciseModule({
     e.preventDefault();
     if (!exerciseName.trim()) return;
 
+    let finalAttachments = [...attachments];
+    const autoMappedImages = getExerciseImages(category, exerciseName);
+    
+    // Add auto-mapped folder images if not already in attachments
+    if (autoMappedImages.length > 0) {
+      autoMappedImages.forEach((imgUrl, idx) => {
+        if (!finalAttachments.some((att) => att.dataUrl === imgUrl || att.imageUrl === imgUrl)) {
+          finalAttachments.push({
+            id: `auto-img-${idx}-${Date.now()}`,
+            name: `${exerciseName} Image ${idx + 1}`,
+            type: 'image/png',
+            size: 150000,
+            dataUrl: imgUrl,
+            imageUrl: imgUrl,
+          });
+        }
+      });
+    }
+
     const newItem: TreatmentPlanExerciseItem = {
       id: editingId || `ex-tp-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       exerciseName: exerciseName.trim(),
@@ -255,7 +275,7 @@ export function TreatmentExerciseModule({
       frequency,
       notes: notes.trim(),
       instructions: notes.trim(),
-      attachments,
+      attachments: finalAttachments,
     };
 
     let updatedExercises: TreatmentPlanExerciseItem[];
@@ -581,6 +601,19 @@ export function TreatmentExerciseModule({
                             setHoldTime(prog.holdTime);
                             setFrequency(prog.frequency);
                             setNotes(prog.instructions);
+
+                            const imgs = getExerciseImages(prog.category, prog.name);
+                            if (imgs.length > 0) {
+                              const mappedAtts: TreatmentPlanExerciseAttachment[] = imgs.map((url, i) => ({
+                                id: `auto-img-${i}-${Date.now()}`,
+                                name: `${prog.name} Image ${i + 1}`,
+                                type: 'image/png',
+                                size: 150000,
+                                dataUrl: url,
+                                imageUrl: url,
+                              }));
+                              setAttachments(mappedAtts);
+                            }
                           }}
                           className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                             isLoaded

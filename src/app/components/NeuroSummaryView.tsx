@@ -69,9 +69,88 @@ const REFLEX_LABELS: Record<string, { name: string; cat: string }> = {
   ankle: { name: 'Ankle', cat: 'Deep' }
 };
 
-interface NeuroSummaryViewProps {
-  neuroData: any;
+export interface MMSEData {
+  questions?: Record<string, string | number | null> | null;
+  totalScore?: string | null;
+  total?: string | number | null;
 }
+
+export interface GCSData {
+  eye?: string | number | null;
+  verbal?: string | number | null;
+  motor?: string | number | null;
+  total?: string | number | null;
+}
+
+export interface CoordinationItem {
+  test: string;
+  result: string;
+}
+
+export interface ComponentObservationItem {
+  component: string;
+  observation: string;
+}
+
+export interface CanonicalNeurologicalReport {
+  gcs?: GCSData | null;
+  mmse?: MMSEData | string | null;
+  mental?: Record<string, any> | null;
+  cranialNerves?: Record<string, any> | null;
+  sensory?: Record<string, any> | null;
+  reflexes?: Record<string, any> | null;
+  voluntaryControl?: Record<string, any> | null;
+  muscleGirth?: Record<string, any> | null;
+  coordination?: CoordinationItem[] | null;
+  posture?: ComponentObservationItem[] | null;
+  gait?: ComponentObservationItem[] | null;
+  handFunction?: Record<string, any> | null;
+}
+
+export interface NeuroSummaryViewProps {
+  neuroData?: CanonicalNeurologicalReport | any;
+}
+
+export function formatNeuroValue(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '—';
+  }
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return '—';
+}
+
+export const getMMSEDisplayTotal = (mmse: any): string | null => {
+  if (!mmse) return null;
+  if (typeof mmse === 'string' || typeof mmse === 'number') {
+    const s = String(mmse).trim();
+    if (!s) return null;
+    return s.includes('/') ? s : `${s}/30`;
+  }
+  if (typeof mmse === 'object') {
+    const total = mmse.totalScore ?? mmse.total ?? mmse.score ?? null;
+    if (total !== null && total !== undefined && total !== '' && typeof total !== 'object') {
+      const s = String(total).trim();
+      return s.includes('/') ? s : `${s}/30`;
+    }
+  }
+  return null;
+};
+
+export const getMMSEQuestions = (mmse: any): Record<string, string | number> | null => {
+  if (!mmse || typeof mmse !== 'object') return null;
+  const questionsObj = (mmse.questions && typeof mmse.questions === 'object') ? mmse.questions : mmse;
+  const result: Record<string, string | number> = {};
+  let found = false;
+  Object.entries(questionsObj).forEach(([k, v]) => {
+    if (k.startsWith('q') && v !== null && v !== undefined && v !== '' && typeof v !== 'object') {
+      result[k] = v as string | number;
+      found = true;
+    }
+  });
+  return found ? result : null;
+};
 
 export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
   if (!neuroData || typeof neuroData !== 'object') return null;
@@ -87,35 +166,53 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
   const gait = neuroData.gait;
   const handFunction = neuroData.handFunction;
 
+  const mmseTotal = getMMSEDisplayTotal(neuroData.mmse);
+  const mmseQuestions = getMMSEQuestions(neuroData.mmse);
+
   return (
     <div className="flex flex-col gap-4 text-xs">
       {/* Mental / GCS / MMSE */}
-      {(neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m || neuroData.gcs?.e_v_m || neuroData.gcs?.total || neuroData.mmse?.total || (neuroData.mental && Object.values(neuroData.mental).some(Boolean))) && (
-        <div className="flex flex-wrap gap-3">
-          {(neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m || neuroData.gcs?.e_v_m || neuroData.gcs?.total) && (
-            <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">GCS Score:</span>
-              <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">
-                {neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m
-                  ? `E:${neuroData.gcs.e || '-'} V:${neuroData.gcs.v || '-'} M:${neuroData.gcs.m || '-'} (${neuroData.gcs.total || '0'}/15)`
-                  : `EVM = ${neuroData.gcs?.e_v_m || neuroData.gcs?.total} / 15`}
-              </span>
-            </div>
-          )}
-          {neuroData.mmse?.total && (
-            <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">MMSE Total:</span>
-              <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">{neuroData.mmse.total} / 30</span>
-            </div>
-          )}
-          {neuroData.mental && Object.values(neuroData.mental).some(Boolean) && (
-            <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center gap-3">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Mental:</span>
-              {Object.entries(neuroData.mental).map(([k, v]) => v ? (
-                <span key={k} className="text-slate-700 dark:text-slate-300">
-                  <strong className="capitalize">{k}:</strong> {String(v)}
+      {(neuroData.gcs || mmseTotal || mmseQuestions || (neuroData.mental && Object.values(neuroData.mental).some(Boolean))) && (
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-3">
+            {neuroData.gcs && (
+              <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">GCS Score:</span>
+                <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">
+                  E:{formatNeuroValue(neuroData.gcs.eye)} V:{formatNeuroValue(neuroData.gcs.verbal)} M:{formatNeuroValue(neuroData.gcs.motor)} ({formatNeuroValue(neuroData.gcs.total)}/15)
                 </span>
-              ) : null)}
+              </div>
+            )}
+            {mmseTotal && (
+              <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">MMSE Score:</span>
+                <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">{mmseTotal}</span>
+              </div>
+            )}
+            {neuroData.mental && Object.values(neuroData.mental).some(Boolean) && (
+              <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center gap-3">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Mental:</span>
+                {Object.entries(neuroData.mental).map(([k, v]) => v && typeof v !== 'object' ? (
+                  <span key={k} className="text-slate-700 dark:text-slate-300">
+                    <strong className="capitalize">{k}:</strong> {formatNeuroValue(v)}
+                  </span>
+                ) : null)}
+              </div>
+            )}
+          </div>
+
+          {/* MMSE Question Breakdown if available */}
+          {mmseQuestions && (
+            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1.5">MMSE Question Breakdown:</span>
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-11 gap-1.5">
+                {Object.entries(mmseQuestions).map(([qKey, val]) => (
+                  <div key={qKey} className="p-1.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-150 dark:border-slate-700/60 rounded-lg text-center">
+                    <div className="text-[9px] font-bold text-slate-400 uppercase">{qKey}</div>
+                    <div className="text-xs font-extrabold text-slate-800 dark:text-slate-200">{formatNeuroValue(val)}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -320,116 +417,66 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       )}
 
       {/* Coordination */}
-      {coordination && (
-        Object.keys(NON_EQUILIBRIUM_LABELS).some(k => coordination[k] && (coordination[k].rt || coordination[k].lt)) ||
-        Object.keys(EQUILIBRIUM_LABELS).some(k => coordination[k]) ||
-        coordination.involuntaryMovements
-      ) && (
+      {coordination && Array.isArray(coordination) && coordination.length > 0 && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Coordination & Balance</span>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Non Equilibrium */}
-            {Object.keys(NON_EQUILIBRIUM_LABELS).some(k => coordination[k] && (coordination[k].rt || coordination[k].lt)) && (
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Non-Equilibrium Tests</span>
-                <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
-                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
-                    <tr>
-                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test</th>
-                      <th className="p-2 text-center border-b border-r border-slate-200 dark:border-slate-800">Right</th>
-                      <th className="p-2 text-center border-b border-slate-200 dark:border-slate-800">Left</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(NON_EQUILIBRIUM_LABELS).map(([key, label]) => {
-                      const val = coordination[key];
-                      if (!val || (!val.rt && !val.lt)) return null;
-                      return (
-                        <tr key={key} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
-                          <td className="p-2 font-semibold border-r border-slate-150 dark:border-slate-800">{label}</td>
-                          <td className="p-2 text-center border-r border-slate-150 dark:border-slate-800">{val.rt || '—'}</td>
-                          <td className="p-2 text-center">{val.lt || '—'}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Equilibrium */}
-            {Object.keys(EQUILIBRIUM_LABELS).some(k => coordination[k]) && (
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Equilibrium Tests</span>
-                <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
-                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
-                    <tr>
-                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test</th>
-                      <th className="p-2 text-center border-b border-slate-200 dark:border-slate-800">Grade / Comments</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(EQUILIBRIUM_LABELS).map(([key, label]) => {
-                      const val = coordination[key];
-                      if (!val) return null;
-                      return (
-                        <tr key={key} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
-                          <td className="p-2 font-semibold border-r border-slate-150 dark:border-slate-800">{label}</td>
-                          <td className="p-2 text-center">{String(val)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+          <div className="flex flex-col gap-2">
+            {coordination.map((c: any, i: number) => {
+              if (!c) return null;
+              const testLabel = typeof c.test === 'string' ? c.test.replace(/([A-Z])/g, ' $1').trim() : 'Test';
+              const displayRes = typeof c.result === 'string' ? c.result : (c.right || c.left ? `Right: ${c.right || '—'}, Left: ${c.left || '—'}` : '—');
+              return (
+                <div key={i} className="px-3 py-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-2 text-xs">
+                  <span className="font-bold text-slate-600 dark:text-slate-400 capitalize">{testLabel}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">{displayRes}</span>
+                </div>
+              );
+            })}
           </div>
-
-          {coordination.involuntaryMovements && (
-            <p className="mt-2 text-xs text-slate-700 dark:text-slate-300">
-              <strong>Involuntary Movements:</strong> {coordination.involuntaryMovements}
-            </p>
-          )}
         </div>
       )}
 
       {/* Balance / Posture / Gait / Hand Function */}
       {((balance && Object.values(balance).some(Boolean)) ||
-        (posture && Object.values(posture).some((v: any) => v && (v.frontal || v.sagittal))) ||
-        (gait && Object.values(gait).some(Boolean)) ||
+        (posture && Array.isArray(posture) && posture.length > 0) ||
+        (gait && Array.isArray(gait) && gait.length > 0) ||
         (handFunction && Object.values(handFunction).some(Boolean))) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           {balance && Object.values(balance).some(Boolean) && (
             <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
               <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Balance</span>
-              {Object.entries(balance).map(([k, v]) => v ? (
+              {Object.entries(balance).map(([k, v]) => v && typeof v !== 'object' ? (
                 <p key={k} className="text-slate-700 dark:text-slate-300"><strong className="capitalize">{k.replace(/([A-Z])/g, ' $1')}:</strong> {String(v)}</p>
               ) : null)}
             </div>
           )}
 
-          {posture && Object.values(posture).some((v: any) => v && (v.frontal || v.sagittal)) && (
+          {posture && Array.isArray(posture) && posture.length > 0 && (
             <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
               <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Posture</span>
-              {Object.entries(posture).map(([k, v]: [string, any]) => v && (v.frontal || v.sagittal) ? (
-                <p key={k} className="text-slate-700 dark:text-slate-300"><strong className="capitalize">{k}:</strong> F: {v.frontal || '—'}, S: {v.sagittal || '—'}</p>
-              ) : null)}
+              {posture.map((p: any, i: number) => (
+                <p key={i} className="text-slate-700 dark:text-slate-300">
+                  <strong className="capitalize">{typeof p.component === 'string' ? p.component : 'Posture'}:</strong> {typeof p.observation === 'string' ? p.observation : '—'}
+                </p>
+              ))}
             </div>
           )}
 
-          {gait && Object.values(gait).some(Boolean) && (
+          {gait && Array.isArray(gait) && gait.length > 0 && (
             <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
               <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Gait</span>
-              {Object.entries(gait).map(([k, v]) => v ? (
-                <p key={k} className="text-slate-700 dark:text-slate-300"><strong className="capitalize">{k.replace(/([A-Z])/g, ' $1')}:</strong> {String(v)}</p>
-              ) : null)}
+              {gait.map((g: any, i: number) => (
+                <p key={i} className="text-slate-700 dark:text-slate-300">
+                  <strong className="capitalize">{typeof g.component === 'string' ? g.component : 'Gait'}:</strong> {typeof g.observation === 'string' ? g.observation : '—'}
+                </p>
+              ))}
             </div>
           )}
 
           {handFunction && Object.values(handFunction).some(Boolean) && (
             <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
               <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Hand Function</span>
-              {Object.entries(handFunction).map(([k, v]) => v ? (
+              {Object.entries(handFunction).map(([k, v]) => v && typeof v !== 'object' ? (
                 <p key={k} className="text-slate-700 dark:text-slate-300"><strong className="capitalize">{k.replace(/([A-Z])/g, ' $1')}:</strong> {String(v)}</p>
               ) : null)}
             </div>

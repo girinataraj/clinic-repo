@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import { BottomNav } from '../components/BottomNav';
 import { ApiErrorBanner } from '../components/ApiErrorBanner';
 import { EvaluationSummaryReport } from '../components/EvaluationSummaryReport';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { usePatient } from '../../hooks/usePatients';
 import { useAuth } from '../contexts/AuthContext';
-import { useLatestEvaluation } from '../../hooks/useEvaluations';
+import api from '../../services/api';
 import { Loader2 } from 'lucide-react';
 
 export function PatientDetailPage() {
@@ -23,17 +24,24 @@ export function PatientDetailPage() {
   } = usePatient(patientId);
 
   const {
-    data: evaluation,
-    isLoading: evaluationLoading,
-    isError: evaluationError,
-    error: evaluationErrorObj,
-  } = useLatestEvaluation(patientId);
+    data: assessment,
+    isLoading: assessmentLoading,
+    isError: assessmentError,
+    error: assessmentErrorObj,
+  } = useQuery({
+    queryKey: ['assessments', 'latest', patientId],
+    queryFn: async () => {
+      const { data } = await api.get(`/assessments/${patientId}`);
+      return data?.data?.latest ?? null;
+    },
+    enabled: Boolean(patientId),
+  });
 
-  const isLoading = patientLoading || evaluationLoading;
+  const isLoading = patientLoading || assessmentLoading;
 
   const evaluationData = useMemo(() => {
-    if (!evaluation && !patient) return null;
-    const baseEval = evaluation || {} as any;
+    if (!assessment && !patient) return null;
+    const baseEval = assessment || {} as any;
     return {
       ...baseEval,
       patient: {
@@ -54,14 +62,14 @@ export function PatientDetailPage() {
       displayId: patient?.displayId || patient?.display_id || baseEval.patientDisplayId || baseEval.displayId,
       referredBy: patient?.referredBy || baseEval.patientReferredBy || baseEval.referredBy,
     };
-  }, [evaluation, patient]);
+  }, [assessment, patient]);
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
-        {(patientError || evaluationError) && (
+        {(patientError || assessmentError) && (
           <div className="max-w-4xl mx-auto mb-4">
-            <ApiErrorBanner error={patientError ? patientErrorObj : evaluationErrorObj} />
+            <ApiErrorBanner error={patientError ? patientErrorObj : assessmentErrorObj} />
           </div>
         )}
 
