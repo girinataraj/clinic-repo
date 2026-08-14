@@ -346,11 +346,9 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
     setDownloadingPdf(true);
     setPdfError(null);
     try {
-      // Intake reports must use the exact selected assessment, never an
-      // evaluation id or the patient's latest assessment.
+      // Intake reports must use the exact selected assessment/evaluation ID
       const assessmentId = rawData.assessmentId || rawData.assessment_id ||
-        (rawData.sourceTable === 'assessments' ? rawData.id : null) ||
-        (evaluation.sourceTable === 'assessments' ? evaluation.id : null);
+        rawData.id || evaluation.id;
       const patId = rawData.patientId || rawData.patient_id || report.patient.id;
 
       if (!assessmentId || !patId) {

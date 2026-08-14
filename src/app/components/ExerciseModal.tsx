@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Dumbbell, AlertCircle, Save } from 'lucide-react';
 import type { PatientExercise } from '../../hooks/useExercises';
-import { getExerciseImages } from '../../utils/exerciseImageMapper';
-
 interface ExerciseModalProps {
   isOpen: boolean;
   exercise: PatientExercise | null;
@@ -127,7 +125,6 @@ export const ExerciseModal: React.FC<ExerciseModalProps> = ({
     if (!validate()) return;
 
     try {
-      const autoImgs = getExerciseImages(formData.category, formData.exercise_name);
       await onSave({
         exercise_name: formData.exercise_name.trim(),
         exerciseName: formData.exercise_name.trim(),
@@ -146,7 +143,6 @@ export const ExerciseModal: React.FC<ExerciseModalProps> = ({
         status: formData.status,
         video_url: formData.video_url.trim(),
         videoUrl: formData.video_url.trim(),
-        images: exercise?.images && exercise.images.length > 0 ? exercise.images : autoImgs,
       });
       onClose();
     } catch (err: any) {

@@ -7,67 +7,67 @@ export interface ExerciseCategoryFolder {
 }
 
 export const EXERCISE_FOLDER_MAP: Record<string, ExerciseCategoryFolder> = {
-  Knee: {
+  Knee_Exercises: {
     id: 'knee_folder',
     name: 'Knee Exercises',
     category: 'Knee',
     folderName: 'Knee_Exercises',
     images: [
-      '/Exercise_Images/Knee_Exercises/Screenshot 2026-08-12 110412.png',
+      '/Exercise_Images/Knee_Exercises/Knee_Exercises.png',
     ],
   },
-  Shoulder: {
+  Shoulder_Exercises: {
     id: 'shoulder_folder',
     name: 'Shoulder Exercises',
     category: 'Shoulder',
     folderName: 'Shoulder_Exercises',
     images: [
-      '/Exercise_Images/Shoulder_Exercises/Screenshot 2026-08-12 110911.png',
-      '/Exercise_Images/Shoulder_Exercises/Screenshot 2026-08-12 111143.png',
+      '/Exercise_Images/Shoulder_Exercises/Shoulder_Exercises.png',
+      '/Exercise_Images/Shoulder_Exercises/Shoulder_Exercises2.png',
     ],
   },
-  Neck: {
+  Neck_Strengthening_Exercises: {
     id: 'neck_folder',
     name: 'Neck Strengthening Exercises',
     category: 'Neck',
     folderName: 'Neck_Strengthening_Exercises',
     images: [
-      '/Exercise_Images/Neck_Strengthening_Exercises/Screenshot 2026-08-12 110632.png',
-      '/Exercise_Images/Neck_Strengthening_Exercises/Screenshot 2026-08-12 111000.png',
+      '/Exercise_Images/Neck_Strengthening_Exercises/Neck_Strengthening_Exercises.png',
+      '/Exercise_Images/Neck_Strengthening_Exercises/Neck_Strengthening_Exercises2.png',
     ],
   },
-  Facial: {
+  Facial_Retraining_Exercises: {
     id: 'facial_folder',
     name: 'Facial Retraining Exercises',
     category: 'Facial',
     folderName: 'Facial_Retraining_Exercises',
     images: [
-      '/Exercise_Images/Facial_Retraining_Exercises/Screenshot 2026-08-12 105847.png',
-      '/Exercise_Images/Facial_Retraining_Exercises/Screenshot 2026-08-12 105908.png',
+      '/Exercise_Images/Facial_Retraining_Exercises/Facial_Retraining_Exercises.png',
+      '/Exercise_Images/Facial_Retraining_Exercises/Facial_Retraining_Exercises2.png',
     ],
   },
-  Back: {
+  Spinal_Flexion_Exercises: {
     id: 'spinal_folder',
     name: 'Spinal Flexion Exercises',
     category: 'Back',
     folderName: 'Spinal_Flexion_Exercises',
     images: [
-      '/Exercise_Images/Spinal_Flexion_Exercises/Screenshot 2026-08-12 111240.png',
+      '/Exercise_Images/Spinal_Flexion_Exercises/Spinal_Flexion_Exercises.png',
     ],
   },
-  'Dos and Don\'ts': {
+  Dos_and_Donts: {
     id: 'dos_donts_folder',
     name: "Dos and Don'ts Guide",
     category: 'General',
     folderName: 'Dos_and_Donts',
     images: [
-      '/Exercise_Images/Dos_and_Donts/Screenshot 2026-08-12 111428.png',
+      '/Exercise_Images/Dos_and_Donts/Dos_and_Donts.png',
     ],
   },
 };
 
 /**
- * Get matching folder exercise images based on category or exercise name.
+ * Get matching folder exercise images based on exact exercise name or category.
  * Guarantees deduplicated and valid image URLs.
  */
 export function getExerciseImages(category?: string, exerciseName?: string): string[] {
@@ -76,20 +76,31 @@ export function getExerciseImages(category?: string, exerciseName?: string): str
 
   let matched: string[] = [];
 
-  if (normCategory.includes('knee') || normName.includes('knee')) {
-    matched = EXERCISE_FOLDER_MAP.Knee.images;
-  } else if (normCategory.includes('shoulder') || normName.includes('shoulder')) {
-    matched = EXERCISE_FOLDER_MAP.Shoulder.images;
-  } else if (normCategory.includes('neck') || normName.includes('neck')) {
-    matched = EXERCISE_FOLDER_MAP.Neck.images;
-  } else if (normCategory.includes('facial') || normName.includes('facial')) {
-    matched = EXERCISE_FOLDER_MAP.Facial.images;
-  } else if (normCategory.includes('spine') || normCategory.includes('back') || normName.includes('spinal') || normName.includes('back') || normName.includes('flexion')) {
-    matched = EXERCISE_FOLDER_MAP.Back.images;
-  } else if (normName.includes('dos') || normName.includes("don't") || normCategory.includes('dos')) {
-    matched = EXERCISE_FOLDER_MAP["Dos and Don'ts"].images;
+  // Match by exact normalized exercise name first
+  if (normName === 'knee exercises') {
+    matched = EXERCISE_FOLDER_MAP.Knee_Exercises.images;
+  } else if (normName === 'shoulder exercises') {
+    matched = EXERCISE_FOLDER_MAP.Shoulder_Exercises.images;
+  } else if (normName === 'neck strengthening exercises') {
+    matched = EXERCISE_FOLDER_MAP.Neck_Strengthening_Exercises.images;
+  } else if (normName === 'facial retraining exercises') {
+    matched = EXERCISE_FOLDER_MAP.Facial_Retraining_Exercises.images;
+  } else if (normName === 'spinal flexion exercises') {
+    matched = EXERCISE_FOLDER_MAP.Spinal_Flexion_Exercises.images;
+  } else if (normName === "dos and don'ts guide") {
+    matched = EXERCISE_FOLDER_MAP.Dos_and_Donts.images;
+  }
+  // Fallback to category if exactly matching generic categories
+  else if (normCategory === 'knee' && !normName) {
+    matched = EXERCISE_FOLDER_MAP.Knee_Exercises.images;
+  } else if (normCategory === 'shoulder' && !normName) {
+    matched = EXERCISE_FOLDER_MAP.Shoulder_Exercises.images;
+  } else if (normCategory === 'neck' && !normName) {
+    matched = EXERCISE_FOLDER_MAP.Neck_Strengthening_Exercises.images;
+  } else if (normCategory === 'facial' && !normName) {
+    matched = EXERCISE_FOLDER_MAP.Facial_Retraining_Exercises.images;
   }
 
-  // Deduplicate results
-  return Array.from(new Set(matched));
+  // Deduplicate and return max 2 images
+  return Array.from(new Set(matched)).slice(0, 2);
 }

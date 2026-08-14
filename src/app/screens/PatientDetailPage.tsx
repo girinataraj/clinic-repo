@@ -9,6 +9,7 @@ import { usePatient } from '../../hooks/usePatients';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../../services/api';
 import { Loader2 } from 'lucide-react';
+import { useLatestEvaluation } from '../../hooks/useEvaluations';
 
 export function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -28,14 +29,7 @@ export function PatientDetailPage() {
     isLoading: assessmentLoading,
     isError: assessmentError,
     error: assessmentErrorObj,
-  } = useQuery({
-    queryKey: ['assessments', 'latest', patientId],
-    queryFn: async () => {
-      const { data } = await api.get(`/assessments/${patientId}`);
-      return data?.data?.latest ?? null;
-    },
-    enabled: Boolean(patientId),
-  });
+  } = useLatestEvaluation(patientId);
 
   const isLoading = patientLoading || assessmentLoading;
 
