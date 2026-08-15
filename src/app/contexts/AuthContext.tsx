@@ -21,7 +21,7 @@ interface AuthContextType {
   isInitializing: boolean;
   isLoading: boolean;
   loginError: string | null;
-  login: (email: string, password: string, role: UserRole) => Promise<void>;
+  login: (identifier: string, password: string, role?: UserRole) => Promise<AuthUser>;
   logout: () => Promise<void>;
 }
 
@@ -92,15 +92,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     restoreSession();
   }, []);
 
-  const login = async (identifier: string, password: string, role: UserRole) => {
+  const login = async (identifier: string, password: string, role?: UserRole): Promise<AuthUser> => {
     setIsLoading(true);
     setLoginError(null);
     try {
-      // Patients authenticate with phone; staff with email
-      const isPhone = role === 'patient';
-      const body = isPhone
-        ? { phone: identifier, password, role }
-        : { email: identifier, password, role };
+      const trimmed = identifier.trim();
+      const body: Record<string, any> = { password: password.trim() };
+      if (trimmed.includes('@')) {
+        body.email = trimmed;
+      } else {
+        body.phone = trimmed;
+        body.email = trimmed;
+      }
+      if (role) {
+        body.role = role;
+      }
 
       const { data } = await api.post<{
         success: boolean;
@@ -110,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAccessToken(data.data.accessToken);
       setRefreshToken(data.data.refreshToken);
       setUser(data.data.user);
+      return data.data.user;
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||

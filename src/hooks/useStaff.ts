@@ -39,7 +39,7 @@ export function useStaffUsers(params?: { role?: 'doctor' | 'nurse'; search?: str
       const getOrderIndex = (name: string) => {
         const lower = name.toLowerCase();
         if (lower.includes('sathish')) return 1;
-        if (lower.includes('rahul')) return 2;
+        if (lower.includes('raghul') || lower.includes('rahul')) return 2;
         if (lower.includes('yokesh')) return 3;
         return 4;
       };
