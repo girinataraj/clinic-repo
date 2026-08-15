@@ -1,46 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
-import type { UserRole } from '../contexts/AuthContext';
 import {
-  Eye, EyeOff, Mail, Lock, Phone,
-  ChevronRight, HeartPulse, Stethoscope,
+  Eye, EyeOff, Mail, Lock,
+  ChevronRight,
   CheckCircle, Shield, Users, Star, AlertCircle,
+  Sparkles,
 } from 'lucide-react';
-
-interface RoleOption {
-  value: UserRole;
-  label: string;
-  sublabel: string;
-  icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
-  color: string;
-  bg: string;
-  border: string;
-  gradient: string;
-}
-
-const roles: RoleOption[] = [
-  {
-    value: 'nurse',
-    label: 'Therapist',
-    sublabel: 'Therapy & care',
-    icon: HeartPulse,
-    color: '#0f766e',
-    bg: '#f0fdfa',
-    border: '#99f6e4',
-    gradient: 'linear-gradient(135deg, #0f766e, #14b8a6)',
-  },
-  {
-    value: 'doctor',
-    label: 'Doctor',
-    sublabel: 'Consult & prescribe',
-    icon: Stethoscope,
-    color: '#4338ca',
-    bg: '#eef2ff',
-    border: '#c7d2fe',
-    gradient: 'linear-gradient(135deg, #4338ca, #6366f1)',
-  },
-];
 
 const features = [
   { icon: CheckCircle, text: 'Dr. SV. Sathish Kumar (Consultant Physiotherapist)', color: '#10b981' },
@@ -50,33 +16,38 @@ const features = [
 ];
 
 export function LoginScreen() {
-  const [role, setRole] = useState<UserRole>('nurse');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, loginError } = useAuth();
   const navigate = useNavigate();
 
-  const selectedRole = roles.find((r) => r.value === role)!;
-  const isPatient = role === 'patient';
-
-  const handleRoleChange = (r: UserRole) => {
-    setRole(r);
-    setIdentifier('');
-  };
-
   const handleLogin = async () => {
     if (!identifier.trim() || !password.trim()) return;
     try {
-      await login(identifier.trim(), password, role);
-      navigate(`/${role}`);
+      const authenticatedUser = await login(identifier.trim(), password);
+      const role = authenticatedUser?.role;
+      if (role === 'doctor' || role === 'admin') {
+        navigate('/doctor');
+      } else if (role === 'nurse') {
+        navigate('/nurse');
+      } else if (role === 'patient') {
+        navigate('/patient');
+      } else {
+        navigate('/doctor');
+      }
     } catch {
-      // loginError is set in AuthContext
+      // loginError is handled in AuthContext
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleLogin();
+  };
+
+  const handleAutofill = (email: string, pass: string) => {
+    setIdentifier(email);
+    setPassword(pass);
   };
 
   return (
@@ -143,12 +114,18 @@ export function LoginScreen() {
         }}
       >
         {/* Ambient blobs */}
-        <div className="absolute -right-20 -top-20 rounded-full opacity-10 animate-pulse-glow"
-          style={{ width: '300px', height: '300px', background: 'radial-gradient(circle, #38bdf8, transparent)' }} />
-        <div className="absolute -left-16 bottom-1/4 rounded-full opacity-10 animate-pulse-glow"
-          style={{ width: '250px', height: '250px', background: 'radial-gradient(circle, #10b981, transparent)', animationDelay: '2s' }} />
-        <div className="absolute right-8 bottom-16 rounded-full opacity-10 animate-pulse-glow"
-          style={{ width: '180px', height: '180px', background: 'radial-gradient(circle, #8b5cf6, transparent)', animationDelay: '4s' }} />
+        <div
+          className="absolute -right-20 -top-20 rounded-full opacity-10 animate-pulse-glow"
+          style={{ width: '300px', height: '300px', background: 'radial-gradient(circle, #38bdf8, transparent)' }}
+        />
+        <div
+          className="absolute -left-16 bottom-1/4 rounded-full opacity-10 animate-pulse-glow"
+          style={{ width: '250px', height: '250px', background: 'radial-gradient(circle, #10b981, transparent)', animationDelay: '2s' }}
+        />
+        <div
+          className="absolute right-8 bottom-16 rounded-full opacity-10 animate-pulse-glow"
+          style={{ width: '180px', height: '180px', background: 'radial-gradient(circle, #8b5cf6, transparent)', animationDelay: '4s' }}
+        />
 
         {/* Top logo */}
         <div className="px-10 pt-12 animate-fade-in-up">
@@ -156,7 +133,8 @@ export function LoginScreen() {
             <div
               className="overflow-hidden shrink-0"
               style={{
-                width: '60px', height: '60px',
+                width: '60px',
+                height: '60px',
                 borderRadius: '18px',
                 boxShadow: '0 16px 40px rgba(0,0,0,0.3)',
               }}
@@ -200,12 +178,14 @@ export function LoginScreen() {
 
           {/* Features */}
           <div className="flex flex-col gap-3.5 animate-fade-in-up delay-500">
-            {features.map((f, index) => {
+            {features.map((f) => {
               const Icon = f.icon;
               return (
                 <div key={f.text} className="flex items-center gap-3">
-                  <div className="flex items-center justify-center rounded-xl shrink-0"
-                    style={{ width: '38px', height: '38px', background: `${f.color}20` }}>
+                  <div
+                    className="flex items-center justify-center rounded-xl shrink-0"
+                    style={{ width: '38px', height: '38px', background: `${f.color}20` }}
+                  >
                     <Icon size={18} color={f.color} />
                   </div>
                   <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>{f.text}</span>
@@ -221,7 +201,7 @@ export function LoginScreen() {
             className="p-5 rounded-2xl animate-fade-in-up delay-500"
             style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', animationDelay: '700ms' }}
           >
-            <p style={{ fontSize: '13px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', tracking: '0.5px', marginBottom: '6px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
               Patient Testimonials
             </p>
             <p style={{ fontSize: '14px', fontWeight: 700, color: '#fbbf24', lineHeight: 1.6 }}>
@@ -235,23 +215,27 @@ export function LoginScreen() {
       </div>
 
       {/* ── RIGHT FORM PANEL ── */}
-      <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto p-4 sm:p-6 lg:p-12">
 
         {/* Mobile header */}
         <div
-          className="lg:hidden w-full flex flex-col items-center pb-12 px-6 relative overflow-hidden"
+          className="lg:hidden w-full flex flex-col items-center pb-10 px-6 relative overflow-hidden rounded-3xl mb-4"
           style={{
             background: 'linear-gradient(160deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%)',
-            paddingTop: '56px',
+            paddingTop: '40px',
           }}
         >
-          <div className="absolute -right-12 -top-12 rounded-full opacity-10"
-            style={{ width: '140px', height: '140px', background: 'white' }} />
+          <div
+            className="absolute -right-12 -top-12 rounded-full opacity-10"
+            style={{ width: '140px', height: '140px', background: 'white' }}
+          />
           <div
             className="overflow-hidden mb-4"
             style={{
-              width: '72px', height: '72px',
-              borderRadius: '22px', boxShadow: '0 16px 40px rgba(0,0,0,0.3)',
+              width: '68px',
+              height: '68px',
+              borderRadius: '20px',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.3)',
             }}
           >
             <img
@@ -266,145 +250,82 @@ export function LoginScreen() {
           <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '4px', textAlign: 'center' }}>
             "Getting better every day"
           </p>
-          <p style={{ fontSize: '11px', color: '#38bdf8', marginTop: '4px', textAlign: 'center', fontWeight: 700 }}>
+          <p style={{ fontSize: '12px', color: '#38bdf8', marginTop: '4px', textAlign: 'center', fontWeight: 700 }}>
             Dr. SV. Sathish Kumar · Consultant Physiotherapist
           </p>
-          <div
-            className="flex items-center gap-2 mt-4 px-4 py-2 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}
-          >
-            <div className="rounded-full" style={{ width: '6px', height: '6px', background: '#10b981' }} />
-            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
-              20A/10, Sakthi Nagar, Sengodapalayam, Thindal, Erode
-            </span>
-          </div>
         </div>
 
         {/* Form card */}
         <div
-          className="w-full max-w-md mx-auto px-6 py-8 lg:px-8 animate-scale-in"
+          className="w-full max-w-md mx-auto px-6 py-8 sm:px-8 sm:py-10 animate-scale-in"
           style={{
             background: 'white',
-            borderRadius: '28px 28px 0 0',
-            marginTop: '-22px',
-            boxShadow: '0 -4px 32px rgba(0,0,0,0.08)',
+            borderRadius: '28px',
+            boxShadow: '0 10px 40px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04)',
+            border: '1px solid #f1f5f9',
           }}
         >
-          {/* Desktop-only heading */}
-          <div className="hidden lg:block mb-6">
+          {/* Heading */}
+          <div className="mb-7">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+                style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #dbeafe' }}>
+                <Sparkles size={12} />
+                Clinic Portal
+              </span>
+            </div>
             <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.7px' }}>
-              Welcome back 👋
+              Sign In
             </h2>
             <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>
-              Sign in to your SAAI Physiotherapy account
+              Enter your credentials to access your account
             </p>
           </div>
 
-          {/* Mobile heading */}
-          <div className="lg:hidden mb-6">
-            <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.5px' }}>
-              Welcome back 👋
-            </h2>
-            <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-              Sign in to continue your care journey
-            </p>
-          </div>
-
-          {/* Role selection */}
-          <div style={{ marginBottom: '22px' }}>
-            <p style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: '10px' }}>
-              I am a
-            </p>
-            <div className="flex gap-2">
-              {roles.map((r) => {
-                const { icon: Icon } = r;
-                const isSelected = role === r.value;
-                return (
-                  <button
-                    key={r.value}
-                    onClick={() => handleRoleChange(r.value)}
-                    className="flex-1 flex flex-col items-center pt-3 pb-2.5 rounded-2xl"
-                    style={{
-                      border: `2px solid ${isSelected ? r.color : '#f1f5f9'}`,
-                      background: isSelected ? r.bg : '#f8fafc',
-                      transform: isSelected ? 'translateY(-1px)' : 'none',
-                      boxShadow: isSelected ? `0 4px 16px ${r.color}25` : 'none',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    <div
-                      className="flex items-center justify-center mb-1.5 rounded-xl"
-                      style={{
-                        width: '42px', height: '42px',
-                        background: isSelected ? r.gradient : '#e2e8f0',
-                      }}
-                    >
-                      <Icon size={20} color={isSelected ? 'white' : '#94a3b8'} strokeWidth={2} />
-                    </div>
-                    <span style={{ fontSize: '12px', fontWeight: 800, color: isSelected ? r.color : '#94a3b8' }}>
-                      {r.label}
-                    </span>
-                    <span style={{ fontSize: '10px', color: isSelected ? r.color : '#cbd5e1', font500: 'true' }}>
-                      {r.sublabel}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Identifier: phone for patients, email for staff */}
-          <div style={{ marginBottom: '12px' }}>
+          {/* Identifier: Email or Phone */}
+          <div style={{ marginBottom: '16px' }}>
             <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', letterSpacing: '0.6px', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-              {isPatient ? 'Mobile Number' : 'Email Address'}
+              Email or Mobile Number
             </label>
             <div
               className="flex items-center gap-3 px-4"
               style={{
-                border: `1.5px solid ${identifier ? selectedRole.border : '#e2e8f0'}`,
+                border: `1.5px solid ${identifier ? '#3b82f6' : '#e2e8f0'}`,
                 borderRadius: '16px',
                 background: '#ffffff',
                 transition: 'border-color 0.2s',
               }}
             >
-              {isPatient
-                ? <Phone size={17} color={identifier ? selectedRole.color : '#94a3b8'} />
-                : <Mail size={17} color={identifier ? selectedRole.color : '#94a3b8'} />}
+              <Mail size={18} color={identifier ? '#2563eb' : '#94a3b8'} />
               <input
                 id="identifier-input"
-                type={isPatient ? 'tel' : 'email'}
+                type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={isPatient ? '9876543210' : 'your@email.com'}
+                placeholder="e.g. your@email.com or mobile"
                 className="flex-1 outline-none bg-transparent"
                 style={{ padding: '14px 0', fontSize: '14px', color: '#1e293b' }}
-                inputMode={isPatient ? 'numeric' : 'email'}
-                autoComplete={isPatient ? 'tel' : 'email'}
+                autoComplete="username"
               />
             </div>
-            {isPatient && identifier && !/^[0-9+\s-]{7,15}$/.test(identifier) && (
-              <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px', fontWeight: 600 }}>
-                Enter a valid mobile number
-              </p>
-            )}
           </div>
 
           {/* Password */}
-          <div style={{ marginBottom: '10px' }}>
+          <div style={{ marginBottom: '12px' }}>
             <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', letterSpacing: '0.6px', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
               Password
             </label>
             <div
               className="flex items-center gap-3 px-4"
               style={{
-                border: `1.5px solid ${password ? selectedRole.border : '#e2e8f0'}`,
+                border: `1.5px solid ${password ? '#3b82f6' : '#e2e8f0'}`,
                 borderRadius: '16px',
                 background: '#ffffff',
                 transition: 'border-color 0.2s',
               }}
             >
-              <Lock size={17} color={password ? selectedRole.color : '#94a3b8'} />
+              <Lock size={18} color={password ? '#2563eb' : '#94a3b8'} />
               <input
                 id="password-input"
                 type={showPassword ? 'text' : 'password'}
@@ -416,14 +337,21 @@ export function LoginScreen() {
                 style={{ padding: '14px 0', fontSize: '14px', color: '#1e293b' }}
                 autoComplete="current-password"
               />
-              <button onClick={() => setShowPassword(!showPassword)} style={{ padding: '4px' }}>
-                {showPassword ? <EyeOff size={17} color="#94a3b8" /> : <Eye size={17} color="#94a3b8" />}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                {showPassword ? <EyeOff size={18} color="#94a3b8" /> : <Eye size={18} color="#94a3b8" />}
               </button>
             </div>
           </div>
 
           <div className="text-right" style={{ marginBottom: '24px' }}>
-            <button style={{ fontSize: '13px', fontWeight: 700, color: selectedRole.color }}>
+            <button
+              type="button"
+              style={{ fontSize: '13px', fontWeight: 700, color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer' }}
+            >
               Forgot Password?
             </button>
           </div>
@@ -432,9 +360,9 @@ export function LoginScreen() {
           {loginError && (
             <div
               className="flex items-center gap-2 px-4 py-3 rounded-xl"
-              style={{ background: '#fef2f2', border: '1px solid #fecaca', marginBottom: '16px' }}
+              style={{ background: '#fef2f2', border: '1px solid #fecaca', marginBottom: '18px' }}
             >
-              <AlertCircle size={15} color="#ef4444" />
+              <AlertCircle size={16} color="#ef4444" className="shrink-0" />
               <p style={{ fontSize: '13px', color: '#dc2626', fontWeight: 600 }}>{loginError}</p>
             </div>
           )}
@@ -445,21 +373,25 @@ export function LoginScreen() {
             disabled={isLoading}
             className="w-full flex items-center justify-center gap-2.5"
             style={{
-              padding: '17px',
+              padding: '16px',
               borderRadius: '18px',
-              background: isLoading ? '#93c5fd' : selectedRole.gradient,
+              background: isLoading ? '#93c5fd' : 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)',
               color: 'white',
               fontSize: '16px',
               fontWeight: 800,
               letterSpacing: '-0.2px',
-              boxShadow: isLoading ? 'none' : `0 8px 28px ${selectedRole.color}40`,
+              boxShadow: isLoading ? 'none' : '0 8px 24px rgba(37, 99, 235, 0.35)',
               transition: 'all 0.2s',
+              border: 'none',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
             }}
           >
             {isLoading ? (
               <>
-                <div className="animate-spin rounded-full border-2 border-white border-t-transparent"
-                  style={{ width: '18px', height: '18px' }} />
+                <div
+                  className="animate-spin rounded-full border-2 border-white border-t-transparent"
+                  style={{ width: '18px', height: '18px' }}
+                />
                 Signing in...
               </>
             ) : (
@@ -470,30 +402,70 @@ export function LoginScreen() {
             )}
           </button>
 
-          <div style={{ marginTop: '18px', padding: '14px', background: '#f0f9ff', borderRadius: '16px', border: '1px solid #bae6fd' }}>
-            <div className="flex items-center gap-1.5 justify-center" style={{ marginBottom: '8px' }}>
-              <div className="rounded-full" style={{ width: '6px', height: '6px', background: '#0ea5e9' }} />
-              <p style={{ fontSize: '11px', fontWeight: 800, color: '#0369a1', textAlign: 'center' }}>
-                SEED CREDENTIALS — TAP TO AUTOFILL
+          {/* Quick presets */}
+          <div style={{ marginTop: '22px', padding: '14px', background: '#f8fafc', borderRadius: '18px', border: '1px solid #e2e8f0' }}>
+            <div className="flex items-center gap-1.5 justify-center" style={{ marginBottom: '10px' }}>
+              <div className="rounded-full" style={{ width: '6px', height: '6px', background: '#2563eb' }} />
+              <p style={{ fontSize: '11px', fontWeight: 800, color: '#475569', textAlign: 'center', letterSpacing: '0.4px' }}>
+                QUICK ACCESS ACCOUNTS (AUTOFILL)
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button
-                onClick={() => { setRole('nurse'); setIdentifier('nurse@saai.com'); setPassword('Password@123'); }}
-                style={{ flex: 1, padding: '7px 4px', borderRadius: '12px', background: '#f0fdfa', border: '1.5px solid #99f6e4', fontSize: '11px', fontWeight: 700, color: '#0f766e' }}
+                type="button"
+                onClick={() => handleAutofill('sathish@saai.com', 'spcerd@611')}
+                style={{
+                  padding: '9px 4px',
+                  borderRadius: '12px',
+                  background: '#eef2ff',
+                  border: '1.5px solid #c7d2fe',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#4338ca',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                }}
               >
-                Therapist
+                Doctor (Sathish)
               </button>
               <button
-                onClick={() => { setRole('doctor'); setIdentifier('sathish@saai.com'); setPassword('spcerd@611'); }}
-                style={{ flex: 1, padding: '7px 4px', borderRadius: '12px', background: '#eef2ff', border: '1.5px solid #c7d2fe', fontSize: '11px', fontWeight: 700, color: '#4338ca' }}
+                type="button"
+                onClick={() => handleAutofill('raghul@saai.com', '@TN36bt5522')}
+                style={{
+                  padding: '9px 4px',
+                  borderRadius: '12px',
+                  background: '#f0fdfa',
+                  border: '1.5px solid #99f6e4',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#0f766e',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                }}
               >
-                Doctor
+                Therapist (Raghul)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAutofill('yokesh@saai.com', 'YOKESHPT@2503')}
+                style={{
+                  padding: '9px 4px',
+                  borderRadius: '12px',
+                  background: '#f0fdfa',
+                  border: '1.5px solid #99f6e4',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#0f766e',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                }}
+              >
+                Therapist (Yokesh)
               </button>
             </div>
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#cbd5e1' }}>
+          <p style={{ textAlign: 'center', marginTop: '18px', fontSize: '11px', color: '#94a3b8' }}>
             © 2025 Saai Physiotherapy Clinic · v2.0
           </p>
         </div>
