@@ -358,15 +358,15 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
       }
 
       console.info('PDF_RUNTIME_TRACE', {
-        'frontend endpoint': `/assessments/${patId}/download?assessmentId=${assessmentId}`,
+        'frontend endpoint': `/reports/${assessmentId}/pdf`,
         'HTTP method': 'GET',
         'requested id': assessmentId,
         'requested id type': typeof assessmentId,
       });
-      const response = await api.get(`/assessments/${patId}/download`, {
-        params: { assessmentId: String(assessmentId) },
+      const response = await api.get(`/reports/${assessmentId}/pdf`, {
         responseType: 'blob',
       });
+
 
       if (response && response.data) {
         const blob = new Blob([response.data], { type: 'application/pdf' });
