@@ -118,8 +118,8 @@ export function NurseDashboard() {
             <div className="absolute -right-16 -top-16 rounded-full opacity-10 bg-white/10 w-[200px] h-[200px]" />
             <div className="absolute right-10 top-20 rounded-full opacity-20 bg-white/20 w-[80px] h-[80px]" />
           </div>
-          <div className="px-6 pb-12 pt-8 relative z-30 max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
+          <div className="px-6 pb-6 pt-5 relative z-30 max-w-6xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-[13px] text-teal-100/90 font-medium tracking-[0.5px] uppercase">
                   {today}

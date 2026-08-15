@@ -404,37 +404,39 @@ export function TherapistAssessmentForm() {
 
       {/* Phone Lookup */}
       <div className="px-4 pt-4 pb-2 bg-slate-50 dark:bg-slate-950 shrink-0 z-0 -mt-2">
-        <div className="flex gap-2 items-center bg-white dark:bg-slate-900 p-2 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
-          <SearchDropdown
-            module="patients"
-            searchFields={['name', 'mobile']}
-            apiEndpoint="/patients/search"
-            value={phoneInput}
-            onChange={setPhoneInput}
-            onSelect={(patient: any) => {
-              setPhoneInput(patient.mobile);
-              setPhoneToFetch(patient.mobile);
-              setLookupDone(true);
-              setShowNewPatientForm(false);
-            }}
-            renderItem={(patient: any, highlightText: any) => (
-              <div className="flex flex-col">
-                <span className="font-bold text-slate-800 dark:text-slate-100">
-                  {highlightText(patient.name)}
-                </span>
-                <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                  <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
-                </span>
-              </div>
-            )}
-            placeholder="Patient mobile number..."
-            className="flex-1"
-          />
-          <button onClick={handlePhoneLookup} disabled={phoneInput.trim().length<7} className="px-4 md:px-5 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-50 transition-transform active:scale-95 shadow-md shadow-teal-500/20 bg-teal-600 hover:bg-teal-700 flex items-center justify-center shrink-0">
-            <Search className="w-4 h-4 md:hidden" />
-            <span className="hidden md:inline">Lookup</span>
-          </button>
-        </div>
+        {!resolvedPatientId && (
+          <div className="flex gap-2 items-center bg-white dark:bg-slate-900 p-2 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
+            <SearchDropdown
+              module="patients"
+              searchFields={['name', 'mobile']}
+              apiEndpoint="/patients/search"
+              value={phoneInput}
+              onChange={setPhoneInput}
+              onSelect={(patient: any) => {
+                setPhoneInput(patient.mobile);
+                setPhoneToFetch(patient.mobile);
+                setLookupDone(true);
+                setShowNewPatientForm(false);
+              }}
+              renderItem={(patient: any, highlightText: any) => (
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-800 dark:text-slate-100">
+                    {highlightText(patient.name)}
+                  </span>
+                  <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                    <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
+                  </span>
+                </div>
+              )}
+              placeholder="Patient mobile number..."
+              className="flex-1"
+            />
+            <button onClick={handlePhoneLookup} disabled={phoneInput.trim().length<7} className="px-4 md:px-5 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-50 transition-transform active:scale-95 shadow-md shadow-teal-500/20 bg-teal-600 hover:bg-teal-700 flex items-center justify-center shrink-0">
+              <Search className="w-4 h-4 md:hidden" />
+              <span className="hidden md:inline">Lookup</span>
+            </button>
+          </div>
+        )}
         {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-3 px-3 py-2 bg-white dark:bg-slate-900 rounded-xl"><Loader2 size={16} className="animate-spin text-teal-600 dark:text-teal-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory…</span></div>}
         {lookupDone&&!lookingUp&&foundPatient&&!resolvedPatientId&&(
           <div className="mt-3 p-4 rounded-[18px] bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-between shadow-sm">
@@ -585,61 +587,59 @@ export function TherapistAssessmentForm() {
       </div>
       </div>
 
-      {/* Navigation Buttons (Fixed Bottom) */}
-      <div className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)] relative z-20">
-        <div className="max-w-2xl mx-auto w-full flex flex-col gap-3">
-          {submitError && (
-            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2 shadow-sm">
-              <AlertTriangle size={16} className="shrink-0" />
-              {submitError}
-            </div>
-          )}
-          <div className="flex gap-3">
-            {step > 0 && (
-              <button
-                onClick={() => { setSubmitError(null); setStep(step - 1); }}
-                className="flex items-center justify-center gap-1.5 px-5 py-3.5 rounded-[16px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[14px] font-black transition-transform active:scale-95"
-              >
-                <ChevronLeft size={18} strokeWidth={3} />
-                Back
-              </button>
-            )}
-            {step < totalSteps - 1 && (
-              <button
-                onClick={() => { 
-                  if (step === 0 && !resolvedPatientId) {
-                    setSubmitError('Please resolve a patient before continuing.');
-                    return;
-                  }
-                  setSubmitError(null); 
-                  setStep(totalSteps - 1); 
-                }}
-                className="px-4 py-3.5 rounded-[16px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-[13px] font-extrabold transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                Skip to End
-              </button>
-            )}
-            {step < totalSteps - 1 && (
-              <button
-                onClick={() => { 
-                  if (step === 0 && !resolvedPatientId) {
-                    setSubmitError('Please resolve a patient before continuing.');
-                    return;
-                  }
-                  if (step === 0 && (!patientInfo.condition || patientInfo.condition.length === 0)) {
-                    setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
-                    return;
-                  }
-                  setSubmitError(null); 
-                  setStep(step + 1); 
-                }}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[16px] text-white text-[14px] font-black shadow-lg shadow-teal-900/10 bg-teal-600 hover:bg-teal-700 transition-all active:scale-[0.98]"
-              >
-                Next Step
-                <ChevronRight size={18} strokeWidth={3} />
-              </button>
-            )}
+      {/* Navigation Buttons (Floating Bottom Right) */}
+      <div className="fixed bottom-20 right-6 md:bottom-10 md:right-10 z-50 pointer-events-none flex flex-col gap-4 items-end">
+        {submitError && (
+          <div className="p-4 rounded-[18px] bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[14px] text-red-700 dark:text-red-400 font-bold flex items-center gap-3 shadow-lg pointer-events-auto max-w-sm animate-in fade-in slide-in-from-right-4">
+            <AlertTriangle size={18} className="shrink-0" />
+            {submitError}
           </div>
+        )}
+        <div className="flex gap-3 pointer-events-auto">
+          {step > 0 && (
+            <button
+              onClick={() => { setSubmitError(null); setStep(step - 1); }}
+              className="flex items-center justify-center gap-2 px-6 py-4 rounded-[20px] bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[15px] font-black shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 transition-all active:scale-95"
+            >
+              <ChevronLeft size={20} strokeWidth={3} />
+              Back
+            </button>
+          )}
+          {step < totalSteps - 1 && (
+            <button
+              onClick={() => { 
+                if (step === 0 && !resolvedPatientId) {
+                  setSubmitError('Please resolve a patient before continuing.');
+                  return;
+                }
+                setSubmitError(null); 
+                setStep(totalSteps - 1); 
+              }}
+              className="px-6 py-4 rounded-[20px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[15px] font-extrabold shadow-xl transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
+            >
+              Skip to End
+            </button>
+          )}
+          {step < totalSteps - 1 && (
+            <button
+              onClick={() => { 
+                if (step === 0 && !resolvedPatientId) {
+                  setSubmitError('Please resolve a patient before continuing.');
+                  return;
+                }
+                if (step === 0 && (!patientInfo.condition || patientInfo.condition.length === 0)) {
+                  setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
+                  return;
+                }
+                setSubmitError(null); 
+                setStep(step + 1); 
+              }}
+              className="flex items-center justify-center gap-2 px-8 py-4 rounded-[20px] text-white text-[15px] font-black shadow-2xl shadow-teal-900/30 bg-teal-600 hover:bg-teal-700 transition-all active:scale-[0.98]"
+            >
+              Next Step
+              <ChevronRight size={20} strokeWidth={3} />
+            </button>
+          )}
         </div>
       </div>
 

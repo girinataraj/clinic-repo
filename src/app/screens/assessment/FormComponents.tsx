@@ -2,12 +2,13 @@ import { useRef, useState, useEffect } from 'react';
 import { Search, ChevronDown, Check, X } from 'lucide-react';
 
 // ── Section Card ──────────────────────────────────────────────────────────────
-export function SectionCard({ icon, title, subtitle, children, accent = 'teal' }: {
+export function SectionCard({ icon, title, subtitle, children, accent = 'teal', className = '' }: {
   icon: React.ReactNode;
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   accent?: string;
+  className?: string;
 }) {
   const bg = accent === 'teal' ? 'bg-teal-50 dark:bg-teal-900/30' : 
              accent === 'doctor' ? 'bg-[#E8E9F1] dark:bg-indigo-900/30' :
@@ -20,7 +21,7 @@ export function SectionCard({ icon, title, subtitle, children, accent = 'teal' }
              'bg-slate-50 dark:bg-slate-900/30';
              
   return (
-    <div className="rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
+    <div className={`rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 ${className}`}>
       <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-slate-800">
         <div className={`rounded-lg flex items-center justify-center w-8 h-8 ${bg} shrink-0`}>{icon}</div>
         <div>

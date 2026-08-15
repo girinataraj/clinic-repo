@@ -1,11 +1,12 @@
 import { useNavigate, useLocation } from 'react-router';
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import type { UserRole } from '../contexts/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import {
   Home, Calendar, FileText, User, Users, ClipboardList,
   Activity, LogOut, ChevronRight, IndianRupee, FileSearch, RefreshCw,
-  UserPlus, UserCheck
+  UserPlus, UserCheck, Menu
 } from 'lucide-react';
 
 interface NavItem {
@@ -89,6 +90,7 @@ export function SideNav() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMinimized, setIsMinimized] = useState(false);
 
   if (!user) return null;
 
@@ -112,32 +114,43 @@ export function SideNav() {
 
   return (
     <div
-      className="hidden md:flex flex-col h-screen shrink-0 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800"
-      style={{ width: '240px', boxShadow: '2px 0 16px rgba(0,0,0,0.04)' }}
+      onDoubleClick={() => setIsMinimized(!isMinimized)}
+      className="hidden md:flex flex-col h-screen shrink-0 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 transition-all duration-300 relative"
+      style={{ width: isMinimized ? '76px' : '240px', boxShadow: '2px 0 16px rgba(0,0,0,0.04)', userSelect: 'none' }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-100 dark:border-slate-800">
-        <div
-          className="shrink-0 overflow-hidden"
-          style={{ width: '42px', height: '42px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
-        >
-          <img
-            src="/SAAI-logo.png"
-            alt="SAAI Physiotherapy Clinic"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        </div>
-        <div>
-          <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">SAAI Physio</p>
-          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold tracking-wide">{rc.label}</p>
-        </div>
+      <div className={`flex items-center ${isMinimized ? 'justify-center' : 'gap-3 px-5'} py-5 border-b border-slate-100 dark:border-slate-800`}>
+        {isMinimized ? (
+          <button onClick={(e) => { e.stopPropagation(); setIsMinimized(false); }} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <Menu size={24} className="text-slate-700 dark:text-slate-300" />
+          </button>
+        ) : (
+          <>
+            <div
+              className="shrink-0 overflow-hidden"
+              style={{ width: '42px', height: '42px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
+            >
+              <img
+                src="/SAAI-logo.png"
+                alt="SAAI Physiotherapy Clinic"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+            <div>
+              <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">SAAI Physio</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold tracking-wide">{rc.label}</p>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Nav Items */}
-      <div className="flex-1 px-3 py-4 overflow-y-auto flex flex-col gap-1">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 pl-2.5 mb-2">
-          Navigation
-        </p>
+      <div className="flex-1 px-3 py-4 overflow-y-auto overflow-x-hidden flex flex-col gap-1">
+        {!isMinimized && (
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600 pl-2.5 mb-2">
+            Navigation
+          </p>
+        )}
         {items.map((item) => {
           const active = isActive(item);
           const { Icon } = item;
@@ -145,7 +158,8 @@ export function SideNav() {
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
-              className={`flex items-center gap-3 w-full text-left transition-all rounded-xl px-3 py-2.5 border ${active
+              title={isMinimized ? item.label : undefined}
+              className={`flex items-center ${isMinimized ? 'justify-center' : 'gap-3'} w-full text-left transition-all rounded-xl px-3 py-2.5 border ${active
                   ? `${rc.activeBg} ${rc.activeBorder}`
                   : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/60'
                 }`}
@@ -157,51 +171,61 @@ export function SideNav() {
               >
                 <Icon size={17} color={active ? '#FEFFFF' : '#64748b'} strokeWidth={active ? 2.5 : 1.8} />
               </div>
-              <span className={`flex-1 text-sm ${active ? `font-extrabold ${rc.activeText}` : 'font-semibold text-slate-500 dark:text-slate-400'}`}>
-                {item.label}
-              </span>
-              {active && <span className={rc.activeText}><ChevronRight size={14} /></span>}
+              {!isMinimized && (
+                <>
+                  <span className={`flex-1 text-sm whitespace-nowrap overflow-hidden text-ellipsis ${active ? `font-extrabold ${rc.activeText}` : 'font-semibold text-slate-500 dark:text-slate-400'}`}>
+                    {item.label}
+                  </span>
+                  {active && <span className={rc.activeText}><ChevronRight size={14} /></span>}
+                </>
+              )}
             </button>
           );
         })}
       </div>
 
       {/* User Profile & Logout */}
-      <div className="border-t border-slate-100 dark:border-slate-800 p-3">
+      <div className="border-t border-slate-100 dark:border-slate-800 p-3 flex flex-col items-center">
         {/* Theme toggle — Hidden for therapists and patients, only available on Profile */}
-        {role === 'admin' && (
-          <div className="flex items-center justify-between px-2 mb-3">
+        {role === 'admin' && !isMinimized && (
+          <div className="flex items-center justify-between px-2 mb-3 w-full">
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Theme</p>
             <ThemeToggle />
           </div>
         )}
 
-        <div className={`flex items-center gap-3 p-3 rounded-xl mb-2 border ${rc.activeBg} ${rc.activeBorder}`}>
+        <div className={`flex items-center ${isMinimized ? 'justify-center' : 'gap-3'} w-full p-3 rounded-xl mb-2 border ${rc.activeBg} ${rc.activeBorder}`}>
           <div
             className="flex items-center justify-center rounded-xl shrink-0"
             style={{ width: '36px', height: '36px', background: rc.gradient }}
+            title={isMinimized ? user.name : undefined}
           >
             <User size={17} color="#FEFFFF" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-extrabold text-slate-900 dark:text-white">
-              {user.name}
-            </p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold capitalize">
-              {role === 'nurse' ? 'therapist' : role} · SAAI Clinic
-            </p>
-          </div>
+          {!isMinimized && (
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">
+                {user.name}
+              </p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold capitalize truncate">
+                {role === 'nurse' ? 'therapist' : role} · SAAI Clinic
+              </p>
+            </div>
+          )}
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/60 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors"
+          title={isMinimized ? 'Sign Out' : undefined}
+          className={`w-full flex items-center justify-center ${isMinimized ? '' : 'gap-2'} py-2.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/60 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors`}
         >
           <LogOut size={15} />
-          Sign Out
+          {!isMinimized && <span>Sign Out</span>}
         </button>
-        <p className="text-center text-[9px] text-slate-300 dark:text-slate-700 mt-2.5 font-semibold">
-          SAAI Physiotherapy v2.0
-        </p>
+        {!isMinimized && (
+          <p className="text-center text-[9px] text-slate-300 dark:text-slate-700 mt-2.5 font-semibold">
+            SAAI Physiotherapy v2.0
+          </p>
+        )}
       </div>
     </div>
   );

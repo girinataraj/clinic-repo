@@ -148,10 +148,10 @@ export function DoctorDashboard() {
             <div className="absolute -right-16 -top-16 rounded-full opacity-10 bg-white/10 w-[200px] h-[200px]" />
             <div className="absolute right-10 top-20 rounded-full opacity-20 bg-white/20 w-[80px] h-[80px]" />
           </div>
-          <div className="px-6 pb-12 pt-8 relative z-30">
+          <div className="px-6 pb-6 pt-5 relative z-30">
 
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-[13px] text-white font-medium tracking-[0.5px] uppercase">
                   {today}
@@ -160,7 +160,7 @@ export function DoctorDashboard() {
                   {actualName} 👋
                 </h1>
                 <p className="text-sm text-white/80 mt-0.5 font-normal">
-                  Sports Physiotherapist · SAAI Clinic
+                  Consultant Physiotherapist · SAAI Clinic
                 </p>
               </div>
               <div className="flex items-center gap-3 relative z-50">

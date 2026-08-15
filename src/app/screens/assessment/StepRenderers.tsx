@@ -122,8 +122,8 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
   const dynamicOptions = chiefComplaints.filter((c: string) => c !== 'Another');
 
   return (
-    <div className="flex flex-col gap-4">
-      <SectionCard icon={<CheckSquare size={18} className={`${iconColor1} dark:text-fuchsia-400`} />} title="Chief Complaints" subtitle="Select affected body parts" accent={accent1}>
+    <div className="flex flex-col gap-0 shadow-sm rounded-xl">
+      <SectionCard className="rounded-b-none border-b-0 shadow-none" icon={<CheckSquare size={18} className={`${iconColor1} dark:text-fuchsia-400`} />} title="Chief Complaints" subtitle="Select affected body parts" accent={accent1}>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
           {(chiefComplaintsList || []).map((item: string) => (
             <ToggleChip key={item} label={item} checked={chiefComplaints.includes(item)} onChange={() => toggleCC(item)} accent={accent1} />
@@ -174,7 +174,7 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
           : 'border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-500/10';
 
         return (
-          <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Specific Problems" subtitle="Provide details about complaints" accent={accent2}>
+          <SectionCard className="rounded-none border-b-0 shadow-none" icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Specific Problems" subtitle="Provide details about complaints" accent={accent2}>
             <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-left">
@@ -259,7 +259,7 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
         );
       })()}
 
-      <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Associated Symptoms" subtitle="Select all that apply" accent={accent2}>
+      <SectionCard className="rounded-t-none shadow-none" icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Associated Symptoms" subtitle="Select all that apply" accent={accent2}>
         <MultiSelectDropdown options={associatedSymptomsList || []} selected={associatedSymptoms} onChange={setAssociatedSymptoms} placeholder="Search symptoms…" accent={accent2} />
       </SectionCard>
     </div>
