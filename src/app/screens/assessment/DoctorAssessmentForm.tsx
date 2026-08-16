@@ -124,7 +124,7 @@ export function DoctorAssessmentForm() {
       const cond = patientById.condition
         ? patientById.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
         : [];
-      setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??'',condition:cond});
+      setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??'',condition:cond,referredBy:patientById.referredBy??patientById.referred_by??''});
       setPhoneInput(patientById.phone??phoneToFetch);
       if (patientById.therapistId) setSelectedTherapistId(patientById.therapistId);
     }
@@ -135,7 +135,7 @@ export function DoctorAssessmentForm() {
       const cond = foundPatient.condition
         ? foundPatient.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
         : [];
-      setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??'',condition:cond});
+      setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??'',condition:cond,referredBy:foundPatient.referredBy??foundPatient.referred_by??''});
       if (foundPatient.therapistId) setSelectedTherapistId(foundPatient.therapistId);
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);

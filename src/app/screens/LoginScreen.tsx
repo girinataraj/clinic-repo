@@ -306,7 +306,7 @@ export function LoginScreen() {
                 placeholder="e.g. your@email.com or mobile"
                 className="flex-1 outline-none bg-transparent"
                 style={{ padding: '14px 0', fontSize: '14px', color: '#1e293b' }}
-                autoComplete="username"
+                autoComplete="off"
               />
             </div>
           </div>
@@ -335,7 +335,7 @@ export function LoginScreen() {
                 placeholder="Enter your password"
                 className="flex-1 outline-none bg-transparent"
                 style={{ padding: '14px 0', fontSize: '14px', color: '#1e293b' }}
-                autoComplete="current-password"
+                autoComplete="new-password"
               />
               <button
                 type="button"
