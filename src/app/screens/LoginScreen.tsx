@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import {
   Eye, EyeOff, Mail, Lock,
   ChevronRight,
   CheckCircle, Shield, Users, Star, AlertCircle,
-  Sparkles,
+  Sparkles, Loader2,
 } from 'lucide-react';
 
 const features = [
@@ -19,8 +19,22 @@ export function LoginScreen() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading, loginError } = useAuth();
+  const { login, isLoading, loginError, user, isInitializing } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isInitializing && user) {
+      console.log('[Auth] AUTH_RESTORE_SUCCESS - redirecting to dashboard');
+      const role = user.role;
+      if (role === 'doctor' || role === 'admin') {
+        navigate('/doctor', { replace: true });
+      } else if (role === 'nurse') {
+        navigate('/nurse', { replace: true });
+      } else if (role === 'patient') {
+        navigate('/patient', { replace: true });
+      }
+    }
+  }, [user, isInitializing, navigate]);
 
   const handleLogin = async () => {
     if (!identifier.trim() || !password.trim()) return;
@@ -49,6 +63,17 @@ export function LoginScreen() {
     setIdentifier(email);
     setPassword(pass);
   };
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8faff] dark:bg-slate-900">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Checking session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex" style={{ background: '#f8faff' }}>

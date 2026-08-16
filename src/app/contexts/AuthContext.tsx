@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import api, { setAccessToken, setRefreshToken, getRefreshToken } from '../../services/api';
+import api, { setAccessToken, setRefreshToken, getRefreshToken, initTokenStorage } from '../../services/api';
 import { ENDPOINTS } from '../../services/endpoints';
 import { queryClient } from '../../services/queryClient';
 
@@ -38,8 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ── Restore session on mount via refresh-token cookie or localStorage ──────
   useEffect(() => {
     const restoreSession = async () => {
+      console.log('[Auth] AUTH_INIT_START');
       try {
-        const refreshToken = getRefreshToken();
+        const refreshToken = await initTokenStorage();
+        if (refreshToken) {
+          console.log('[Auth] AUTH_STORAGE_FOUND');
+        }
 
         // No refresh token available at all — skip the API call entirely.
         // The cookie (withCredentials) may still carry one, so only bail
@@ -69,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (newRefreshToken) {
             setRefreshToken(newRefreshToken);
           }
-          console.debug('[Auth] Session restored for', restoredUser?.role, restoredUser?.name);
+          console.log('[Auth] AUTH_RESTORE_SUCCESS for', restoredUser?.role, restoredUser?.name);
         } else {
           console.warn('[Auth] Refresh responded but not successful', response.status);
           setUser(null);
@@ -77,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error: unknown) {
         const status = (error as { response?: { status?: number } })?.response?.status;
         const msg = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
-        console.warn('[Auth] Session restore failed', { status, msg });
+        console.warn('[Auth] AUTH_RESTORE_FAILED', { status, msg });
         setUser(null);
         // Only clear the stored token if the server explicitly rejected it (401).
         // For network errors / 500s, keep the token so the next reload can retry.
@@ -129,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    console.log('[Auth] LOGOUT');
     try {
       const refreshToken = getRefreshToken();
       await api.post(ENDPOINTS.AUTH.LOGOUT, { refreshToken });
