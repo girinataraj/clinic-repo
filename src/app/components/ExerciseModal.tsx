@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Dumbbell, AlertCircle, Save } from 'lucide-react';
 import type { PatientExercise } from '../../hooks/useExercises';
-
 interface ExerciseModalProps {
   isOpen: boolean;
   exercise: PatientExercise | null;

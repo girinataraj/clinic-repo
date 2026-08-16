@@ -2,12 +2,15 @@ import { useMemo, useState } from 'react';
 import { ROM_CONFIG } from '../screens/assessment/clinicalConfig';
 import { 
   Activity, Scale, Stethoscope, CheckSquare, Dumbbell, ClipboardList,
-  Heart, StickyNote, Brain, Building2, Printer, Download, Share2, ArrowLeft, ShieldCheck, Loader2, FileText
+  Heart, StickyNote, Brain, Building2, Printer, Download, Share2, ArrowLeft, ShieldCheck, Loader2, FileText, X, Eye
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { NeuroSummaryView } from './NeuroSummaryView';
 import api from '../../services/api';
 import { ENDPOINTS } from '../../services/endpoints';
+import { getExerciseImages } from '../../utils/exerciseImageMapper';
+
+import { normalizeEvaluationForReport } from '../../utils/canonicalReportNormalizer';
 
 interface EvaluationSummaryReportProps {
   evaluation: any;
@@ -57,86 +60,41 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
   const navigate = useNavigate();
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
-  if (!evaluation) return null;
+  const report = useMemo(() => (evaluation ? normalizeEvaluationForReport(evaluation) : null), [evaluation]);
+
+  if (!evaluation || !report) return null;
 
   // Unpack root payload if nested inside report key
   const rawData = evaluation.report ? evaluation.report : evaluation;
 
-  // Metadata & Hospital Info
-  const metadata = rawData.metadata;
-  const hospitalInfo = metadata?.hospitalInfo;
-  const patientInfo = rawData.patientInfo || rawData.patient || {};
-  const clinician = rawData.clinician || {};
-  const vitalsObj = rawData.vitals || rawData.vitalSigns || {};
+  // Hospital Banner Info (from Canonical Report)
+  const hospitalInfo = report.hospitalInfo;
 
-  // Patient Demographic Variables
-  const therapistName = clinician?.name || rawData.therapistName || rawData.doctor_name || rawData.createdBy?.name || 'Dr. SV. Sathish Kumar';
-  const patientName = patientInfo.name || rawData.patientName || rawData.patient_name || rawData.name || 'Patient';
-  const patientDisplayId = patientInfo.patientId || patientInfo.displayId || patientInfo.display_id || rawData.patientId || rawData.displayId || rawData.display_id || (rawData.id ? `EVAL-${String(rawData.id).substring(0, 8)}` : '—');
-  const patientAge = patientInfo.age ?? rawData.age ?? '—';
-  const patientGender = patientInfo.gender || rawData.gender || '—';
-  const patientPhone = patientInfo.phone || rawData.patientPhone || rawData.phone || '—';
-  const patientReferredBy = patientInfo.referredBy || patientInfo.referred_by || rawData.referredBy || rawData.referred_by || 'Self';
-  const visitType = patientInfo.visitType || rawData.visitType || rawData.visit_type || 'Clinic';
-  const billAmount = patientInfo.billAmount != null ? patientInfo.billAmount : (rawData.billAmount != null ? rawData.billAmount : (rawData.bill_amount != null ? rawData.bill_amount : '—'));
+  // Patient Demographic Variables (from Canonical Report)
+  const therapistName = report.report.therapist.name;
+  const patientName = report.patient.name;
+  const patientDisplayId = report.patient.displayId;
+  const patientAge = report.patient.age !== null ? report.patient.age : '—';
+  const patientGender = report.patient.gender;
+  const patientPhone = report.patient.phone;
+  const patientReferredBy = report.patient.referredBy;
+  const visitType = rawData.visitType || rawData.visit_type || 'Clinic';
+  const billAmount = rawData.billAmount != null ? rawData.billAmount : (rawData.bill_amount != null ? rawData.bill_amount : '—');
 
-  // Vital Signs
-  const rawBp = rawData.bp || rawData.bloodPressure || vitalsObj.bloodPressure || (vitalsObj.bp_sys && vitalsObj.bp_dia ? `${vitalsObj.bp_sys}/${vitalsObj.bp_dia}` : vitalsObj.bp);
-  const bp = formatDisplayValue(rawBp);
+  // Vital Signs (from Canonical Report)
+  const bp = report.vitals.bp || '—';
+  const pr = report.vitals.pr || '—';
+  const spo2 = report.vitals.spo2 || '—';
+  const temp = report.vitals.temperature || '—';
+  const ef = report.vitals.ef || '—';
+  const painLevel = report.vitals.painLevel !== null ? String(report.vitals.painLevel) : '—';
 
-  const rawPr = rawData.pr || rawData.pulseRate || rawData.pulse || vitalsObj.pulse || vitalsObj.pulse_rate || vitalsObj.pr;
-  const pr = formatDisplayValue(rawPr);
-
-  const rawSpo2 = rawData.spo2 || rawData.spO2 || vitalsObj.spO2 || vitalsObj.spo2;
-  const spo2 = formatDisplayValue(rawSpo2);
-
-  const rawTemp = rawData.temperature || rawData.temp || vitalsObj.temperature || vitalsObj.temp;
-  const temp = formatDisplayValue(rawTemp);
-
-  const rawEf = rawData.ef || rawData.ejectionFraction || vitalsObj.ejectionFraction || vitalsObj.ef;
-  const ef = formatDisplayValue(rawEf);
-
-  const rawPain = rawData.painScale ?? vitalsObj.painScale ?? rawData.painLevel ?? rawData.pain_level ?? vitalsObj.pain_scale;
-  const painLevel = formatDisplayValue(rawPain);
-
-  // Chief Complaints
-  const rawComplaints = rawData.chiefComplaints || rawData.chief_complaints || rawData.complaints;
-  const chiefComplaintsArray: any[] = Array.isArray(rawComplaints)
-    ? rawComplaints
-    : (typeof rawComplaints === 'string' && rawComplaints.trim() ? [rawComplaints.trim()] : []);
-
-  // Medical History
-  const rawMedHist = rawData.medicalHistory || rawData.medical_history;
-  const medicalHistoryList: string[] = [];
-  if (Array.isArray(rawMedHist)) {
-    rawMedHist.forEach(item => medicalHistoryList.push(formatDisplayValue(item)));
-  } else if (typeof rawMedHist === 'object' && rawMedHist !== null) {
-    if (Array.isArray(rawMedHist.conditions)) {
-      rawMedHist.conditions.forEach((c: any) => medicalHistoryList.push(formatDisplayValue(c)));
-    }
-  }
-
-  // Associated Symptoms & Pains
-  const rawAssoc = rawData.associatedSymptoms || rawData.associated_symptoms;
-  let associatedSymptomsList: string[] = [];
-  let painAreasList: string[] = [];
-
-  if (Array.isArray(rawAssoc)) {
-    associatedSymptomsList = rawAssoc.map(s => formatDisplayValue(s));
-  } else if (typeof rawAssoc === 'object' && rawAssoc !== null) {
-    if (Array.isArray(rawAssoc.symptoms)) {
-      associatedSymptomsList = rawAssoc.symptoms.map((s: any) => formatDisplayValue(s));
-    }
-    if (Array.isArray(rawAssoc.painAreas)) {
-      painAreasList = rawAssoc.painAreas.map((p: any) => formatDisplayValue(p));
-    }
-  }
-
-  const rawPains = rawData.associatedPains || rawData.associated_pains;
-  if (Array.isArray(rawPains)) {
-    rawPains.forEach(p => painAreasList.push(formatDisplayValue(p)));
-  }
+  const chiefComplaintsArray = report.chiefComplaints;
+  const medicalHistoryList = report.medicalHistory;
+  const associatedSymptomsList = report.associatedSymptoms;
+  const painAreasList = report.associatedPains;
 
   // Clinical Examination
   const clinicalExamination = rawData.clinicalExamination || rawData.clinical_examination;
@@ -217,7 +175,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
   }, [rawRom]);
 
   // Neurological Examination
-  const rawNeuro = rawData.neurologicalExamination || rawData.neurological_examination || rawData.neuroData || rawData.neuro_data;
+  const rawNeuro = rawData.neurological || rawData.neurologicalExamination || rawData.neurological_examination || rawData.neuroData || rawData.neuro_data;
   const neuroData = useMemo(() => {
     if (!rawNeuro || typeof rawNeuro !== 'object') return null;
     return {
@@ -247,6 +205,20 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
       return true;
     });
   }, [neuroData]);
+
+  // Cardiorespiratory Assessment
+  const rawCardio = rawData.cardio || rawData.cardioData || rawData.cardio_data;
+  const cardioData = useMemo(() => {
+    if (!rawCardio) return null;
+    if (typeof rawCardio === 'string') {
+      try { return JSON.parse(rawCardio); } catch { return null; }
+    }
+    return typeof rawCardio === 'object' ? rawCardio : null;
+  }, [rawCardio]);
+  const hasCardioData = useMemo(() => {
+    if (!cardioData || typeof cardioData !== 'object') return false;
+    return Object.values(cardioData).some((v) => v !== null && v !== undefined && v !== '');
+  }, [cardioData]);
 
 
   // Functional Limitations
@@ -317,9 +289,6 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
   // Anthropometrics
   const anthropometrics = rawData.anthropometrics || clinicalExamination?.anthropometrics;
 
-  // Cardio Data
-  const rawCardio = rawData.cardioData || rawData.cardio_data;
-  const cardioData = typeof rawCardio === 'string' ? (()=>{ try { return JSON.parse(rawCardio); } catch { return null; } })() : rawCardio;
 
   // Specific Problems Extraction
   const rawSpecificProblems = rawData.specificProblems || rawData.specific_problems || rawData.functionalScores || rawData.functional_scores;
@@ -377,22 +346,27 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
     setDownloadingPdf(true);
     setPdfError(null);
     try {
-      // Use evaluation id or patient id to download the backend-generated green PDF
-      const evalId = rawData.id || rawData.evaluationId || rawData.evaluation_id;
-      const patId = rawData.patientId || rawData.patient_id;
+      // Intake reports must use the exact selected assessment/evaluation ID
+      const assessmentId = rawData.assessmentId || rawData.assessment_id ||
+        rawData.id || evaluation.id;
+      const patId = rawData.patientId || rawData.patient_id || report.patient.id;
 
-      if (!evalId && !patId) {
-        setPdfError('Cannot generate PDF: No evaluation or patient ID found.');
+      if (!assessmentId || !patId) {
+        setPdfError('Cannot generate PDF: No selected assessment ID found.');
         setDownloadingPdf(false);
         return;
       }
 
-      let response;
-      if (evalId) {
-        response = await api.get(ENDPOINTS.REPORTS.PDF(String(evalId)), { responseType: 'blob' });
-      } else if (patId) {
-        response = await api.get(`/assessments/${patId}/download`, { responseType: 'blob' });
-      }
+      console.info('PDF_RUNTIME_TRACE', {
+        'frontend endpoint': `/reports/${assessmentId}/pdf`,
+        'HTTP method': 'GET',
+        'requested id': assessmentId,
+        'requested id type': typeof assessmentId,
+      });
+      const response = await api.get(`/reports/${assessmentId}/pdf`, {
+        responseType: 'blob',
+      });
+
 
       if (response && response.data) {
         const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -400,7 +374,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
         const link = document.createElement('a');
         link.href = url;
         const cleanName = (patientName || 'Patient').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
-        const cleanId = patientDisplayId || patId || evalId || 'ID';
+        const cleanId = patientDisplayId || patId || assessmentId || 'ID';
         link.setAttribute('download', `Patient_Report_${cleanName}_${cleanId}.pdf`);
         document.body.appendChild(link);
         link.click();
@@ -920,6 +894,48 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
           </section>
         )}
 
+        {/* Cardiorespiratory Assessment */}
+        {hasCardioData && cardioData && (
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+              <Activity size={16} className={accentColor} />
+              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Cardiorespiratory Assessment</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {cardioData.borgRating && (
+                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Borg Rating (RPE)</span>
+                  <span className="text-sm font-black text-slate-800 dark:text-slate-200">{cardioData.borgRating}</span>
+                </div>
+              )}
+              {cardioData.vo2Max && (
+                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">VO2 Max</span>
+                  <span className="text-sm font-black text-slate-800 dark:text-slate-200">{cardioData.vo2Max}</span>
+                </div>
+              )}
+              {cardioData.sixMinWalk && (
+                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">6 Min Walk Test</span>
+                  <span className="text-sm font-black text-slate-800 dark:text-slate-200">{cardioData.sixMinWalk}</span>
+                </div>
+              )}
+              {cardioData.rockportWalk && (
+                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Rockport Walk Test</span>
+                  <span className="text-sm font-black text-slate-800 dark:text-slate-200">{cardioData.rockportWalk}</span>
+                </div>
+              )}
+              {cardioData.harvardStep && (
+                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Harvard Step Test</span>
+                  <span className="text-sm font-black text-slate-800 dark:text-slate-200">{cardioData.harvardStep}</span>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         {/* Functional Limitations */}
         {(functionalLimitationsList.length > 0 || (functionalScoresObj && Object.entries(functionalScoresObj).some(([k, v]) => !k.includes('_') && (typeof v === 'number' || (typeof v === 'string' && !isNaN(Number(v))))))) && (
           <section className="bg-slate-50/40 dark:bg-slate-900/20 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
@@ -1023,6 +1039,28 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                     const exName = ex.exerciseName || ex.name || `Exercise ${idx + 1}`;
                     const exCategory = ex.category || 'General';
                     const instructionsText = ex.instructions || ex.notes || ex.description || '';
+
+                    // Collect explicit attachment image URLs or mapped folder images (deduplicated)
+                    const attImagesSet = new Set<string>();
+                    if (Array.isArray(ex.attachments)) {
+                      ex.attachments.forEach((att: any) => {
+                        const url = att.dataUrl || att.imageUrl;
+                        if (url && !url.includes('/pdf_images/')) attImagesSet.add(url);
+                      });
+                    }
+                    if (Array.isArray(ex.images)) {
+                      ex.images.forEach((imgUrl: string) => {
+                        if (imgUrl && !imgUrl.includes('/pdf_images/')) attImagesSet.add(imgUrl);
+                      });
+                    }
+
+                    const autoImgs = getExerciseImages(exCategory, exName);
+                    autoImgs.forEach((imgUrl) => {
+                      if (!imgUrl.includes('/pdf_images/')) attImagesSet.add(imgUrl);
+                    });
+
+                    const attImages = Array.from(attImagesSet);
+
                     return (
                       <div key={ex.id || idx} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-2.5">
                         <div className="flex items-center justify-between">
@@ -1039,6 +1077,27 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                           <div className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-150 dark:border-slate-800">
                             <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Exercise Instructions & Guidance:</span>
                             <div className="whitespace-pre-wrap font-medium">{instructionsText}</div>
+                          </div>
+                        )}
+                        {attImages.length > 0 && (
+                          <div className="mt-1 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1.5">
+                              Exercise Diagrams ({attImages.length}):
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {attImages.map((imgUrl, i) => (
+                                <div
+                                  key={i}
+                                  onClick={() => setPreviewImageUrl(imgUrl)}
+                                  className="relative group cursor-pointer w-24 h-24 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 overflow-hidden shadow-xs hover:shadow-md transition-all"
+                                >
+                                  <img src={imgUrl} alt={`${exName} diagram ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                  <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                    <Eye className="w-5 h-5 text-white" />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1112,6 +1171,27 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
           <span>Print</span>
         </button>
       </div>
+
+      {/* ── Image Lightbox Modal ── */}
+      {previewImageUrl && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-3xl w-full p-4 shadow-2xl space-y-3 relative">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h4 className="text-sm font-extrabold text-slate-800 dark:text-white">Exercise Diagram Preview</h4>
+              <button
+                type="button"
+                onClick={() => setPreviewImageUrl(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="max-h-[75vh] overflow-auto flex items-center justify-center bg-slate-950/60 rounded-2xl p-2">
+              <img src={previewImageUrl} alt="Exercise Diagram" className="max-h-[70vh] max-w-full object-contain rounded-xl" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
