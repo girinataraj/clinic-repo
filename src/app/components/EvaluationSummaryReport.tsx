@@ -5,6 +5,8 @@ import {
   Heart, StickyNote, Brain, Building2, Printer, Download, Share2, ArrowLeft, ShieldCheck, Loader2, FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { NeuroSummaryView } from './NeuroSummaryView';
 import api from '../../services/api';
 import { ENDPOINTS } from '../../services/endpoints';
@@ -395,17 +397,37 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
       }
 
       if (response && response.data) {
-        const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        const cleanName = (patientName || 'Patient').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
-        const cleanId = patientDisplayId || patId || evalId || 'ID';
-        link.setAttribute('download', `Patient_Report_${cleanName}_${cleanId}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
+                  const cleanName = (patientName || 'Patient').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+          const cleanId = patientDisplayId || patId || evalId || 'ID';
+          const fileName = `Patient_Report_${cleanName}_${cleanId}.pdf`;
+          if (Capacitor.isNativePlatform()) {
+            const reader = new FileReader();
+            reader.readAsDataURL(new Blob([response.data]));
+            reader.onloadend = async () => {
+              const base64data = (reader.result as string).split(',')[1];
+              try {
+                await Filesystem.writeFile({
+                  path: fileName,
+                  data: base64data,
+                  directory: Directory.Documents
+                });
+                alert('PDF saved to Documents folder.');
+              } catch (e) {
+                console.error('File save error', e);
+                alert('Could not save PDF to device.');
+              }
+            }
+          } else {
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+          }
       } else {
         setPdfError('No PDF data received from server. Please try again.');
       }
@@ -1115,3 +1137,4 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
     </div>
   );
 }
+

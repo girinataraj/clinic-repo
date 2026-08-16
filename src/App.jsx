@@ -7,6 +7,7 @@ import { AuthProvider } from './app/contexts/AuthContext';
 import { ThemeProvider } from './app/contexts/ThemeContext';
 import { ErrorBoundary } from './app/components/ErrorBoundary';
 
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -20,3 +21,5 @@ export default function App() {
     </QueryClientProvider>
   );
 }
+
+

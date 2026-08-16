@@ -118,16 +118,16 @@ export function NurseDashboard() {
             <div className="absolute -right-16 -top-16 rounded-full opacity-10 bg-white/10 w-[200px] h-[200px]" />
             <div className="absolute right-10 top-20 rounded-full opacity-20 bg-white/20 w-[80px] h-[80px]" />
           </div>
-          <div className="px-6 pb-6 pt-5 relative z-30 max-w-6xl mx-auto">
+          <div className="px-4 pb-4 pt-4 md:px-6 md:pb-6 md:pt-5 relative z-30 max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-[13px] text-teal-100/90 font-medium tracking-[0.5px] uppercase">
                   {today}
                 </p>
-                <h1 className="text-[26px] font-extrabold text-white mt-1 tracking-tight">
+                <h1 className="text-[20px] md:text-[26px] font-extrabold text-white mt-1 tracking-tight">
                   Hello, {firstName}! 👋
                 </h1>
-                <p className="text-sm text-teal-100/80 mt-0.5 font-normal">
+                <p className="text-xs md:text-sm text-teal-100/80 mt-0.5 font-normal">
                   Therapist Dashboard · SAAI Clinic
                 </p>
               </div>
@@ -242,8 +242,8 @@ export function NurseDashboard() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search patients by name, display ID, or phone..."
-                  className="flex-1 outline-none bg-transparent py-3 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  placeholder="Search by name, ID, phone..."
+                  className="flex-1 w-full min-w-0 outline-none bg-transparent py-3 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
               <button

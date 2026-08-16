@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SAAI Physiotherapy</string>
+    <string name="title_activity_main">SAAI Physiotherapy</string>
+    <string name="package_name">com.saai.physiotherapy</string>
+    <string name="custom_url_scheme">com.saai.physiotherapy</string>
+</resources>

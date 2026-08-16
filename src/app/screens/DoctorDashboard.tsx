@@ -141,14 +141,14 @@ export function DoctorDashboard() {
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
         {/* Header */}
         <div className="relative z-20 rounded-b-3xl bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-slate-900/10">
           <div className="absolute inset-0 overflow-hidden rounded-b-3xl pointer-events-none">
             <div className="absolute -right-16 -top-16 rounded-full opacity-10 bg-white/10 w-[200px] h-[200px]" />
             <div className="absolute right-10 top-20 rounded-full opacity-20 bg-white/20 w-[80px] h-[80px]" />
           </div>
-          <div className="px-6 pb-6 pt-5 relative z-30">
+          <div className="px-4 pb-4 pt-4 md:px-6 md:pb-6 md:pt-5 relative z-30">
 
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-4">
@@ -156,10 +156,10 @@ export function DoctorDashboard() {
                 <p className="text-[13px] text-white font-medium tracking-[0.5px] uppercase">
                   {today}
                 </p>
-                <h1 className="text-[26px] font-bold text-white mt-1 tracking-tight">
+                <h1 className="text-[20px] md:text-[26px] font-bold text-white mt-1 tracking-tight">
                   {actualName} 👋
                 </h1>
-                <p className="text-sm text-white/80 mt-0.5 font-normal">
+                <p className="text-xs md:text-sm text-white/80 mt-0.5 font-normal">
                   Consultant Physiotherapist · SAAI Clinic
                 </p>
               </div>
@@ -241,7 +241,7 @@ export function DoctorDashboard() {
           </div>
 
           {/* Quick actions */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="flex overflow-x-auto gap-3 mb-6 pb-2 scrollbar-none md:grid md:grid-cols-3">
             <button
               onClick={() => navigate('/doctor/assign-patient')}
               className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20 shadow-sm"
@@ -290,8 +290,8 @@ export function DoctorDashboard() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search patients by name, display ID, or phone..."
-                  className="flex-1 outline-none bg-transparent py-3.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  placeholder="Search by name, ID, phone..."
+                  className="flex-1 w-full min-w-0 outline-none bg-transparent py-3.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
               <button

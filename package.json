@@ -8,6 +8,10 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/filesystem": "^8.1.2",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.1",
     "@mui/icons-material": "7.3.5",
@@ -75,6 +79,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.0",
     "@tailwindcss/vite": "4.1.12",
     "@types/node": "^26.1.1",
     "@types/react-dom": "^19.2.3",

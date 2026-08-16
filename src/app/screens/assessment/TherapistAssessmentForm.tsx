@@ -588,58 +588,63 @@ export function TherapistAssessmentForm() {
       </div>
 
       {/* Navigation Buttons (Floating Bottom Right) */}
-      <div className="fixed bottom-20 right-6 md:bottom-10 md:right-10 z-50 pointer-events-none flex flex-col gap-4 items-end">
+      <div className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 py-3.5 z-40 flex flex-col gap-2">
         {submitError && (
-          <div className="p-4 rounded-[18px] bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[14px] text-red-700 dark:text-red-400 font-bold flex items-center gap-3 shadow-lg pointer-events-auto max-w-sm animate-in fade-in slide-in-from-right-4">
-            <AlertTriangle size={18} className="shrink-0" />
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2.5 shadow-sm">
+            <AlertTriangle size={16} className="shrink-0" />
             {submitError}
           </div>
         )}
-        <div className="flex gap-3 pointer-events-auto">
-          {step > 0 && (
+        <div className="flex gap-2 justify-between items-center w-full">
+          {step > 0 ? (
             <button
               onClick={() => { setSubmitError(null); setStep(step - 1); }}
-              className="flex items-center justify-center gap-2 px-6 py-4 rounded-[20px] bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[15px] font-black shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 transition-all active:scale-95"
+              className="flex items-center justify-center gap-1 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-black border border-slate-200 dark:border-slate-700 transition-all active:scale-95"
             >
-              <ChevronLeft size={20} strokeWidth={3} />
+              <ChevronLeft size={16} strokeWidth={3} />
               Back
             </button>
+          ) : (
+            <div className="w-[80px]" />
           )}
-          {step < totalSteps - 1 && (
-            <button
-              onClick={() => { 
-                if (step === 0 && !resolvedPatientId) {
-                  setSubmitError('Please resolve a patient before continuing.');
-                  return;
-                }
-                setSubmitError(null); 
-                setStep(totalSteps - 1); 
-              }}
-              className="px-6 py-4 rounded-[20px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[15px] font-extrabold shadow-xl transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
-            >
-              Skip to End
-            </button>
-          )}
-          {step < totalSteps - 1 && (
-            <button
-              onClick={() => { 
-                if (step === 0 && !resolvedPatientId) {
-                  setSubmitError('Please resolve a patient before continuing.');
-                  return;
-                }
-                if (step === 0 && (!patientInfo.condition || patientInfo.condition.length === 0)) {
-                  setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
-                  return;
-                }
-                setSubmitError(null); 
-                setStep(step + 1); 
-              }}
-              className="flex items-center justify-center gap-2 px-8 py-4 rounded-[20px] text-white text-[15px] font-black shadow-2xl shadow-teal-900/30 bg-teal-600 hover:bg-teal-700 transition-all active:scale-[0.98]"
-            >
-              Next Step
-              <ChevronRight size={20} strokeWidth={3} />
-            </button>
-          )}
+
+          <div className="flex gap-2 items-center">
+            {step < totalSteps - 1 && (
+              <button
+                onClick={() => { 
+                  if (step === 0 && !resolvedPatientId) {
+                    setSubmitError('Please resolve a patient before continuing.');
+                    return;
+                  }
+                  setSubmitError(null); 
+                  setStep(totalSteps - 1); 
+                }}
+                className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs font-extrabold shadow-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
+              >
+                Skip
+              </button>
+            )}
+            {step < totalSteps - 1 && (
+              <button
+                onClick={() => { 
+                  if (step === 0 && !resolvedPatientId) {
+                    setSubmitError('Please resolve a patient before continuing.');
+                    return;
+                  }
+                  if (step === 0 && (!patientInfo.condition || patientInfo.condition.length === 0)) {
+                    setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
+                    return;
+                  }
+                  setSubmitError(null); 
+                  setStep(step + 1); 
+                }}
+                className="flex items-center justify-center gap-1 px-6 py-3 rounded-xl text-white text-xs font-black shadow-md bg-teal-600 hover:bg-teal-700 transition-all active:scale-[0.98]"
+              >
+                Next
+                <ChevronRight size={16} strokeWidth={3} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

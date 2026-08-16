@@ -72,3 +72,22 @@ html {
 		animation: none;
 	}
 }
+
+
+/* Premium Touch Targets & Design System Helpers */
+.saai-touch-target {
+	min-height: 48px;
+}
+
+.saai-btn-transition {
+	transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.saai-btn-transition:active {
+	transform: scale(0.97);
+}
+
+.saai-card-premium {
+	border-radius: 22px;
+	box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03), 0 1px 3px rgba(15, 23, 42, 0.02);
+	border: 1px solid rgba(15, 23, 42, 0.05);
+}

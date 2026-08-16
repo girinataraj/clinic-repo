@@ -136,7 +136,7 @@ export function DoctorProfile() {
 
   return (
     <div className="flex flex-col h-full font-sans bg-[#E8E9F1] dark:bg-slate-950 relative">
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
         {/* Header */}
         <div
           className="relative rounded-b-3xl bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-[0_4px_24px_rgba(38,40,66,0.15)] dark:shadow-none"

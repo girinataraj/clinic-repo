@@ -43,9 +43,13 @@ function SessionLoader({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+import { CapacitorHardwareBackButton } from './components/CapacitorHardwareBackButton';
+import { Outlet } from 'react-router';
+
 export const router = createBrowserRouter([
   {
     path: '/',
+    element: <><CapacitorHardwareBackButton /><Outlet /></>,
     children: [
       // ── Public routes ─────────────────────────────────────────────────
       { index: true, Component: LoginScreen },
@@ -123,3 +127,4 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+

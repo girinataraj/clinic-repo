@@ -248,7 +248,7 @@ export function DoctorRevenue() {
       </div>
 
       {/* ── Scrollable Content ─────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
         <div
           className="max-w-4xl mx-auto w-full"
           style={{ padding: '24px 20px 32px' }}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ROM_CONFIG, getRomKey, getRomDegreesPlaceholder, type RomData, type RomEntry } from './clinicalConfig';
 import { SectionCard } from './FormComponents';
 import { Activity, ChevronDown, ChevronUp } from 'lucide-react';

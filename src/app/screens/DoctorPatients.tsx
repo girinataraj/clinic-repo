@@ -159,7 +159,7 @@ export function DoctorPatients() {
 
   return (
     <div className="flex flex-col h-full saai-page bg-[#E8E9F1] dark:bg-slate-950 font-sans">
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
         <div
           className="relative z-20 rounded-b-3xl"
           style={{

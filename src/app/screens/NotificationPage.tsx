@@ -39,7 +39,7 @@ export function NotificationPage() {
 
   return (
     <div className={`flex flex-col h-full font-sans ${theme.pageClass}`}>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
         <div className={`px-6 pb-8 pt-8 relative overflow-hidden rounded-b-3xl ${theme.headerClass}`}>
           <div className="absolute -right-16 -top-16 rounded-full opacity-10 pointer-events-none w-[200px] h-[200px] bg-white" />
           <div className="max-w-4xl mx-auto">
