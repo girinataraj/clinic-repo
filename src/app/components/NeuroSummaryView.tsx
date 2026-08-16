@@ -420,65 +420,133 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       {coordination && Array.isArray(coordination) && coordination.length > 0 && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Coordination & Balance</span>
-          <div className="flex flex-col gap-2">
-            {coordination.map((c: any, i: number) => {
-              if (!c) return null;
-              const testLabel = typeof c.test === 'string' ? c.test.replace(/([A-Z])/g, ' $1').trim() : 'Test';
-              const displayRes = typeof c.result === 'string' ? c.result : (c.right || c.left ? `Right: ${c.right || '—'}, Left: ${c.left || '—'}` : '—');
-              return (
-                <div key={i} className="px-3 py-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-2 text-xs">
-                  <span className="font-bold text-slate-600 dark:text-slate-400 capitalize">{testLabel}</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{displayRes}</span>
-                </div>
-              );
-            })}
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+              <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                <tr>
+                  <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test</th>
+                  <th className="p-2 text-center border-b border-r border-slate-200 dark:border-slate-800">Right</th>
+                  <th className="p-2 text-center border-b border-slate-200 dark:border-slate-800">Left</th>
+                </tr>
+              </thead>
+              <tbody>
+                {coordination.map((c: any, i: number) => {
+                  if (!c) return null;
+                  const testLabel = typeof c.test === 'string' ? c.test.replace(/([A-Z])/g, ' $1').trim() : 'Test';
+                  
+                  return (
+                    <tr key={i} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800 capitalize">{testLabel}</td>
+                      <td className="p-2 text-center border-r border-slate-150 dark:border-slate-800 text-slate-800 dark:text-slate-200">{c.right || (typeof c.result === 'string' ? c.result : '—')}</td>
+                      <td className="p-2 text-center text-slate-800 dark:text-slate-200">{c.left || '—'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
       {/* Balance / Posture / Gait / Hand Function */}
-      {((balance && Object.values(balance).some(Boolean)) ||
+      {((balance && Array.isArray(balance) && balance.length > 0) || (balance && !Array.isArray(balance) && Object.values(balance).some(Boolean)) ||
         (posture && Array.isArray(posture) && posture.length > 0) ||
         (gait && Array.isArray(gait) && gait.length > 0) ||
         (handFunction && Object.values(handFunction).some(Boolean))) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          {balance && Object.values(balance).some(Boolean) && (
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Balance</span>
-              {Object.entries(balance).map(([k, v]) => v && typeof v !== 'object' ? (
-                <p key={k} className="text-slate-700 dark:text-slate-300"><strong className="capitalize">{k.replace(/([A-Z])/g, ' $1')}:</strong> {String(v)}</p>
-              ) : null)}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mt-2">
+          
+          {balance && (
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Equilibrium & Balance</span>
+              <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Grade / Comments</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.isArray(balance) ? balance.map((b: any, i: number) => (
+                    <tr key={i} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800 capitalize">{b.test}</td>
+                      <td className="p-2 text-slate-800 dark:text-slate-200">{b.value || '—'}</td>
+                    </tr>
+                  )) : Object.entries(balance).map(([k, v]) => v && typeof v !== 'object' ? (
+                    <tr key={k} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800 capitalize">{k.replace(/([A-Z])/g, ' $1')}</td>
+                      <td className="p-2 text-slate-800 dark:text-slate-200">{String(v)}</td>
+                    </tr>
+                  ) : null)}
+                </tbody>
+              </table>
             </div>
           )}
 
           {posture && Array.isArray(posture) && posture.length > 0 && (
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Posture</span>
-              {posture.map((p: any, i: number) => (
-                <p key={i} className="text-slate-700 dark:text-slate-300">
-                  <strong className="capitalize">{typeof p.component === 'string' ? p.component : 'Posture'}:</strong> {typeof p.observation === 'string' ? p.observation : '—'}
-                </p>
-              ))}
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Posture</span>
+              <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Position</th>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Frontal View</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Sagittal View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {posture.map((p: any, i: number) => (
+                    <tr key={i} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800 capitalize">{typeof p.component === 'string' ? p.component : 'Posture'}</td>
+                      <td className="p-2 border-r border-slate-150 dark:border-slate-800 text-slate-800 dark:text-slate-200">{p.frontal || (typeof p.observation === 'string' ? p.observation : '—')}</td>
+                      <td className="p-2 text-slate-800 dark:text-slate-200">{p.sagittal || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
           {gait && Array.isArray(gait) && gait.length > 0 && (
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Gait</span>
-              {gait.map((g: any, i: number) => (
-                <p key={i} className="text-slate-700 dark:text-slate-300">
-                  <strong className="capitalize">{typeof g.component === 'string' ? g.component : 'Gait'}:</strong> {typeof g.observation === 'string' ? g.observation : '—'}
-                </p>
-              ))}
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Gait</span>
+              <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Parameter</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {gait.map((g: any, i: number) => (
+                    <tr key={i} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800 capitalize">{typeof g.component === 'string' ? g.component : 'Gait'}</td>
+                      <td className="p-2 text-slate-800 dark:text-slate-200">{typeof g.observation === 'string' ? g.observation : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
           {handFunction && Object.values(handFunction).some(Boolean) && (
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Hand Function</span>
-              {Object.entries(handFunction).map(([k, v]) => v && typeof v !== 'object' ? (
-                <p key={k} className="text-slate-700 dark:text-slate-300"><strong className="capitalize">{k.replace(/([A-Z])/g, ' $1')}:</strong> {String(v)}</p>
-              ) : null)}
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Hand Function</span>
+              <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Function</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Comments / Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(handFunction).map(([k, v]) => v && typeof v !== 'object' ? (
+                    <tr key={k} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800 capitalize">{k.replace(/([A-Z])/g, ' $1')}</td>
+                      <td className="p-2 text-slate-800 dark:text-slate-200">{String(v)}</td>
+                    </tr>
+                  ) : null)}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
