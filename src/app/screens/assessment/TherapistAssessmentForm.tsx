@@ -188,40 +188,50 @@ export function TherapistAssessmentForm() {
 
   const handleSave = async () => {
     setSubmitError(null);
-    if (!resolvedPatientId) { setSubmitError('No patient resolved.'); return; }
-    if (!paymentMode || billTotal <= 0) { setSubmitError('Please select treatments and a payment mode.'); return; }
+    if (!resolvedPatientId) { setSubmitError('Please resolve or select a patient.'); return; }
+    if (!patientInfo.name || patientInfo.name.trim().length < 2) { setSubmitError('Patient name must be at least 2 characters.'); return; }
+    if (!patientInfo.age || isNaN(Number(patientInfo.age))) { setSubmitError('Please enter a valid patient age.'); return; }
+    if (!patientInfo.condition || patientInfo.condition.length === 0) { setSubmitError('Please select at least one clinical condition (Ortho, Neuro, or Cardio).'); return; }
+    if (!paymentMode) { setSubmitError('Please select a payment mode (Cash or UPI).'); return; }
+    
+    const finalBillAmount = billAmount !== null ? Math.max(0, Number(billAmount)) : Math.max(0, Number(billTotal));
+
     const vitalsPayload: Record<string,unknown> = {};
-    if (vitals.bp_sys&&vitals.bp_dia) vitalsPayload.bp=`${vitals.bp_sys}/${vitals.bp_dia}`;
-    if (vitals.pr) vitalsPayload.pr=Number(vitals.pr);
-    if (vitals.spo2) vitalsPayload.spo2=Number(vitals.spo2);
-    if (vitals.temp) vitalsPayload.temperature=Number(vitals.temp);
-    if (vitals.ef) vitalsPayload.ef=Number(vitals.ef);
+    if (vitals.bp_sys && vitals.bp_dia) vitalsPayload.bp = `${vitals.bp_sys}/${vitals.bp_dia}`;
+    if (vitals.pr && !isNaN(Number(vitals.pr))) vitalsPayload.pr = Number(vitals.pr);
+    if (vitals.spo2 && !isNaN(Number(vitals.spo2))) vitalsPayload.spo2 = Number(vitals.spo2);
+    if (vitals.temp && !isNaN(Number(vitals.temp))) vitalsPayload.temperature = Number(vitals.temp);
+    if (vitals.ef && !isNaN(Number(vitals.ef))) vitalsPayload.ef = Number(vitals.ef);
+
+    const cleanPhone = (patientInfo.phone || phoneInput || '').replace(/\D/g, '').slice(-10);
+
     try {
-      const finalHistory=[...selectedMedicalHistory]; if (otherMedicalHistory.trim()) finalHistory.push(`Other: ${otherMedicalHistory.trim()}`);
+      const finalHistory = [...selectedMedicalHistory]; 
+      if (otherMedicalHistory.trim()) finalHistory.push(`Other: ${otherMedicalHistory.trim()}`);
       const allComplaints = [...chiefComplaints, complaintsText.trim()].filter(Boolean).join('; ');
       const hasRomData = Object.keys(romData).length > 0;
       const hasAnthro = Object.values(anthropometrics).some(v => v !== '');
-
+      
       // 1. Update patient demographics if they changed
       await updatePatientMutation.mutateAsync({
         id: resolvedPatientId,
-        name: patientInfo.name,
+        name: patientInfo.name.trim(),
         age: Number(patientInfo.age),
-        gender: patientInfo.gender,
-        phone: patientInfo.phone,
-        city: patientInfo.address,
-        condition: patientInfo.condition && patientInfo.condition.length > 0 ? patientInfo.condition.join(', ') : '',
+        gender: patientInfo.gender || 'Male',
+        phone: cleanPhone.length === 10 ? cleanPhone : undefined,
+        city: patientInfo.address || undefined,
+        condition: patientInfo.condition && patientInfo.condition.length > 0 ? patientInfo.condition.join(', ') : undefined,
         referredBy: patientInfo.referredBy || undefined,
       });
 
       // 2. Create the evaluation record
       await createEvaluation.mutateAsync({
         patientId: resolvedPatientId,
-        vitals: Object.keys(vitalsPayload).length>0 ? (vitalsPayload as any) : undefined,
+        vitals: Object.keys(vitalsPayload).length > 0 ? (vitalsPayload as any) : undefined,
         painLevel,
         chiefComplaints: allComplaints || undefined,
-        associatedSymptoms: associatedSymptoms.length>0 ? associatedSymptoms : undefined,
-        medicalHistory: finalHistory.length>0 ? finalHistory : undefined,
+        associatedSymptoms: associatedSymptoms.length > 0 ? associatedSymptoms : undefined,
+        medicalHistory: finalHistory.length > 0 ? finalHistory : undefined,
         diagnosis: diagnosisNotes.trim() || undefined,
         diagnosisList: selectedDiagnoses.length > 0 ? selectedDiagnoses : undefined,
         plan: treatmentNotes.trim() || undefined,
@@ -238,9 +248,11 @@ export function TherapistAssessmentForm() {
         } : undefined,
         management: examinationNotes.trim() || undefined,
         status: 'submitted',
-        paymentMode, billAmount: billAmount !== null ? billAmount : billTotal, visitType,
+        paymentMode,
+        billAmount: finalBillAmount,
+        visitType,
         referredBy: patientInfo.referredBy || undefined,
-        associatedPains: chiefComplaints.length>0 ? chiefComplaints : undefined,
+        associatedPains: chiefComplaints.length > 0 ? chiefComplaints : undefined,
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
         anthropometrics: hasAnthro ? anthropometrics : undefined,
@@ -254,6 +266,7 @@ export function TherapistAssessmentForm() {
         mriFindings: treatmentPlanData.mriFindings || undefined,
         pftFindings: treatmentPlanData.pftFindings || undefined,
       });
+
       if (resolvedPatientId) {
         await updatePatient.mutateAsync({ id: resolvedPatientId, status: 'completed' });
       }
@@ -265,7 +278,15 @@ export function TherapistAssessmentForm() {
           navigate(`/${currentRole}`);
         }
       }, 1500);
-    } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to save.'); }
+    } catch (err: any) {
+      const errDetails = err?.response?.data?.error?.details || err?.response?.data?.details;
+      if (Array.isArray(errDetails) && errDetails.length > 0) {
+        const msg = errDetails.map((d: any) => d.message || d.path?.join('.')).filter(Boolean).join('; ');
+        setSubmitError(`Validation error: ${msg}`);
+      } else {
+        setSubmitError(err?.response?.data?.message || err?.response?.data?.error?.message || err?.message || 'Failed to save.');
+      }
+    }
   };
 
   const hasNeuro = patientInfo.condition?.includes('Neuro');
@@ -429,7 +450,7 @@ export function TherapistAssessmentForm() {
             </button>
           </div>
         )}
-        {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-3 px-3 py-2 bg-white dark:bg-slate-900 rounded-xl"><Loader2 size={16} className="animate-spin text-teal-600 dark:text-teal-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directoryâ€¦</span></div>}
+        {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-3 px-3 py-2 bg-white dark:bg-slate-900 rounded-xl"><Loader2 size={16} className="animate-spin text-teal-600 dark:text-teal-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory...</span></div>}
         {lookupDone&&!lookingUp&&foundPatient&&!resolvedPatientId&&(
           <div className="mt-3 p-4 rounded-[18px] bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-between shadow-sm">
             <div><p className="text-[14px] font-black text-emerald-900 dark:text-emerald-100">{foundPatient.name}</p><p className="text-[12px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">{foundPatient.phone} · {foundPatient.gender} · Age {foundPatient.age}</p></div>
@@ -454,7 +475,7 @@ export function TherapistAssessmentForm() {
             </div>
             <div className="flex gap-3 mt-1">
               <button onClick={()=>setShowNewPatientForm(false)} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-[13px] font-extrabold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancel</button>
-              <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-60 bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creatingâ€¦':'Save & Continue'}</button>
+              <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-60 bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creating...':'Save & Continue'}</button>
             </div>
           </div>
         )}
@@ -502,12 +523,12 @@ export function TherapistAssessmentForm() {
                   <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 border border-teal-200 dark:border-teal-800">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[11px] font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wider">Auto-calculated Total</span>
-                      <span className="text-[18px] font-black text-teal-800 dark:text-teal-300">â‚¹{formatRupees(billTotal)}</span>
+                      <span className="text-[18px] font-black text-teal-800 dark:text-teal-300">₹{formatRupees(billTotal)}</span>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {matchedTreatments.map((t) => (
                         <span key={t.id} className="text-[10px] font-bold text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-900/40 px-1.5 py-0.5 rounded">
-                          {t.treatmentName} · â‚¹{t.charge}
+                          {t.treatmentName} · ₹{t.charge}
                         </span>
                       ))}
                     </div>
@@ -531,11 +552,11 @@ export function TherapistAssessmentForm() {
                       }}
                       className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-1 transition-colors"
                     >
-                      <RotateCcw size={11} /> Reset to â‚¹0
+                      <RotateCcw size={11} /> Reset to ₹0
                     </button>
                   </div>
                   <div className="flex items-center gap-3 px-4 py-3 rounded-[14px] border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-teal-500">
-                    <span className="text-[16px] font-black text-slate-500 dark:text-slate-400">â‚¹</span>
+                    <span className="text-[16px] font-black text-slate-500 dark:text-slate-400">₹</span>
                     <input 
                       type="text"
                       inputMode="numeric"
@@ -548,7 +569,7 @@ export function TherapistAssessmentForm() {
                   {isManualBillEdit && (
                     <div className="flex items-center justify-between mt-1.5">
                       <p className="text-[11px] text-teal-600 dark:text-teal-400 font-semibold">
-                        {billAmount === 0 ? 'Amount set to â‚¹0.' : 'Manually edited.'}
+                        {billAmount === 0 ? 'Amount set to ₹0.' : 'Manually edited.'}
                       </p>
                       <button
                         type="button"
@@ -568,7 +589,7 @@ export function TherapistAssessmentForm() {
               </SectionCard>
 
               <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-4 rounded-[18px] flex items-center justify-center gap-2 text-white text-[15px] font-black shadow-lg shadow-teal-600/20 disabled:opacity-60 bg-teal-600 hover:bg-teal-700 transition-transform active:scale-[0.98]">
-                {createEvaluation.isPending?<><Loader2 size={20} className="animate-spin" /> Submittingâ€¦</>:<><Save size={20} /> Finalize & Start Session</>}
+                {createEvaluation.isPending?<><Loader2 size={20} className="animate-spin" /> Submitting...</>:<><Save size={20} /> Finalize & Start Session</>}
               </button>
             </div>
           )}
@@ -580,7 +601,10 @@ export function TherapistAssessmentForm() {
       </div>
 
       {/* Navigation Buttons (Floating Bottom Right) */}
-      <div className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 py-3.5 z-40 flex flex-col gap-2">
+      <div 
+      className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 pt-3 z-40 flex flex-col gap-2"
+      style={{ paddingBottom: 'calc(0.875rem + max(16px, env(safe-area-inset-bottom, 0px)))' }}
+    >
         {submitError && (
           <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2.5 shadow-sm">
             <AlertTriangle size={16} className="shrink-0" />

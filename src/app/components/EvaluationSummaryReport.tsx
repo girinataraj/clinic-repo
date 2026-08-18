@@ -1091,7 +1091,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Footer Note */}
         <div className="text-center pt-4 border-t border-slate-100 dark:border-slate-800/80 text-[10px] text-slate-400 font-medium">
-          <p>SAAI Physiotherapy Clinic · 42, Health Square, MG Road, Bengaluru – 560001</p>
+          <p>SAAI Physiotherapy Clinic · 42, Health Square, MG Road, Bengaluru - 560001</p>
           <p className="mt-0.5">This report is for medical purposes only. Keep it confidential.</p>
         </div>
       </div>
