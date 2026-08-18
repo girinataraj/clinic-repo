@@ -125,8 +125,8 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       {cranial && Object.values(cranial).some(Boolean) && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Cranial Nerves</span>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+          <div className="w-full min-w-0 overflow-x-auto">
+            <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
               <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                 <tr>
                   <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Nerve</th>
@@ -157,8 +157,8 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       ) && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Sensory Assessment</span>
-          <div className="overflow-x-auto">
-            <table className="w-full text-[11px] border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+          <div className="w-full min-w-0 overflow-x-auto">
+            <table className="w-full min-w-[500px] text-[11px] border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
               <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                 <tr>
                   <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800" rowSpan={2}>Sensation</th>
@@ -218,11 +218,12 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       {/* Muscle Girth & Voluntary Control */}
       {((muscleGirth && Object.values(muscleGirth).some((v: any) => v && (v.rt || v.lt))) ||
         (voluntaryControl && Object.values(voluntaryControl).some((v: any) => v && (v.rt || v.lt)))) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full min-w-0">
           {muscleGirth && Object.values(muscleGirth).some((v: any) => v && (v.rt || v.lt)) && (
             <div>
               <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Muscle Girth (cm)</span>
-              <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
                 <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                   <tr>
                     <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Area</th>
@@ -244,13 +245,15 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
                   })}
                 </tbody>
               </table>
+</div>
             </div>
           )}
 
           {voluntaryControl && Object.values(voluntaryControl).some((v: any) => v && (v.rt || v.lt)) && (
             <div>
               <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Voluntary Control</span>
-              <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
                 <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                   <tr>
                     <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Side</th>
@@ -275,6 +278,7 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
                   })}
                 </tbody>
               </table>
+</div>
             </div>
           )}
         </div>
@@ -287,7 +291,8 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       ) && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Reflexes</span>
-          <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+          <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
             <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
               <tr>
                 <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Category</th>
@@ -311,6 +316,7 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
               })}
             </tbody>
           </table>
+</div>
           {reflexes.pathological && (
             <p className="mt-2 text-xs text-slate-700 dark:text-slate-300">
               <strong>Pathological Reflexes:</strong> {reflexes.pathological}
@@ -327,12 +333,13 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       ) && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Coordination & Balance</span>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full min-w-0">
             {/* Non Equilibrium */}
             {Object.keys(NON_EQUILIBRIUM_LABELS).some(k => coordination[k] && (coordination[k].rt || coordination[k].lt)) && (
               <div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Non-Equilibrium Tests</span>
-                <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
                   <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                     <tr>
                       <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test</th>
@@ -354,6 +361,7 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
                     })}
                   </tbody>
                 </table>
+</div>
               </div>
             )}
 
@@ -361,7 +369,8 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
             {Object.keys(EQUILIBRIUM_LABELS).some(k => coordination[k]) && (
               <div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Equilibrium Tests</span>
-                <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
                   <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                     <tr>
                       <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test</th>
@@ -381,6 +390,7 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
                     })}
                   </tbody>
                 </table>
+</div>
               </div>
             )}
           </div>

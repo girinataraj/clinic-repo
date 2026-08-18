@@ -266,7 +266,7 @@ export function AppointmentBooking() {
     <div className="flex flex-col h-full bg-blue-50/50 dark:bg-slate-950 font-sans">
       {/* Header */}
       <div
-        className="px-5 pt-5 pb-5 shrink-0 bg-gradient-to-br from-blue-900 to-blue-600 dark:from-slate-900 dark:to-slate-800"
+        className="px-5 pt-safe-top-4 pb-5 shrink-0 bg-gradient-to-br from-blue-900 to-blue-600 dark:from-slate-900 dark:to-slate-800"
       >
         <div className="flex items-center gap-3 mb-1">
           <button

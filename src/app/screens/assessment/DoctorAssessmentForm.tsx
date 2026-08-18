@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+﻿import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
@@ -355,32 +355,24 @@ export function DoctorAssessmentForm() {
     };
 
     return (
-      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-y-auto p-4 md:p-8">
-        <div className="max-w-4xl mx-auto w-full bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col gap-6">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                <Check className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-y-auto px-2.5 pb-4 pt-safe-top-3 sm:px-4 md:p-6">
+        <div className="max-w-5xl mx-auto w-full flex flex-col gap-3.5">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-md flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+                <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <div>
-                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Doctor Clinical Assessment Summary</h2>
-                <p className="text-xs text-slate-500 font-medium">Successfully saved clinical evaluation & assessment.</p>
+              <div className="min-w-0">
+                <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">Assessment Saved</h2>
+                <p className="text-[11px] text-slate-500 font-medium truncate">Successfully saved clinical evaluation & assessment.</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => window.print()}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
-              >
-                <Printer size={14} /> Print Report
-              </button>
-              <button
-                onClick={() => navigate(`/${currentRole}`)}
-                className="px-5 py-2.5 rounded-xl bg-[#262842] hover:bg-[#3B3E66] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-sm"
-              >
-                Back to Dashboard <ChevronRight size={14} />
-              </button>
-            </div>
+            <button
+              onClick={() => navigate(`/${currentRole}`)}
+              className="px-3.5 py-2 rounded-xl bg-[#262842] hover:bg-[#3B3E66] text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm shrink-0"
+            >
+              Dashboard <ChevronRight size={14} />
+            </button>
           </div>
 
           <EvaluationSummaryReport evaluation={summaryData} isDoctorRole={true} />
@@ -392,8 +384,8 @@ export function DoctorAssessmentForm() {
   return (
     <div className="flex flex-col h-full bg-[#E8E9F1] dark:bg-slate-950 font-sans overflow-hidden">
       <div className="flex-1 overflow-y-auto flex flex-col overflow-x-hidden">
-      {/* Header — Design based on user image with Doctor Gradient */}
-      <div className={`px-6 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-5 pb-5 rounded-b-[2rem]' : 'py-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-xl shadow-indigo-950/20 z-10 relative overflow-hidden`}>
+      {/* Header â€” Design based on user image with Doctor Gradient */}
+      <div className={`px-6 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-safe-top-5 pb-5 rounded-b-[2rem]' : 'pt-safe-top-3.5 pb-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-xl shadow-indigo-950/20 z-10 relative overflow-hidden`}>
         {/* Abstract background shapes for premium feel */}
         <div className="absolute right-0 top-0 w-80 h-80 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="absolute left-0 bottom-0 w-40 h-40 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
@@ -408,7 +400,7 @@ export function DoctorAssessmentForm() {
             </button>
             <div>
               <h1 className="text-[17px] font-black text-white tracking-tight">Assessment Form</h1>
-              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} — {stepsList[step]?.label}</p>
+              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} â€” {stepsList[step]?.label}</p>
             </div>
           </div>
           <button 
@@ -447,7 +439,7 @@ export function DoctorAssessmentForm() {
         )}
       </div>
 
-      {/* Phone Lookup — Match layout from image */}
+      {/* Phone Lookup â€” Match layout from image */}
       <div className="px-6 pt-6 pb-2 shrink-0 z-0">
         {!resolvedPatientId && (
           <div className="max-w-3xl mx-auto flex gap-3 items-center bg-white dark:bg-slate-900 p-2.5 rounded-[24px] shadow-lg shadow-indigo-900/5 border border-slate-100 dark:border-slate-800">
@@ -489,14 +481,14 @@ export function DoctorAssessmentForm() {
 
         {/* Lookup States */}
         <div className="max-w-3xl mx-auto">
-          {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-4 px-4 py-2 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800"><Loader2 size={16} className="animate-spin text-[#262842] dark:text-indigo-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory…</span></div>}
+          {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-4 px-4 py-2 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800"><Loader2 size={16} className="animate-spin text-[#262842] dark:text-indigo-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directoryâ€¦</span></div>}
           {lookupDone&&!lookingUp&&foundPatient&&!resolvedPatientId&&(
             <div className="mt-4 p-5 rounded-[22px] bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2">
-              <div><p className="text-[15px] font-black text-[#262842] dark:text-indigo-100">{foundPatient.name}</p><p className="text-[12px] font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5">{foundPatient.phone} · {foundPatient.gender} · Age {foundPatient.age}</p></div>
+              <div><p className="text-[15px] font-black text-[#262842] dark:text-indigo-100">{foundPatient.name}</p><p className="text-[12px] font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5">{foundPatient.phone} Â· {foundPatient.gender} Â· Age {foundPatient.age}</p></div>
               <button onClick={handleUseFoundPatient} className="px-5 py-3 rounded-xl text-[13px] font-black text-white bg-[#262842] hover:bg-[#3B3E66] shadow-sm transition-transform active:scale-95">Use Record</button>
             </div>
           )}
-          {lookupDone&&!lookingUp&&foundPatient&&resolvedPatientId&&<div className="mt-4 px-5 py-3.5 flex items-center gap-3 bg-white dark:bg-slate-900 rounded-[22px] border border-slate-100 dark:border-slate-800 shadow-sm animate-in fade-in"><div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center"><Check size={16} className="text-indigo-600 dark:text-indigo-400" /></div><span className="text-[14px] font-extrabold text-[#262842] dark:text-indigo-400">{foundPatient.name} · {foundPatient.phone}</span></div>}
+          {lookupDone&&!lookingUp&&foundPatient&&resolvedPatientId&&<div className="mt-4 px-5 py-3.5 flex items-center gap-3 bg-white dark:bg-slate-900 rounded-[22px] border border-slate-100 dark:border-slate-800 shadow-sm animate-in fade-in"><div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center"><Check size={16} className="text-indigo-600 dark:text-indigo-400" /></div><span className="text-[14px] font-extrabold text-[#262842] dark:text-indigo-400">{foundPatient.name} Â· {foundPatient.phone}</span></div>}
           {lookupDone&&!lookingUp&&foundPatient===null&&!showNewPatientForm&&(
             <div className="mt-4 p-5 rounded-[22px] bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/50 flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><AlertTriangle size={20} className="text-amber-600 dark:text-amber-400" /></div><span className="text-[14px] font-extrabold text-amber-800 dark:text-amber-400">Unregistered patient</span></div>
@@ -505,7 +497,7 @@ export function DoctorAssessmentForm() {
           )}
           {showNewPatientForm&&(
             <div className="mt-4 p-6 rounded-[28px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex flex-col gap-5 shadow-xl animate-in zoom-in-95 duration-200">
-              <p className="text-[16px] font-black text-slate-800 dark:text-white">New Patient Registration — <span className="text-indigo-600 dark:text-indigo-400">{phoneInput}</span></p>
+              <p className="text-[16px] font-black text-slate-800 dark:text-white">New Patient Registration â€” <span className="text-indigo-600 dark:text-indigo-400">{phoneInput}</span></p>
               <div className="grid grid-cols-2 gap-4">
                 <input placeholder="Full Name *" value={newPatient.name} onChange={e=>setNewPatient(p=>({...p,name:e.target.value}))} className="col-span-2 px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
                 <input placeholder="Age *" type="number" value={newPatient.age} onChange={e=>setNewPatient(p=>({...p,age:e.target.value}))} className="px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
@@ -513,7 +505,7 @@ export function DoctorAssessmentForm() {
               </div>
               <div className="flex gap-4 mt-2">
                 <button onClick={()=>setShowNewPatientForm(false)} className="flex-1 py-3.5 rounded-2xl border border-slate-200 text-[14px] font-black text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-                <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] shadow-lg shadow-indigo-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creating…':'Save & Continue'}</button>
+                <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] shadow-lg shadow-indigo-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creatingâ€¦':'Save & Continue'}</button>
               </div>
             </div>
           )}
@@ -548,11 +540,11 @@ export function DoctorAssessmentForm() {
                   <div className="grid grid-cols-2 gap-3">{['Clinic','Home Visit','IP','Day Care'].map(v=><button key={v} onClick={()=>setVisitType(v as any)} className={`py-4 rounded-[18px] text-[14px] font-black border-2 transition-all active:scale-95 ${visitType===v?'border-[#262842] bg-indigo-50 dark:bg-indigo-900/20 text-[#262842] dark:text-indigo-300':'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>{v}</button>)}</div>
                 </FormField>
                 <div className="flex flex-col gap-0 mt-3 bg-slate-50 dark:bg-slate-800/50 rounded-[20px] p-2 border border-slate-100 dark:border-slate-800">{[
-                  {l:'Patient',v:patientInfo.name||'—'},{l:'Age',v:patientInfo.age||'—'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'—'},
-                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'—'},
-                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : '—'; })()},
-                  {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : '—')},
-                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : '—'},
+                  {l:'Patient',v:patientInfo.name||'â€”'},{l:'Age',v:patientInfo.age||'â€”'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'â€”'},
+                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'â€”'},
+                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : 'â€”'; })()},
+                  {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : 'â€”')},
+                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : 'â€”'},
                 ].map(r=><div key={r.l} className="flex items-center justify-between py-4 px-4 border-b border-slate-100 dark:border-slate-800/50 last:border-0"><span className="text-[14px] text-slate-500 dark:text-slate-400 font-bold">{r.l}</span><span className="text-[14px] text-slate-900 dark:text-white font-extrabold">{r.v}</span></div>)}</div>
               </SectionCard>
               <SectionCard icon={<CreditCard size={20} className="text-amber-600 dark:text-amber-400" />} title="Payment Details" subtitle="Required to submit" accent="amber">
@@ -562,12 +554,12 @@ export function DoctorAssessmentForm() {
                   <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 border border-teal-200 dark:border-teal-800">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[11px] font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wider">Auto-calculated Total</span>
-                      <span className="text-[18px] font-black text-teal-800 dark:text-teal-300">₹{formatRupees(billTotal)}</span>
+                      <span className="text-[18px] font-black text-teal-800 dark:text-teal-300">â‚¹{formatRupees(billTotal)}</span>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {matchedTreatments.map((t) => (
                         <span key={t.id} className="text-[10px] font-bold text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-900/40 px-1.5 py-0.5 rounded">
-                          {t.treatmentName} · ₹{t.charge}
+                          {t.treatmentName} Â· â‚¹{t.charge}
                         </span>
                       ))}
                     </div>
@@ -587,7 +579,7 @@ export function DoctorAssessmentForm() {
                         onClick={() => { setSubmitError(null); setIsManualBillEdit(true); setBillAmount(0); setBillAmountInput('0'); }}
                         className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-1 transition-colors"
                       >
-                        <RotateCcw size={11} /> Reset to ₹0
+                        <RotateCcw size={11} /> Reset to â‚¹0
                       </button>
                       {isManualBillEdit && (
                         <button
@@ -595,13 +587,13 @@ export function DoctorAssessmentForm() {
                           onClick={() => { setSubmitError(null); setIsManualBillEdit(false); setBillAmount(null); setBillAmountInput(''); }}
                           className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 transition-colors"
                         >
-                          Auto-fill (₹{billTotal})
+                          Auto-fill (â‚¹{billTotal})
                         </button>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-4 px-5 py-4 rounded-[18px] border border-[#262842] dark:border-indigo-700 bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-indigo-500 transition-shadow">
-                    <span className="text-[18px] font-black text-slate-500 dark:text-slate-400">₹</span>
+                    <span className="text-[18px] font-black text-slate-500 dark:text-slate-400">â‚¹</span>
                     <input 
                       type="text"
                       inputMode="numeric"
@@ -612,13 +604,13 @@ export function DoctorAssessmentForm() {
                     />
                   </div>
                   <p className="text-[12px] text-[#262842] dark:text-indigo-400 font-semibold mt-1.5">
-                    {isManualBillEdit ? (billAmount === 0 ? 'Amount set to ₹0.' : 'Manually edited.') : (billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7. You can edit this amount or reset to zero.' : 'Enter fee or select treatments.')}
+                    {isManualBillEdit ? (billAmount === 0 ? 'Amount set to â‚¹0.' : 'Manually edited.') : (billTotal > 0 ? 'Auto-calculated from selected treatments in Step 7. You can edit this amount or reset to zero.' : 'Enter fee or select treatments.')}
                   </p>
                 </FormField>
               </SectionCard>
 
               <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-5 rounded-[22px] flex items-center justify-center gap-3 text-white text-[16px] font-black shadow-xl shadow-indigo-600/30 disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] transition-all active:scale-[0.98]">
-                {createEvaluation.isPending?<><Loader2 size={22} className="animate-spin" /> Submitting…</>:<><Save size={22} /> Finalize & Start Session</>}
+                {createEvaluation.isPending?<><Loader2 size={22} className="animate-spin" /> Submittingâ€¦</>:<><Save size={22} /> Finalize & Start Session</>}
               </button>
             </div>
           )}
@@ -675,7 +667,7 @@ export function DoctorAssessmentForm() {
         </div>
       </div>
 
-      <div className="md:hidden"><BottomNav role={currentRole} /></div>
     </div>
   );
 }
+

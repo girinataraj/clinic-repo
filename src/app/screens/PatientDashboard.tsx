@@ -71,7 +71,7 @@ export function PatientDashboard() {
       <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
         
         {/* ── Mobile-First Header ── */}
-        <div className="px-5 pt-10 pb-12 relative bg-gradient-to-br from-blue-700 to-indigo-600 dark:from-slate-900 dark:to-slate-800 rounded-b-[2rem] shadow-md z-10">
+        <div className="px-5 pt-safe-top-5 pb-12 relative bg-gradient-to-br from-blue-700 to-indigo-600 dark:from-slate-900 dark:to-slate-800 rounded-b-[2rem] shadow-md z-10">
           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
             <Activity size={140} className="text-white transform rotate-12" />
           </div>

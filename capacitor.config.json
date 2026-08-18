@@ -1,5 +1,1 @@
-{
-  "appId": "com.saai.physiotherapy",
-  "appName": "SAAI Physiotherapy",
-  "webDir": "dist"
-}
+{"appId": "com.saai.physiotherapy", "appName": "SAAI Physiotherapy", "webDir": "dist", "plugins": {"SystemBars": {"insetsHandling": "css"}}}

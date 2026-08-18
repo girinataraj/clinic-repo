@@ -94,7 +94,7 @@ export function AssignPatientPage() {
   return (
     <div className="flex flex-col h-full bg-[#E8E9F1] dark:bg-slate-950 font-sans overflow-hidden">
       {/* Header */}
-      <div className="px-5 pb-6 pt-6 shrink-0 bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-[0_4px_20px_rgba(38,40,66,0.15)]">
+      <div className="px-5 pb-6 pt-safe-top-4 shrink-0 bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-[0_4px_20px_rgba(38,40,66,0.15)]">
         <div className="flex items-center gap-3 relative z-10 max-w-2xl mx-auto">
           <button
             onClick={() => navigate('/doctor')}

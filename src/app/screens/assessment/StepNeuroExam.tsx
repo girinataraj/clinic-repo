@@ -320,7 +320,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 onToggle={() => setOpenSec(openSec === 'mmse' ? '' : 'mmse')}
               >
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-24 text-center uppercase tracking-wider">Max Score</th>
@@ -387,7 +387,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 onToggle={() => setOpenSec(openSec === 'nerves' ? '' : 'nerves')}
               >
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-1/4 uppercase tracking-wider">Nerves</th>
@@ -451,7 +451,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 <div className="flex flex-col gap-4">
                   <div className="overflow-x-auto">
                     <table
-                      className="w-full text-[11px] text-slate-800 dark:text-slate-200 text-left border border-slate-200 dark:border-slate-800"
+                      className="w-full min-w-[500px] text-[11px] text-slate-800 dark:text-slate-200 text-left border border-slate-200 dark:border-slate-800"
                       style={{ tableLayout: 'auto', borderCollapse: 'collapse', width: '100%' }}
                     >
                       <thead>
@@ -606,7 +606,8 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                   {/* Muscle Girth */}
                   <div>
                     <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Muscle Girth</h4>
-                    <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                    <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                       <thead>
                         <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                           <th className="p-3 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider">Area</th>
@@ -651,12 +652,14 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                         ))}
                       </tbody>
                     </table>
+</div>
                   </div>
 
                   {/* Voluntary Control */}
                   <div>
                     <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Voluntary Control</h4>
-                    <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                    <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                       <thead>
                         <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                           <th className="p-3 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider">Side</th>
@@ -697,6 +700,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                         ))}
                       </tbody>
                     </table>
+</div>
                   </div>
                 </div>
               </NeuroAccordionSection>
@@ -709,7 +713,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
               >
                 <div className="flex flex-col gap-4">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                    <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                       <thead>
                         <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                           <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-40 uppercase tracking-wider">Category</th>
@@ -793,7 +797,8 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                     {/* Non Equilibrium Tests */}
                     <div>
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Non Equilibrium Tests</h4>
-                      <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                      <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                         <thead>
                           <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                             <th className="p-3 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider">Non Equilibrium Tests</th>
@@ -842,12 +847,14 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                           ))}
                         </tbody>
                       </table>
+</div>
                     </div>
 
                     {/* Equilibrium Tests */}
                     <div>
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Equilibrium tests</h4>
-                      <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                      <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                         <thead>
                           <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                             <th className="p-3 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider">Equilibrium tests</th>
@@ -885,6 +892,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                           ))}
                         </tbody>
                       </table>
+</div>
                     </div>
                   </div>
 
@@ -910,7 +918,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 onToggle={() => setOpenSec(openSec === 'balance' ? '' : 'balance')}
               >
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-36 uppercase tracking-wider">Category</th>
@@ -959,7 +967,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 onToggle={() => setOpenSec(openSec === 'posture' ? '' : 'posture')}
               >
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider">Position</th>
@@ -1012,7 +1020,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 onToggle={() => setOpenSec(openSec === 'gait' ? '' : 'gait')}
               >
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <tbody>
                       {[
                         { leftLabel: 'Stance Phase:', leftKey: 'stancePhase', rightLabel: 'Base Width:', rightKey: 'baseWidth' },
@@ -1059,7 +1067,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 onToggle={() => setOpenSec(openSec === 'hand' ? '' : 'hand')}
               >
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-44 uppercase tracking-wider">Hand Function</th>

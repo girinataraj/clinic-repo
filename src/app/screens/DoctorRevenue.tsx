@@ -157,7 +157,10 @@ export function DoctorRevenue() {
       <div
         style={{
           background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
-          padding: '24px 24px 24px 24px',
+          paddingTop: 'calc(1.25rem + env(safe-area-inset-top, 0px))',
+          paddingBottom: '24px',
+          paddingLeft: '24px',
+          paddingRight: '24px',
           flexShrink: 0,
         }}
       >

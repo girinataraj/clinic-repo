@@ -58,7 +58,7 @@ export function PatientDetailPage() {
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+      <div className="flex-1 overflow-y-auto px-2.5 pb-4 pt-safe-top-3 sm:px-4 md:p-6">
         {(patientError || evaluationError) && (
           <div className="max-w-4xl mx-auto mb-4">
             <ApiErrorBanner error={patientError ? patientErrorObj : evaluationErrorObj} />

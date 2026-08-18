@@ -465,7 +465,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
   };
 
   return (
-    <div className="flex flex-col gap-3.5 w-full max-w-5xl mx-auto font-sans pb-8">
+    <div className="flex flex-col gap-3.5 w-full min-w-0 max-w-5xl mx-auto font-sans pb-8 px-0">
       {/* ── 1. Top Header Action Bar (Matching Original Design) ── */}
       <div className="bg-[#262842] dark:bg-slate-900 text-white rounded-3xl p-4 md:p-5 shadow-xl flex flex-col gap-4 border border-slate-700/50">
         <div className="flex items-center justify-between">
@@ -484,36 +484,36 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
         </div>
 
         {/* 3 Action Buttons */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full min-w-0">
           <button
             onClick={handleGeneratePdf}
             disabled={downloadingPdf}
-            className="flex flex-col md:flex-row items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs md:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md disabled:opacity-60"
+            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl sm:rounded-2xl bg-white/15 hover:bg-white/25 text-white font-extrabold text-xs sm:text-sm border border-white/20 backdrop-blur-md transition-all active:scale-95 shadow-md disabled:opacity-60"
           >
             {downloadingPdf ? (
               <>
-                <Loader2 size={18} className="animate-spin text-white" />
+                <Loader2 size={16} className="animate-spin text-white" />
                 <span>Downloading...</span>
               </>
             ) : (
               <>
-                <Download size={18} />
+                <Download size={16} />
                 <span>Generate PDF</span>
               </>
             )}
           </button>
           <button
             onClick={handlePrint}
-            className="flex flex-col md:flex-row items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs md:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md"
+            className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs sm:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md"
           >
-            <Printer size={18} />
+            <Printer size={16} />
             <span>Print</span>
           </button>
           <button
             onClick={handleShare}
-            className="flex flex-col md:flex-row items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs md:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md"
+            className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs sm:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md"
           >
-            <Share2 size={18} />
+            <Share2 size={16} />
             <span>Share</span>
           </button>
         </div>
@@ -528,7 +528,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
       )}
 
       {/* ── 2. Report Document Card (Original Section Layout) ── */}
-      <div id="clinical-report-card" className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-4 md:p-6 flex flex-col gap-3.5 text-left">
+      <div id="clinical-report-card" className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-3.5 sm:p-5 md:p-6 flex flex-col gap-3.5 text-left w-full min-w-0 overflow-hidden">
         
         {/* Hospital Banner (if present) */}
         {hospitalInfo && (
@@ -549,15 +549,15 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
         )}
 
         {/* Clinician & Patient Summary Header (Original Layout) */}
-        <section className="bg-slate-50/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-xs font-semibold">
-            <div>
+        <section className="bg-slate-50/70 dark:bg-slate-900/40 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 text-xs font-semibold w-full min-w-0">
+            <div className="min-w-0">
               <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Conducting Clinician</span>
-              <span className="text-slate-900 dark:text-white font-black text-sm">{therapistName}</span>
+              <span className="text-slate-900 dark:text-white font-black text-sm break-words block">{therapistName}</span>
             </div>
-            <div>
+            <div className="min-w-0">
               <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Patient Ref</span>
-              <span className="text-slate-900 dark:text-white font-black text-sm">{patientName}</span>
+              <span className="text-slate-900 dark:text-white font-black text-sm break-words block">{patientName}</span>
               <span className="text-[11px] font-mono text-slate-500 block font-bold">{patientDisplayId}</span>
             </div>
             <div>
@@ -579,12 +579,12 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Vital Signs (Original Cards Layout) */}
         {(bp || pr || spo2 || temp || ef || painLevel) && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Heart size={16} className="text-rose-500" />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Vital Signs</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 text-xs font-semibold">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 sm:gap-3 text-xs font-semibold w-full min-w-0">
               {bp && (
                 <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
                   <span className="text-[10px] text-slate-400 block mb-1 font-bold">Blood Pressure</span>
@@ -668,7 +668,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Associated Symptoms & Pain Areas */}
         {(associatedSymptomsList.length > 0 || painAreasList.length > 0) && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Activity size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Associated Symptoms & Pain Areas</span>
@@ -704,7 +704,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Medical History */}
         {medicalHistoryList.length > 0 && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <ClipboardList size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Medical History</span>
@@ -721,7 +721,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Special Physical Tests, Imaging & X-Ray */}
         {(specialPhysicalTestsList.length > 0 || (testsObj && Object.keys(testsObj).length > 0) || xrayText || mriText || pftText || clinicalExamination?.imaging || clinicalExamination?.examinationNotes) && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Stethoscope size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Clinical Examination & Imaging Findings</span>
@@ -817,7 +817,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Anthropometrics Section (Height, Weight, BMI, etc.) */}
         {anthropometrics && Object.keys(anthropometrics).length > 0 && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Scale size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Anthropometrics</span>
@@ -853,7 +853,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Cardiorespiratory & Borg Scale */}
         {cardioData && (cardioData.borgRating || cardioData.vo2Max || cardioData.sixMinWalk || cardioData.rockportWalk || cardioData.harvardStep) && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Activity size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Cardiorespiratory & Borg Scale</span>
@@ -895,45 +895,43 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Range of Motion & Muscle Power Table */}
         {romTableRows.length > 0 && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Activity size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Muscle Power & Range of Motion</span>
             </div>
-            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-xs font-semibold">
-                  <thead className="bg-slate-50 dark:bg-slate-850">
-                    <tr className="border-b border-slate-200 dark:border-slate-800">
-                      <th className="px-3 py-2.5 text-slate-700 dark:text-slate-300">Joint</th>
-                      <th className="px-3 py-2.5 text-slate-700 dark:text-slate-300">Movement</th>
-                      <th className="px-2 py-2.5 text-center text-slate-700 dark:text-slate-300">Power Rt</th>
-                      <th className="px-2 py-2.5 text-center text-slate-700 dark:text-slate-300">Power Lt</th>
-                      <th className="px-2 py-2.5 text-center text-slate-700 dark:text-slate-300">ROM Rt</th>
-                      <th className="px-2 py-2.5 text-center text-slate-700 dark:text-slate-300">ROM Lt</th>
+            <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+              <table className="w-full min-w-[480px] border-collapse text-left text-xs font-semibold">
+                <thead className="bg-slate-50 dark:bg-slate-850">
+                  <tr className="border-b border-slate-200 dark:border-slate-800">
+                    <th className="px-3 py-2.5 text-slate-700 dark:text-slate-300">Joint</th>
+                    <th className="px-3 py-2.5 text-slate-700 dark:text-slate-300">Movement</th>
+                    <th className="px-2 py-2.5 text-center text-slate-700 dark:text-slate-300">Power Rt</th>
+                    <th className="px-2 py-2.5 text-center text-slate-700 dark:text-slate-300">Power Lt</th>
+                    <th className="px-2 py-2.5 text-center text-slate-700 dark:text-slate-300">ROM Rt</th>
+                    <th className="px-2 py-2.5 text-center text-slate-700 dark:text-slate-300">ROM Lt</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {romTableRows.map((row, index) => (
+                    <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/30">
+                      <td className="px-3 py-2.5 font-bold text-slate-850 dark:text-white">{row.joint}</td>
+                      <td className="px-3 py-2.5 text-slate-600 dark:text-slate-400 uppercase text-[9px] font-extrabold">{row.movement}</td>
+                      <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.powerRt}</td>
+                      <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.powerLt}</td>
+                      <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.romRt}</td>
+                      <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.romLt}</td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {romTableRows.map((row, index) => (
-                      <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/30">
-                        <td className="px-3 py-2.5 font-bold text-slate-850 dark:text-white">{row.joint}</td>
-                        <td className="px-3 py-2.5 text-slate-600 dark:text-slate-400 uppercase text-[9px] font-extrabold">{row.movement}</td>
-                        <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.powerRt}</td>
-                        <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.powerLt}</td>
-                        <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.romRt}</td>
-                        <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.romLt}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         )}
 
         {/* Neurological Examination */}
         {hasNeuroData && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Brain size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Neurological Examination</span>
@@ -970,7 +968,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Diagnoses & ICD-10 Coding */}
         {(primaryDiagnoses.length > 0 || diagnosisList.length > 0 || diagnosisText) && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <ClipboardList size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Diagnoses & ICD-10 Coding</span>
@@ -994,7 +992,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
         {/* Treatment Plan Details */}
         {(treatmentPlanModalities.length > 0 || treatmentPlanManual.length > 0 || treatmentPlanRehab.length > 0 || treatmentPlanExercises.length > 0 || planText) && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Dumbbell size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Treatment Plan Details</span>
@@ -1040,16 +1038,16 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                 <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">
                   Prescribed Exercises & Home Programs ({treatmentPlanExercises.length})
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full min-w-0">
                   {treatmentPlanExercises.map((ex: any, idx: number) => {
                     const exName = ex.exerciseName || ex.name || `Exercise ${idx + 1}`;
                     const exCategory = ex.category || 'General';
                     const instructionsText = ex.instructions || ex.notes || ex.description || '';
                     return (
-                      <div key={ex.id || idx} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-2.5">
-                        <div className="flex items-center justify-between">
-                          <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100">{exName}</span>
-                          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 uppercase">{exCategory}</span>
+                      <div key={ex.id || idx} className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-2.5 w-full min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100 break-words leading-tight flex-1 min-w-0">{exName}</span>
+                          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 uppercase shrink-0">{exCategory}</span>
                         </div>
                         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-slate-600 dark:text-slate-400 border-y border-slate-100 dark:border-slate-800/80 py-1.5">
                           {ex.sets && <span><strong className="text-slate-800 dark:text-slate-200">Sets:</strong> {ex.sets}</span>}
@@ -1058,9 +1056,9 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                           {ex.frequency && <span><strong className="text-slate-800 dark:text-slate-200">Freq:</strong> {ex.frequency}</span>}
                         </div>
                         {instructionsText && (
-                          <div className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-150 dark:border-slate-800">
+                          <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-150 dark:border-slate-800 w-full min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Exercise Instructions & Guidance:</span>
-                            <div className="whitespace-pre-wrap font-medium">{instructionsText}</div>
+                            <div className="whitespace-pre-wrap font-medium break-words leading-relaxed">{instructionsText}</div>
                           </div>
                         )}
                       </div>
@@ -1099,40 +1097,40 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
       </div>
 
       {/* ── 3. Bottom Action Bar ── */}
-      <div className="bg-[#262842] dark:bg-slate-900 text-white rounded-3xl p-4 shadow-lg flex items-center justify-center gap-3 border border-slate-700/50">
-        <button
-          onClick={handleGeneratePdf}
-          disabled={downloadingPdf}
-          className="flex items-center gap-2 py-3 px-6 rounded-xl bg-[#1e2038] hover:bg-slate-800 text-white font-extrabold text-xs md:text-sm border border-white/15 transition-all active:scale-95 shadow-md disabled:opacity-60"
-        >
-          {downloadingPdf ? (
-            <>
-              <Loader2 size={16} className="animate-spin text-white" />
-              <span>Generating PDF...</span>
-            </>
-          ) : (
-            <>
-              <Download size={16} />
-              <span>Generate PDF</span>
-            </>
-          )}
-        </button>
-
-        <button
-          onClick={handleShare}
-          className="flex items-center gap-2 py-3 px-5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs border border-white/15 transition-all active:scale-95"
-        >
-          <Share2 size={15} />
-          <span>Share</span>
-        </button>
-
-        <button
-          onClick={handlePrint}
-          className="flex items-center gap-2 py-3 px-5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs border border-white/15 transition-all active:scale-95"
-        >
-          <Printer size={15} />
-          <span>Print</span>
-        </button>
+      <div className="bg-[#262842] dark:bg-slate-900 text-white rounded-3xl p-3.5 sm:p-4 shadow-lg border border-slate-700/50 w-full min-w-0">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full min-w-0">
+          <button
+            onClick={handleGeneratePdf}
+            disabled={downloadingPdf}
+            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl sm:rounded-2xl bg-white/15 hover:bg-white/25 text-white font-extrabold text-xs sm:text-sm border border-white/20 backdrop-blur-md transition-all active:scale-95 shadow-md disabled:opacity-60"
+          >
+            {downloadingPdf ? (
+              <>
+                <Loader2 size={16} className="animate-spin text-white" />
+                <span>Downloading...</span>
+              </>
+            ) : (
+              <>
+                <Download size={16} />
+                <span>Generate PDF</span>
+              </>
+            )}
+          </button>
+          <button
+            onClick={handlePrint}
+            className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs sm:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md"
+          >
+            <Printer size={16} />
+            <span>Print</span>
+          </button>
+          <button
+            onClick={handleShare}
+            className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs sm:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md"
+          >
+            <Share2 size={16} />
+            <span>Share</span>
+          </button>
+        </div>
       </div>
     </div>
   );

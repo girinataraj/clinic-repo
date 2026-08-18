@@ -179,7 +179,7 @@ export function TherapistHierarchy() {
     <div className="flex flex-col h-full font-sans bg-[#E8E9F1] dark:bg-slate-950">
       {/* ── Header ─────────────────────────────────────────────── */}
       <div
-        className="px-5 pb-5 shrink-0 relative overflow-hidden pt-7 bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-[0_4px_24px_rgba(38,40,66,0.15)] dark:shadow-none"
+        className="px-5 pb-5 shrink-0 relative overflow-hidden pt-safe-top-5 bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-[0_4px_24px_rgba(38,40,66,0.15)] dark:shadow-none"
       >
         <div className="absolute -right-16 -top-16 rounded-full opacity-10 w-[200px] h-[200px] bg-white" />
         <div className="flex items-center gap-3 mb-4 relative z-10">

@@ -191,7 +191,7 @@ export function FollowUpPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950 overflow-y-auto font-sans">
       {/* Top Header */}
-      <div className="shrink-0 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm">
+      <div className="shrink-0 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-6 pt-safe-top-4 pb-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           {selectedPatientId && (
             <button

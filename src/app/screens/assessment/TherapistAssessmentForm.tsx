@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+﻿import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
@@ -328,32 +328,24 @@ export function TherapistAssessmentForm() {
     };
 
     return (
-      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-y-auto p-4 md:p-8">
-        <div className="max-w-4xl mx-auto w-full bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col gap-6">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <Check className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-y-auto px-2.5 pb-4 pt-safe-top-3 sm:px-4 md:p-6">
+        <div className="max-w-5xl mx-auto w-full flex flex-col gap-3.5">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-md flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+                <Check className="w-5 h-5 text-teal-600 dark:text-teal-400" />
               </div>
-              <div>
-                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Clinical Assessment Summary</h2>
-                <p className="text-xs text-slate-500 font-medium">Successfully saved clinical evaluation & assessment.</p>
+              <div className="min-w-0">
+                <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">Assessment Saved</h2>
+                <p className="text-[11px] text-slate-500 font-medium truncate">Successfully saved clinical evaluation & assessment.</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => window.print()}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
-              >
-                <Printer size={14} /> Print Report
-              </button>
-              <button
-                onClick={() => navigate(`/${currentRole}`)}
-                className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-sm"
-              >
-                Back to Dashboard <ChevronRight size={14} />
-              </button>
-            </div>
+            <button
+              onClick={() => navigate(`/${currentRole}`)}
+              className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm shrink-0"
+            >
+              Dashboard <ChevronRight size={14} />
+            </button>
           </div>
 
           <EvaluationSummaryReport evaluation={summaryData} isDoctorRole={isDoctorRole} />
@@ -365,7 +357,7 @@ export function TherapistAssessmentForm() {
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden">
       <div className="flex-1 overflow-y-auto flex flex-col overflow-x-hidden">
-      {/* Header — Design based on Dashboard Gradient */}
+      {/* Header â€” Design based on Dashboard Gradient */}
       <div className={`px-5 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-5 pb-4 rounded-b-[2rem]' : 'py-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#134e4a] to-[#0d9488] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden`}>
         <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className={`flex items-center justify-between relative z-10 ${isHeaderExpanded ? 'mb-3' : ''}`}>
@@ -375,7 +367,7 @@ export function TherapistAssessmentForm() {
             </button>
             <div>
               <h1 className="text-[16px] font-black text-white tracking-tight">Assessment Form</h1>
-              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} — {stepsList[step]?.label}</p>
+              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} â€” {stepsList[step]?.label}</p>
             </div>
           </div>
           <button 
@@ -437,14 +429,14 @@ export function TherapistAssessmentForm() {
             </button>
           </div>
         )}
-        {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-3 px-3 py-2 bg-white dark:bg-slate-900 rounded-xl"><Loader2 size={16} className="animate-spin text-teal-600 dark:text-teal-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory…</span></div>}
+        {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-3 px-3 py-2 bg-white dark:bg-slate-900 rounded-xl"><Loader2 size={16} className="animate-spin text-teal-600 dark:text-teal-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directoryâ€¦</span></div>}
         {lookupDone&&!lookingUp&&foundPatient&&!resolvedPatientId&&(
           <div className="mt-3 p-4 rounded-[18px] bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-between shadow-sm">
-            <div><p className="text-[14px] font-black text-emerald-900 dark:text-emerald-100">{foundPatient.name}</p><p className="text-[12px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">{foundPatient.phone} · {foundPatient.gender} · Age {foundPatient.age}</p></div>
+            <div><p className="text-[14px] font-black text-emerald-900 dark:text-emerald-100">{foundPatient.name}</p><p className="text-[12px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">{foundPatient.phone} Â· {foundPatient.gender} Â· Age {foundPatient.age}</p></div>
             <button onClick={handleUseFoundPatient} className="px-4 py-2.5 rounded-xl text-[12px] font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-transform active:scale-95">Use Record</button>
           </div>
         )}
-        {lookupDone&&!lookingUp&&foundPatient&&resolvedPatientId&&<div className="mt-3 px-4 py-3 flex items-center gap-2 bg-white dark:bg-slate-900 rounded-[18px] border border-slate-100 dark:border-slate-800 shadow-sm"><div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><Check size={14} className="text-emerald-600 dark:text-emerald-400" /></div><span className="text-[13px] font-extrabold text-emerald-800 dark:text-emerald-400">{foundPatient.name} · {foundPatient.phone}</span></div>}
+        {lookupDone&&!lookingUp&&foundPatient&&resolvedPatientId&&<div className="mt-3 px-4 py-3 flex items-center gap-2 bg-white dark:bg-slate-900 rounded-[18px] border border-slate-100 dark:border-slate-800 shadow-sm"><div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><Check size={14} className="text-emerald-600 dark:text-emerald-400" /></div><span className="text-[13px] font-extrabold text-emerald-800 dark:text-emerald-400">{foundPatient.name} Â· {foundPatient.phone}</span></div>}
         {lookupDone&&!lookingUp&&foundPatient===null&&!showNewPatientForm&&(
           <div className="mt-3 p-4 rounded-[18px] bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/50 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><AlertTriangle size={16} className="text-amber-600 dark:text-amber-400" /></div><span className="text-[13px] font-extrabold text-amber-800 dark:text-amber-400">Unregistered patient</span></div>
@@ -453,7 +445,7 @@ export function TherapistAssessmentForm() {
         )}
         {showNewPatientForm&&(
           <div className="mt-3 p-5 rounded-[22px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex flex-col gap-4 shadow-sm">
-            <p className="text-[14px] font-black text-slate-800 dark:text-white">Register Patient — <span className="text-teal-600 dark:text-teal-400">{phoneInput}</span></p>
+            <p className="text-[14px] font-black text-slate-800 dark:text-white">Register Patient â€” <span className="text-teal-600 dark:text-teal-400">{phoneInput}</span></p>
             <div className="grid grid-cols-2 gap-3">
               <input placeholder="Full Name *" value={newPatient.name} onChange={e=>setNewPatient(p=>({...p,name:e.target.value}))} className="col-span-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[14px] font-medium outline-none text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors" />
               <input placeholder="Age *" type="number" value={newPatient.age} onChange={e=>setNewPatient(p=>({...p,age:e.target.value}))} className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[14px] font-medium outline-none text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors" />
@@ -462,7 +454,7 @@ export function TherapistAssessmentForm() {
             </div>
             <div className="flex gap-3 mt-1">
               <button onClick={()=>setShowNewPatientForm(false)} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-[13px] font-extrabold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancel</button>
-              <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-60 bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creating…':'Save & Continue'}</button>
+              <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-60 bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creatingâ€¦':'Save & Continue'}</button>
             </div>
           </div>
         )}
@@ -496,11 +488,11 @@ export function TherapistAssessmentForm() {
                   <div className="grid grid-cols-2 gap-2">{['Clinic','Home Visit','IP','Day Care'].map(v=><button key={v} onClick={()=>setVisitType(v as any)} className={`py-3 rounded-[14px] text-[13px] font-black border-2 transition-all active:scale-95 ${visitType===v?'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300':'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>{v}</button>)}</div>
                 </FormField>
                 <div className="flex flex-col gap-0 mt-2 bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-1 border border-slate-100 dark:border-slate-800">{[
-                  {l:'Patient',v:patientInfo.name||'—'},{l:'Age',v:patientInfo.age||'—'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'—'},
-                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'—'},
-                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : '—'; })()},
-                  {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : '—')},
-                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : '—'},
+                  {l:'Patient',v:patientInfo.name||'â€”'},{l:'Age',v:patientInfo.age||'â€”'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'â€”'},
+                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'â€”'},
+                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : 'â€”'; })()},
+                  {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : 'â€”')},
+                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : 'â€”'},
                 ].map(r=><div key={r.l} className="flex items-center justify-between py-3 px-3 border-b border-slate-100 dark:border-slate-800/50 last:border-0"><span className="text-[13px] text-slate-500 dark:text-slate-400 font-bold">{r.l}</span><span className="text-[13px] text-slate-900 dark:text-white font-extrabold">{r.v}</span></div>)}</div>
               </SectionCard>
               <SectionCard icon={<CreditCard size={20} className="text-amber-600 dark:text-amber-400" />} title="Payment Details" subtitle="Required to submit" accent="amber">
@@ -510,12 +502,12 @@ export function TherapistAssessmentForm() {
                   <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 border border-teal-200 dark:border-teal-800">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[11px] font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wider">Auto-calculated Total</span>
-                      <span className="text-[18px] font-black text-teal-800 dark:text-teal-300">₹{formatRupees(billTotal)}</span>
+                      <span className="text-[18px] font-black text-teal-800 dark:text-teal-300">â‚¹{formatRupees(billTotal)}</span>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {matchedTreatments.map((t) => (
                         <span key={t.id} className="text-[10px] font-bold text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-900/40 px-1.5 py-0.5 rounded">
-                          {t.treatmentName} · ₹{t.charge}
+                          {t.treatmentName} Â· â‚¹{t.charge}
                         </span>
                       ))}
                     </div>
@@ -539,11 +531,11 @@ export function TherapistAssessmentForm() {
                       }}
                       className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-1 transition-colors"
                     >
-                      <RotateCcw size={11} /> Reset to ₹0
+                      <RotateCcw size={11} /> Reset to â‚¹0
                     </button>
                   </div>
                   <div className="flex items-center gap-3 px-4 py-3 rounded-[14px] border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-teal-500">
-                    <span className="text-[16px] font-black text-slate-500 dark:text-slate-400">₹</span>
+                    <span className="text-[16px] font-black text-slate-500 dark:text-slate-400">â‚¹</span>
                     <input 
                       type="text"
                       inputMode="numeric"
@@ -556,7 +548,7 @@ export function TherapistAssessmentForm() {
                   {isManualBillEdit && (
                     <div className="flex items-center justify-between mt-1.5">
                       <p className="text-[11px] text-teal-600 dark:text-teal-400 font-semibold">
-                        {billAmount === 0 ? 'Amount set to ₹0.' : 'Manually edited.'}
+                        {billAmount === 0 ? 'Amount set to â‚¹0.' : 'Manually edited.'}
                       </p>
                       <button
                         type="button"
@@ -576,7 +568,7 @@ export function TherapistAssessmentForm() {
               </SectionCard>
 
               <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-4 rounded-[18px] flex items-center justify-center gap-2 text-white text-[15px] font-black shadow-lg shadow-teal-600/20 disabled:opacity-60 bg-teal-600 hover:bg-teal-700 transition-transform active:scale-[0.98]">
-                {createEvaluation.isPending?<><Loader2 size={20} className="animate-spin" /> Submitting…</>:<><Save size={20} /> Finalize & Start Session</>}
+                {createEvaluation.isPending?<><Loader2 size={20} className="animate-spin" /> Submittingâ€¦</>:<><Save size={20} /> Finalize & Start Session</>}
               </button>
             </div>
           )}
@@ -648,7 +640,7 @@ export function TherapistAssessmentForm() {
         </div>
       </div>
 
-      <div className="md:hidden"><BottomNav role={currentRole} /></div>
     </div>
   );
 }
+
