@@ -380,14 +380,14 @@ export function TreatmentDetailContent({
             Service Type:{' '}
             <span className="text-white font-medium">Clinic</span>
           </p>
-          <div className="grid grid-cols-3 gap-2 mb-3">
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-3 w-full min-w-0">
             {[
               { label: 'Total Visits', value: null },
               { label: 'Visited', value: null },
               { label: 'Remaining Visits', value: null },
             ].map(({ label, value }) => (
-              <div key={label} className="rounded-lg bg-slate-700/50 p-3 text-center border border-slate-600/40">
-                <p className="text-slate-400 text-xs mb-1">{label}</p>
+              <div key={label} className="rounded-lg bg-slate-700/50 p-2 sm:p-3 text-center border border-slate-600/40 min-w-0">
+                <p className="text-slate-400 text-[10px] sm:text-xs mb-1 truncate">{label}</p>
                 <p className="text-white font-bold text-base">
                   {value ?? <span className="text-slate-500">–</span>}
                 </p>

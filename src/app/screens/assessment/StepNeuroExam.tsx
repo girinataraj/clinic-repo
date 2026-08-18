@@ -319,7 +319,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'mmse'}
                 onToggle={() => setOpenSec(openSec === 'mmse' ? '' : 'mmse')}
               >
-                <div className="overflow-x-auto">
+                <div className="w-full min-w-0 overflow-x-auto">
                   <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
@@ -386,7 +386,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'nerves'}
                 onToggle={() => setOpenSec(openSec === 'nerves' ? '' : 'nerves')}
               >
-                <div className="overflow-x-auto">
+                <div className="w-full min-w-0 overflow-x-auto">
                   <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
@@ -449,7 +449,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 onToggle={() => setOpenSec(openSec === 'sensory' ? '' : 'sensory')}
               >
                 <div className="flex flex-col gap-4">
-                  <div className="overflow-x-auto">
+                  <div className="w-full min-w-0 overflow-x-auto">
                     <table
                       className="w-full min-w-[500px] text-[11px] text-slate-800 dark:text-slate-200 text-left border border-slate-200 dark:border-slate-800"
                       style={{ tableLayout: 'auto', borderCollapse: 'collapse', width: '100%' }}
@@ -606,7 +606,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                   {/* Muscle Girth */}
                   <div>
                     <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Muscle Girth</h4>
-                    <div className="overflow-x-auto w-full">
+                    <div className="w-full min-w-0 overflow-x-auto">
   <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                       <thead>
                         <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
@@ -658,7 +658,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                   {/* Voluntary Control */}
                   <div>
                     <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Voluntary Control</h4>
-                    <div className="overflow-x-auto w-full">
+                    <div className="w-full min-w-0 overflow-x-auto">
   <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                       <thead>
                         <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
@@ -712,7 +712,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 onToggle={() => setOpenSec(openSec === 'reflexes' ? '' : 'reflexes')}
               >
                 <div className="flex flex-col gap-4">
-                  <div className="overflow-x-auto">
+                  <div className="w-full min-w-0 overflow-x-auto">
                     <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                       <thead>
                         <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
@@ -797,7 +797,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                     {/* Non Equilibrium Tests */}
                     <div>
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Non Equilibrium Tests</h4>
-                      <div className="overflow-x-auto w-full">
+                      <div className="w-full min-w-0 overflow-x-auto">
   <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                         <thead>
                           <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
@@ -853,7 +853,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                     {/* Equilibrium Tests */}
                     <div>
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Equilibrium tests</h4>
-                      <div className="overflow-x-auto w-full">
+                      <div className="w-full min-w-0 overflow-x-auto">
   <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                         <thead>
                           <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
@@ -917,7 +917,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'balance'}
                 onToggle={() => setOpenSec(openSec === 'balance' ? '' : 'balance')}
               >
-                <div className="overflow-x-auto">
+                <div className="w-full min-w-0 overflow-x-auto">
                   <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
@@ -966,7 +966,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'posture'}
                 onToggle={() => setOpenSec(openSec === 'posture' ? '' : 'posture')}
               >
-                <div className="overflow-x-auto">
+                <div className="w-full min-w-0 overflow-x-auto">
                   <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
@@ -1019,7 +1019,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'gait'}
                 onToggle={() => setOpenSec(openSec === 'gait' ? '' : 'gait')}
               >
-                <div className="overflow-x-auto">
+                <div className="w-full min-w-0 overflow-x-auto">
                   <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <tbody>
                       {[
@@ -1066,7 +1066,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'hand'}
                 onToggle={() => setOpenSec(openSec === 'hand' ? '' : 'hand')}
               >
-                <div className="overflow-x-auto">
+                <div className="w-full min-w-0 overflow-x-auto">
                   <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">

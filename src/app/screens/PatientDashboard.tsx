@@ -144,19 +144,19 @@ export function PatientDashboard() {
           </button>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full min-w-0">
             {quickActions.map((action) => {
               const Icon = action.icon;
               return (
                 <button
                   key={action.label}
                   onClick={() => navigate(action.path)}
-                  className="flex flex-col items-center justify-center p-4 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 active:scale-95 transition-transform"
+                  className="flex flex-col items-center justify-center p-2.5 sm:p-4 rounded-2xl sm:rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 active:scale-95 transition-transform min-w-0"
                 >
-                  <div className={`p-3 rounded-2xl ${action.bg} dark:bg-slate-800 mb-2`}>
+                  <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl ${action.bg} dark:bg-slate-800 mb-1.5 sm:mb-2`}>
                     <Icon className={`w-5 h-5 ${action.color}`} />
                   </div>
-                  <span className="text-[11px] font-extrabold text-slate-700 dark:text-slate-300">{action.label}</span>
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-700 dark:text-slate-300 truncate w-full text-center">{action.label}</span>
                 </button>
               );
             })}

@@ -165,8 +165,7 @@ export function DoctorRevenue() {
         }}
       >
         <div
-          className="max-w-4xl mx-auto flex items-center justify-between"
-          style={{ gap: '12px' }}
+          className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 w-full min-w-0"
         >
           {/* Title */}
           <div>
@@ -179,7 +178,7 @@ export function DoctorRevenue() {
           </div>
 
           {/* Controls Header */}
-          <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end min-w-0">
             {/* Therapist Filter */}
             <select
               value={selectedTherapistId}

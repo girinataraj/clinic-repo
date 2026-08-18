@@ -451,7 +451,7 @@ export function NurseDashboard() {
                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                   Timeframe
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full min-w-0">
                   {[
                     { key: 'all', label: 'All Time' },
                     { key: '1', label: 'Last 24h' },
@@ -463,7 +463,7 @@ export function NurseDashboard() {
                         setTempDaysFilter(opt.key);
                         if (opt.key !== 'all') setTempDateFilter('');
                       }}
-                      className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      className={`py-2 px-1.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold border transition-all text-center truncate ${
                         tempDaysFilter === opt.key
                           ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
                           : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'

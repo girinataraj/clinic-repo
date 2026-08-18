@@ -429,7 +429,7 @@ export function AppointmentBooking() {
                       </div>
                     )}
 
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full min-w-0">
                       {slots.map((slot) => {
                         const pastSlot = isSlotPast(slot.time);
                         const isFull = slot.status === 'red';
@@ -442,7 +442,7 @@ export function AppointmentBooking() {
                             key={slot.time}
                             disabled={disabled}
                             onClick={() => !disabled && setSelectedSlot(slot.time)}
-                            className="py-2.5 rounded-xl transition-all text-[12px] font-bold relative"
+                            className="py-2 sm:py-2.5 rounded-xl transition-all text-[11px] sm:text-[12px] font-bold relative text-center truncate px-1"
                             style={{
                               background: disabled && !isSelected
                                 ? (pastSlot ? '#f1f5f9' : colors.bg)

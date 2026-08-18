@@ -384,7 +384,7 @@ export function DoctorAssessmentForm() {
   return (
     <div className="flex flex-col h-full bg-[#E8E9F1] dark:bg-slate-950 font-sans overflow-hidden">
       <div className="flex-1 overflow-y-auto flex flex-col overflow-x-hidden">
-      {/* Header â€” Design based on user image with Doctor Gradient */}
+      {/* Header - Design based on user image with Doctor Gradient */}
       <div className={`px-6 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-safe-top-5 pb-5 rounded-b-[2rem]' : 'pt-safe-top-3.5 pb-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-xl shadow-indigo-950/20 z-10 relative overflow-hidden`}>
         {/* Abstract background shapes for premium feel */}
         <div className="absolute right-0 top-0 w-80 h-80 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
@@ -400,7 +400,7 @@ export function DoctorAssessmentForm() {
             </button>
             <div>
               <h1 className="text-[17px] font-black text-white tracking-tight">Assessment Form</h1>
-              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} â€” {stepsList[step]?.label}</p>
+              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} - {stepsList[step]?.label}</p>
             </div>
           </div>
           <button 
@@ -439,7 +439,7 @@ export function DoctorAssessmentForm() {
         )}
       </div>
 
-      {/* Phone Lookup â€” Match layout from image */}
+      {/* Phone Lookup - Match layout from image */}
       <div className="px-6 pt-6 pb-2 shrink-0 z-0">
         {!resolvedPatientId && (
           <div className="max-w-3xl mx-auto flex gap-3 items-center bg-white dark:bg-slate-900 p-2.5 rounded-[24px] shadow-lg shadow-indigo-900/5 border border-slate-100 dark:border-slate-800">
@@ -465,7 +465,7 @@ export function DoctorAssessmentForm() {
                   </span>
                 </div>
               )}
-              placeholder="Patient mobile number..."
+              placeholder="Search mobile number..."
               className="flex-1"
             />
             <button 
@@ -484,11 +484,11 @@ export function DoctorAssessmentForm() {
           {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-4 px-4 py-2 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800"><Loader2 size={16} className="animate-spin text-[#262842] dark:text-indigo-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directoryâ€¦</span></div>}
           {lookupDone&&!lookingUp&&foundPatient&&!resolvedPatientId&&(
             <div className="mt-4 p-5 rounded-[22px] bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2">
-              <div><p className="text-[15px] font-black text-[#262842] dark:text-indigo-100">{foundPatient.name}</p><p className="text-[12px] font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5">{foundPatient.phone} Â· {foundPatient.gender} Â· Age {foundPatient.age}</p></div>
+              <div><p className="text-[15px] font-black text-[#262842] dark:text-indigo-100">{foundPatient.name}</p><p className="text-[12px] font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5">{foundPatient.phone} · {foundPatient.gender} · Age {foundPatient.age}</p></div>
               <button onClick={handleUseFoundPatient} className="px-5 py-3 rounded-xl text-[13px] font-black text-white bg-[#262842] hover:bg-[#3B3E66] shadow-sm transition-transform active:scale-95">Use Record</button>
             </div>
           )}
-          {lookupDone&&!lookingUp&&foundPatient&&resolvedPatientId&&<div className="mt-4 px-5 py-3.5 flex items-center gap-3 bg-white dark:bg-slate-900 rounded-[22px] border border-slate-100 dark:border-slate-800 shadow-sm animate-in fade-in"><div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center"><Check size={16} className="text-indigo-600 dark:text-indigo-400" /></div><span className="text-[14px] font-extrabold text-[#262842] dark:text-indigo-400">{foundPatient.name} Â· {foundPatient.phone}</span></div>}
+          {lookupDone&&!lookingUp&&foundPatient&&resolvedPatientId&&<div className="mt-4 px-5 py-3.5 flex items-center gap-3 bg-white dark:bg-slate-900 rounded-[22px] border border-slate-100 dark:border-slate-800 shadow-sm animate-in fade-in"><div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center"><Check size={16} className="text-indigo-600 dark:text-indigo-400" /></div><span className="text-[14px] font-extrabold text-[#262842] dark:text-indigo-400">{foundPatient.name} · {foundPatient.phone}</span></div>}
           {lookupDone&&!lookingUp&&foundPatient===null&&!showNewPatientForm&&(
             <div className="mt-4 p-5 rounded-[22px] bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/50 flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><AlertTriangle size={20} className="text-amber-600 dark:text-amber-400" /></div><span className="text-[14px] font-extrabold text-amber-800 dark:text-amber-400">Unregistered patient</span></div>
@@ -497,7 +497,7 @@ export function DoctorAssessmentForm() {
           )}
           {showNewPatientForm&&(
             <div className="mt-4 p-6 rounded-[28px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex flex-col gap-5 shadow-xl animate-in zoom-in-95 duration-200">
-              <p className="text-[16px] font-black text-slate-800 dark:text-white">New Patient Registration â€” <span className="text-indigo-600 dark:text-indigo-400">{phoneInput}</span></p>
+              <p className="text-[16px] font-black text-slate-800 dark:text-white">New Patient Registration - <span className="text-indigo-600 dark:text-indigo-400">{phoneInput}</span></p>
               <div className="grid grid-cols-2 gap-4">
                 <input placeholder="Full Name *" value={newPatient.name} onChange={e=>setNewPatient(p=>({...p,name:e.target.value}))} className="col-span-2 px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
                 <input placeholder="Age *" type="number" value={newPatient.age} onChange={e=>setNewPatient(p=>({...p,age:e.target.value}))} className="px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
@@ -540,11 +540,11 @@ export function DoctorAssessmentForm() {
                   <div className="grid grid-cols-2 gap-3">{['Clinic','Home Visit','IP','Day Care'].map(v=><button key={v} onClick={()=>setVisitType(v as any)} className={`py-4 rounded-[18px] text-[14px] font-black border-2 transition-all active:scale-95 ${visitType===v?'border-[#262842] bg-indigo-50 dark:bg-indigo-900/20 text-[#262842] dark:text-indigo-300':'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>{v}</button>)}</div>
                 </FormField>
                 <div className="flex flex-col gap-0 mt-3 bg-slate-50 dark:bg-slate-800/50 rounded-[20px] p-2 border border-slate-100 dark:border-slate-800">{[
-                  {l:'Patient',v:patientInfo.name||'â€”'},{l:'Age',v:patientInfo.age||'â€”'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'â€”'},
-                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'â€”'},
-                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : 'â€”'; })()},
-                  {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : 'â€”')},
-                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : 'â€”'},
+                  {l:'Patient',v:patientInfo.name||'-'},{l:'Age',v:patientInfo.age||'-'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'-'},
+                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'-'},
+                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : '-'; })()},
+                  {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : '-')},
+                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : '-'},
                 ].map(r=><div key={r.l} className="flex items-center justify-between py-4 px-4 border-b border-slate-100 dark:border-slate-800/50 last:border-0"><span className="text-[14px] text-slate-500 dark:text-slate-400 font-bold">{r.l}</span><span className="text-[14px] text-slate-900 dark:text-white font-extrabold">{r.v}</span></div>)}</div>
               </SectionCard>
               <SectionCard icon={<CreditCard size={20} className="text-amber-600 dark:text-amber-400" />} title="Payment Details" subtitle="Required to submit" accent="amber">
@@ -559,7 +559,7 @@ export function DoctorAssessmentForm() {
                     <div className="flex flex-wrap gap-1">
                       {matchedTreatments.map((t) => (
                         <span key={t.id} className="text-[10px] font-bold text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-900/40 px-1.5 py-0.5 rounded">
-                          {t.treatmentName} Â· â‚¹{t.charge}
+                          {t.treatmentName} · â‚¹{t.charge}
                         </span>
                       ))}
                     </div>

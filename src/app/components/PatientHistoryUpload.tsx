@@ -118,7 +118,7 @@ export function PatientHistoryUpload({ patientId, patientName, onClose }: Patien
           <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-2">
             {selectedFiles.length} file{selectedFiles.length !== 1 ? 's' : ''} selected
           </p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full min-w-0">
             {previews.map((url, i) => (
               <div key={i} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
                 <img src={url} alt={`Preview ${i + 1}`} className="w-full h-24 object-cover" />
@@ -185,7 +185,7 @@ export function PatientHistoryUpload({ patientId, patientName, onClose }: Patien
           </div>
         )}
         {!historyLoading && existingHistory.length > 0 && (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full min-w-0">
             {existingHistory.map((item) => (
               <div
                 key={item.id}
