@@ -206,20 +206,19 @@ export function PatientHistorySearch() {
     <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950 overflow-y-auto">
       {/* Header */}
       <div className="shrink-0 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-6 pt-safe-top-4 pb-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          {selectedPatientId && (
-            <button
-              onClick={handleBackToSearch}
-              className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-            >
-              <ArrowLeft size={16} className="text-slate-600 dark:text-slate-350" />
-            </button>
-          )}
-          <div>
-            <h1 className="text-lg font-black text-slate-850 dark:text-white leading-none mb-1">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            onClick={selectedPatientId ? handleBackToSearch : () => navigate(-1)}
+            aria-label="Back"
+            className="w-12 h-12 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all"
+          >
+            <ArrowLeft size={20} className="text-slate-600 dark:text-slate-350" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-lg font-black text-slate-850 dark:text-white leading-none mb-1 truncate">
               Patient History Search
             </h1>
-            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">
               {selectedPatientId ? 'Intake Records & Previous Examinations' : 'Lookup patient file by Display ID, Phone, or Name'}
             </p>
           </div>

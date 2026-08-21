@@ -212,6 +212,54 @@ export function DoctorAssessmentForm() {
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to create patient.'); }
   };
 
+  // Resolves the patient for Step 1 "Next": if a patient was already found/selected via
+  // search, reuse it. Otherwise treat the Patient Information fields the clinician typed
+  // directly into the form as a new-patient draft and create that patient now, so "Next"
+  // never blocks on the separate phone-search widget.
+  const resolvePatientForStep = async (): Promise<string | null> => {
+    if (resolvedPatientId) return resolvedPatientId;
+    if (!patientInfo.name || patientInfo.name.trim().length < 2) {
+      setSubmitError('Please enter the patient\'s full name (at least 2 characters).');
+      return null;
+    }
+    if (!patientInfo.age || isNaN(Number(patientInfo.age)) || Number(patientInfo.age) < 0 || Number(patientInfo.age) > 120) {
+      setSubmitError('Please enter a valid age (0-120).');
+      return null;
+    }
+    const cleanPhone = (patientInfo.phone || phoneInput || '').replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      setSubmitError('Please enter a valid 10-digit phone number.');
+      return null;
+    }
+    if (!patientInfo.condition || patientInfo.condition.length === 0) {
+      setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
+      return null;
+    }
+    try {
+      const created = await createPatientMutation.mutateAsync({
+        name: patientInfo.name.trim(),
+        age: Number(patientInfo.age),
+        gender: patientInfo.gender || 'Male',
+        phone: cleanPhone,
+        city: patientInfo.address || undefined,
+        condition: patientInfo.condition.join(', '),
+        referredBy: patientInfo.referredBy || undefined,
+        therapistId: selectedTherapistId || undefined,
+      });
+      setResolvedPatientId(created.id);
+      setPatientInfo(p => ({ ...p, phone: created.phone ?? cleanPhone }));
+      return created.id;
+    } catch (err: any) {
+      const code = err?.response?.data?.code;
+      setSubmitError(
+        code === 'DUPLICATE_RESOURCE'
+          ? 'A patient with this phone number is already registered. Search for them above instead of entering new details.'
+          : (err?.response?.data?.message ?? 'Failed to create patient.')
+      );
+      return null;
+    }
+  };
+
   const handleSave = async () => {
     setSubmitError(null);
     if (!resolvedPatientId) { setSubmitError('Please resolve or select a patient.'); return; }
@@ -669,22 +717,22 @@ export function DoctorAssessmentForm() {
           <div className="flex gap-2 items-center">
             {step < totalSteps - 1 && (
               <button
-                onClick={() => { 
-                  if (step === 0 && !resolvedPatientId) {
-                    setSubmitError('Please resolve a patient before continuing.');
-                    return;
+                onClick={async () => {
+                  setSubmitError(null);
+                  if (step === 0) {
+                    const pid = await resolvePatientForStep();
+                    if (!pid) return;
+                    if (!patientInfo.condition || patientInfo.condition.length === 0) {
+                      setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
+                      return;
+                    }
                   }
-                  if (step === 0 && (!patientInfo.condition || patientInfo.condition.length === 0)) {
-                    setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
-                    return;
-                  }
-                  setSubmitError(null); 
-                  setStep(step + 1); 
+                  setStep(step + 1);
                 }}
-                className="flex items-center justify-center gap-1 px-6 py-3 rounded-xl text-white text-xs font-black shadow-md bg-[#262842] hover:bg-[#343759] transition-all active:scale-[0.98]"
+                disabled={createPatientMutation.isPending}
+                className="flex items-center justify-center gap-1 px-6 py-3 rounded-xl text-white text-xs font-black shadow-md bg-[#262842] hover:bg-[#343759] transition-all active:scale-[0.98] disabled:opacity-60"
               >
-                Next
-                <ChevronRight size={16} strokeWidth={3} />
+                {createPatientMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <>Next<ChevronRight size={16} strokeWidth={3} /></>}
               </button>
             )}
           </div>

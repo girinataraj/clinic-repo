@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  // ── Restore session on mount via refresh-token cookie or localStorage ──────
+  // ── Restore session on mount via refresh-token cookie or Preferences ───────
   useEffect(() => {
     const restoreSession = async () => {
       console.log('[Auth] AUTH_INIT_START');
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // No refresh token available at all — skip the API call entirely.
         // The cookie (withCredentials) may still carry one, so only bail
-        // when localStorage is also empty.
+        // when persistent storage is also empty.
         if (!refreshToken) {
           console.debug('[Auth] No refresh token in storage — skipping restore');
           setUser(null);

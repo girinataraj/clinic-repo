@@ -18,6 +18,8 @@ interface Symptoms {
   [key: string]: SymptomItem;
 }
 
+type NumericField = number | '';
+
 interface ClinicalExamination {
   specialTests?: string[];
   findings?: string;
@@ -27,10 +29,12 @@ interface ClinicalExamination {
     rightLower?: number;
     leftLower?: number;
   };
+  // Controlled numeric inputs hold '' while empty, so the stored ROM values are
+  // number | '' — not just number.
   rom?: {
-    cervical?: { flexion?: number; extension?: number };
-    lumbar?: { flexion?: number; extension?: number };
-    shoulder?: { abduction?: number; rotation?: number };
+    cervical?: { flexion?: NumericField; extension?: NumericField };
+    lumbar?: { flexion?: NumericField; extension?: NumericField };
+    shoulder?: { abduction?: NumericField; rotation?: NumericField };
   };
 }
 

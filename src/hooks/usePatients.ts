@@ -11,6 +11,8 @@ export interface PatientsFilter {
   therapistId?: string;
   date?: string;
   days?: string;
+  /** Accepted by the backend patient list schema (patientSchemas.js). */
+  dateRange?: string;
   page?: number;
   limit?: number;
   sort?: string;

@@ -26,6 +26,10 @@ const SYMPTOM_LABELS: Record<string, string> = {
 
 const SYMPTOM_KEYS = Object.keys(SYMPTOM_LABELS);
 
+// ROM/measurement inputs are blank until filled, so they hold '' rather than a
+// number. The explicit return type keeps that union from widening to `string`.
+const toRomValue = (raw: string): number | '' => (raw ? parseInt(raw, 10) : '');
+
 interface FormData {
   basicInfo: {
     fullName: string;
@@ -713,7 +717,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.basicInfo.age}
-                      onChange={(e) => setFormData(prev => ({ ...prev, basicInfo: { ...prev.basicInfo, age: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, basicInfo: { ...prev.basicInfo, age: toRomValue(e.target.value) } }))}
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     />
                     {errors.age && <span className="text-[10px] text-rose-600 font-bold">{errors.age}</span>}
@@ -794,7 +798,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.vitalSigns.pulseRate}
-                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, pulseRate: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, pulseRate: toRomValue(e.target.value) } }))}
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     />
                   </div>
@@ -803,7 +807,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.vitalSigns.spo2}
-                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, spo2: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, spo2: toRomValue(e.target.value) } }))}
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     />
                   </div>
@@ -822,7 +826,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.vitalSigns.ejectionFraction}
-                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, ejectionFraction: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, ejectionFraction: toRomValue(e.target.value) } }))}
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     />
                   </div>
@@ -1073,7 +1077,7 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.cervical.flexion}
                             onChange={(e) => setFormData(prev => {
-                              const cervical = { ...prev.clinicalExamination.rom.cervical, flexion: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const cervical = { ...prev.clinicalExamination.rom.cervical, flexion: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, cervical };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
@@ -1086,7 +1090,7 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.cervical.extension}
                             onChange={(e) => setFormData(prev => {
-                              const cervical = { ...prev.clinicalExamination.rom.cervical, extension: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const cervical = { ...prev.clinicalExamination.rom.cervical, extension: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, cervical };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
@@ -1104,7 +1108,7 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.lumbar.flexion}
                             onChange={(e) => setFormData(prev => {
-                              const lumbar = { ...prev.clinicalExamination.rom.lumbar, flexion: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const lumbar = { ...prev.clinicalExamination.rom.lumbar, flexion: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, lumbar };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
@@ -1117,7 +1121,7 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.lumbar.extension}
                             onChange={(e) => setFormData(prev => {
-                              const lumbar = { ...prev.clinicalExamination.rom.lumbar, extension: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const lumbar = { ...prev.clinicalExamination.rom.lumbar, extension: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, lumbar };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
@@ -1135,7 +1139,7 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.shoulder.abduction}
                             onChange={(e) => setFormData(prev => {
-                              const shoulder = { ...prev.clinicalExamination.rom.shoulder, abduction: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const shoulder = { ...prev.clinicalExamination.rom.shoulder, abduction: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, shoulder };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
@@ -1148,7 +1152,7 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.shoulder.rotation}
                             onChange={(e) => setFormData(prev => {
-                              const shoulder = { ...prev.clinicalExamination.rom.shoulder, rotation: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const shoulder = { ...prev.clinicalExamination.rom.shoulder, rotation: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, shoulder };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
@@ -1345,7 +1349,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.payment.sessionFee}
-                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, sessionFee: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, sessionFee: toRomValue(e.target.value) } }))}
                       className="p-3 border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950 rounded-xl focus:outline-none text-slate-900 dark:text-white font-extrabold"
                     />
                   </div>
@@ -1354,7 +1358,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.payment.totalSessions}
-                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, totalSessions: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, totalSessions: toRomValue(e.target.value) } }))}
                       className="p-3 border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950 rounded-xl focus:outline-none text-slate-900 dark:text-white font-extrabold"
                     />
                   </div>
@@ -1363,7 +1367,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.payment.paidSessions}
-                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, paidSessions: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, paidSessions: toRomValue(e.target.value) } }))}
                       className="p-3 border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950 rounded-xl focus:outline-none text-slate-900 dark:text-white font-extrabold"
                     />
                   </div>
