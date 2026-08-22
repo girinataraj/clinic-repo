@@ -120,7 +120,7 @@ export function PatientForm() {
     iconText: 'text-[#262842] dark:text-indigo-400',
     focusBorder: 'focus-within:border-[#262842] focus-within:ring-1 focus-within:ring-[#262842]',
     focusInput: 'focus:border-[#262842] focus:ring-1 focus:ring-[#262842]',
-    genderActive: 'border-[#262842] dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-[#262842] dark:text-indigo-350',
+    genderActive: 'border-[#262842] dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-[#262842] dark:text-indigo-300',
     submitBg: 'linear-gradient(135deg, #262842, #3B3E66)',
     submitShadow: 'shadow-indigo-950/30',
     loaderText: 'text-[#262842]'
@@ -156,7 +156,7 @@ export function PatientForm() {
       <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
         {/* Header */}
         <div
-          className="px-6 pt-8 pb-10 relative overflow-hidden"
+          className="px-6 pt-safe-top-8 pb-10 relative overflow-hidden"
           style={{ background: theme.gradientHeader }}
         >
           <div className="max-w-2xl mx-auto relative z-10">

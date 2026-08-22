@@ -252,7 +252,7 @@ export function NurseDashboard() {
                   setTempDaysFilter(daysFilter);
                   setIsFilterModalOpen(true);
                 }}
-                className={`flex items-center justify-center p-3 border rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-750 transition-all ${
+                className={`flex items-center justify-center p-3 border rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all ${
                   dateFilter !== '' || daysFilter !== 'all'
                     ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-500 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold'
                     : 'bg-slate-50/80 dark:bg-slate-900 border-slate-200/80 dark:border-slate-700 text-slate-500 dark:text-slate-400'

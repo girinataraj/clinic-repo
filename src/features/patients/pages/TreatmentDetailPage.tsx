@@ -31,7 +31,7 @@ export function TreatmentDetailPage() {
     >
       {/* ── Sticky top bar ── */}
       <div
-        className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-slate-700"
+        className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 pt-safe-top-3 border-b border-slate-700"
         style={{ background: '#0f172a' }}
       >
         <button

@@ -175,11 +175,11 @@ export function MusclePower({ data, onChange, isDoctorRole }: MusclePowerProps) 
                       </td>
                     )}
                     {row.jointRowSpan > 0 && (
-                      <td rowSpan={row.jointRowSpan} className="border-r border-slate-200 dark:border-slate-800 px-3 py-2 text-center text-[11px] font-black text-slate-700 dark:text-slate-350 uppercase tracking-wider bg-slate-50/30 dark:bg-slate-900/30 w-[110px] align-middle">
+                      <td rowSpan={row.jointRowSpan} className="border-r border-slate-200 dark:border-slate-800 px-3 py-2 text-center text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider bg-slate-50/30 dark:bg-slate-900/30 w-[110px] align-middle">
                         {row.joint}
                       </td>
                     )}
-                    <td className="border-r border-slate-200 dark:border-slate-800 px-3 py-2 text-left text-[11px] font-bold text-slate-650 dark:text-slate-400 uppercase tracking-wider pl-4">
+                    <td className="border-r border-slate-200 dark:border-slate-800 px-3 py-2 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider pl-4">
                       {row.movement}
                     </td>
                     <td className="border-r border-slate-200 dark:border-slate-800 p-1 w-[70px]">

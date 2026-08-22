@@ -87,7 +87,7 @@ export function TherapistDetailPage() {
         className="px-5 pb-8 shrink-0 relative overflow-hidden"
         style={{
           background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
-          paddingTop: 'calc(1.25rem + env(safe-area-inset-top, 0px))',
+          paddingTop: 'calc(1.25rem + var(--sa-top))',
           boxShadow: '0 4px 24px rgba(38, 40, 66, 0.15)',
         }}
       >

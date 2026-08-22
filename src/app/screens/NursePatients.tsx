@@ -132,7 +132,7 @@ export function NursePatients() {
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden">
 
         <div
-          className="px-6 pt-8 pb-12 relative z-20 shrink-0"
+          className="px-6 pt-safe-top-8 pb-12 relative z-20 shrink-0"
           style={{ background: 'linear-gradient(135deg, #0d2b27, #0f766e)' }}
         >
           <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl pointer-events-none" />
@@ -200,10 +200,10 @@ export function NursePatients() {
                       setTempDateRange(appliedDateRange);
                       setIsFilterModalOpen(true);
                     }}
-                    className={`flex items-center justify-center p-2.5 border rounded-xl hover:bg-slate-100 dark:hover:bg-slate-750 transition-all ${
+                    className={`flex items-center justify-center p-2.5 border rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all ${
                       appliedTherapistId || appliedDateRange !== '7'
                         ? 'bg-teal-50 dark:bg-teal-900/30 border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-400 font-bold'
-                        : 'bg-slate-50 dark:bg-slate-900 border-slate-250 dark:border-slate-700 text-slate-500 dark:text-slate-400'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
                     }`}
                     title="Filter Records"
                     aria-label="Filter Records"
@@ -464,12 +464,12 @@ export function NursePatients() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 animate-in fade-in duration-200"
         >
           <div
-            className="w-full max-w-sm rounded-[28px] p-6 bg-white dark:bg-slate-900 shadow-2xl border border-slate-150 dark:border-slate-800 animate-in zoom-in-95 duration-200 flex flex-col gap-5"
+            className="w-full max-w-sm rounded-[28px] p-6 bg-white dark:bg-slate-900 shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200 flex flex-col gap-5"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="text-[15px] font-extrabold text-slate-850 dark:text-white">Filter Records</h3>
+              <h3 className="text-[15px] font-extrabold text-slate-800 dark:text-white">Filter Records</h3>
               <button
                 onClick={() => setIsFilterModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -491,7 +491,7 @@ export function NursePatients() {
                 <select
                   value={tempTherapistId || ''}
                   onChange={(e) => setTempTherapistId(e.target.value || undefined)}
-                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-200 outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-teal-500"
                 >
                   <option value="">All Therapists</option>
                   {therapists.map((t) => (
@@ -519,8 +519,8 @@ export function NursePatients() {
                         key={option.value}
                         className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
                           isSelected
-                            ? 'bg-teal-50/50 dark:bg-teal-950/20 border-teal-500 text-teal-850 dark:text-teal-400'
-                            : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-850/50'
+                            ? 'bg-teal-50/50 dark:bg-teal-950/20 border-teal-500 text-teal-800 dark:text-teal-400'
+                            : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
                         }`}
                       >
                         <input
@@ -533,7 +533,7 @@ export function NursePatients() {
                         />
                         <div
                           className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                            isSelected ? 'border-teal-500 bg-teal-500/10' : 'border-slate-300 dark:border-slate-650'
+                            isSelected ? 'border-teal-500 bg-teal-500/10' : 'border-slate-300 dark:border-slate-600'
                           }`}
                         >
                           {isSelected && (
@@ -571,7 +571,7 @@ export function NursePatients() {
                   setAppliedDateRange(tempDateRange);
                   setIsFilterModalOpen(false);
                 }}
-                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-teal-700 hover:bg-teal-650 active:scale-95 transition-all shadow-sm"
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-teal-700 hover:bg-teal-600 active:scale-95 transition-all shadow-sm"
               >
                 Apply Filter
               </button>

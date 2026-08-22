@@ -55,7 +55,7 @@ export function VitalSignsTable({ vitals }: { vitals: VitalSigns | undefined }) 
   const parseBP = (bpStr?: string) => {
     if (!bpStr) return { status: 'Normal', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
     const parts = bpStr.split('/');
-    if (parts.length !== 2) return { status: 'Unknown', color: 'bg-slate-100 text-slate-650' };
+    if (parts.length !== 2) return { status: 'Unknown', color: 'bg-slate-100 text-slate-600' };
     const sys = parseInt(parts[0], 10);
     const dia = parseInt(parts[1], 10);
     if (sys >= 140 || dia >= 90) {
@@ -68,27 +68,27 @@ export function VitalSignsTable({ vitals }: { vitals: VitalSigns | undefined }) 
   };
 
   const getPulseStatus = (pr?: number | null) => {
-    if (pr === null || pr === undefined) return { status: 'Unknown', color: 'bg-slate-100 text-slate-650' };
-    if (pr < 60) return { status: 'Bradycardia (Low)', color: 'bg-amber-100 text-amber-850 border-amber-200' };
+    if (pr === null || pr === undefined) return { status: 'Unknown', color: 'bg-slate-100 text-slate-600' };
+    if (pr < 60) return { status: 'Bradycardia (Low)', color: 'bg-amber-100 text-amber-800 border-amber-200' };
     if (pr > 100) return { status: 'Tachycardia (High)', color: 'bg-rose-100 text-rose-800 border-rose-200' };
     return { status: 'Normal', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
   };
 
   const getSpO2Status = (spo2?: number | null) => {
-    if (spo2 === null || spo2 === undefined) return { status: 'Unknown', color: 'bg-slate-100 text-slate-650' };
-    if (spo2 < 95) return { status: 'Hypoxia (Low)', color: 'bg-rose-100 text-rose-850 border-rose-250 animate-pulse' };
+    if (spo2 === null || spo2 === undefined) return { status: 'Unknown', color: 'bg-slate-100 text-slate-600' };
+    if (spo2 < 95) return { status: 'Hypoxia (Low)', color: 'bg-rose-100 text-rose-800 border-rose-200 animate-pulse' };
     return { status: 'Normal', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
   };
 
   const getTempStatus = (temp?: number | null) => {
-    if (temp === null || temp === undefined) return { status: 'Unknown', color: 'bg-slate-100 text-slate-650' };
+    if (temp === null || temp === undefined) return { status: 'Unknown', color: 'bg-slate-100 text-slate-600' };
     if (temp > 99.5) return { status: 'Fever (High)', color: 'bg-rose-100 text-rose-800 border-rose-200' };
     if (temp < 96.5) return { status: 'Hypothermia (Low)', color: 'bg-amber-100 text-amber-800 border-amber-200' };
     return { status: 'Normal', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
   };
 
   const getEFStatus = (ef?: number | null) => {
-    if (ef === null || ef === undefined) return { status: 'Unknown', color: 'bg-slate-100 text-slate-650' };
+    if (ef === null || ef === undefined) return { status: 'Unknown', color: 'bg-slate-100 text-slate-600' };
     if (ef < 50) return { status: 'Low (Reduced)', color: 'bg-rose-100 text-rose-800 border-rose-200' };
     return { status: 'Normal', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
   };
@@ -105,7 +105,7 @@ export function VitalSignsTable({ vitals }: { vitals: VitalSigns | undefined }) 
     <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
       <table className="w-full text-left border-collapse text-xs">
         <thead>
-          <tr className="bg-slate-55 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+          <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
             <th className="px-4 py-3">Parameter</th>
             <th className="px-4 py-3">Value</th>
             <th className="px-4 py-3">Unit</th>
@@ -113,7 +113,7 @@ export function VitalSignsTable({ vitals }: { vitals: VitalSigns | undefined }) 
             <th className="px-4 py-3">Status</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
           {rows.map((row) => (
             <tr key={row.name} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
               <td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">{row.name}</td>
@@ -151,13 +151,13 @@ export function SymptomChecklist({ symptoms }: { symptoms: Symptoms | undefined 
     <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
       <table className="w-full text-left border-collapse text-xs">
         <thead>
-          <tr className="bg-slate-55 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+          <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
             <th className="px-4 py-3">Symptom Description</th>
             <th className="px-4 py-3 text-center">Present</th>
             <th className="px-4 py-3">Clinical Notes / Context</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
           {list.map((row) => (
             <tr key={row.key} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
               <td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">{row.label}</td>
@@ -205,20 +205,20 @@ export function ClinicalExaminationTable({ exam }: { exam: ClinicalExamination |
     <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
       <table className="w-full text-left border-collapse text-xs">
         <thead>
-          <tr className="bg-slate-55 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+          <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
             <th className="px-4 py-3">Examination Segment</th>
             <th className="px-4 py-3">Result / Grade</th>
             <th className="px-4 py-3">Normal Values</th>
             <th className="px-4 py-3">Clinical Assessment</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
           {rows.map((row) => (
             <tr key={row.test} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
               <td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">{row.test}</td>
               <td className="px-4 py-3 font-extrabold text-slate-900 dark:text-white">{row.val}</td>
               <td className="px-4 py-3 text-slate-500 font-medium">{row.range}</td>
-              <td className="px-4 py-3 text-slate-655 dark:text-slate-400 font-semibold">{row.interpret}</td>
+              <td className="px-4 py-3 text-slate-600 dark:text-slate-400 font-semibold">{row.interpret}</td>
             </tr>
           ))}
         </tbody>

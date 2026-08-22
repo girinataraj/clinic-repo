@@ -247,7 +247,7 @@ export function LoginScreen() {
           className="lg:hidden w-full flex flex-col items-center pb-10 px-6 relative overflow-hidden rounded-3xl mb-4"
           style={{
             background: 'linear-gradient(160deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%)',
-            paddingTop: '40px',
+            paddingTop: 'calc(40px + var(--sa-top))',
           }}
         >
           <div

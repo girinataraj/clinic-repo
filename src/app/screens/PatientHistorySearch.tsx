@@ -212,10 +212,10 @@ export function PatientHistorySearch() {
             aria-label="Back"
             className="w-12 h-12 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all"
           >
-            <ArrowLeft size={20} className="text-slate-600 dark:text-slate-350" />
+            <ArrowLeft size={20} className="text-slate-600 dark:text-slate-300" />
           </button>
           <div className="min-w-0">
-            <h1 className="text-lg font-black text-slate-850 dark:text-white leading-none mb-1 truncate">
+            <h1 className="text-lg font-black text-slate-800 dark:text-white leading-none mb-1 truncate">
               Patient History Search
             </h1>
             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">
@@ -230,7 +230,7 @@ export function PatientHistorySearch() {
         {!selectedPatientId ? (
           /* SEARCH PANEL */
           <div className="flex flex-col gap-6">
-            <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-150 dark:border-slate-800 p-6 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
               <div className="flex items-center gap-3 px-4 py-3.5 rounded-[18px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-inner">
                 <Search size={18} className="text-slate-400 shrink-0" />
                 <input
@@ -250,13 +250,13 @@ export function PatientHistorySearch() {
                 <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Searching records...</p>
               </div>
             ) : searchQuery.trim() === '' ? (
-              <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-150 dark:border-slate-800 p-6 text-slate-400 dark:text-slate-500">
+              <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 text-slate-400 dark:text-slate-500">
                 <Search size={36} className="mx-auto mb-3 opacity-30" />
                 <p className="text-sm font-bold">Type to start searching patient database</p>
                 <p className="text-xs mt-1">Search results will match display ID, name, phone, or condition.</p>
               </div>
             ) : patientsList.length === 0 ? (
-              <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-150 dark:border-slate-800 p-6 text-slate-400 dark:text-slate-500">
+              <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 text-slate-400 dark:text-slate-500">
                 <Info size={36} className="mx-auto mb-3 opacity-30" />
                 <p className="text-sm font-bold">No patients found</p>
                 <p className="text-xs mt-1">Double check spelling or format of Display ID / Phone.</p>
@@ -267,11 +267,11 @@ export function PatientHistorySearch() {
                   <button
                     key={p.id}
                     onClick={() => handleSelectPatient(p.id)}
-                    className="flex flex-col text-left p-5 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-150 dark:border-slate-800 hover:border-primary dark:hover:border-primary hover:shadow-md transition-all active:scale-[0.99] group"
+                    className="flex flex-col text-left p-5 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 hover:border-primary dark:hover:border-primary hover:shadow-md transition-all active:scale-[0.99] group"
                   >
                     <div className="flex items-start justify-between w-full mb-3">
                       <div>
-                        <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-350">
+                        <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                           {p.displayId}
                         </span>
                         <h3 className="text-base font-extrabold text-slate-800 dark:text-white mt-2 group-hover:text-primary transition-colors">
@@ -280,7 +280,7 @@ export function PatientHistorySearch() {
                       </div>
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold capitalize ${
                         p.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
-                        p.status === 'in-session' ? 'bg-blue-105 text-blue-800' : 'bg-amber-105 text-amber-800'
+                        p.status === 'in-session' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
                       }`}>
                         {p.status}
                       </span>
@@ -310,22 +310,22 @@ export function PatientHistorySearch() {
           <div className="flex flex-col gap-6">
             {/* Patient Header Card */}
             {loadingPatient ? (
-              <div className="animate-pulse bg-white dark:bg-slate-900 h-32 rounded-[24px] border border-slate-200 dark:border-slate-850"></div>
+              <div className="animate-pulse bg-white dark:bg-slate-900 h-32 rounded-[24px] border border-slate-200 dark:border-slate-800"></div>
             ) : !patient ? (
               <div className="p-6 bg-rose-50 dark:bg-rose-950/20 text-rose-600 rounded-[24px] flex items-center gap-3">
                 <AlertCircle size={20} />
                 <p className="font-bold">Failed to load patient record details.</p>
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-150 dark:border-slate-800 p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                   <div className={`w-14 h-14 rounded-[18px] ${accentBg} flex items-center justify-center`}>
                     <User size={24} className={accentColor} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h2 className="text-xl font-black text-slate-850 dark:text-white">{patient.name}</h2>
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-355">
+                      <h2 className="text-xl font-black text-slate-800 dark:text-white">{patient.name}</h2>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                         {patient.displayId}
                       </span>
                     </div>
@@ -335,7 +335,7 @@ export function PatientHistorySearch() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-850 pt-4 md:pt-0 md:pl-6 text-xs">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-4 md:pt-0 md:pl-6 text-xs">
                   <div>
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Phone</span>
                     <span className="text-slate-800 dark:text-slate-200 font-extrabold">{patient.phone}</span>
@@ -357,7 +357,7 @@ export function PatientHistorySearch() {
             {/* Longitudinal Timeline Section */}
             <div>
               {/* Date Filters & Search Input */}
-              <div className="bg-white dark:bg-slate-900 p-4 rounded-[22px] border border-slate-150 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between mb-6 animate-in fade-in">
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-[22px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between mb-6 animate-in fade-in">
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                   <div className="flex items-center gap-2 text-xs">
                     <span className="font-bold text-slate-500 uppercase">From</span>
@@ -397,7 +397,7 @@ export function PatientHistorySearch() {
                     className="bg-transparent outline-none text-xs text-slate-900 dark:text-white placeholder:text-slate-400 w-full font-medium"
                   />
                   {timelineSearch && (
-                    <button onClick={() => setTimelineSearch('')} className="text-[10px] font-black text-slate-450 uppercase">Clear</button>
+                    <button onClick={() => setTimelineSearch('')} className="text-[10px] font-black text-slate-400 uppercase">Clear</button>
                   )}
                 </div>
               </div>
@@ -409,7 +409,7 @@ export function PatientHistorySearch() {
               {timelineLoading ? (
                 <div className="flex flex-col items-center py-12">
                   <Loader2 size={32} className="animate-spin text-primary mb-3" />
-                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-405">Compiling longitudinal timeline logs...</p>
+                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Compiling longitudinal timeline logs...</p>
                 </div>
               ) : timelineError ? (
                 <div className="p-6 text-center bg-rose-50 dark:bg-rose-950/20 rounded-[24px] border border-rose-200 dark:border-rose-900/30 text-rose-700 dark:text-rose-400 font-bold flex items-center justify-center gap-3">
@@ -417,13 +417,13 @@ export function PatientHistorySearch() {
                   {timelineError}
                 </div>
               ) : filteredTimeline.length === 0 ? (
-                <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-150 dark:border-slate-800 p-6 text-slate-400 dark:text-slate-500 animate-in fade-in">
+                <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 text-slate-400 dark:text-slate-500 animate-in fade-in">
                   <FileText size={36} className="mx-auto mb-3 opacity-30" />
                   <p className="text-sm font-bold">No timeline logs found matching filters</p>
                   <p className="text-xs mt-1">Try resetting the date range or search query string filters.</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-4 relative pl-4 border-l-2 border-slate-200 dark:border-slate-850 ml-3 py-1">
+                <div className="flex flex-col gap-4 relative pl-4 border-l-2 border-slate-200 dark:border-slate-800 ml-3 py-1">
                   {filteredTimeline.map((item) => {
                     const dateFormatted = new Date(item.date).toLocaleDateString('en-IN', {
                       day: 'numeric',
@@ -442,7 +442,7 @@ export function PatientHistorySearch() {
                         <div
                           key={item.id}
                           className={`bg-white dark:bg-slate-900 rounded-[20px] border transition-all overflow-hidden shadow-sm relative ${
-                            isExpanded ? 'border-primary ring-1 ring-primary/20' : 'border-slate-150 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700'
+                            isExpanded ? 'border-primary ring-1 ring-primary/20' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                           }`}
                         >
                           {/* Timeline dot */}
@@ -454,7 +454,7 @@ export function PatientHistorySearch() {
                               className="flex items-start gap-3 flex-1 text-left"
                             >
                               <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 ${
-                                isExpanded ? badgeColor : 'bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-400'
+                                isExpanded ? badgeColor : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                               }`}>
                                 v{item.version || 1}
                               </div>
@@ -464,7 +464,7 @@ export function PatientHistorySearch() {
                                     Assessment {item.displayId}
                                   </h4>
                                   <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wide ${
-                                    item.status === 'submitted' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600 dark:text-slate-350 dark:bg-slate-800'
+                                    item.status === 'submitted' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600 dark:text-slate-300 dark:bg-slate-800'
                                   }`}>
                                     {item.status}
                                   </span>
@@ -488,7 +488,7 @@ export function PatientHistorySearch() {
                               )}
                               <button
                                 onClick={() => handleDownloadAssessmentPdf(item.id, item.displayId)}
-                                className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-650 dark:text-slate-350 rounded-xl hover:bg-slate-100 active:scale-95 transition-all"
+                                className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 active:scale-95 transition-all"
                                 title="Download Report PDF"
                               >
                                 <Download size={14} />
@@ -507,25 +507,25 @@ export function PatientHistorySearch() {
                             <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-6 flex flex-col gap-6">
                               {/* 1. Registration & General Information */}
                               <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
-                                <h5 className="text-[11px] font-black uppercase text-slate-450 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                                <h5 className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
                                   <User size={14} className="text-slate-500" /> Patient Demographics & Intake Information
                                 </h5>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold">
                                   <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                                     <span className="text-[10px] text-slate-400 block mb-0.5">Patient Full Name</span>
-                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{patient?.name || '—'}</span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{patient?.name || '—'}</span>
                                   </div>
                                   <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                                     <span className="text-[10px] text-slate-400 block mb-0.5">Age & Gender</span>
-                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{patient?.age} Yrs / {patient?.gender}</span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{patient?.age} Yrs / {patient?.gender}</span>
                                   </div>
                                   <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                                     <span className="text-[10px] text-slate-400 block mb-0.5">Assigned Therapist</span>
-                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.therapistName || 'None Assigned'}</span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{item.therapistName || 'None Assigned'}</span>
                                   </div>
                                   <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                                     <span className="text-[10px] text-slate-400 block mb-0.5">Visit Details</span>
-                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">
                                       {item.visitType || 'Clinic'} {item.referredBy ? `(Ref: ${item.referredBy})` : ''}
                                     </span>
                                   </div>
@@ -541,7 +541,7 @@ export function PatientHistorySearch() {
                               {/* 8. Billing & Payment logs */}
                               {item.billAmount !== null && (
                                 <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
-                                  <h5 className="text-[11px] font-black uppercase text-slate-450 dark:text-slate-500 tracking-wider mb-3 flex items-center gap-2">
+                                  <h5 className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-3 flex items-center gap-2">
                                     <DollarSign size={14} className="text-emerald-500" /> Billing Log & Financial Information
                                   </h5>
                                   <div className="flex flex-wrap gap-6 text-xs font-semibold">
@@ -558,7 +558,7 @@ export function PatientHistorySearch() {
                                     {item.visitType && (
                                       <div>
                                         <span className="text-[10px] text-slate-400 block mb-0.5">Type of Visit</span>
-                                        <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.visitType}</span>
+                                        <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{item.visitType}</span>
                                       </div>
                                     )}
                                     <div>
@@ -593,7 +593,7 @@ export function PatientHistorySearch() {
                         <div
                           key={item.id}
                           className={`bg-white dark:bg-slate-900 rounded-[20px] border transition-all overflow-hidden shadow-sm relative ${
-                            isExpanded ? 'border-indigo-600 ring-1 ring-indigo-650/20' : 'border-slate-150 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700'
+                            isExpanded ? 'border-indigo-600 ring-1 ring-indigo-600/20' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                           }`}
                         >
                           {/* Timeline dot */}
@@ -605,7 +605,7 @@ export function PatientHistorySearch() {
                               className="flex items-start gap-3 flex-1 text-left"
                             >
                               <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 ${
-                                isExpanded ? 'bg-indigo-655 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-800 text-slate-655 dark:text-slate-400'
+                                isExpanded ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                               }`}>
                                 v{item.version || 1}
                               </div>
@@ -634,7 +634,7 @@ export function PatientHistorySearch() {
                               )}
                               <button
                                 onClick={() => handleDownloadAssessmentModulePdf(selectedPatientId || '', item.id)}
-                                className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-650 dark:text-slate-350 rounded-xl hover:bg-slate-100 active:scale-95 transition-all"
+                                className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 active:scale-95 transition-all"
                                 title="Download Report PDF"
                               >
                                 <Download size={14} />
@@ -653,32 +653,32 @@ export function PatientHistorySearch() {
                             <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-6 flex flex-col gap-6">
                               {/* 1. Basic Info */}
                               <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
-                                <h5 className="text-[11px] font-black uppercase text-slate-450 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                                <h5 className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
                                   <User size={14} className="text-slate-500" /> Patient Demographics & Therapist Intake
                                 </h5>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold">
                                   <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                                     <span className="text-[10px] text-slate-400 block mb-0.5">Patient Full Name</span>
-                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.fullName || '—'}</span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{item.fullName || '—'}</span>
                                   </div>
-                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-150 dark:border-slate-800">
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                                     <span className="text-[10px] text-slate-400 block mb-0.5">Age & Gender</span>
-                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.age} Yrs / {item.gender}</span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{item.age} Yrs / {item.gender}</span>
                                   </div>
-                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-150 dark:border-slate-800">
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                                     <span className="text-[10px] text-slate-400 block mb-0.5">Assigned Therapist</span>
-                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.therapistName || 'None Assigned'}</span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{item.therapistName || 'None Assigned'}</span>
                                   </div>
-                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-150 dark:border-slate-800">
+                                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                                     <span className="text-[10px] text-slate-400 block mb-0.5">Symptom Duration</span>
-                                    <span className="text-slate-850 dark:text-slate-200 font-extrabold text-sm">{item.symptomDuration || '—'}</span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-extrabold text-sm">{item.symptomDuration || '—'}</span>
                                   </div>
                                 </div>
                               </div>
 
                               {/* 2. Vitals */}
                               <div className="flex flex-col gap-2">
-                                <span className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider flex items-center gap-2">
+                                <span className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider flex items-center gap-2">
                                   <Heart size={14} className="text-rose-500" /> Vital Signs Parameters
                                 </span>
                                 <VitalSignsTable vitals={{
@@ -692,32 +692,32 @@ export function PatientHistorySearch() {
 
                               {/* 3. Medical History */}
                               <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner">
-                                <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                                <h5 className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-4 flex items-center gap-2">
                                   <ClipboardList size={14} className="text-amber-500" /> Medical & Surgical Log History
                                 </h5>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold">
                                   <div>
                                     <span className="text-[10px] text-slate-400 block mb-1">Chronic Conditions</span>
-                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-150 dark:border-slate-800">{item.chronicConditions?.join(', ') || 'None'}</p>
+                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-800">{item.chronicConditions?.join(', ') || 'None'}</p>
                                   </div>
                                   <div>
                                     <span className="text-[10px] text-slate-400 block mb-1">Active Medications</span>
-                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-150 dark:border-slate-800">{item.medications?.join(', ') || 'None'}</p>
+                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-800">{item.medications?.join(', ') || 'None'}</p>
                                   </div>
                                   <div>
                                     <span className="text-[10px] text-slate-400 block mb-1">Allergies</span>
-                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-150 dark:border-slate-800 text-rose-700 dark:text-rose-400 font-bold">{item.allergies?.join(', ') || 'None'}</p>
+                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-800 text-rose-700 dark:text-rose-400 font-bold">{item.allergies?.join(', ') || 'None'}</p>
                                   </div>
                                   <div>
                                     <span className="text-[10px] text-slate-400 block mb-1">Surgical History</span>
-                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-150 dark:border-slate-800">{item.surgicalHistory?.join(', ') || 'None'}</p>
+                                    <p className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-800">{item.surgicalHistory?.join(', ') || 'None'}</p>
                                   </div>
                                 </div>
                               </div>
 
                               {/* 4. Symptoms checklist */}
                               <div className="flex flex-col gap-2">
-                                <span className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider flex items-center gap-2">
+                                <span className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider flex items-center gap-2">
                                   <FileText size={14} className="text-purple-500" /> Specific Symptoms Checklist
                                 </span>
                                 <SymptomChecklist symptoms={mapFlatSymptomsToNested()} />
@@ -725,7 +725,7 @@ export function PatientHistorySearch() {
 
                               {/* 5. Clinical Examination */}
                               <div className="flex flex-col gap-2">
-                                <span className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider flex items-center gap-2">
+                                <span className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider flex items-center gap-2">
                                   <Stethoscope size={14} className="text-emerald-500" /> Objective clinical examination findings
                                 </span>
                                 <ClinicalExaminationTable exam={{
@@ -739,7 +739,7 @@ export function PatientHistorySearch() {
                               {/* 6. Diagnosis & Plan */}
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-3 text-xs">
-                                  <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-2">
+                                  <h5 className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-2">
                                     <Activity size={14} className="text-indigo-500" /> Diagnosis pathology
                                   </h5>
                                   <div>
@@ -761,20 +761,20 @@ export function PatientHistorySearch() {
                                 </div>
 
                                 <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-3 text-xs">
-                                  <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-2">
+                                  <h5 className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-2">
                                     <CreditCard size={14} className="text-indigo-500" /> Billing receipt logs
                                   </h5>
                                   <div className="flex flex-col gap-2">
                                     <div className="flex justify-between">
-                                      <span className="text-slate-550">Session Rate:</span>
+                                      <span className="text-slate-500">Session Rate:</span>
                                       <span className="font-extrabold">₹ {item.sessionFee || '—'}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-slate-550">Total Sessions:</span>
+                                      <span className="text-slate-500">Total Sessions:</span>
                                       <span className="font-extrabold">{item.totalSessions || '—'}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-slate-550">Paid Sessions:</span>
+                                      <span className="text-slate-500">Paid Sessions:</span>
                                       <span className="font-extrabold">{item.paidSessions || '—'}</span>
                                     </div>
                                     <div className="flex justify-between border-t border-slate-100 dark:border-slate-800 pt-2 font-bold text-slate-900 dark:text-white">
@@ -788,7 +788,7 @@ export function PatientHistorySearch() {
                               {/* Treatment & Rehabilitation Plan Details */}
                               {(item.treatmentModalities?.length > 0 || item.treatmentFrequency || item.treatmentDuration || item.treatmentPlan?.exercises?.length > 0 || item.treatment_plan?.exercises?.length > 0) && (
                                 <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 p-5 shadow-inner flex flex-col gap-3 text-xs">
-                                  <h5 className="text-[11px] font-black uppercase text-slate-455 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-2">
+                                  <h5 className="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-2">
                                     <Dumbbell size={14} className="text-emerald-500" /> Prescribed Rehabilitation & Modalities Plan
                                   </h5>
                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -797,7 +797,7 @@ export function PatientHistorySearch() {
                                         <span className="text-[10px] text-slate-400 block mb-1">Modalities Prescribed</span>
                                         <div className="flex flex-wrap gap-1.5">
                                           {item.treatmentModalities.map((m: string) => (
-                                            <span key={m} className="px-2 py-0.5 rounded bg-slate-50 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 border border-slate-150 dark:border-slate-700">{m}</span>
+                                            <span key={m} className="px-2 py-0.5 rounded bg-slate-50 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 border border-slate-100 dark:border-slate-700">{m}</span>
                                           ))}
                                         </div>
                                       </div>
@@ -822,7 +822,7 @@ export function PatientHistorySearch() {
                                       <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">Prescribed Exercises & Home Program ({((item.treatmentPlan?.exercises || item.treatment_plan?.exercises) || []).length})</span>
                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         {((item.treatmentPlan?.exercises || item.treatment_plan?.exercises) || []).map((ex: any, idx: number) => (
-                                          <div key={ex.id || idx} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800">
+                                          <div key={ex.id || idx} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800">
                                             <div className="flex items-center justify-between">
                                               <span className="font-extrabold text-slate-800 dark:text-slate-100">{ex.exerciseName || ex.name}</span>
                                               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 uppercase">{ex.category || 'General'}</span>
@@ -855,12 +855,12 @@ export function PatientHistorySearch() {
 
                     // ───── CASE 2: APPOINTMENT EVENT ─────
                     if (item.type === 'appointment') {
-                      let statusBg = 'bg-amber-100 text-amber-850';
+                      let statusBg = 'bg-amber-100 text-amber-800';
                       if (item.status === 'completed') statusBg = 'bg-emerald-100 text-emerald-800';
                       if (item.status === 'cancelled') statusBg = 'bg-rose-100 text-rose-800';
 
                       return (
-                        <div key={item.id} className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-150 dark:border-slate-800 p-5 shadow-sm relative flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                        <div key={item.id} className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 p-5 shadow-sm relative flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
                           {/* Timeline dot */}
                           <div className="absolute -left-[21px] top-6 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-950 bg-teal-600 shadow-sm" />
                           
@@ -869,7 +869,7 @@ export function PatientHistorySearch() {
                               <Clock size={18} />
                             </div>
                             <div>
-                              <h4 className="text-[14px] font-black text-slate-850 dark:text-white flex items-center gap-2">
+                              <h4 className="text-[14px] font-black text-slate-800 dark:text-white flex items-center gap-2">
                                 Therapy Session Booking
                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide ${statusBg}`}>
                                   {item.status}
@@ -878,11 +878,11 @@ export function PatientHistorySearch() {
                               <p className="text-xs font-semibold text-slate-500 mt-1">
                                 Scheduled Time: <span className="text-slate-700 dark:text-slate-300 font-bold">{dateFormatted}</span>
                               </p>
-                              <p className="text-xs text-slate-550 mt-1 font-bold">
+                              <p className="text-xs text-slate-500 mt-1 font-bold">
                                 Therapist Assigned: <span className="text-slate-800 dark:text-slate-200">{item.therapistName || '—'}</span>
                               </p>
                               {item.reason && (
-                                <p className="text-[11.5px] text-slate-555 mt-2 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800 italic">
+                                <p className="text-[11.5px] text-slate-500 mt-2 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800 italic">
                                   Notes: "{item.reason}"
                                 </p>
                               )}
@@ -895,7 +895,7 @@ export function PatientHistorySearch() {
                     // ───── CASE 3: BILLING RECEIPT EVENT ─────
                     if (item.type === 'billing') {
                       return (
-                        <div key={item.id} className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-150 dark:border-slate-800 p-5 shadow-sm relative flex justify-between items-center gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                        <div key={item.id} className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 p-5 shadow-sm relative flex justify-between items-center gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
                           {/* Timeline dot */}
                           <div className="absolute -left-[21px] top-6 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-950 bg-emerald-600 shadow-sm" />
 
@@ -904,13 +904,13 @@ export function PatientHistorySearch() {
                               <CreditCard size={18} />
                             </div>
                             <div>
-                              <h4 className="text-[14px] font-black text-slate-850 dark:text-white">
+                              <h4 className="text-[14px] font-black text-slate-800 dark:text-white">
                                 Payment Invoice Issued
                               </h4>
                               <p className="text-xs font-semibold text-slate-500 mt-1">
                                 Payment Date: <span className="text-slate-700 dark:text-slate-300 font-bold">{dateFormatted}</span>
                               </p>
-                              <p className="text-xs text-slate-655 mt-1 font-bold">
+                              <p className="text-xs text-slate-600 mt-1 font-bold">
                                 Paid Amount: <span className="text-emerald-700 dark:text-emerald-400 font-black">₹ {item.billAmount}</span> · Method: <span className="capitalize">{item.paymentMode || 'Cash'}</span>
                               </p>
                               <p className="text-[10px] text-slate-400 mt-1.5 font-bold uppercase tracking-wider">
@@ -924,7 +924,7 @@ export function PatientHistorySearch() {
 
                     // ───── CASE 4: DOCUMENT UPLOAD EVENT ─────
                     return (
-                      <div key={item.id} className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-150 dark:border-slate-800 p-5 shadow-sm relative flex justify-between items-center gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                      <div key={item.id} className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 p-5 shadow-sm relative flex justify-between items-center gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
                         {/* Timeline dot */}
                         <div className="absolute -left-[21px] top-6 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-950 bg-amber-600 shadow-sm" />
 
@@ -933,7 +933,7 @@ export function PatientHistorySearch() {
                             <FileText size={18} />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h4 className="text-[14px] font-black text-slate-850 dark:text-white truncate">
+                            <h4 className="text-[14px] font-black text-slate-800 dark:text-white truncate">
                               Uploaded Patient Document
                             </h4>
                             <p className="text-xs font-semibold text-slate-500 mt-1">
@@ -943,7 +943,7 @@ export function PatientHistorySearch() {
                               Filename: <span className="font-extrabold text-slate-800 dark:text-slate-200">{item.fileName}</span>
                             </p>
                             {item.fileSize && (
-                              <p className="text-[11px] text-slate-450 mt-0.5">
+                              <p className="text-[11px] text-slate-400 mt-0.5">
                                 Size: {(item.fileSize / 1024).toFixed(1)} KB
                               </p>
                             )}

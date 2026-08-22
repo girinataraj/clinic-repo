@@ -902,7 +902,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
             </div>
             <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
               <table className="w-full min-w-[480px] border-collapse text-left text-xs font-semibold">
-                <thead className="bg-slate-50 dark:bg-slate-850">
+                <thead className="bg-slate-50 dark:bg-slate-800">
                   <tr className="border-b border-slate-200 dark:border-slate-800">
                     <th className="px-3 py-2.5 text-slate-700 dark:text-slate-300">Joint</th>
                     <th className="px-3 py-2.5 text-slate-700 dark:text-slate-300">Movement</th>
@@ -914,8 +914,8 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {romTableRows.map((row, index) => (
-                    <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/30">
-                      <td className="px-3 py-2.5 font-bold text-slate-850 dark:text-white">{row.joint}</td>
+                    <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <td className="px-3 py-2.5 font-bold text-slate-800 dark:text-white">{row.joint}</td>
                       <td className="px-3 py-2.5 text-slate-600 dark:text-slate-400 uppercase text-[9px] font-extrabold">{row.movement}</td>
                       <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.powerRt}</td>
                       <td className="px-2 py-2.5 text-center font-extrabold text-slate-900 dark:text-white">{row.powerLt}</td>
@@ -955,7 +955,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                   if (isNaN(value)) return null;
                   const labels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
                   return (
-                    <div key={key} className="flex items-center justify-between py-2 border-b last:border-0 border-slate-150 dark:border-slate-800/60 font-semibold text-xs">
+                    <div key={key} className="flex items-center justify-between py-2 border-b last:border-0 border-slate-100 dark:border-slate-800/60 font-semibold text-xs">
                       <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize">{key === 'stairs' ? 'Climbing Stairs' : key.replace(/([A-Z])/g, ' $1').trim()}</span>
                       <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-black border border-slate-200">{value} - {labels[value] || 'Recorded'}</span>
                     </div>
@@ -1056,7 +1056,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                           {ex.frequency && <span><strong className="text-slate-800 dark:text-slate-200">Freq:</strong> {ex.frequency}</span>}
                         </div>
                         {instructionsText && (
-                          <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-150 dark:border-slate-800 w-full min-w-0">
+                          <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800 w-full min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Exercise Instructions & Guidance:</span>
                             <div className="whitespace-pre-wrap font-medium break-words leading-relaxed">{instructionsText}</div>
                           </div>
@@ -1068,7 +1068,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
               </div>
             )}
             {planText && (
-              <p className="text-[13px] text-slate-800 dark:text-slate-250 leading-relaxed whitespace-pre-wrap bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 font-medium">
+              <p className="text-[13px] text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 font-medium">
                 {planText}
               </p>
             )}

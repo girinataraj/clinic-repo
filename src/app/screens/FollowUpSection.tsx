@@ -124,7 +124,7 @@ export function FollowUpSection({ followUp, onChange, previousTreatmentPlan, exe
                 className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border-2 transition-all active:scale-[0.98] ${
                   active
                     ? 'border-teal-500 bg-teal-50 text-teal-800'
-                    : 'border-slate-150 bg-slate-50 text-slate-600 hover:border-slate-300'
+                    : 'border-slate-100 bg-slate-50 text-slate-600 hover:border-slate-300'
                 }`}
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${

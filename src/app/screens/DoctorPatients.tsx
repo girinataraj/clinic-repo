@@ -169,7 +169,7 @@ export function DoctorPatients() {
           }}
         >
 
-          <div className="max-w-6xl mx-auto px-5 pt-6 pb-10 saai-fade-up">
+          <div className="max-w-6xl mx-auto px-5 pt-safe-top-6 pb-10 saai-fade-up">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="saai-kicker" style={{ color: 'rgba(255,255,255,0.6)' }}>
@@ -276,7 +276,7 @@ export function DoctorPatients() {
                         setTempDaysFilter(daysFilter);
                         setIsFilterModalOpen(true);
                       }}
-                      className={`flex items-center justify-center p-2.5 border rounded-xl hover:bg-slate-100 dark:hover:bg-slate-750 transition-all ${
+                      className={`flex items-center justify-center p-2.5 border rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all ${
                         therapistFilter !== 'all' || dateFilter !== '' || daysFilter !== 'all'
                           ? 'bg-[#3B3E66]/10 border-[#3B3E66] text-[#3B3E66] dark:text-blue-400 font-bold'
                           : 'bg-slate-50 dark:bg-slate-900 border-[#E8E9F1] dark:border-slate-700 text-slate-500 dark:text-slate-400'
@@ -658,7 +658,7 @@ export function DoctorPatients() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 animate-in fade-in duration-200"
         >
           <div
-            className="w-full max-w-sm rounded-[28px] p-6 bg-white dark:bg-slate-900 shadow-2xl border border-slate-150 dark:border-slate-800 animate-in zoom-in-95 duration-200 flex flex-col gap-5"
+            className="w-full max-w-sm rounded-[28px] p-6 bg-white dark:bg-slate-900 shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200 flex flex-col gap-5"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -683,7 +683,7 @@ export function DoctorPatients() {
                 <select
                   value={tempTherapistFilter}
                   onChange={(e) => setTempTherapistFilter(e.target.value)}
-                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-200 outline-none focus:ring-1 focus:ring-[#3B3E66]"
+                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-[#3B3E66]"
                 >
                   <option value="all">All Therapists</option>
                   <option value="unassigned">Unassigned Only</option>
@@ -709,7 +709,7 @@ export function DoctorPatients() {
                       setTempDaysFilter('all');
                     }
                   }}
-                  className="w-full rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-200 outline-none focus:ring-1 focus:ring-[#3B3E66]"
+                  className="w-full rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-[#3B3E66]"
                 />
               </div>
 
@@ -726,7 +726,7 @@ export function DoctorPatients() {
                       setTempDateFilter('');
                     }
                   }}
-                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-200 outline-none focus:ring-1 focus:ring-[#3B3E66]"
+                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-[#3B3E66]"
                 >
                   <option value="all">Any Day</option>
                   <option value="1">Today</option>

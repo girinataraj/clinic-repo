@@ -50,7 +50,7 @@ export function BottomNav({ role }: BottomNavProps) {
   return (
     <div
       className="shrink-0 flex bg-white dark:bg-slate-900 relative border-t border-slate-100 dark:border-slate-800 shadow-[0_-8px_24px_rgba(0,0,0,0.07)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.2)]"
-      style={{ height: 'calc(62px + max(16px, env(safe-area-inset-bottom, 0px)))', paddingBottom: 'max(16px, env(safe-area-inset-bottom, 0px))' }}
+      style={{ height: 'calc(62px + var(--safe-bottom))', paddingBottom: 'var(--safe-bottom)' }}
     >
       {items.map((item) => {
         const isDoctorPatientDetail =

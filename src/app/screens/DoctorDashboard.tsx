@@ -301,7 +301,7 @@ export function DoctorDashboard() {
                   setTempDaysFilter(daysFilter);
                   setIsFilterModalOpen(true);
                 }}
-                className={`flex items-center justify-center p-3 border rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-750 transition-all ${
+                className={`flex items-center justify-center p-3 border rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all ${
                   therapistFilter !== 'all' || dateFilter !== '' || daysFilter !== 'all'
                     ? 'bg-slate-900/10 dark:bg-slate-700/30 border-slate-900 dark:border-slate-700 text-slate-900 dark:text-slate-200 font-bold'
                     : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
@@ -482,7 +482,7 @@ export function DoctorDashboard() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 animate-in fade-in duration-200"
         >
           <div
-            className="w-full max-w-sm rounded-[28px] p-6 bg-white dark:bg-slate-900 shadow-2xl border border-slate-150 dark:border-slate-800 animate-in zoom-in-95 duration-200 flex flex-col gap-5"
+            className="w-full max-w-sm rounded-[28px] p-6 bg-white dark:bg-slate-900 shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200 flex flex-col gap-5"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -507,7 +507,7 @@ export function DoctorDashboard() {
                 <select
                   value={tempTherapistFilter}
                   onChange={(e) => setTempTherapistFilter(e.target.value)}
-                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-205 outline-none focus:ring-1 focus:ring-[#3B3E66]"
+                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-[#3B3E66]"
                 >
                   <option value="all">All Therapists</option>
                   <option value="unassigned">Unassigned Only</option>
@@ -533,7 +533,7 @@ export function DoctorDashboard() {
                       setTempDaysFilter('all');
                     }
                   }}
-                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-205 outline-none focus:ring-1 focus:ring-[#3B3E66]"
+                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-[#3B3E66]"
                 />
               </div>
 
@@ -550,7 +550,7 @@ export function DoctorDashboard() {
                       setTempDateFilter('');
                     }
                   }}
-                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 text-slate-855 dark:text-slate-205 outline-none focus:ring-1 focus:ring-[#3B3E66]"
+                  className="w-full rounded-xl px-3 py-2.5 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-[#3B3E66]"
                 >
                   <option value="all">Any Day</option>
                   <option value="1">Today</option>

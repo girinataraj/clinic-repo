@@ -38,7 +38,7 @@ export function SectionCard({ icon, title, subtitle, children, accent = 'teal', 
 export function FormField({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
     <div className="mb-3">
-      <label className="block text-[10px] font-bold text-slate-650 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
+      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       {children}

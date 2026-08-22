@@ -353,7 +353,7 @@ export function TreatmentExerciseModule({
                     </div>
 
                     {/* Meta specs */}
-                    <div className="flex flex-wrap gap-2 mt-2 text-[11px] font-medium text-slate-600 dark:text-slate-350">
+                    <div className="flex flex-wrap gap-2 mt-2 text-[11px] font-medium text-slate-600 dark:text-slate-300">
                       {item.sets && (
                         <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 rounded-md font-bold">
                           {item.sets} Sets

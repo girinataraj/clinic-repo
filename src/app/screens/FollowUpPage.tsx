@@ -168,7 +168,7 @@ export function FollowUpPage() {
           <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4">
             <CheckCircle size={36} />
           </div>
-          <h2 className="text-xl font-black text-slate-850 dark:text-white mb-2">
+          <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2">
             Follow Up Recorded!
           </h2>
           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
@@ -198,11 +198,11 @@ export function FollowUpPage() {
               onClick={() => setSelectedPatientId(null)}
               className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
-              <ArrowLeft size={16} className="text-slate-600 dark:text-slate-350" />
+              <ArrowLeft size={16} className="text-slate-600 dark:text-slate-300" />
             </button>
           )}
           <div>
-            <h1 className="text-lg font-black text-slate-850 dark:text-white leading-none mb-1 flex items-center gap-2">
+            <h1 className="text-lg font-black text-slate-800 dark:text-white leading-none mb-1 flex items-center gap-2">
               <RefreshCw size={18} className="text-teal-600" /> Follow Ups & Regular Treatment
             </h1>
             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
@@ -213,11 +213,11 @@ export function FollowUpPage() {
       </div>
 
       {/* Main Content Container */}
-      <div className="flex-1 p-6 max-w-4xl w-full mx-auto flex flex-col gap-6">
+      <div className="flex-1 p-6 pb-safe-bottom max-w-4xl w-full mx-auto flex flex-col gap-6">
         {!selectedPatientId ? (
           /* SEARCH PANEL */
           <div className="flex flex-col gap-6">
-            <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-150 dark:border-slate-800 p-6 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
               <div className="flex items-center gap-3 px-4 py-3.5 rounded-[18px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-inner">
                 <Search size={18} className="text-slate-400 shrink-0" />
                 <input
@@ -237,12 +237,12 @@ export function FollowUpPage() {
                 <p className="text-sm font-semibold text-slate-500">Searching records...</p>
               </div>
             ) : searchQuery.trim() === '' ? (
-              <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-150 dark:border-slate-800 p-6 text-slate-400">
+              <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 text-slate-400">
                 <Search size={36} className="mx-auto mb-3 opacity-30" />
                 <p className="text-sm font-bold">Search for a patient to record follow up treatment</p>
               </div>
             ) : patientsList.length === 0 ? (
-              <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-150 dark:border-slate-800 p-6 text-slate-400">
+              <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 text-slate-400">
                 <User size={36} className="mx-auto mb-3 opacity-30" />
                 <p className="text-sm font-bold">No patient found matching "{searchQuery}"</p>
               </div>
@@ -252,7 +252,7 @@ export function FollowUpPage() {
                   <button
                     key={p.id}
                     onClick={() => handleSelectPatient(p.id)}
-                    className="p-4 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-150 dark:border-slate-800 hover:border-teal-500 transition-all text-left flex items-center justify-between group shadow-sm"
+                    className="p-4 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 hover:border-teal-500 transition-all text-left flex items-center justify-between group shadow-sm"
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-11 h-11 rounded-2xl ${accentBg} flex items-center justify-center`}>
@@ -260,10 +260,10 @@ export function FollowUpPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-0.5">
-                          <h4 className="text-sm font-extrabold text-slate-850 dark:text-white group-hover:text-teal-600 transition-colors">
+                          <h4 className="text-sm font-extrabold text-slate-800 dark:text-white group-hover:text-teal-600 transition-colors">
                             {p.name}
                           </h4>
-                          <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-350">
+                          <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                             {p.displayId}
                           </span>
                         </div>
@@ -284,15 +284,15 @@ export function FollowUpPage() {
             {loadingPatient ? (
               <div className="h-28 bg-white dark:bg-slate-900 rounded-[24px] animate-pulse"></div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-150 dark:border-slate-800 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-[16px] ${accentBg} flex items-center justify-center`}>
                     <User size={22} className={accentColor} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
-                      <h2 className="text-lg font-black text-slate-850 dark:text-white">{patient?.name}</h2>
-                      <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-350">
+                      <h2 className="text-lg font-black text-slate-800 dark:text-white">{patient?.name}</h2>
+                      <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                         {patient?.displayId}
                       </span>
                     </div>
@@ -309,7 +309,7 @@ export function FollowUpPage() {
             )}
 
             {/* Main Form Section */}
-            <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-150 dark:border-slate-800 p-6 shadow-sm flex flex-col gap-6">
+            <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col gap-6">
               {submitError && (
                 <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 font-bold text-xs flex items-center gap-2">
                   <AlertCircle size={16} />

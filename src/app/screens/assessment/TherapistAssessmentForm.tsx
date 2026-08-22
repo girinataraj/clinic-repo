@@ -651,7 +651,7 @@ export function TherapistAssessmentForm() {
       {/* Navigation Buttons (Floating Bottom Right) */}
       <div 
       className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 pt-3 z-40 flex flex-col gap-2"
-      style={{ paddingBottom: 'calc(0.875rem + max(16px, env(safe-area-inset-bottom, 0px)))' }}
+      style={{ paddingBottom: 'calc(0.875rem + var(--safe-bottom))' }}
     >
         {submitError && (
           <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2.5 shadow-sm">

@@ -93,49 +93,84 @@ html {
 }
 
 
-/* Global Safe Area Utilities */
+/* ── Global Safe Area Strategy ──────────────────────────────────────────────
+ *
+ * Single source of truth for system-bar insets. Everything else in the app must
+ * derive from --sa-* rather than reading env() directly.
+ *
+ * Android (Capacitor 8 `SystemBars`, insetsHandling: "css") reports insets two
+ * different ways depending on the device's WebView build:
+ *
+ *   passthrough  (WebView >= 140 AND viewport-fit=cover detected)
+ *       env(safe-area-inset-*) carries the real inset, and the plugin also
+ *       injects matching --safe-area-inset-* custom properties.
+ *
+ *   non-passthrough (older WebView)
+ *       the plugin pads the WebView's parent natively and then deliberately
+ *       ZEROES the WebView's own insets, so BOTH env() and the injected
+ *       variables read 0 — the content is already positioned below the bars.
+ *
+ * Taking max() of the two is therefore correct in both modes: it picks up the
+ * real inset when the WebView owns the offset, and stays at 0 when the native
+ * layer already applied it (so we never double-pad). iOS/web fall through to
+ * env(), and plain desktop browsers resolve to 0, which is also correct since
+ * there is no system bar to avoid.
+ *
+ * This replaces the previous `max(24px, env(...))` form, which read only env()
+ * and so collapsed to a flat 24px on devices reporting through the variables —
+ * less than a real status bar (typically 24-48dp, more with a cutout), which is
+ * what let the clock and status icons overlap the app header.
+ */
 :root {
-  --safe-top: max(24px, env(safe-area-inset-top, 0px));
-  --safe-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  --sa-top: max(var(--safe-area-inset-top, 0px), env(safe-area-inset-top, 0px));
+  --sa-bottom: max(var(--safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px));
+  --sa-left: max(var(--safe-area-inset-left, 0px), env(safe-area-inset-left, 0px));
+  --sa-right: max(var(--safe-area-inset-right, 0px), env(safe-area-inset-right, 0px));
+
+  /* Deliberate breathing room kept between a system bar and adjacent controls. */
+  --sa-gutter-bottom: 8px;
+
+  --safe-top: var(--sa-top);
+  --safe-bottom: calc(var(--sa-bottom) + var(--sa-gutter-bottom));
 }
 
 .pt-safe-top {
-  padding-top: calc(0.875rem + max(24px, env(safe-area-inset-top, 0px))) !important;
+  padding-top: calc(0.875rem + var(--sa-top)) !important;
 }
 .pt-safe-top-3 {
-  padding-top: calc(0.75rem + max(24px, env(safe-area-inset-top, 0px))) !important;
+  padding-top: calc(0.75rem + var(--sa-top)) !important;
 }
 .pt-safe-top-3\.5 {
-  padding-top: calc(0.875rem + max(24px, env(safe-area-inset-top, 0px))) !important;
+  padding-top: calc(0.875rem + var(--sa-top)) !important;
 }
 .pt-safe-top-4 {
-  padding-top: calc(1rem + max(24px, env(safe-area-inset-top, 0px))) !important;
+  padding-top: calc(1rem + var(--sa-top)) !important;
 }
 .pt-safe-top-5 {
-  padding-top: calc(1.25rem + max(24px, env(safe-area-inset-top, 0px))) !important;
+  padding-top: calc(1.25rem + var(--sa-top)) !important;
 }
 .pt-safe-top-6 {
-  padding-top: calc(1.5rem + max(24px, env(safe-area-inset-top, 0px))) !important;
+  padding-top: calc(1.5rem + var(--sa-top)) !important;
 }
 .pt-safe-top-7 {
-  padding-top: calc(1.75rem + max(24px, env(safe-area-inset-top, 0px))) !important;
+  padding-top: calc(1.75rem + var(--sa-top)) !important;
 }
 .pt-safe-top-8 {
-  padding-top: calc(2rem + max(24px, env(safe-area-inset-top, 0px))) !important;
+  padding-top: calc(2rem + var(--sa-top)) !important;
 }
 .pt-safe-top-10 {
-  padding-top: calc(2.5rem + max(24px, env(safe-area-inset-top, 0px))) !important;
+  padding-top: calc(2.5rem + var(--sa-top)) !important;
 }
 .pt-safe-top-12 {
-  padding-top: calc(3rem + max(24px, env(safe-area-inset-top, 0px))) !important;
+  padding-top: calc(3rem + var(--sa-top)) !important;
 }
 
 .pb-safe-bottom {
-  padding-bottom: calc(0.875rem + max(16px, env(safe-area-inset-bottom, 0px))) !important;
+  padding-bottom: calc(0.875rem + var(--safe-bottom)) !important;
 }
 .pb-safe-bottom-action {
-  padding-bottom: calc(1rem + max(16px, env(safe-area-inset-bottom, 0px))) !important;
+  padding-bottom: calc(1rem + var(--safe-bottom)) !important;
 }
 .pb-safe-scroll-content {
-  padding-bottom: calc(6.5rem + max(16px, env(safe-area-inset-bottom, 0px))) !important;
+  padding-bottom: calc(6.5rem + var(--safe-bottom)) !important;
 }
