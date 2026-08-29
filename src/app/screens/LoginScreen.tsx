@@ -482,7 +482,7 @@ export function LoginScreen() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full min-w-0">
               <button
                 type="button"
-                onClick={() => handleAutofill('sathish@saai.com', 'spcerd@611')}
+                onClick={() => handleAutofill('sathish@saai.com', 'spcred@611')}
                 style={{
                   padding: '9px 4px',
                   borderRadius: '12px',
