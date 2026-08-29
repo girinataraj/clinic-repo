@@ -5,7 +5,7 @@ import axios, {
   type AxiosResponse,
 } from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://clinic-api.saaiphysioclinic.com/api';
 
 // ─── In-memory token store ─────────────────────────────────────────────────────
 let _accessToken: string | null = null;
@@ -34,9 +34,9 @@ export const setRefreshToken = (token: string | null): void => {
   _refreshToken = token;
   _cachedRefreshToken = token;
   if (token) {
-    Preferences.set({ key: 'refreshToken', value: token }).catch(() => {});
+    Preferences.set({ key: 'refreshToken', value: token }).catch(() => { });
   } else {
-    Preferences.remove({ key: 'refreshToken' }).catch(() => {});
+    Preferences.remove({ key: 'refreshToken' }).catch(() => { });
   }
 };
 

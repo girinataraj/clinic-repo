@@ -499,7 +499,7 @@ export function LoginScreen() {
               </button>
               <button
                 type="button"
-                onClick={() => handleAutofill('raghul@saai.com', '@TN36bt5522')}
+                onClick={() => handleAutofill('raghul@saai.com', 'YOKESHPT@2503')}
                 style={{
                   padding: '9px 4px',
                   borderRadius: '12px',
@@ -516,7 +516,7 @@ export function LoginScreen() {
               </button>
               <button
                 type="button"
-                onClick={() => handleAutofill('yokesh@saai.com', 'YOKESHPT@2503')}
+                onClick={() => handleAutofill('yokesh@saai.com', '@TN36bt5522')}
                 style={{
                   padding: '9px 4px',
                   borderRadius: '12px',

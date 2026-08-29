@@ -25,7 +25,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://clinic-api.saaiphysioclinic.com/api';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           { refreshToken },
           { withCredentials: true }
         );
-        
+
         if (response.status === 200 && response.data?.success) {
           const { accessToken, refreshToken: newRefreshToken, user: restoredUser } = response.data.data;
           setAccessToken(accessToken);

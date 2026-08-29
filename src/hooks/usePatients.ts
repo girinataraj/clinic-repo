@@ -234,7 +234,7 @@ export function usePatientHistory(patientId: string | null | undefined) {
       // repointed at it here so existing consumers (<img src>, click-to-view)
       // don't need their own changes; it will be null for any attachment
       // uploaded before this change and not yet migrated to object storage.
-      const backendBase = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+      const backendBase = (import.meta.env.VITE_API_BASE_URL || 'https://clinic-api.saaiphysioclinic.com/api').replace(/\/api\/?$/, '');
       return items.map((item: any) => ({
         ...item,
         url: item.downloadUrl ? `${backendBase}${item.downloadUrl}` : null,
