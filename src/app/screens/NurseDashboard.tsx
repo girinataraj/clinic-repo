@@ -30,18 +30,20 @@ export function NurseDashboard() {
   // Filter Modal states
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<string>('');
-  const [daysFilter, setDaysFilter] = useState<string>('all');
+  // pastDaysFilter: backward-looking "Last N days" window ('' = no filter)
+  const [pastDaysFilter, setPastDaysFilter] = useState<string>('');
 
   // Temporary Modal edit states
   const [tempDateFilter, setTempDateFilter] = useState<string>('');
-  const [tempDaysFilter, setTempDaysFilter] = useState<string>('all');
+  const [tempPastDaysFilter, setTempPastDaysFilter] = useState<string>('');
 
   // ── Live data from backend ─────────────────────────────────────────────────
   // Therapist (nurse role) sees patients assigned to them (filtered by backend query)
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     date: dateFilter || undefined,
-    days: daysFilter !== 'all' ? daysFilter : undefined,
+    // pastDays = backward-looking "Last N days" (NurseDashboard semantics)
+    pastDays: pastDaysFilter || undefined,
     limit: 50,
   }, true); // 10s polling for live queue updates
 
@@ -249,11 +251,11 @@ export function NurseDashboard() {
               <button
                 onClick={() => {
                   setTempDateFilter(dateFilter);
-                  setTempDaysFilter(daysFilter);
+                  setTempPastDaysFilter(pastDaysFilter);
                   setIsFilterModalOpen(true);
                 }}
                 className={`flex items-center justify-center p-3 border rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all ${
-                  dateFilter !== '' || daysFilter !== 'all'
+                  dateFilter !== '' || pastDaysFilter !== ''
                     ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-500 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold'
                     : 'bg-slate-50/80 dark:bg-slate-900 border-slate-200/80 dark:border-slate-700 text-slate-500 dark:text-slate-400'
                 }`}
@@ -441,7 +443,7 @@ export function NurseDashboard() {
                   value={tempDateFilter}
                   onChange={(e) => {
                     setTempDateFilter(e.target.value);
-                    if (e.target.value) setTempDaysFilter('all');
+                    if (e.target.value) setTempPastDaysFilter('');
                   }}
                   className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-teal-500 transition-colors"
                 />
@@ -453,18 +455,18 @@ export function NurseDashboard() {
                 </label>
                 <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full min-w-0">
                   {[
-                    { key: 'all', label: 'All Time' },
+                    { key: '', label: 'All Time' },
                     { key: '1', label: 'Last 24h' },
                     { key: '7', label: 'Last 7 Days' },
                   ].map((opt) => (
                     <button
-                      key={opt.key}
+                      key={opt.key || 'all'}
                       onClick={() => {
-                        setTempDaysFilter(opt.key);
-                        if (opt.key !== 'all') setTempDateFilter('');
+                        setTempPastDaysFilter(opt.key);
+                        if (opt.key) setTempDateFilter('');
                       }}
                       className={`py-2 px-1.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold border transition-all text-center truncate ${
-                        tempDaysFilter === opt.key
+                        tempPastDaysFilter === opt.key
                           ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
                           : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
                       }`}
@@ -480,9 +482,9 @@ export function NurseDashboard() {
               <button
                 onClick={() => {
                   setTempDateFilter('');
-                  setTempDaysFilter('all');
+                  setTempPastDaysFilter('');
                   setDateFilter('');
-                  setDaysFilter('all');
+                  setPastDaysFilter('');
                   setIsFilterModalOpen(false);
                 }}
                 className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
@@ -492,7 +494,7 @@ export function NurseDashboard() {
               <button
                 onClick={() => {
                   setDateFilter(tempDateFilter);
-                  setDaysFilter(tempDaysFilter);
+                  setPastDaysFilter(tempPastDaysFilter);
                   setIsFilterModalOpen(false);
                 }}
                 className="flex-1 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-md shadow-teal-600/20 transition-all"

@@ -11,6 +11,8 @@ export interface PatientsFilter {
   therapistId?: string;
   date?: string;
   days?: string;
+  /** Backward-looking appointment window in days (NurseDashboard "Last N days"). */
+  pastDays?: string;
   /** Accepted by the backend patient list schema (patientSchemas.js). */
   dateRange?: string;
   page?: number;
