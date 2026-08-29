@@ -228,11 +228,16 @@ export function usePatientHistory(patientId: string | null | undefined) {
     queryFn: async () => {
       const { data } = await api.get(ENDPOINTS.PATIENTS.HISTORY(patientId!));
       const items = (data as any).data ?? [];
-      // Construct full URL for uploaded files (backend serves /uploads/ statically)
+      // downloadUrl is a short-lived (~60s), attachment-specific signed link
+      // minted by the backend for this exact list response — never a direct
+      // Spaces URL, and never reusable for a different attachment. `url` is
+      // repointed at it here so existing consumers (<img src>, click-to-view)
+      // don't need their own changes; it will be null for any attachment
+      // uploaded before this change and not yet migrated to object storage.
       const backendBase = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
       return items.map((item: any) => ({
         ...item,
-        url: item.url?.startsWith('http') ? item.url : `${backendBase}${item.url}`,
+        url: item.downloadUrl ? `${backendBase}${item.downloadUrl}` : null,
       }));
     },
     enabled: Boolean(patientId),

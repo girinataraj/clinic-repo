@@ -962,8 +962,15 @@ export function PatientHistorySearch() {
                         </div>
                         
                         <button
-                          onClick={() => window.open((api.defaults.baseURL || '') + item.fileUrl, '_blank')}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-bold hover:bg-amber-100/50 shrink-0 shadow-sm transition-transform active:scale-95"
+                          onClick={() => {
+                            // downloadUrl is a short-lived, attachment-specific signed link — never a
+                            // direct Spaces URL. It's absent only for attachments uploaded before this
+                            // change (not yet migrated to object storage).
+                            if (!item.downloadUrl) return;
+                            window.open((api.defaults.baseURL || '') + item.downloadUrl, '_blank');
+                          }}
+                          disabled={!item.downloadUrl}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-bold hover:bg-amber-100/50 shrink-0 shadow-sm transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           <Download size={12} />
                           View

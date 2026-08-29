@@ -189,7 +189,7 @@ export function PatientHistoryUpload({ patientId, patientName, onClose }: Patien
             {existingHistory.map((item) => (
               <div
                 key={item.id}
-                onClick={() => setViewImage(item.url)}
+                onClick={() => item.url && setViewImage(item.url)}
                 className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 cursor-pointer group"
               >
                 <img src={item.url} alt={item.filename} className="w-full h-24 object-cover" />
