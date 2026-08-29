@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { usePatients, usePatient } from '../../hooks/usePatients';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { ROM_CONFIG, getRomKey } from './assessment/clinicalConfig';
 import { EvaluationSummaryReport } from '../components/EvaluationSummaryReport';
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -58,6 +59,9 @@ export function PatientHistorySearch() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isDoctorRole = user?.role === 'doctor';
+  // Tailwind's sm: breakpoint — below it the search box is too narrow for the
+  // full descriptive placeholder.
+  const isNarrow = !useMediaQuery('(min-width: 640px)');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
@@ -230,15 +234,22 @@ export function PatientHistorySearch() {
         {!selectedPatientId ? (
           /* SEARCH PANEL */
           <div className="flex flex-col gap-6">
-            <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
-              <div className="flex items-center gap-3 px-4 py-3.5 rounded-[18px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-inner">
+            <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-4 sm:p-6 shadow-sm">
+              <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3.5 rounded-[18px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-inner">
                 <Search size={18} className="text-slate-400 shrink-0" />
+                {/*
+                  The full-length hint needs ~409px of text width; at 320px this
+                  input only has ~170px, so it rendered clipped past the box.
+                  A short hint is used on narrow screens and the descriptive one
+                  from sm: upwards. min-w-0 lets the input shrink inside the flex
+                  row instead of forcing the container wider.
+                */}
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Enter Display ID (e.g. SAAI-2026-001), Phone number, or Name..."
-                  className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
+                  placeholder={isNarrow ? 'Search ID, phone, name' : 'Enter Display ID (e.g. SAAI-2026-001), Phone number, or Name...'}
+                  className="flex-1 min-w-0 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400 text-ellipsis"
                 />
               </div>
             </div>

@@ -330,7 +330,9 @@ export function LoginScreen() {
                 onKeyDown={handleKeyDown}
                 placeholder="e.g. your@email.com or mobile"
                 className="flex-1 outline-none bg-transparent"
-                style={{ padding: '14px 0', fontSize: '14px', color: '#1e293b' }}
+                // minWidth:0 lets the input shrink below its intrinsic width so
+                // the row cannot overflow the container at narrow viewports.
+                style={{ padding: '14px 0', fontSize: '14px', color: '#1e293b', minWidth: 0 }}
                 autoComplete="off"
               />
             </div>
@@ -341,16 +343,34 @@ export function LoginScreen() {
             <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', letterSpacing: '0.6px', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
               Password
             </label>
+            {/*
+              Positioned container rather than a flex row: as a flex item the
+              input kept its intrinsic width (min-width defaults to auto), so at
+              narrow widths it refused to shrink and pushed the toggle button
+              past the rounded border. The input now fills the box and reserves
+              room for the icons through its own padding, so the button is
+              always inside the border regardless of viewport width.
+            */}
             <div
-              className="flex items-center gap-3 px-4"
               style={{
+                position: 'relative',
                 border: `1.5px solid ${password ? '#3b82f6' : '#e2e8f0'}`,
                 borderRadius: '16px',
                 background: '#ffffff',
                 transition: 'border-color 0.2s',
               }}
             >
-              <Lock size={18} color={password ? '#2563eb' : '#94a3b8'} />
+              <Lock
+                size={18}
+                color={password ? '#2563eb' : '#94a3b8'}
+                style={{
+                  position: 'absolute',
+                  left: '16px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  pointerEvents: 'none',
+                }}
+              />
               <input
                 id="password-input"
                 type={showPassword ? 'text' : 'password'}
@@ -358,14 +378,38 @@ export function LoginScreen() {
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Enter your password"
-                className="flex-1 outline-none bg-transparent"
-                style={{ padding: '14px 0', fontSize: '14px', color: '#1e293b' }}
+                className="w-full outline-none bg-transparent"
+                style={{
+                  boxSizing: 'border-box',
+                  // left clears the lock icon (16 + 18 + 12 gap), right clears
+                  // the 44px touch target plus its 4px inset and a small buffer
+                  padding: '14px 52px 14px 46px',
+                  fontSize: '14px',
+                  color: '#1e293b',
+                  borderRadius: '16px',
+                  minWidth: 0,
+                }}
                 autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer' }}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                style={{
+                  position: 'absolute',
+                  right: '4px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '44px',
+                  height: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
               >
                 {showPassword ? <EyeOff size={18} color="#94a3b8" /> : <Eye size={18} color="#94a3b8" />}
               </button>

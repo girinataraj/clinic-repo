@@ -427,7 +427,14 @@ export function TherapistAssessmentForm() {
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden">
       <div className="flex-1 overflow-y-auto flex flex-col overflow-x-hidden">
       {/* Header - Design based on Dashboard Gradient */}
-      <div className={`px-5 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-5 pb-4 rounded-b-[2rem]' : 'py-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#134e4a] to-[#0d9488] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden`}>
+      {/*
+        Top padding comes from the shared safe-area utilities (pt-safe-top-*),
+        which resolve to base spacing + var(--sa-top). Without them this header
+        sat flush at y=0 and the Android status bar overlapped the back button,
+        title and step indicator. Mirrors DoctorAssessmentForm, which already
+        used the safe-area variants.
+      */}
+      <div className={`px-5 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-safe-top-5 pb-4 rounded-b-[2rem]' : 'pt-safe-top-3.5 pb-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#134e4a] to-[#0d9488] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden`}>
         <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className={`flex items-center justify-between relative z-10 ${isHeaderExpanded ? 'mb-3' : ''}`}>
           <div className="flex items-center gap-3">
