@@ -24,7 +24,9 @@ export function LoginScreen() {
 
   useEffect(() => {
     if (!isInitializing && user) {
-      console.log('[Auth] AUTH_RESTORE_SUCCESS - redirecting to dashboard');
+      // Dev-only: `import.meta.env.DEV` is statically false in production
+      // builds, so this is dead-code-eliminated from the shipped bundle.
+      if (import.meta.env.DEV) console.log('[Auth] AUTH_RESTORE_SUCCESS - redirecting to dashboard');
       const role = user.role;
       if (role === 'doctor' || role === 'admin') {
         navigate('/doctor', { replace: true });

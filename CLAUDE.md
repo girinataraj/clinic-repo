@@ -153,18 +153,19 @@ Never assume local PDF generation means production PDF generation works.
 
 Production API:
 
-https://clinic-backend-sjro.onrender.com/api
+https://clinic-api.saaiphysioclinic.com/api
 
-The Render deployment may require manual triggering.
+Hosted on DigitalOcean (nginx + PM2), deployed automatically from the
+clinic-backend `main` branch via GitHub Actions.
 
 Do NOT claim production deployment is complete unless it has actually been verified.
 
-A Render response such as:
+A response such as:
 
 Route not found: GET /
 
-does NOT automatically mean the API is broken.
-Verify the actual API endpoints.
+does NOT automatically mean the API is broken — that is the expected 404 for
+the bare root path. Verify the actual API endpoints (e.g. GET /api/health).
 
 ---
 

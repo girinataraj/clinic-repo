@@ -38,10 +38,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ── Restore session on mount via refresh-token cookie or Preferences ───────
   useEffect(() => {
     const restoreSession = async () => {
-      console.log('[Auth] AUTH_INIT_START');
+      // Auth diagnostics are gated on `import.meta.env.DEV`, which Vite
+      // statically replaces with `false` when building for production — the
+      // guarded calls are then dead-code-eliminated and cannot execute in, or
+      // even reach, the shipped Android bundle. Never log names, emails,
+      // phone numbers or tokens here: WebView console output goes to logcat.
+      if (import.meta.env.DEV) console.log('[Auth] AUTH_INIT_START');
       try {
         const refreshToken = await initTokenStorage();
-        if (refreshToken) {
+        if (import.meta.env.DEV && refreshToken) {
           console.log('[Auth] AUTH_STORAGE_FOUND');
         }
 
@@ -49,13 +54,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // The cookie (withCredentials) may still carry one, so only bail
         // when persistent storage is also empty.
         if (!refreshToken) {
-          console.debug('[Auth] No refresh token in storage — skipping restore');
+          if (import.meta.env.DEV) console.debug('[Auth] No refresh token in storage — skipping restore');
           setUser(null);
           setIsInitializing(false);
           return;
         }
 
-        console.debug('[Auth] Attempting session restore…');
+        if (import.meta.env.DEV) console.debug('[Auth] Attempting session restore…');
         const response = await axios.post<{
           success: boolean;
           data: { accessToken: string; refreshToken?: string; user: AuthUser };
@@ -73,15 +78,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (newRefreshToken) {
             setRefreshToken(newRefreshToken);
           }
-          console.log('[Auth] AUTH_RESTORE_SUCCESS for', restoredUser?.role, restoredUser?.name);
+          // Role only — the user's name was previously logged here, which put
+          // real patient/staff identity into device logs on every app launch.
+          if (import.meta.env.DEV) console.log('[Auth] AUTH_RESTORE_SUCCESS for role', restoredUser?.role);
         } else {
-          console.warn('[Auth] Refresh responded but not successful', response.status);
+          if (import.meta.env.DEV) console.warn('[Auth] Refresh responded but not successful', response.status);
           setUser(null);
         }
       } catch (error: unknown) {
         const status = (error as { response?: { status?: number } })?.response?.status;
         const msg = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
-        console.warn('[Auth] AUTH_RESTORE_FAILED', { status, msg });
+        if (import.meta.env.DEV) console.warn('[Auth] AUTH_RESTORE_FAILED', { status, msg });
         setUser(null);
         // Only clear the stored token if the server explicitly rejected it (401).
         // For network errors / 500s, keep the token so the next reload can retry.
@@ -133,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    console.log('[Auth] LOGOUT');
+    if (import.meta.env.DEV) console.log('[Auth] LOGOUT');
     try {
       const refreshToken = getRefreshToken();
       await api.post(ENDPOINTS.AUTH.LOGOUT, { refreshToken });
