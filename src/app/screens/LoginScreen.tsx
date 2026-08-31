@@ -61,11 +61,6 @@ export function LoginScreen() {
     if (e.key === 'Enter') handleLogin();
   };
 
-  const handleAutofill = (email: string, pass: string) => {
-    setIdentifier(email);
-    setPassword(pass);
-  };
-
   if (isInitializing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8faff] dark:bg-slate-900">
@@ -472,69 +467,6 @@ export function LoginScreen() {
               </>
             )}
           </button>
-
-          {/* Quick presets */}
-          <div style={{ marginTop: '22px', padding: '14px', background: '#f8fafc', borderRadius: '18px', border: '1px solid #e2e8f0' }}>
-            <div className="flex items-center gap-1.5 justify-center" style={{ marginBottom: '10px' }}>
-              <div className="rounded-full" style={{ width: '6px', height: '6px', background: '#2563eb' }} />
-              <p style={{ fontSize: '11px', fontWeight: 800, color: '#475569', textAlign: 'center', letterSpacing: '0.4px' }}>
-                QUICK ACCESS ACCOUNTS (AUTOFILL)
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full min-w-0">
-              <button
-                type="button"
-                onClick={() => handleAutofill('sathish@saai.com', 'spcred@611')}
-                style={{
-                  padding: '9px 4px',
-                  borderRadius: '12px',
-                  background: '#eef2ff',
-                  border: '1.5px solid #c7d2fe',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  color: '#4338ca',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                }}
-              >
-                Doctor (Sathish)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAutofill('raghul@saai.com', 'YOKESHPT@2503')}
-                style={{
-                  padding: '9px 4px',
-                  borderRadius: '12px',
-                  background: '#f0fdfa',
-                  border: '1.5px solid #99f6e4',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  color: '#0f766e',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                }}
-              >
-                Therapist (Raghul)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAutofill('yokesh@saai.com', '@TN36bt5522')}
-                style={{
-                  padding: '9px 4px',
-                  borderRadius: '12px',
-                  background: '#f0fdfa',
-                  border: '1.5px solid #99f6e4',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  color: '#0f766e',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                }}
-              >
-                Therapist (Yokesh)
-              </button>
-            </div>
-          </div>
 
           <p style={{ textAlign: 'center', marginTop: '18px', fontSize: '11px', color: '#94a3b8' }}>
             © 2025 Saai Physiotherapy Clinic · v2.0

@@ -58,6 +58,7 @@ function formatDisplayValue(val: any): string {
 export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBack }: EvaluationSummaryReportProps) {
   const navigate = useNavigate();
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
 
   if (!evaluation) return null;
@@ -448,6 +449,96 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
       setPdfError(msg);
     } finally {
       setDownloadingPdf(false);
+    }
+  };
+
+  /**
+   * Payment invoice download. Deliberately mirrors handleGeneratePdf's save
+   * mechanics (Capacitor Filesystem on native, blob anchor on web) so both
+   * documents behave identically on Android and in the browser. Guarded by its
+   * own `downloadingInvoice` flag rather than sharing the report's, so a
+   * second click is ignored while one is in flight and neither action can
+   * disable the other.
+   */
+  const handleDownloadInvoice = async () => {
+    if (downloadingInvoice) return;
+    setDownloadingInvoice(true);
+    setPdfError(null);
+    // Ownership of the loading flag. Only the native save path takes it over
+    // (it finishes asynchronously in a FileReader callback); every other exit
+    // — including native failures before that hand-off — is cleared by the
+    // outer finally below.
+    let handedOff = false;
+    try {
+      const evalId = rawData.id || rawData.evaluationId || rawData.evaluation_id;
+      if (!evalId) {
+        setPdfError('Cannot generate invoice: no evaluation reference found for this visit.');
+        return;
+      }
+
+      const response = await api.get(ENDPOINTS.REPORTS.INVOICE(String(evalId)), { responseType: 'blob' });
+      if (!response?.data) {
+        setPdfError('No invoice data received from server. Please try again.');
+        return;
+      }
+
+      const clean = (value: any, fallback: string) => {
+        const cleaned = String(value ?? '').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+        return cleaned === '' ? fallback : cleaned;
+      };
+      // Patient display id + visit reference only — no name, so the filename
+      // carries no directly identifying information.
+      const fileName = `SAAI_Payment_Invoice_${clean(patientDisplayId, 'Patient')}_${clean(evalId, 'Invoice')}.pdf`;
+
+      if (Capacitor.isNativePlatform()) {
+        const reader = new FileReader();
+        reader.readAsDataURL(new Blob([response.data]));
+        reader.onloadend = async () => {
+          try {
+            // Read inside the try: a failed read leaves reader.result null, and
+            // the resulting throw must still reach the finally that clears the flag.
+            const base64data = (reader.result as string).split(',')[1];
+            await Filesystem.writeFile({ path: fileName, data: base64data, directory: Directory.Documents });
+            alert('Invoice saved to Documents folder.');
+          } catch (e) {
+            setPdfError('Could not save the invoice to your device.');
+          } finally {
+            setDownloadingInvoice(false);
+          }
+        };
+        // The callback above now owns the flag and clears it on both success
+        // and failure, so the outer finally must not also clear it here.
+        handedOff = true;
+        return;
+      }
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      let msg = 'Failed to download invoice.';
+      if (err?.response?.data instanceof Blob) {
+        try {
+          const json = JSON.parse(await err.response.data.text());
+          msg = json.message || msg;
+        } catch (_) {}
+      } else if (err?.response?.data?.message) {
+        msg = err.response.data.message;
+      } else if (err?.message) {
+        msg = err.message;
+      }
+      setPdfError(msg);
+    } finally {
+      // Clears every exit that did not hand the flag to the native callback:
+      // missing evalId, missing response data, web success, and any thrown
+      // error on either platform.
+      if (!handedOff) setDownloadingInvoice(false);
     }
   };
 
@@ -1131,6 +1222,25 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
             <span>Share</span>
           </button>
         </div>
+
+        {/* Payment invoice — billing document, separate from the clinical report above */}
+        <button
+          onClick={handleDownloadInvoice}
+          disabled={downloadingInvoice}
+          className="mt-2.5 sm:mt-3 w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs sm:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md disabled:opacity-60"
+        >
+          {downloadingInvoice ? (
+            <>
+              <Loader2 size={16} className="animate-spin text-white" />
+              <span>Preparing Invoice...</span>
+            </>
+          ) : (
+            <>
+              <FileText size={16} />
+              <span>Download Invoice</span>
+            </>
+          )}
+        </button>
       </div>
     </div>
   );
