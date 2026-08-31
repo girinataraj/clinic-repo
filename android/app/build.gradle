@@ -7,7 +7,7 @@ android {
         applicationId "com.saai.physiotherapy"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode Integer.parseInt(System.getenv("VERSION_CODE") != null ? System.getenv("VERSION_CODE") : "1")
+        versionCode Integer.parseInt(System.getenv("VERSION_CODE") != null ? System.getenv("VERSION_CODE") : "2")
         versionName (System.getenv("VERSION_NAME") != null ? System.getenv("VERSION_NAME") : "1.0.0")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
