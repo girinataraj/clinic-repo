@@ -1,5 +1,5 @@
-﻿import { useState, useCallback, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+﻿import { useState, useCallback, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
 import { SearchDropdown } from '../../components/SearchDropdown';
@@ -8,7 +8,7 @@ import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } fro
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
 import { useStaffUsers } from '../../../hooks/useStaff';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone, RotateCcw, UserCheck, Printer } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone, RotateCcw, UserCheck, Printer, UserPlus } from 'lucide-react';
 import { EvaluationSummaryReport } from '../../components/EvaluationSummaryReport';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount, type CardioExamData, getEmptyCardioExam } from './clinicalConfig';
 import { SectionCard, FormField, doctorInputClass } from './FormComponents';
@@ -17,9 +17,11 @@ import { StepNeuroExam, getEmptyNeuroData } from './StepNeuroExam';
 import { StepCardioExam } from './StepCardioExam';
 
 import { AnthropometricSection } from './AnthropometricSection';
+import { loadDoctorIntakeDraft, saveDoctorIntakeDraft, clearDoctorIntakeDraft } from './doctorIntakeDraft';
 
 export function DoctorAssessmentForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const currentRole = 'doctor';
   const [searchParams] = useSearchParams();
@@ -80,6 +82,31 @@ export function DoctorAssessmentForm() {
   const [visitType, setVisitType] = useState<'Clinic'|'Home Visit'|'IP'|'Day Care'>('Clinic');
   const [neuroData, setNeuroData] = useState<any>(getEmptyNeuroData());
   const [cardioData, setCardioData] = useState<CardioExamData>(getEmptyCardioExam());
+
+  // Identifies "the same navigation/session flow" for draft restoration.
+  //
+  // Patient-specific entries (opened with ?patientId=/?phone=, e.g. from a
+  // patient list) are keyed by that patient, so the SAME patient's draft
+  // survives any number of back-gesture-then-reopen cycles.
+  //
+  // A fresh walk-in intake (opened bare from BottomNav/SideNav's "Intake" tab,
+  // no patientId/phone yet) has no patient identity to key on. Falling back to
+  // a fixed literal here previously caused a real bug: every fresh walk-in
+  // collapsed onto the SAME key, so an abandoned draft for one patient could
+  // silently populate a completely different patient's brand new intake.
+  //
+  // The fix uses React Router's location.key instead: it is generated fresh by
+  // the router itself on every PUSH navigation (tapping "Intake" always pushes
+  // a new history entry, so two separate walk-ins always get two different
+  // keys — no possible collision) and is preserved unchanged when the router
+  // POPs back to that exact entry (e.g. the doctor taps "Add Patient" from
+  // within intake, pushing /doctor/patient-form on top, then backs out of
+  // THAT — the router returns to intake's original entry with its original
+  // key, so that specific in-progress session correctly restores). Because two
+  // distinct fresh intakes can never share a location.key, cross-patient
+  // contamination is structurally impossible rather than merely unlikely.
+  const [draftKey] = useState(() => searchParams.get('patientId') || searchParams.get('phone') || `fresh-${location.key}`);
+  const hasMountedRef = useRef(false);
 
   // Follow-up
   const { data: previousEval } = useLatestEvaluation(resolvedPatientId || null);
@@ -170,6 +197,78 @@ export function DoctorAssessmentForm() {
       setCardioData(getEmptyCardioExam());
     }
   }, [resolvedPatientId]);
+
+  // Restore an in-progress draft for this same patient/phone context (e.g. after
+  // the Android back gesture unmounted this screen) so returning to it doesn't
+  // lose already-entered data. Runs once on mount; declared after the
+  // "clear fields on resolvedPatientId" effect above so a restored value wins
+  // over that effect's blank defaults during the same mount pass.
+  useEffect(() => {
+    const draft = loadDoctorIntakeDraft(draftKey);
+    if (!draft) return;
+    setStep(draft.step);
+    setPhoneInput(draft.phoneInput);
+    setPhoneToFetch(draft.phoneToFetch);
+    setLookupDone(draft.lookupDone);
+    setShowNewPatientForm(draft.showNewPatientForm);
+    setNewPatient(draft.newPatient);
+    setSelectedTherapistId(draft.selectedTherapistId);
+    setResolvedPatientId(draft.resolvedPatientId);
+    setPatientInfo(draft.patientInfo);
+    setVitals(draft.vitals);
+    setChiefComplaints(draft.chiefComplaints);
+    setComplaintsText(draft.complaintsText);
+    setSpecificProblems(draft.specificProblems);
+    setAssociatedSymptoms(draft.associatedSymptoms);
+    setSelectedMedicalHistory(draft.selectedMedicalHistory);
+    setOtherMedicalHistory(draft.otherMedicalHistory);
+    setShowOtherMedicalHistory(draft.showOtherMedicalHistory);
+    setPainLevel(draft.painLevel);
+    setExaminationNotes(draft.examinationNotes);
+    setDiagnosisNotes(draft.diagnosisNotes);
+    setSelectedDiagnoses(draft.selectedDiagnoses);
+    setTreatmentNotes(draft.treatmentNotes);
+    setTreatmentPlanData(draft.treatmentPlanData);
+    setFuncRatings(draft.funcRatings);
+    setRomData(draft.romData);
+    setAnthropometrics(draft.anthropometrics);
+    setClinicalExamData(draft.clinicalExamData);
+    setPaymentMode(draft.paymentMode);
+    setBillAmount(draft.billAmount);
+    setBillAmountInput(draft.billAmountInput);
+    setIsManualBillEdit(draft.isManualBillEdit);
+    setVisitType(draft.visitType);
+    setNeuroData(draft.neuroData);
+    setCardioData(draft.cardioData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep the draft current so a later remount of this same session can restore
+  // it. Skips the mount commit (hasMountedRef starts false) so it never saves
+  // pre-hydration values over the draft the effect above just restored.
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    saveDoctorIntakeDraft(draftKey, {
+      step, phoneInput, phoneToFetch, lookupDone, showNewPatientForm, newPatient,
+      selectedTherapistId, resolvedPatientId, patientInfo, vitals, chiefComplaints,
+      complaintsText, specificProblems, associatedSymptoms, selectedMedicalHistory,
+      otherMedicalHistory, showOtherMedicalHistory, painLevel, examinationNotes,
+      diagnosisNotes, selectedDiagnoses, treatmentNotes, treatmentPlanData, funcRatings,
+      romData, anthropometrics, clinicalExamData, paymentMode, billAmount,
+      billAmountInput, isManualBillEdit, visitType, neuroData, cardioData,
+    });
+  }, [
+    draftKey, step, phoneInput, phoneToFetch, lookupDone, showNewPatientForm, newPatient,
+    selectedTherapistId, resolvedPatientId, patientInfo, vitals, chiefComplaints,
+    complaintsText, specificProblems, associatedSymptoms, selectedMedicalHistory,
+    otherMedicalHistory, showOtherMedicalHistory, painLevel, examinationNotes,
+    diagnosisNotes, selectedDiagnoses, treatmentNotes, treatmentPlanData, funcRatings,
+    romData, anthropometrics, clinicalExamData, paymentMode, billAmount,
+    billAmountInput, isManualBillEdit, visitType, neuroData, cardioData,
+  ]);
 
   const formatRupees = (n: number) => new Intl.NumberFormat('en-IN').format(n);
 
@@ -346,6 +445,7 @@ export function DoctorAssessmentForm() {
       if (resolvedPatientId) {
         await updatePatient.mutateAsync({ id: resolvedPatientId, status: 'completed' });
       }
+      clearDoctorIntakeDraft();
       setSaved(true);
       setTimeout(() => {
         if (resolvedPatientId) {
@@ -472,13 +572,22 @@ export function DoctorAssessmentForm() {
               <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} - {stepsList[step]?.label}</p>
             </div>
           </div>
-          <button 
-            onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
-            className="flex items-center justify-center rounded-full w-9.5 h-9.5 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-md border border-white/20 text-white active:scale-90"
-            title={isHeaderExpanded ? "Minimize progress details" : "Show progress details"}
-          >
-            {isHeaderExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/doctor/patient-form')}
+              className="flex items-center justify-center rounded-full w-9.5 h-9.5 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-md border border-white/20 text-white active:scale-90"
+              title="Add Patient"
+            >
+              <UserPlus size={16} />
+            </button>
+            <button
+              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+              className="flex items-center justify-center rounded-full w-9.5 h-9.5 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-md border border-white/20 text-white active:scale-90"
+              title={isHeaderExpanded ? "Minimize progress details" : "Show progress details"}
+            >
+              {isHeaderExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+          </div>
         </div>
 
         {isHeaderExpanded && (

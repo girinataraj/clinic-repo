@@ -350,7 +350,6 @@ export function DoctorProfile() {
                   </div>
                   <div className="flex-1">
                     <p className="text-[14px] font-semibold text-slate-900 dark:text-white">{edu.degree}</p>
-                    <p className="text-[12px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">Need to get info from client</p>
                   </div>
                   <Award size={18} className="text-slate-600 dark:text-slate-400" />
                 </div>

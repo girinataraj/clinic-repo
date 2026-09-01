@@ -241,7 +241,19 @@ export function DoctorDashboard() {
           </div>
 
           {/* Quick actions */}
-          <div className="flex overflow-x-auto gap-3 mb-6 pb-2 scrollbar-none md:grid md:grid-cols-3">
+          <div className="flex overflow-x-auto gap-3 mb-6 pb-2 scrollbar-none md:grid md:grid-cols-4">
+            <button
+              onClick={() => navigate('/doctor/patient-form')}
+              className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20 shadow-sm"
+            >
+              <div className="rounded-xl flex items-center justify-center shrink-0 w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50">
+                <UserPlus size={18} className="text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div className="text-left">
+                <p className="text-[13px] font-bold text-slate-900 dark:text-white">Add Patient</p>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400">Register a new patient</p>
+              </div>
+            </button>
             <button
               onClick={() => navigate('/doctor/assign-patient')}
               className="flex items-center gap-3 p-4 rounded-2xl transition-shadow hover:shadow-md bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20 shadow-sm"

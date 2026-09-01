@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { useAuth } from '../contexts/AuthContext';
 import { usePatients, usePatient } from '../../hooks/usePatients';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -66,6 +68,7 @@ export function PatientHistorySearch() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [expandedEvalId, setExpandedEvalId] = useState<string | null>(null);
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
 
   // Timeline Filters
   const [startDate, setStartDate] = useState('');
@@ -165,6 +168,63 @@ export function PatientHistorySearch() {
       link.parentNode?.removeChild(link);
     } catch (err) {
       alert('Failed to download assessment PDF.');
+    }
+  };
+
+  // Downloads the same payment invoice PDF already available from the
+  // evaluation summary screen — same endpoint, same PDF, same filename
+  // convention, same Capacitor/web save flow. The timeline's billing item id
+  // is `bill-<evaluationId>` (see patientHistoryController.js); the raw
+  // evaluation id is recovered from it rather than adding a new field to that
+  // response.
+  const handleDownloadInvoicePdf = async (billingItemId: string, evaluationDisplayId: string) => {
+    if (downloadingInvoiceId) return;
+    const evaluationId = billingItemId.replace(/^bill-/, '');
+    setDownloadingInvoiceId(billingItemId);
+    try {
+      const response = await api.get(ENDPOINTS.REPORTS.INVOICE(evaluationId), { responseType: 'blob' });
+      const clean = (value: any, fallback: string) => {
+        const cleaned = String(value ?? '').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+        return cleaned === '' ? fallback : cleaned;
+      };
+      const fileName = `SAAI_Payment_Invoice_${clean(patient?.display_id, 'Patient')}_${clean(evaluationDisplayId, 'Invoice')}.pdf`;
+
+      if (Capacitor.isNativePlatform()) {
+        let handedOff = false;
+        try {
+          const reader = new FileReader();
+          reader.readAsDataURL(new Blob([response.data]));
+          reader.onloadend = async () => {
+            try {
+              const base64data = (reader.result as string).split(',')[1];
+              await Filesystem.writeFile({ path: fileName, data: base64data, directory: Directory.Documents });
+              alert('Invoice saved to Documents folder.');
+            } catch (e) {
+              alert('Could not save the invoice to your device.');
+            } finally {
+              setDownloadingInvoiceId(null);
+            }
+          };
+          handedOff = true;
+        } finally {
+          if (!handedOff) setDownloadingInvoiceId(null);
+        }
+        return;
+      }
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      setDownloadingInvoiceId(null);
+    } catch (err) {
+      alert('Failed to download invoice PDF.');
+      setDownloadingInvoiceId(null);
     }
   };
 
@@ -905,6 +965,7 @@ export function PatientHistorySearch() {
 
                     // ───── CASE 3: BILLING RECEIPT EVENT ─────
                     if (item.type === 'billing') {
+                      const isDownloadingInvoice = downloadingInvoiceId === item.id;
                       return (
                         <div key={item.id} className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 p-5 shadow-sm relative flex justify-between items-center gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
                           {/* Timeline dot */}
@@ -929,6 +990,15 @@ export function PatientHistorySearch() {
                               </p>
                             </div>
                           </div>
+
+                          <button
+                            onClick={() => handleDownloadInvoicePdf(item.id, item.displayId)}
+                            disabled={isDownloadingInvoice}
+                            className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 active:scale-95 transition-all disabled:opacity-50 shrink-0"
+                            title="Download Invoice PDF"
+                          >
+                            {isDownloadingInvoice ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                          </button>
                         </div>
                       );
                     }
