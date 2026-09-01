@@ -469,7 +469,7 @@ export function LoginScreen() {
           </button>
 
           <p style={{ textAlign: 'center', marginTop: '18px', fontSize: '11px', color: '#94a3b8' }}>
-            © 2025 Saai Physiotherapy Clinic · v2.0
+            © {new Date().getFullYear()} Saai Physiotherapy Clinic
           </p>
         </div>
       </div>
