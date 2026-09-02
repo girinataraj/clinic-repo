@@ -223,7 +223,7 @@ export function SideNav() {
         </button>
         {!isMinimized && (
           <p className="text-center text-[9px] text-slate-300 dark:text-slate-700 mt-2.5 font-semibold">
-            SAAI Physiotherapy v2.0
+            © {new Date().getFullYear()} SAAI Physiotherapy Clinic
           </p>
         )}
       </div>

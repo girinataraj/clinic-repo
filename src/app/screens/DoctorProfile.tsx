@@ -385,7 +385,7 @@ export function DoctorProfile() {
           </button>
 
           <p className="text-center text-[12px] text-slate-600 dark:text-slate-400 mt-2">
-            SAAI Physiotherapy v2.0 · Secure Health Platform
+            © {new Date().getFullYear()} SAAI Physiotherapy Clinic · Secure Health Platform
           </p>
         </div>
       </div>

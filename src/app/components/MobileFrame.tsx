@@ -127,7 +127,7 @@ export function MobileFrame() {
           ))}
         </div>
         <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.15)', letterSpacing: '0.5px' }}>
-          © 2025 SAAI Physiotherapy Clinic
+          © {new Date().getFullYear()} SAAI Physiotherapy Clinic
         </span>
       </div>
     </div>
