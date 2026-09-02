@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, Link } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import {
   Eye, EyeOff, Mail, Lock,
@@ -470,6 +470,11 @@ export function LoginScreen() {
 
           <p style={{ textAlign: 'center', marginTop: '18px', fontSize: '11px', color: '#94a3b8' }}>
             © {new Date().getFullYear()} Saai Physiotherapy Clinic
+          </p>
+          <p style={{ textAlign: 'center', marginTop: '6px', fontSize: '11px' }}>
+            <Link to="/privacy-policy" style={{ color: '#64748b', fontWeight: 600, textDecoration: 'underline' }}>
+              Privacy Policy
+            </Link>
           </p>
         </div>
       </div>
