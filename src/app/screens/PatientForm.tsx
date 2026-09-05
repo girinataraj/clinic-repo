@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { usePatient, useCreatePatient, useUpdatePatient } from '../../hooks/usePatients';
 import { useStaffUsers } from '../../hooks/useStaff';
-import { OwningDoctorSelect } from '../components/OwningDoctorSelect';
 import {
   ArrowLeft, Save, Loader2, CheckCircle, AlertTriangle, User, Phone, MapPin,
   FileText, Activity, ChevronDown, UserCog,
@@ -17,8 +16,7 @@ export function PatientForm() {
   const editId = searchParams.get('id');
   const isEdit = Boolean(editId);
   const role = user?.role ?? 'nurse';
-  const isAdmin = role === 'admin';
-  const basePath = role === 'doctor' || isAdmin ? '/doctor' : '/nurse';
+  const basePath = role === 'doctor' ? '/doctor' : '/nurse';
 
   // ── Data hooks ───────────────────────────────────────────────────────────
   const { data: existingPatient, isLoading: loadingPatient } = usePatient(editId);
@@ -33,8 +31,6 @@ export function PatientForm() {
   const [city, setCity] = useState('');
   const [referredBy, setReferredBy] = useState('');
   const [therapistId, setTherapistId] = useState('');
-  // Administrators must name the owning doctor; every other role inherits one.
-  const [owningDoctorId, setOwningDoctorId] = useState('');
 
   // ── Therapist list for assignment (only fetched for doctor) ────────────
   const isDoctorRole = role === 'doctor';
@@ -42,10 +38,10 @@ export function PatientForm() {
 
   // For nurse/therapist: auto-set therapistId to self
   useEffect(() => {
-    if (!isDoctorRole && !isAdmin && user?.id && !therapistId) {
+    if (!isDoctorRole && user?.id && !therapistId) {
       setTherapistId(user.id);
     }
-  }, [isDoctorRole, isAdmin, user?.id, therapistId]);
+  }, [isDoctorRole, user?.id, therapistId]);
 
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,10 +63,7 @@ export function PatientForm() {
   }, [isEdit, existingPatient, loadedPatientId]);
 
   // ── Validation ───────────────────────────────────────────────────────────
-  // A therapist is implicitly their own patients' therapist; a doctor picks
-  // one, and an admin is never a therapist so they get whatever they picked.
-  const resolvedTherapistId =
-    isDoctorRole || isAdmin ? therapistId : (user?.id ?? therapistId);
+  const resolvedTherapistId = isDoctorRole ? therapistId : (user?.id ?? therapistId);
   const validate = () => {
     if (!name.trim() || name.trim().length < 2) return 'Patient name must be at least 2 characters.';
     const numAge = Number(age);
@@ -78,7 +71,6 @@ export function PatientForm() {
     const cleanPhone = phone.trim().replace(/[\s-]/g, '');
     if (!cleanPhone || !/^\d{10}$/.test(cleanPhone)) return 'Phone number must be exactly 10 digits.';
     if (isDoctorRole && !resolvedTherapistId) return 'Please assign a therapist.';
-    if (isAdmin && !isEdit && !owningDoctorId) return 'Please select the owning doctor for this patient.';
     return null;
   };
 
@@ -111,11 +103,10 @@ export function PatientForm() {
           city: city.trim() || undefined,
           referredBy: referredBy.trim() || undefined,
           therapistId: resolvedTherapistId || undefined,
-          ...(isAdmin && owningDoctorId ? { owningDoctorId } : {}),
         });
       }
       setSuccess(true);
-      setTimeout(() => navigate(role === 'doctor' || isAdmin ? '/doctor' : '/nurse/patients'), 1200);
+      setTimeout(() => navigate(role === 'doctor' ? '/doctor' : '/nurse/patients'), 1200);
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to save patient. Please try again.');
     }
@@ -313,17 +304,6 @@ export function PatientForm() {
 
 
 
-              {/* Owning Doctor — administrators only. A doctor owns what they
-                  create and a therapist inherits their supervising doctor, so
-                  neither is asked. Not shown on edit: ownership is immutable. */}
-              {isAdmin && !isEdit && (
-                <OwningDoctorSelect
-                  value={owningDoctorId}
-                  onChange={setOwningDoctorId}
-                  focusBorder={theme.focusBorder}
-                />
-              )}
-
               {/* Assign Therapist — only shown for doctor role */}
               {isDoctorRole && (
                 <div>
@@ -381,10 +361,7 @@ export function PatientForm() {
       </div>
 
       <div className="md:hidden shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        {/* navConfig has no 'admin' entry, so passing the raw role rendered an
-            empty bar for admins. They share the doctor route tree, and the other
-            screens in it (DoctorDashboard, DoctorPatients) hardcode 'doctor'. */}
-        <BottomNav role={role === 'nurse' ? 'nurse' : 'doctor'} />
+        <BottomNav role={role as 'nurse' | 'doctor'} />
       </div>
     </div>
   );

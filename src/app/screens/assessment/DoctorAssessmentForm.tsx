@@ -8,7 +8,6 @@ import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } fro
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
 import { useStaffUsers } from '../../../hooks/useStaff';
-import { OwningDoctorSelect } from '../../components/OwningDoctorSelect';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone, RotateCcw, UserCheck, Printer, UserPlus } from 'lucide-react';
 import { EvaluationSummaryReport } from '../../components/EvaluationSummaryReport';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount, type CardioExamData, getEmptyCardioExam } from './clinicalConfig';
@@ -27,9 +26,6 @@ export function DoctorAssessmentForm() {
   const currentRole = 'doctor';
   const [searchParams] = useSearchParams();
   const isDoctorRole = true;
-  // This route is guarded for doctor AND admin, so the real role still matters:
-  // an admin has no hierarchy to inherit an owner from and must name one.
-  const isAdmin = user?.role === 'admin';
 
   // Phone lookup
   const [phoneInput, setPhoneInput] = useState(searchParams.get('phone') ?? '');
@@ -43,11 +39,7 @@ export function DoctorAssessmentForm() {
   const createPatientMutation = useCreatePatient();
   const updatePatientMutation = useUpdatePatient();
   const { data: therapistsList = [] } = useStaffUsers({ role: 'nurse' });
-  // An admin is not a therapist: defaulting to their own id would put the
-  // patient in no therapist's caseload and create an assignment the ownership
-  // model does not allow.
-  const [selectedTherapistId, setSelectedTherapistId] = useState(user?.role === 'admin' ? '' : (user?.id || ''));
-  const [owningDoctorId, setOwningDoctorId] = useState('');
+  const [selectedTherapistId, setSelectedTherapistId] = useState(user?.id || '');
 
   useEffect(() => {
     if (user?.id) {
@@ -300,9 +292,8 @@ export function DoctorAssessmentForm() {
 
   const handleCreateNewPatient = async () => {
     if (!newPatient.name||!newPatient.age) return;
-    if (isAdmin && !owningDoctorId) return;
     try {
-      const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),referredBy:newPatient.referredBy.trim()||undefined,condition:newPatient.condition||undefined,therapistId:selectedTherapistId||undefined,...(isAdmin&&owningDoctorId?{owningDoctorId}:{})});
+      const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),referredBy:newPatient.referredBy.trim()||undefined,condition:newPatient.condition||undefined,therapistId:selectedTherapistId||undefined});
       setResolvedPatientId(created.id);
       const cond = created.condition
         ? created.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
@@ -690,20 +681,9 @@ export function DoctorAssessmentForm() {
                 <input placeholder="Age *" type="number" value={newPatient.age} onChange={e=>setNewPatient(p=>({...p,age:e.target.value}))} className="px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
                 <select value={newPatient.gender} onChange={e=>setNewPatient(p=>({...p,gender:e.target.value as any}))} className="px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] transition-colors"><option>Male</option><option>Female</option><option>Other</option></select>
               </div>
-              {/* Owning Doctor — administrators only. A doctor owns what they
-                  create, so they are never asked for one. */}
-              {isAdmin && (
-                <div className="mt-4">
-                  <OwningDoctorSelect
-                    value={owningDoctorId}
-                    onChange={setOwningDoctorId}
-                    focusBorder="focus-within:border-[#262842] focus-within:ring-1 focus-within:ring-[#262842]"
-                  />
-                </div>
-              )}
               <div className="flex gap-4 mt-2">
                 <button onClick={()=>setShowNewPatientForm(false)} className="flex-1 py-3.5 rounded-2xl border border-slate-200 text-[14px] font-black text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-                <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age||(isAdmin&&!owningDoctorId)} className="flex-1 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] shadow-lg shadow-indigo-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creating...':'Save & Continue'}</button>
+                <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] shadow-lg shadow-indigo-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creating...':'Save & Continue'}</button>
               </div>
             </div>
           )}
