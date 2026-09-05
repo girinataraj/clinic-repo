@@ -67,7 +67,10 @@ export function PatientForm() {
   }, [isEdit, existingPatient, loadedPatientId]);
 
   // ── Validation ───────────────────────────────────────────────────────────
-  const resolvedTherapistId = isDoctorRole ? therapistId : (isAdmin ? therapistId : (user?.id ?? therapistId));
+  // A therapist is implicitly their own patients' therapist; a doctor picks
+  // one, and an admin is never a therapist so they get whatever they picked.
+  const resolvedTherapistId =
+    isDoctorRole || isAdmin ? therapistId : (user?.id ?? therapistId);
   const validate = () => {
     if (!name.trim() || name.trim().length < 2) return 'Patient name must be at least 2 characters.';
     const numAge = Number(age);
@@ -378,7 +381,10 @@ export function PatientForm() {
       </div>
 
       <div className="md:hidden shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <BottomNav role={role as 'nurse' | 'doctor'} />
+        {/* navConfig has no 'admin' entry, so passing the raw role rendered an
+            empty bar for admins. They share the doctor route tree, and the other
+            screens in it (DoctorDashboard, DoctorPatients) hardcode 'doctor'. */}
+        <BottomNav role={role === 'nurse' ? 'nurse' : 'doctor'} />
       </div>
     </div>
   );
