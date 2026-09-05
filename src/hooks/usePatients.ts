@@ -100,6 +100,13 @@ export function useCreatePatient() {
       condition?: string;
       therapistId?: string;
       referredBy?: string;
+      /**
+       * Administrators only. Every other role has an owner resolved server-side
+       * (a doctor owns what they create, a therapist inherits their supervising
+       * doctor) and this value is ignored for them. Create-only: ownership is
+       * never editable afterwards, so useUpdatePatient does not accept it.
+       */
+      owningDoctorId?: string;
     }) => {
       const { data } = await api.post<{ success: boolean; data: Patient }>(
         ENDPOINTS.PATIENTS.CREATE,

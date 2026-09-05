@@ -12,39 +12,50 @@ export interface StaffUser {
   name: string;
 }
 
+/**
+ * Staff/therapist directory.
+ *
+ * The backend now scopes this to the caller's own hierarchy: a doctor receives
+ * only the therapists they supervise, a therapist only themselves. The list is
+ * therefore an authorization-scoped result, not a client-side filter.
+ *
+ * Two previous behaviours were removed deliberately:
+ *   - `params` was ignored on the primary request, so every caller asking for
+ *     role='nurse' still received doctors as well, and doctors showed up as
+ *     therapist candidates in assignment dropdowns.
+ *   - doctor-vs-therapist was inferred from whether the name contained
+ *     "sathish", and ordering was hardcoded to three staff names. Role now
+ *     comes from the server.
+ */
 export function useStaffUsers(params?: { role?: 'doctor' | 'nurse'; search?: string }) {
   return useQuery<StaffUser[]>({
     queryKey: ['staff-users', params],
     queryFn: async () => {
-      try {
-        const { data: therapistRes } = await api.get<{ success: boolean; data: any[] }>('/therapists/list');
-        if (therapistRes?.success && Array.isArray(therapistRes.data)) {
-          return therapistRes.data.map(t => ({
-            id: t.id,
-            displayId: t.displayId || t.id.slice(0, 8),
-            role: (t.role === 'self' ? 'doctor' : 'nurse') as any,
-            name: t.name,
-          }));
+      // The therapist directory is the scoped source for therapist pickers.
+      if (!params?.role || params.role === 'nurse') {
+        try {
+          const { data: therapistRes } = await api.get<{ success: boolean; data: any[] }>(
+            '/therapists/list',
+            { params: params?.search ? { search: params.search } : undefined }
+          );
+          if (therapistRes?.success && Array.isArray(therapistRes.data)) {
+            return therapistRes.data.map((t) => ({
+              id: t.id,
+              displayId: t.displayId || t.id.slice(0, 8),
+              role: 'nurse' as const,
+              name: t.name,
+            }));
+          }
+        } catch {
+          // Fall through to the staff directory below.
         }
-      } catch {
-        // Fallback to staff endpoint
       }
 
       const { data } = await api.get<ApiEnvelope<StaffUser[]>>(
         ENDPOINTS.USERS.STAFF,
         { params }
       );
-      const staffList = data.data || [];
-
-      const getOrderIndex = (name: string) => {
-        const lower = name.toLowerCase();
-        if (lower.includes('sathish')) return 1;
-        if (lower.includes('raghul') || lower.includes('rahul')) return 2;
-        if (lower.includes('yokesh')) return 3;
-        return 4;
-      };
-
-      return [...staffList].sort((a, b) => getOrderIndex(a.name) - getOrderIndex(b.name));
+      return data.data || [];
     },
   });
 }
