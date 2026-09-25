@@ -31,6 +31,7 @@ export function useStaffUsers(params?: { role?: 'doctor' | 'nurse'; search?: str
   return useQuery<StaffUser[]>({
     queryKey: ['staff-users', params],
     queryFn: async () => {
+      console.log('[THERAPIST_DEBUG] LIST_REFRESH_STARTED', { params });
       // The therapist directory is the scoped source for therapist pickers.
       if (!params?.role || params.role === 'nurse') {
         try {
@@ -39,23 +40,49 @@ export function useStaffUsers(params?: { role?: 'doctor' | 'nurse'; search?: str
             { params: params?.search ? { search: params.search } : undefined }
           );
           if (therapistRes?.success && Array.isArray(therapistRes.data)) {
-            return therapistRes.data.map((t) => ({
+            const list = therapistRes.data.map((t) => ({
               id: t.id,
               displayId: t.displayId || t.id.slice(0, 8),
               role: 'nurse' as const,
               name: t.name,
             }));
+            console.log('[THERAPIST_DEBUG] LIST_REFRESH_SUCCESS', {
+              endpoint: '/therapists/list',
+              count: list.length,
+              therapists: list.map((t) => ({ id: t.id, name: t.name, displayId: t.displayId })),
+            });
+            return list;
           }
-        } catch {
+        } catch (err: any) {
+          console.error('[THERAPIST_DEBUG] LIST_REFRESH_ERROR', {
+            endpoint: '/therapists/list',
+            error: err?.message,
+            status: err?.response?.status,
+          });
           // Fall through to the staff directory below.
         }
       }
 
-      const { data } = await api.get<ApiEnvelope<StaffUser[]>>(
-        ENDPOINTS.USERS.STAFF,
-        { params }
-      );
-      return data.data || [];
+      try {
+        const { data } = await api.get<ApiEnvelope<StaffUser[]>>(
+          ENDPOINTS.USERS.STAFF,
+          { params }
+        );
+        const list = data.data || [];
+        console.log('[THERAPIST_DEBUG] LIST_REFRESH_SUCCESS', {
+          endpoint: ENDPOINTS.USERS.STAFF,
+          count: list.length,
+          therapists: list.map((t) => ({ id: t.id, name: t.name, displayId: t.displayId })),
+        });
+        return list;
+      } catch (err: any) {
+        console.error('[THERAPIST_DEBUG] LIST_REFRESH_ERROR', {
+          endpoint: ENDPOINTS.USERS.STAFF,
+          error: err?.message,
+          status: err?.response?.status,
+        });
+        throw err;
+      }
     },
   });
 }
@@ -70,13 +97,37 @@ export function useCreateStaffUser() {
       password: string;
       role: 'nurse';
     }) => {
-      const { data } = await api.post<ApiEnvelope<StaffUser>>(
-        ENDPOINTS.USERS.CREATE,
-        payload
-      );
-      return data.data;
+      console.log('[THERAPIST_DEBUG] API_REQUEST_START', {
+        endpoint: ENDPOINTS.USERS.CREATE,
+        name: payload.name,
+        email: payload.email,
+        role: payload.role,
+        password: '[REDACTED]',
+      });
+      try {
+        const { data } = await api.post<ApiEnvelope<StaffUser>>(
+          ENDPOINTS.USERS.CREATE,
+          payload
+        );
+        console.log('[THERAPIST_DEBUG] API_REQUEST_SUCCESS', {
+          status: 201,
+          therapistId: data?.data?.id,
+          displayId: data?.data?.displayId,
+          role: data?.data?.role,
+          name: data?.data?.name,
+        });
+        return data.data;
+      } catch (err: any) {
+        console.error('[THERAPIST_DEBUG] API_REQUEST_ERROR', {
+          message: err?.message,
+          status: err?.response?.status,
+          data: err?.response?.data,
+        });
+        throw err;
+      }
     },
     onSuccess: () => {
+      console.log('[THERAPIST_DEBUG] INVALIDATING_QUERY staff-users');
       queryClient.invalidateQueries({ queryKey: ['staff-users'] });
     },
   });
