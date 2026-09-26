@@ -1,4 +1,5 @@
 import { type ChangeEvent, useEffect } from 'react';
+import api from '../../../services/api';
 import { SectionCard, FormField, inputClass, doctorInputClass, MultiSelectDropdown, ToggleChip } from './FormComponents';
 import { FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS, SPECIFIC_PROBLEMS_BY_COMPLAINT, getSortedDiagnoses, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown, Stethoscope, FileSearch, PenTool, CalendarDays } from 'lucide-react';
@@ -9,7 +10,7 @@ import { TreatmentExerciseModule } from './TreatmentExerciseModule';
 import { useNextPatientId, usePatientByPhone, usePatient } from '../../../hooks/usePatients';
 
 // ── Step 0: Patient Info ──────────────────────────────────────────────────────
-export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user }: any) {
+export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user, onDuplicateMobile }: any) {
   const accent = isDoctorRole ? 'doctor' : 'teal';
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-teal-700';
@@ -43,14 +44,34 @@ export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selecte
   const now = new Date();
   const yy = String(now.getFullYear()).slice(-2);
   const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const fallbackId = `SAAI-${yy}-${mm}-01`;
+  const fallbackId = `SAAI-${yy}${mm}01`;
 
   const rawNext = nextIdData?.nextPatientId;
-  const nextIdStr = typeof rawNext === 'string' ? rawNext : (rawNext?.nextPatientId || '');
+  const nextIdStr = typeof rawNext === 'string' ? rawNext : ((rawNext as any)?.nextPatientId || '');
 
   const isValidPatientId = (id?: string) => Boolean(id && !/^[0-9a-f]{8}-[0-9a-f]{4}/i.test(id) && id !== '—');
 
-  const displayPatientId =
+  const formatPatientId = (id?: string | null) => {
+    if (!id || id === '—') return '';
+    const s = String(id).trim().toUpperCase();
+    const m = s.match(/^SAAI-?(\d{2})-?(\d{2})-?(\d{2,})$/i);
+    if (m) {
+      return `SAAI-${m[1]}${m[2]}${m[3]}`;
+    }
+    const m2 = s.match(/^SAAI-?(\d{6,})$/i);
+    if (m2) {
+      return `SAAI-${m2[1]}`;
+    }
+    if (/^SAAI-\d+$/i.test(s)) {
+      return s;
+    }
+    if (/^SAAI\d+$/i.test(s)) {
+      return `SAAI-${s.slice(4)}`;
+    }
+    return s;
+  };
+
+  const rawDisplayId =
     (isValidPatientId(patientInfo?.patientId) ? patientInfo.patientId : null) ||
     (isValidPatientId(patientInfo?.displayId) ? patientInfo.displayId : null) ||
     (isValidPatientId(resolvedPatient?.patientId) ? resolvedPatient.patientId : null) ||
@@ -59,6 +80,8 @@ export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selecte
     (isValidPatientId(matchedPatient?.displayId) ? matchedPatient.displayId : null) ||
     nextIdStr ||
     fallbackId;
+
+  const displayPatientId = formatPatientId(rawDisplayId);
 
   // The intake forms assign the patient to the logged-in clinician, except when
   // an already-registered patient carries a different therapist. Reflect whichever
@@ -93,7 +116,38 @@ export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selecte
           { key: 'referredBy', label: 'Referred By', placeholder: 'e.g. Self, Dr. Kumar', type: 'text' },
         ].map(f => (
           <FormField key={f.key} label={f.label}>
-            <input type={f.type} value={(patientInfo as any)[f.key]} onChange={e => setPatientInfo({ ...patientInfo, [f.key]: e.target.value })} placeholder={f.placeholder} className={ic} />
+            <input
+              type={f.type}
+              value={(patientInfo as any)[f.key]}
+              onChange={e => setPatientInfo({ ...patientInfo, [f.key]: e.target.value })}
+              onBlur={async () => {
+                if (f.key === 'phone' && onDuplicateMobile) {
+                  const rawPhone = (patientInfo.phone || '').trim();
+                  const clean = rawPhone.replace(/\D/g, '').slice(-10);
+                  if (clean.length === 10) {
+                    try {
+                      const res = await api.get<{ success: boolean; data: any }>(`/patients/lookup?phone=${clean}`);
+                      if (res.data?.data && (!resolvedPatientId || res.data.data.id !== resolvedPatientId)) {
+                        onDuplicateMobile();
+                      }
+                    } catch (err: any) {
+                      if (err?.response?.status !== 404) {
+                        try {
+                          const sRes = await api.get<{ success: boolean; data: any[] }>(`/patients/search?mobile=${clean}`);
+                          const match = (sRes.data?.data || []).find((p: any) => {
+                            const pMobile = (p.mobile || p.phone || '').replace(/\D/g, '').slice(-10);
+                            return pMobile === clean && (!resolvedPatientId || p.id !== resolvedPatientId);
+                          });
+                          if (match) onDuplicateMobile();
+                        } catch {}
+                      }
+                    }
+                  }
+                }
+              }}
+              placeholder={f.placeholder}
+              className={ic}
+            />
           </FormField>
         ))}
       </div>

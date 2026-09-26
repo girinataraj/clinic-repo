@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { BottomNav } from '../components/BottomNav';
 import { usePatient, useCreatePatient, useUpdatePatient } from '../../hooks/usePatients';
 import { useStaffUsers } from '../../hooks/useStaff';
+import api from '../../services/api';
 import {
   ArrowLeft, Save, Loader2, CheckCircle, AlertTriangle, User, Phone, MapPin,
   FileText, Activity, ChevronDown, UserCog,
@@ -45,6 +46,44 @@ export function PatientForm() {
 
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+
+  const showDuplicateMobilePopup = () => {
+    try {
+      window.alert('Mobile number already exists');
+    } catch {
+      // Ignore if alert is suppressed in test runners
+    }
+    setShowDuplicateModal(true);
+  };
+
+  const checkDuplicatePhone = async (phoneToCheck: string): Promise<boolean> => {
+    const clean = phoneToCheck.trim().replace(/[\s-]/g, '').slice(-10);
+    if (clean.length !== 10) return false;
+    try {
+      const res = await api.get<{ success: boolean; data: any }>(`/patients/lookup?phone=${clean}`);
+      if (res.data?.data && (!isEdit || res.data.data.id !== editId)) {
+        showDuplicateMobilePopup();
+        return true;
+      }
+    } catch (err: any) {
+      if (err?.response?.status !== 404) {
+        try {
+          const searchRes = await api.get<{ success: boolean; data: any[] }>(`/patients/search?mobile=${clean}`);
+          const match = (searchRes.data?.data || []).find((p: any) =>
+            p.mobile === clean && (!isEdit || p.id !== editId)
+          );
+          if (match) {
+            showDuplicateMobilePopup();
+            return true;
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return false;
+  };
 
   // ── Prefill on edit ──────────────────────────────────────────────────────
   const [loadedPatientId, setLoadedPatientId] = useState<string | null>(null);
@@ -82,6 +121,9 @@ export function PatientForm() {
 
     const cleanPhone = phone.trim().replace(/[\s-]/g, '');
 
+    const isDuplicate = await checkDuplicatePhone(cleanPhone);
+    if (isDuplicate) return;
+
     try {
       if (isEdit && editId) {
         await updatePatient.mutateAsync({
@@ -108,6 +150,14 @@ export function PatientForm() {
       setSuccess(true);
       setTimeout(() => navigate(role === 'doctor' ? '/doctor' : '/nurse/patients'), 1200);
     } catch (e: any) {
+      if (
+        e?.response?.data?.code === 'DUPLICATE_RESOURCE' ||
+        e?.response?.status === 409 ||
+        e?.response?.data?.message?.toLowerCase().includes('already exists')
+      ) {
+        showDuplicateMobilePopup();
+        return;
+      }
       setError(e?.response?.data?.message || 'Failed to save patient. Please try again.');
     }
   };
@@ -268,6 +318,12 @@ export function PatientForm() {
                   <input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    onBlur={async () => {
+                      const clean = phone.trim().replace(/[\s-]/g, '').slice(-10);
+                      if (clean.length === 10) {
+                        await checkDuplicatePhone(phone);
+                      }
+                    }}
                     placeholder="e.g. +91 9876543210"
                     className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                   />
@@ -363,6 +419,23 @@ export function PatientForm() {
       <div className="md:hidden shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <BottomNav role={role as 'nurse' | 'doctor'} />
       </div>
+
+      {showDuplicateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-slate-900 rounded-xl p-5 max-w-xs w-full text-center shadow-lg border border-slate-200 dark:border-slate-800">
+            <p className="text-sm font-bold text-slate-900 dark:text-white mb-4">
+              Mobile number already exists
+            </p>
+            <button
+              onClick={() => setShowDuplicateModal(false)}
+              className="w-full py-2 rounded-lg font-bold text-white text-sm transition-colors"
+              style={{ background: theme.submitBg }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
