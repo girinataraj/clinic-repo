@@ -18,6 +18,7 @@ export type VisitType = 'Clinic' | 'Home Visit' | 'IP' | 'Day Care';
 export interface Patient {
   id: string;
   displayId: string;
+  patientId?: string;
   name: string;
   age: number;
   gender: 'Male' | 'Female' | 'Other';

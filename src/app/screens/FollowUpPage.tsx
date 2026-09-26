@@ -224,7 +224,7 @@ export function FollowUpPage() {
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Lookup patient by Display ID (e.g. SAAI-2026-001), Phone, or Name..."
+                  placeholder="Lookup patient by Patient ID (e.g. SAAI-26-09-01), Phone, or Name..."
                   className="flex-1 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
                 />
               </div>
@@ -264,7 +264,7 @@ export function FollowUpPage() {
                             {p.name}
                           </h4>
                           <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                            {p.displayId}
+                            {p.patientId || p.displayId}
                           </span>
                         </div>
                         <p className="text-xs font-semibold text-slate-400">

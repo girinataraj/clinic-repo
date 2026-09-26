@@ -211,7 +211,7 @@ export function TherapistDetailPage() {
                   {/* Info chips */}
                   <div className="flex gap-2 px-4 pb-3">
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#E8E9F1] dark:bg-slate-800">
-                      <span className="text-[10px] font-semibold text-[#262842] dark:text-slate-300">🆔 {patient.displayId}</span>
+                      <span className="text-[10px] font-semibold text-[#262842] dark:text-slate-300">🆔 {patient.patientId || patient.displayId}</span>
                     </div>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#E8E9F1] dark:bg-slate-800">
                       <Phone size={10} className="text-[#262842] dark:text-slate-400" />

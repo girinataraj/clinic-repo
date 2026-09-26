@@ -308,7 +308,7 @@ export function PatientHistorySearch() {
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder={isNarrow ? 'Search ID, phone, name' : 'Enter Display ID (e.g. SAAI-2026-001), Phone number, or Name...'}
+                  placeholder={isNarrow ? 'Search ID, phone, name' : 'Enter Patient ID (e.g. SAAI-26-09-01), Phone number, or Name...'}
                   className="flex-1 min-w-0 bg-transparent outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400 text-ellipsis"
                 />
               </div>
@@ -330,7 +330,7 @@ export function PatientHistorySearch() {
               <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800 p-6 text-slate-400 dark:text-slate-500">
                 <Info size={36} className="mx-auto mb-3 opacity-30" />
                 <p className="text-sm font-bold">No patients found</p>
-                <p className="text-xs mt-1">Double check spelling or format of Display ID / Phone.</p>
+                <p className="text-xs mt-1">Double check spelling or format of Patient ID / Phone.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -343,7 +343,7 @@ export function PatientHistorySearch() {
                     <div className="flex items-start justify-between w-full mb-3">
                       <div>
                         <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                          {p.displayId}
+                          {p.patientId || p.displayId}
                         </span>
                         <h3 className="text-base font-extrabold text-slate-800 dark:text-white mt-2 group-hover:text-primary transition-colors">
                           {p.name}

@@ -15,7 +15,7 @@ export interface DoctorIntakeDraftData {
   newPatient: { name: string; age: string; gender: 'Male' | 'Female' | 'Other'; referredBy: string; condition: string };
   selectedTherapistId: string;
   resolvedPatientId: string;
-  patientInfo: { name: string; age: string; phone: string; gender: 'Male' | 'Female' | 'Other'; address: string; condition: string[]; referredBy?: string };
+  patientInfo: { name: string; age: string; phone: string; gender: 'Male' | 'Female' | 'Other'; address: string; condition: string[]; referredBy?: string; patientId?: string; displayId?: string };
   vitals: { bp_sys: string; bp_dia: string; pr: string; spo2: string; temp: string; ef: string };
   chiefComplaints: string[];
   complaintsText: string;

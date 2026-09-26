@@ -22,6 +22,7 @@ export const ENDPOINTS = {
 
   PATIENTS: {
     LIST: '/patients',
+    NEXT_ID: '/patients/next-id',
     LOOKUP_BY_PHONE: '/patients/lookup', // GET ?phone=xxx → { id, name, phone, ... }
     CREATE: '/patients',
     DETAIL: (id: string) => `/patients/${id}`,

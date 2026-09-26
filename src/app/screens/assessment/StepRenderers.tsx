@@ -1,4 +1,4 @@
-import { type ChangeEvent } from 'react';
+import { type ChangeEvent, useEffect } from 'react';
 import { SectionCard, FormField, inputClass, doctorInputClass, MultiSelectDropdown, ToggleChip } from './FormComponents';
 import { FUNCTIONAL_ACTIVITIES, RATING_LABELS, SPECIFIC_PROBLEM_OPTIONS, SPECIFIC_PROBLEMS_BY_COMPLAINT, getSortedDiagnoses, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount } from './clinicalConfig';
 import { User, Heart, CheckSquare, Sliders, ClipboardList, Phone, Search, UserPlus, ImagePlus, X, Check, Loader2, AlertTriangle, UserCog, ChevronDown, Stethoscope, FileSearch, PenTool, CalendarDays } from 'lucide-react';
@@ -6,6 +6,7 @@ import { ClinicalExamination } from './ClinicalExamination';
 import { RomMatrix } from './RomMatrix';
 import { MusclePower } from './MusclePower';
 import { TreatmentExerciseModule } from './TreatmentExerciseModule';
+import { useNextPatientId, usePatientByPhone, usePatient } from '../../../hooks/usePatients';
 
 // ── Step 0: Patient Info ──────────────────────────────────────────────────────
 export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selectedTherapistId, setSelectedTherapistId, therapistsList, therapistsLoading, updatePatientMutation, resolvedPatientId, user }: any) {
@@ -13,6 +14,51 @@ export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selecte
   const ic = isDoctorRole ? doctorInputClass : inputClass;
   const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-teal-700';
   const btnActive = isDoctorRole ? 'border-[#262842] bg-indigo-50 dark:bg-indigo-900/30 text-[#262842]' : 'border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-700';
+
+  const { data: nextIdData } = useNextPatientId();
+  const cleanPhone = (patientInfo?.phone || '').replace(/\D/g, '').slice(-10);
+  const { data: matchedPatient } = usePatientByPhone(cleanPhone.length === 10 ? cleanPhone : null);
+  const { data: resolvedPatient } = usePatient(resolvedPatientId || undefined);
+
+  useEffect(() => {
+    if (matchedPatient && (!patientInfo.patientId || patientInfo.patientId !== (matchedPatient.patientId || matchedPatient.displayId))) {
+      setPatientInfo((prev: any) => ({
+        ...prev,
+        patientId: matchedPatient.patientId || matchedPatient.displayId,
+        displayId: matchedPatient.displayId,
+      }));
+    }
+  }, [matchedPatient, patientInfo.patientId, setPatientInfo]);
+
+  useEffect(() => {
+    if (resolvedPatient && (!patientInfo.patientId || patientInfo.patientId !== (resolvedPatient.patientId || resolvedPatient.displayId))) {
+      setPatientInfo((prev: any) => ({
+        ...prev,
+        patientId: resolvedPatient.patientId || resolvedPatient.displayId,
+        displayId: resolvedPatient.displayId,
+      }));
+    }
+  }, [resolvedPatient, patientInfo.patientId, setPatientInfo]);
+
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const fallbackId = `SAAI-${yy}-${mm}-01`;
+
+  const rawNext = nextIdData?.nextPatientId;
+  const nextIdStr = typeof rawNext === 'string' ? rawNext : (rawNext?.nextPatientId || '');
+
+  const isValidPatientId = (id?: string) => Boolean(id && !/^[0-9a-f]{8}-[0-9a-f]{4}/i.test(id) && id !== '—');
+
+  const displayPatientId =
+    (isValidPatientId(patientInfo?.patientId) ? patientInfo.patientId : null) ||
+    (isValidPatientId(patientInfo?.displayId) ? patientInfo.displayId : null) ||
+    (isValidPatientId(resolvedPatient?.patientId) ? resolvedPatient.patientId : null) ||
+    (isValidPatientId(resolvedPatient?.displayId) ? resolvedPatient.displayId : null) ||
+    (isValidPatientId(matchedPatient?.patientId) ? matchedPatient.patientId : null) ||
+    (isValidPatientId(matchedPatient?.displayId) ? matchedPatient.displayId : null) ||
+    nextIdStr ||
+    fallbackId;
 
   // The intake forms assign the patient to the logged-in clinician, except when
   // an already-registered patient carries a different therapist. Reflect whichever
@@ -27,7 +73,17 @@ export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selecte
     : `Self (${selfRoleLabel}: ${user?.name || selfRoleLabel})`;
 
   return (
-    <SectionCard icon={<User size={18} className={`${iconColor} dark:text-indigo-400`} />} title="Patient Information" subtitle="Demographics & assignment" accent={accent}>
+    <SectionCard
+      icon={<User size={18} className={`${iconColor} dark:text-indigo-400`} />}
+      title="Patient Information"
+      subtitle="Demographics & assignment"
+      accent={accent}
+      headerRight={
+        <div className="text-[12px] md:text-[13px] font-semibold text-slate-700 dark:text-slate-300">
+          Patient ID: <span className="font-bold text-slate-900 dark:text-white tracking-wide">{displayPatientId}</span>
+        </div>
+      }
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0">
         {[
           { key: 'name', label: 'Full Name', placeholder: 'e.g. Priya Sharma', type: 'text' },

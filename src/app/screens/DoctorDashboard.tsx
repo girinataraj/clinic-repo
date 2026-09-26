@@ -168,11 +168,11 @@ export function DoctorDashboard() {
                 <div className="relative">
                   <button
                     onClick={() => navigate('/doctor/profile')}
-                    className="flex items-center justify-center rounded-2xl transition-all duration-300 relative w-12 h-12 bg-white/15 hover:bg-white/20 border border-white/20 overflow-hidden">
+                    className="flex items-center justify-center rounded-2xl transition-all duration-300 relative w-20 h-20 bg-white/15 hover:bg-white/20 border border-white/20 overflow-hidden">
                     <img
-                      src="/doctor.jpg"
+                      src="/assets/image.png"
                       alt="Doctor Profile"
-                      className="w-full h-full rounded-2xl object-cover object-[center_15%]"
+                      className="w-full h-full rounded-2xl object-cover object-[center_20%]"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';

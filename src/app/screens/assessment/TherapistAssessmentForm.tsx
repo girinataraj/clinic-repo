@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
@@ -45,7 +45,7 @@ export function TherapistAssessmentForm() {
   const createEvaluation = useCreateEvaluation();
   const updatePatient = useUpdatePatient();
 
-  const [patientInfo, setPatientInfo] = useState<{name:string;age:string;phone:string;gender:'Male'|'Female'|'Other';address:string;condition:string[];referredBy?:string}>({name:'',age:'',phone:'',gender:'Male',address:'',condition:[]});
+  const [patientInfo, setPatientInfo] = useState<{name:string;age:string;phone:string;gender:'Male'|'Female'|'Other';address:string;condition:string[];referredBy?:string;patientId?:string;displayId?:string}>({name:'',age:'',phone:'',gender:'Male',address:'',condition:[]});
   const [vitals, setVitals] = useState({bp_sys:'',bp_dia:'',pr:'',spo2:'',temp:'',ef:''});
   const [chiefComplaints, setChiefComplaints] = useState<string[]>([]);
   const [complaintsText, setComplaintsText] = useState('');
@@ -100,7 +100,17 @@ export function TherapistAssessmentForm() {
     if (patientById && !foundPatient && resolvedPatientId) {
       const condStr = patientById.condition || '';
       const cond = condStr.split(',').map(s=>s.trim()).filter(Boolean);
-      setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??'',condition:cond,referredBy:patientById.referredBy??patientById.referred_by??''});
+      setPatientInfo({
+        name: patientById.name ?? '',
+        age: patientById.age ? String(patientById.age) : '',
+        phone: patientById.phone ?? phoneToFetch,
+        gender: (patientById.gender as any) ?? 'Male',
+        address: patientById.city ?? '',
+        condition: cond,
+        referredBy: patientById.referredBy ?? patientById.referred_by ?? '',
+        patientId: patientById.patientId || patientById.displayId || (patientById as any).patient_id || (patientById as any).display_id,
+        displayId: patientById.displayId || (patientById as any).display_id,
+      });
       setPhoneInput(patientById.phone??phoneToFetch);
     }
   }, [patientById, foundPatient, resolvedPatientId, phoneToFetch]);
@@ -109,7 +119,17 @@ export function TherapistAssessmentForm() {
     if (foundPatient && resolvedPatientId && resolvedPatientId === foundPatient.id) {
       const condStr = foundPatient.condition || '';
       const cond = condStr.split(',').map(s=>s.trim()).filter(Boolean);
-      setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??'',condition:cond,referredBy:foundPatient.referredBy??foundPatient.referred_by??''});
+      setPatientInfo({
+        name: foundPatient.name ?? '',
+        age: foundPatient.age ? String(foundPatient.age) : '',
+        phone: foundPatient.phone ?? phoneToFetch,
+        gender: (foundPatient.gender as any) ?? 'Male',
+        address: foundPatient.city ?? '',
+        condition: cond,
+        referredBy: foundPatient.referredBy ?? foundPatient.referred_by ?? '',
+        patientId: foundPatient.patientId || foundPatient.displayId || (foundPatient as any).patient_id || (foundPatient as any).display_id,
+        displayId: foundPatient.displayId || (foundPatient as any).display_id,
+      });
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);
 
@@ -157,7 +177,9 @@ export function TherapistAssessmentForm() {
       gender: (foundPatient.gender as any) ?? 'Male',
       address: foundPatient.city ?? '',
       condition: cond,
-      referredBy: foundPatient.referredBy ?? foundPatient.referred_by ?? ''
+      referredBy: foundPatient.referredBy ?? foundPatient.referred_by ?? '',
+      patientId: foundPatient.patientId || foundPatient.displayId || (foundPatient as any).patient_id || (foundPatient as any).display_id,
+      displayId: foundPatient.displayId || (foundPatient as any).display_id,
     });
   }, [foundPatient, phoneToFetch]);
 
@@ -176,7 +198,9 @@ export function TherapistAssessmentForm() {
         gender: created.gender as any,
         address: created.city ?? '',
         condition: cond,
-        referredBy: created.referredBy
+        referredBy: created.referredBy,
+        patientId: created.patientId || created.displayId || (created as any).patient_id || (created as any).display_id,
+        displayId: created.displayId || (created as any).display_id,
       });
       setShowNewPatientForm(false); setStep(1);
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to create patient.'); }
@@ -217,7 +241,12 @@ export function TherapistAssessmentForm() {
         therapistId: user?.id || undefined,
       });
       setResolvedPatientId(created.id);
-      setPatientInfo(p => ({ ...p, phone: created.phone ?? cleanPhone }));
+      setPatientInfo(p => ({
+        ...p,
+        phone: created.phone ?? cleanPhone,
+        patientId: created.patientId || created.displayId || (created as any).patient_id || (created as any).display_id,
+        displayId: created.displayId || (created as any).display_id,
+      }));
       return created.id;
     } catch (err: any) {
       const code = err?.response?.data?.code;
@@ -373,7 +402,8 @@ export function TherapistAssessmentForm() {
         age: patientInfo.age || foundPatient?.age || '',
         gender: patientInfo.gender || foundPatient?.gender || 'Male',
         phone: patientInfo.phone || foundPatient?.phone || '',
-        patientId: resolvedPatientId,
+        patientId: patientInfo.patientId || patientInfo.displayId || foundPatient?.patientId || foundPatient?.displayId || resolvedPatientId,
+        displayId: patientInfo.patientId || patientInfo.displayId || foundPatient?.patientId || foundPatient?.displayId,
         visitType: visitType,
         paymentMode: paymentMode,
         billAmount: billAmount !== null ? billAmount : billTotal,

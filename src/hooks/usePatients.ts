@@ -86,6 +86,24 @@ export function usePatientByPhone(phone: string | null) {
   });
 }
 
+/**
+ * Peek at next automatic monthly patient ID (SAAI-YY-MM-SS).
+ * GET /api/patients/next-id
+ */
+export function useNextPatientId() {
+  return useQuery<{ nextPatientId: string; yearMonth: string; nextSerial: number }>({
+    queryKey: ['patients', 'next-id'],
+    queryFn: async () => {
+      const { data } = await api.get<{
+        success: boolean;
+        data: { nextPatientId: string; yearMonth: string; nextSerial: number };
+      }>(ENDPOINTS.PATIENTS.NEXT_ID);
+      return data.data;
+    },
+    staleTime: 30_000,
+  });
+}
+
 /** Create a new patient record (nurse/doctor/admin). */
 export function useCreatePatient() {
   const queryClient = useQueryClient();

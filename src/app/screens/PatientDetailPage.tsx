@@ -38,7 +38,8 @@ export function PatientDetailPage() {
       ...baseEval,
       patient: {
         name: patient?.name || baseEval.patientName,
-        displayId: patient?.displayId || patient?.display_id || baseEval.patientDisplayId,
+        displayId: patient?.patientId || patient?.displayId || patient?.display_id || baseEval.patientDisplayId,
+        patientId: patient?.patientId || patient?.displayId || patient?.display_id || baseEval.patientDisplayId,
         age: patient?.age ?? baseEval.patientAge,
         gender: patient?.gender || baseEval.patientGender,
         phone: patient?.phone || baseEval.patientPhone,
@@ -51,7 +52,8 @@ export function PatientDetailPage() {
       phone: patient?.phone || baseEval.patientPhone || baseEval.phone,
       age: patient?.age ?? baseEval.patientAge ?? baseEval.age,
       gender: patient?.gender || baseEval.patientGender || baseEval.gender,
-      displayId: patient?.displayId || patient?.display_id || baseEval.patientDisplayId || baseEval.displayId,
+      displayId: patient?.patientId || patient?.displayId || patient?.display_id || baseEval.patientDisplayId || baseEval.displayId,
+      patientDisplayId: patient?.patientId || patient?.displayId || patient?.display_id || baseEval.patientDisplayId,
       referredBy: patient?.referredBy || baseEval.patientReferredBy || baseEval.referredBy,
     };
   }, [evaluation, patient]);

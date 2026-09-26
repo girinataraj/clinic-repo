@@ -76,7 +76,15 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
   // Patient Demographic Variables
   const therapistName = clinician?.name || rawData.therapistName || rawData.doctor_name || rawData.createdBy?.name || 'Dr. SV. Sathish Kumar';
   const patientName = patientInfo.name || rawData.patientName || rawData.patient_name || rawData.name || 'Patient';
-  const patientDisplayId = patientInfo.patientId || patientInfo.displayId || patientInfo.display_id || rawData.patientId || rawData.displayId || rawData.display_id || (rawData.id ? `EVAL-${String(rawData.id).substring(0, 8)}` : '—');
+  const patientDisplayId =
+    patientInfo.displayId ||
+    patientInfo.display_id ||
+    (patientInfo.patientId && !/^[0-9a-f]{8}-[0-9a-f]{4}/i.test(patientInfo.patientId) ? patientInfo.patientId : null) ||
+    rawData.patient_display_id ||
+    rawData.patientDisplayId ||
+    (rawData.patientId && !/^[0-9a-f]{8}-[0-9a-f]{4}/i.test(rawData.patientId) ? rawData.patientId : null) ||
+    (rawData.displayId?.startsWith('SAAI-') ? rawData.displayId : null) ||
+    '—';
   const patientAge = patientInfo.age ?? rawData.age ?? '—';
   const patientGender = patientInfo.gender || rawData.gender || '—';
   const patientPhone = patientInfo.phone || rawData.patientPhone || rawData.phone || '—';
@@ -399,7 +407,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
 
       if (response && response.data) {
                   const cleanName = (patientName || 'Patient').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
-          const cleanId = patientDisplayId || patId || evalId || 'ID';
+          const cleanId = (patientDisplayId && patientDisplayId !== '—' && !/^[0-9a-f]{8}-[0-9a-f]{4}/i.test(patientDisplayId)) ? patientDisplayId : (patId || evalId || 'ID');
           const fileName = `Patient_Report_${cleanName}_${cleanId}.pdf`;
           if (Capacitor.isNativePlatform()) {
             const reader = new FileReader();

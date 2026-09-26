@@ -2,13 +2,14 @@ import { useRef, useState, useEffect } from 'react';
 import { Search, ChevronDown, Check, X } from 'lucide-react';
 
 // ── Section Card ──────────────────────────────────────────────────────────────
-export function SectionCard({ icon, title, subtitle, children, accent = 'teal', className = '' }: {
+export function SectionCard({ icon, title, subtitle, children, accent = 'teal', className = '', headerRight }: {
   icon: React.ReactNode;
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   accent?: string;
   className?: string;
+  headerRight?: React.ReactNode;
 }) {
   const bg = accent === 'teal' ? 'bg-teal-50 dark:bg-teal-900/30' : 
              accent === 'doctor' ? 'bg-[#E8E9F1] dark:bg-indigo-900/30' :
@@ -22,12 +23,15 @@ export function SectionCard({ icon, title, subtitle, children, accent = 'teal', 
              
   return (
     <div className={`rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 ${className}`}>
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-        <div className={`rounded-lg flex items-center justify-center w-8 h-8 ${bg} shrink-0`}>{icon}</div>
-        <div>
-          <h2 className="text-[13.5px] font-extrabold text-slate-900 dark:text-white leading-tight">{title}</h2>
-          {subtitle && <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">{subtitle}</p>}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-2">
+          <div className={`rounded-lg flex items-center justify-center w-8 h-8 ${bg} shrink-0`}>{icon}</div>
+          <div>
+            <h2 className="text-[13.5px] font-extrabold text-slate-900 dark:text-white leading-tight">{title}</h2>
+            {subtitle && <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">{subtitle}</p>}
+          </div>
         </div>
+        {headerRight && <div className="shrink-0">{headerRight}</div>}
       </div>
       <div className="p-4">{children}</div>
     </div>
