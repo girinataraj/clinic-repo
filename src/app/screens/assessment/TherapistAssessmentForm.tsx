@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
@@ -346,8 +346,9 @@ export function TherapistAssessmentForm() {
   const stepsList = [
     { label: 'Patient', key: 'patient' },
     { label: 'Vitals', key: 'vitals' },
-    { label: 'History', key: 'history' },
+    { label: 'Anthropometric Measures', key: 'anthropometrics' },
     { label: 'Complaints', key: 'complaints' },
+    { label: 'History', key: 'history' },
     { label: 'VAS Scale', key: 'pain' },
     { label: 'Examination', key: 'examination' },
     ...(hasNeuro ? [
@@ -357,8 +358,7 @@ export function TherapistAssessmentForm() {
       { label: 'Neuro: Gait & Hand', key: 'neuro_gait_hand' }
     ] : []),
     ...(hasCardio ? [
-      { label: 'Cardio Exam: Tests', key: 'cardio_exam_1' },
-      { label: 'Cardio Exam: Prescription', key: 'cardio_exam_2' }
+      { label: 'Cardio Exam: Tests', key: 'cardio_exam_1' }
     ] : []),
     { label: 'Diagnosis', key: 'diagnosis' },
     { label: 'Treatment', key: 'treatment' },
@@ -545,8 +545,9 @@ export function TherapistAssessmentForm() {
               <>
                 {currentStepKey === 'patient' && <StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} isDoctorRole={isDoctorRole} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
                 {currentStepKey === 'vitals' && <StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
-                {currentStepKey === 'history' && <StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} medicalHistoryList={medicalHistoryList} />}
+                {currentStepKey === 'anthropometrics' && <StepCardioExam data={cardioData} onChange={setCardioData} isDoctorRole={isDoctorRole} anthropometrics={anthropometrics} onAnthropometricsChange={setAnthropometrics} page={2} />}
                 {currentStepKey === 'complaints' && <StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} chiefComplaintsList={dynamicChiefComplaintsList} associatedSymptomsList={associatedSymptomsList} />}
+                {currentStepKey === 'history' && <StepHistory selectedMedicalHistory={selectedMedicalHistory} setSelectedMedicalHistory={setSelectedMedicalHistory} otherMedicalHistory={otherMedicalHistory} setOtherMedicalHistory={setOtherMedicalHistory} showOtherMedicalHistory={showOtherMedicalHistory} setShowOtherMedicalHistory={setShowOtherMedicalHistory} isDoctorRole={isDoctorRole} medicalHistoryList={medicalHistoryList} />}
                 {currentStepKey === 'pain' && <StepPainScale painLevel={painLevel} setPainLevel={setPainLevel} isDoctorRole={isDoctorRole} />}
                 {currentStepKey === 'examination' && <StepExamination examination={examinationNotes} setExamination={setExaminationNotes} isDoctorRole={isDoctorRole} chiefComplaints={chiefComplaints} clinicalExamData={clinicalExamData} onClinicalExamChange={setClinicalExamData} testMap={testMap} romData={romData} setRomData={setRomData} />}
                 {currentStepKey === 'neuro_mental' && <StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={1} />}
@@ -554,7 +555,6 @@ export function TherapistAssessmentForm() {
                 {currentStepKey === 'neuro_coordination' && <StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={3} />}
                 {currentStepKey === 'neuro_gait_hand' && <StepNeuroExam data={neuroData} onChange={setNeuroData} isDoctorRole={isDoctorRole} page={4} />}
                 {currentStepKey === 'cardio_exam_1' && <StepCardioExam data={cardioData} onChange={setCardioData} isDoctorRole={isDoctorRole} anthropometrics={anthropometrics} onAnthropometricsChange={setAnthropometrics} page={1} />}
-                {currentStepKey === 'cardio_exam_2' && <StepCardioExam data={cardioData} onChange={setCardioData} isDoctorRole={isDoctorRole} anthropometrics={anthropometrics} onAnthropometricsChange={setAnthropometrics} page={2} />}
                 {currentStepKey === 'diagnosis' && <StepDiagnosis diagnosis={diagnosisNotes} setDiagnosis={setDiagnosisNotes} isDoctorRole={isDoctorRole} selectedDiagnoses={selectedDiagnoses} setSelectedDiagnoses={setSelectedDiagnoses} chiefComplaints={chiefComplaints} diagnosisList={diagnosisList} relevanceMap={relevanceMap} />}
                 {currentStepKey === 'treatment' && <StepTreatment treatment={treatmentNotes} setTreatment={setTreatmentNotes} isDoctorRole={isDoctorRole} treatmentPlan={treatmentPlanData} setTreatmentPlan={setTreatmentPlanData} treatmentsList={treatments} patientId={resolvedPatientId} />}
                 {currentStepKey === 'review' && (

@@ -229,8 +229,9 @@ export const RATING_LABELS = ['No Difficulty', 'Mild', 'Moderate', 'Severe', 'Un
 export const ASSESSMENT_STEPS = [
   { label: 'Patient', key: 'patient' },
   { label: 'Vitals', key: 'vitals' },
-  { label: 'History', key: 'history' },
+  { label: 'Anthropometric Measures', key: 'anthropometrics' },
   { label: 'Complaints', key: 'complaints' },
+  { label: 'History', key: 'history' },
   { label: 'VAS Scale', key: 'pain' },
   { label: 'Examination', key: 'examination' },
   { label: 'Diagnosis', key: 'diagnosis' },

@@ -370,6 +370,16 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
     return result;
   }, [rawSpecificProblems]);
 
+  const formatProblemCategory = (rawCat: string) => {
+    if (typeof rawCat !== 'string') return rawCat || 'Problem';
+    const sepIdx = rawCat.indexOf(' - ');
+    if (sepIdx !== -1) {
+      const stripped = rawCat.substring(sepIdx + 3).trim();
+      return stripped || rawCat;
+    }
+    return rawCat;
+  };
+
   const accentColor = isDoctorRole ? 'text-[#262842]' : 'text-teal-700';
 
   const handlePrint = () => {
@@ -734,6 +744,64 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
           </section>
         )}
 
+        {/* Anthropometrics Section (Table Layout) */}
+        {anthropometrics && Object.keys(anthropometrics).length > 0 && (
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+              <Scale size={16} className={accentColor} />
+              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Anthropometrics</span>
+            </div>
+            <div className="w-full min-w-0 overflow-x-auto">
+              <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Parameter</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Value</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-semibold">
+                  {anthropometrics.height && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Height</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.height} cm</td>
+                    </tr>
+                  )}
+                  {anthropometrics.weight && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Weight</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.weight} kg</td>
+                    </tr>
+                  )}
+                  {anthropometrics.bmi && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">BMI</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.bmi}</td>
+                    </tr>
+                  )}
+                  {anthropometrics.waist && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Waist Circumference</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.waist} cm</td>
+                    </tr>
+                  )}
+                  {anthropometrics.hip && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Hip Circumference</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.hip} cm</td>
+                    </tr>
+                  )}
+                  {anthropometrics.whRatio && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Waist-Hip Ratio (WHR)</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.whRatio}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
         {/* Chief Complaints */}
         {chiefComplaintsArray.length > 0 && (
           <section className="bg-slate-50/40 dark:bg-slate-900/20 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
@@ -780,7 +848,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {specificProblemsList.map((item, idx) => (
                     <tr key={idx}>
-                      <td className="p-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">{item.category}</td>
+                      <td className="p-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">{formatProblemCategory(item.category)}</td>
                       <td className="p-2 text-slate-800 dark:text-slate-200 font-semibold">{item.details.join(', ')}</td>
                     </tr>
                   ))}
@@ -976,51 +1044,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
           </section>
         )}
 
-        {/* Anthropometrics Section (Table Layout) */}
-        {anthropometrics && Object.keys(anthropometrics).length > 0 && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
-            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-              <Scale size={16} className={accentColor} />
-              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Anthropometrics</span>
-            </div>
-            <div className="w-full min-w-0 overflow-x-auto">
-              <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
-                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
-                  <tr>
-                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Parameter</th>
-                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Value</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-semibold">
-                  {anthropometrics.height && (
-                    <tr>
-                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Height</td>
-                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.height} cm</td>
-                    </tr>
-                  )}
-                  {anthropometrics.weight && (
-                    <tr>
-                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Weight</td>
-                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.weight} kg</td>
-                    </tr>
-                  )}
-                  {anthropometrics.bmi && (
-                    <tr>
-                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">BMI</td>
-                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.bmi}</td>
-                    </tr>
-                  )}
-                  {anthropometrics.waist && (
-                    <tr>
-                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Waist</td>
-                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.waist} cm</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
+
 
         {/* Cardiorespiratory & Borg Scale (Table Layout) */}
         {cardioData && (cardioData.borgRating || cardioData.vo2Max || cardioData.sixMinWalk || cardioData.rockportWalk || cardioData.harvardStep) && (
@@ -1157,26 +1181,26 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
           </section>
         )}
 
-        {/* Diagnoses & ICD-10 Coding */}
+        {/* Diagnosis */}
         {(primaryDiagnoses.length > 0 || diagnosisList.length > 0 || diagnosisText) && (
           <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <ClipboardList size={16} className={accentColor} />
-              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Diagnoses & ICD-10 Coding</span>
+              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Diagnosis</span>
             </div>
             {(diagnosisList.length > 0 || primaryDiagnoses.length > 0) && (
               <div className="w-full min-w-0 overflow-x-auto mb-3">
                 <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
                   <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                     <tr>
-                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">#</th>
-                      <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Condition / ICD-10 Details</th>
+                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Condition</th>
+                      <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Details</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {diagnosisList.map((d: string, i: number) => (
                       <tr key={i}>
-                        <td className="p-2 font-bold text-slate-500 border-r border-slate-100 dark:border-slate-800">{i + 1}</td>
+                        <td className="p-2 font-bold text-slate-500 border-r border-slate-100 dark:border-slate-800">Condition {i + 1}</td>
                         <td className="p-2 font-bold text-slate-800 dark:text-slate-200">{d}</td>
                       </tr>
                     ))}
