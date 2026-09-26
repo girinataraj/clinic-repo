@@ -7,6 +7,7 @@ import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEval
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
+import api from '../../../services/api';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, ClipboardList, Search, ChevronDown, ChevronUp, Phone, RotateCcw, Printer } from 'lucide-react';
 import { EvaluationSummaryReport } from '../../components/EvaluationSummaryReport';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount, type CardioExamData, getEmptyCardioExam } from './clinicalConfig';
@@ -32,10 +33,84 @@ export function TherapistAssessmentForm() {
   const [showNewPatientForm, setShowNewPatientForm] = useState(false);
   const [newPatient, setNewPatient] = useState<{name:string;age:string;gender:'Male'|'Female'|'Other';referredBy:string;condition:string}>({name:'',age:'',gender:'Male',referredBy:'',condition:''});
 
+  const [showPatientNotCreatedModal, setShowPatientNotCreatedModal] = useState(false);
+  const showPatientNotCreatedPopup = useCallback(() => {
+    try {
+      window.alert('Patient not created');
+    } catch {
+      // Ignore if alert suppressed
+    }
+    setShowPatientNotCreatedModal(true);
+  }, []);
+
+  const [showDuplicateMobileModal, setShowDuplicateMobileModal] = useState(false);
+  const showDuplicateMobilePopup = useCallback(() => {
+    try {
+      window.alert('Mobile number already exists');
+    } catch {
+      // Ignore if alert suppressed
+    }
+    setShowDuplicateMobileModal(true);
+  }, []);
+
+  const checkDuplicateMobile = useCallback(async (phone: string, currentPatientId?: string | null): Promise<boolean> => {
+    const clean = phone.trim().replace(/\D/g, '').slice(-10);
+    if (clean.length !== 10) return false;
+    try {
+      const res = await api.get<{ success: boolean; data: any }>(`/patients/lookup?phone=${clean}`);
+      if (res.data?.data && (!currentPatientId || res.data.data.id !== currentPatientId)) {
+        showDuplicateMobilePopup();
+        return true;
+      }
+    } catch (err: any) {
+      if (err?.response?.status !== 404) {
+        try {
+          const searchRes = await api.get<{ success: boolean; data: any[] }>(`/patients/search?mobile=${clean}`);
+          const match = (searchRes.data?.data || []).find((p: any) => {
+            const pMobile = (p.mobile || p.phone || '').replace(/\D/g, '').slice(-10);
+            return pMobile === clean && (!currentPatientId || p.id !== currentPatientId);
+          });
+          if (match) {
+            showDuplicateMobilePopup();
+            return true;
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return false;
+  }, [showDuplicateMobilePopup]);
+
   const { data: foundPatient, isLoading: lookingUp } = usePatientByPhone(phoneToFetch.trim().length >= 7 ? phoneToFetch.trim() : null);
   const createPatientMutation = useCreatePatient();
   const updatePatientMutation = useUpdatePatient();
-  const { data: patientById } = usePatient(resolvedPatientId && !foundPatient ? resolvedPatientId : null);
+  const { data: patientById, isError: patientByIdError, isFetched: patientByIdFetched } = usePatient(resolvedPatientId ? resolvedPatientId : null);
+
+  useEffect(() => {
+    if (searchParams.get('patientId') && patientByIdFetched && (patientByIdError || !patientById)) {
+      showPatientNotCreatedPopup();
+    }
+  }, [searchParams, patientByIdFetched, patientByIdError, patientById, showPatientNotCreatedPopup]);
+
+  useEffect(() => {
+    if (patientById && resolvedPatientId) {
+      const condStr = patientById.condition || '';
+      const cond = typeof condStr === 'string' ? condStr.split(',').map((s: string) => s.trim()).filter(Boolean) : condStr;
+      setPatientInfo({
+        name: patientById.name ?? '',
+        age: patientById.age ? String(patientById.age) : '',
+        phone: patientById.phone ?? phoneToFetch,
+        gender: (patientById.gender as any) ?? 'Male',
+        address: patientById.city ?? '',
+        condition: cond,
+        referredBy: patientById.referredBy ?? patientById.referred_by ?? '',
+        patientId: patientById.patientId || patientById.displayId || (patientById as any).patient_id || (patientById as any).display_id,
+        displayId: patientById.displayId || (patientById as any).display_id,
+      });
+      setPhoneInput(patientById.displayId || patientById.patientId || patientById.phone || phoneToFetch);
+    }
+  }, [patientById, resolvedPatientId, phoneToFetch]);
 
   // Form state
   const [step, setStep] = useState(0);
@@ -164,7 +239,84 @@ export function TherapistAssessmentForm() {
     }
   }, [resolvedPatientId]);
 
-  const handlePhoneLookup = useCallback(() => { if (phoneInput.trim().length<7) return; setPhoneToFetch(phoneInput.trim()); setLookupDone(true); setShowNewPatientForm(false); }, [phoneInput]);
+  const handlePhoneLookup = useCallback(async () => {
+    const trimmed = phoneInput.trim();
+    if (!trimmed) return;
+
+    // Check if entered query is a Patient ID
+    const isPatientId = /^SAAI/i.test(trimmed) || (/^[A-Za-z0-9-]+$/.test(trimmed) && /[A-Za-z]/.test(trimmed) && /\d/.test(trimmed) && trimmed.length >= 6);
+
+    if (isPatientId) {
+      try {
+        let p: any = null;
+        try {
+          const directRes = await api.get<{ success: boolean; data: any }>(`/patients/${encodeURIComponent(trimmed)}`);
+          if (directRes.data?.data) {
+            p = directRes.data.data;
+          }
+        } catch {
+          // not found via direct ID lookup
+        }
+
+        if (!p) {
+          const searchRes = await api.get<{ success: boolean; data: any[] }>(`/patients/search?mobile=${encodeURIComponent(trimmed)}`);
+          const list = searchRes.data?.data || [];
+          const norm = trimmed.replace(/-/g, '').toLowerCase();
+          const found = list.find((item: any) =>
+            item.id === trimmed ||
+            (item.displayId && item.displayId.replace(/-/g, '').toLowerCase() === norm) ||
+            (item.patientId && item.patientId.replace(/-/g, '').toLowerCase() === norm)
+          );
+          if (found) {
+            try {
+              const fullRes = await api.get<{ success: boolean; data: any }>(`/patients/${encodeURIComponent(found.id)}`);
+              if (fullRes.data?.data) {
+                p = fullRes.data.data;
+              }
+            } catch {
+              p = found;
+            }
+          }
+        }
+
+        if (p) {
+          const condStr = p.condition || '';
+          const cond = typeof condStr === 'string' ? condStr.split(',').map((s: string) => s.trim()).filter(Boolean) : condStr;
+          setPatientInfo({
+            name: p.name ?? '',
+            age: p.age ? String(p.age) : '',
+            phone: p.phone ?? p.mobile ?? '',
+            gender: (p.gender as any) ?? 'Male',
+            address: p.city ?? p.address ?? '',
+            condition: cond,
+            referredBy: p.referredBy ?? p.referred_by ?? '',
+            patientId: p.patientId || p.displayId || p.patient_id || p.display_id,
+            displayId: p.displayId || p.display_id,
+          });
+          setResolvedPatientId(p.id);
+          setPhoneInput(p.displayId || p.patientId || p.phone || p.mobile || trimmed);
+          setPhoneToFetch(p.phone || p.mobile || '');
+          setLookupDone(true);
+          setShowNewPatientForm(false);
+          return;
+        }
+
+        // Entered Patient ID does not belong to an already-created patient!
+        showPatientNotCreatedPopup();
+        setLookupDone(false);
+        return;
+      } catch {
+        showPatientNotCreatedPopup();
+        setLookupDone(false);
+        return;
+      }
+    }
+
+    if (trimmed.length < 7) return;
+    setPhoneToFetch(trimmed);
+    setLookupDone(true);
+    setShowNewPatientForm(false);
+  }, [phoneInput, showPatientNotCreatedPopup]);
   const handleUseFoundPatient = useCallback(() => {
     if (!foundPatient) return;
     setResolvedPatientId(foundPatient.id);
@@ -185,6 +337,8 @@ export function TherapistAssessmentForm() {
 
   const handleCreateNewPatient = async () => {
     if (!newPatient.name||!newPatient.age) return;
+    const isDup = await checkDuplicateMobile(phoneInput.trim());
+    if (isDup) return;
     try {
       const created = await createPatientMutation.mutateAsync({name:newPatient.name,age:Number(newPatient.age),gender:newPatient.gender,phone:phoneInput.trim(),referredBy:newPatient.referredBy.trim()||undefined,condition:newPatient.condition||undefined,therapistId:user?.id||undefined});
       setResolvedPatientId(created.id);
@@ -223,6 +377,10 @@ export function TherapistAssessmentForm() {
     const cleanPhone = (patientInfo.phone || phoneInput || '').replace(/\D/g, '').slice(-10);
     if (cleanPhone.length !== 10) {
       setSubmitError('Please enter a valid 10-digit phone number.');
+      return null;
+    }
+    const isDup = await checkDuplicateMobile(cleanPhone);
+    if (isDup) {
       return null;
     }
     if (!patientInfo.condition || patientInfo.condition.length === 0) {
@@ -510,9 +668,29 @@ export function TherapistAssessmentForm() {
               apiEndpoint="/patients/search"
               value={phoneInput}
               onChange={setPhoneInput}
-              onSelect={(patient: any) => {
-                setPhoneInput(patient.mobile);
-                setPhoneToFetch(patient.mobile);
+              onEnter={handlePhoneLookup}
+              onSelect={async (patient: any) => {
+                let p = patient;
+                try {
+                  const fullRes = await api.get<{ success: boolean; data: any }>(`/patients/${encodeURIComponent(patient.id)}`);
+                  if (fullRes.data?.data) p = fullRes.data.data;
+                } catch {}
+                const condStr = p.condition || '';
+                const cond = typeof condStr === 'string' ? condStr.split(',').map((s: string) => s.trim()).filter(Boolean) : condStr;
+                setPatientInfo({
+                  name: p.name ?? '',
+                  age: p.age ? String(p.age) : '',
+                  phone: p.phone ?? p.mobile ?? '',
+                  gender: (p.gender as any) ?? 'Male',
+                  address: p.city ?? p.address ?? '',
+                  condition: cond,
+                  referredBy: p.referredBy ?? p.referred_by ?? '',
+                  patientId: p.patientId || p.displayId || p.patient_id || p.display_id,
+                  displayId: p.displayId || p.display_id,
+                });
+                setPhoneInput(p.displayId || p.patientId || p.mobile || p.phone || '');
+                setPhoneToFetch(p.mobile || p.phone || '');
+                setResolvedPatientId(p.id);
                 setLookupDone(true);
                 setShowNewPatientForm(false);
               }}
@@ -573,7 +751,7 @@ export function TherapistAssessmentForm() {
             const currentStepKey = stepsList[step]?.key;
             return (
               <>
-                {currentStepKey === 'patient' && <StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} isDoctorRole={isDoctorRole} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} />}
+                {currentStepKey === 'patient' && <StepPatient patientInfo={patientInfo} setPatientInfo={setPatientInfo} isDoctorRole={isDoctorRole} updatePatientMutation={updatePatientMutation} resolvedPatientId={resolvedPatientId} user={user} onDuplicateMobile={showDuplicateMobilePopup} />}
                 {currentStepKey === 'vitals' && <StepVitals vitals={vitals} setVitals={setVitals} isDoctorRole={isDoctorRole} />}
                 {currentStepKey === 'anthropometrics' && <StepCardioExam data={cardioData} onChange={setCardioData} isDoctorRole={isDoctorRole} anthropometrics={anthropometrics} onAnthropometricsChange={setAnthropometrics} page={2} />}
                 {currentStepKey === 'complaints' && <StepComplaints chiefComplaints={chiefComplaints} setChiefComplaints={setChiefComplaints} associatedSymptoms={associatedSymptoms} setAssociatedSymptoms={setAssociatedSymptoms} complaintsText={complaintsText} setComplaintsText={setComplaintsText} specificProblems={specificProblems} setSpecificProblems={setSpecificProblems} isDoctorRole={isDoctorRole} chiefComplaintsList={dynamicChiefComplaintsList} associatedSymptomsList={associatedSymptomsList} />}
@@ -750,6 +928,37 @@ export function TherapistAssessmentForm() {
         </div>
       </div>
 
+      {showPatientNotCreatedModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-slate-900 rounded-xl p-5 max-w-xs w-full text-center shadow-lg border border-slate-200 dark:border-slate-800">
+            <p className="text-sm font-bold text-slate-900 dark:text-white mb-4">
+              Patient not created
+            </p>
+            <button
+              onClick={() => setShowPatientNotCreatedModal(false)}
+              className="w-full py-2 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700 transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showDuplicateMobileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-slate-900 rounded-xl p-5 max-w-xs w-full text-center shadow-lg border border-slate-200 dark:border-slate-800">
+            <p className="text-sm font-bold text-slate-900 dark:text-white mb-4">
+              Mobile number already exists
+            </p>
+            <button
+              onClick={() => setShowDuplicateMobileModal(false)}
+              className="w-full py-2 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700 transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

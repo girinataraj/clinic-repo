@@ -17,6 +17,7 @@ interface SearchDropdownProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  onEnter?: () => void;
 }
 
 // In-memory cache for last 5 queries per module
@@ -134,6 +135,18 @@ export function SearchDropdown({
   }, [debouncedValue, minChars, apiEndpoint, module]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const hasItems = suggestions.length > 0;
+      if (isOpen && hasItems && activeIndex >= 0 && activeIndex < suggestions.length) {
+        handleSelect(suggestions[activeIndex]);
+      } else if (onEnter) {
+        setIsOpen(false);
+        onEnter();
+      }
+      return;
+    }
+
     if (!isOpen) {
       if (e.key === 'ArrowDown') {
         setIsOpen(true);
@@ -160,6 +173,9 @@ export function SearchDropdown({
         e.preventDefault();
         if (hasItems && activeIndex >= 0 && activeIndex < suggestions.length) {
           handleSelect(suggestions[activeIndex]);
+        } else if (onEnter) {
+          setIsOpen(false);
+          onEnter();
         }
         break;
       case 'Escape':

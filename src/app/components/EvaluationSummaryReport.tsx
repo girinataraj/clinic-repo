@@ -76,15 +76,27 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
   // Patient Demographic Variables
   const therapistName = clinician?.name || rawData.therapistName || rawData.doctor_name || rawData.createdBy?.name || 'Dr. SV. Sathish Kumar';
   const patientName = patientInfo.name || rawData.patientName || rawData.patient_name || rawData.name || 'Patient';
-  const patientDisplayId =
+  const rawPatientDisplayId =
     patientInfo.displayId ||
     patientInfo.display_id ||
     (patientInfo.patientId && !/^[0-9a-f]{8}-[0-9a-f]{4}/i.test(patientInfo.patientId) ? patientInfo.patientId : null) ||
     rawData.patient_display_id ||
     rawData.patientDisplayId ||
     (rawData.patientId && !/^[0-9a-f]{8}-[0-9a-f]{4}/i.test(rawData.patientId) ? rawData.patientId : null) ||
-    (rawData.displayId?.startsWith('SAAI-') ? rawData.displayId : null) ||
+    (rawData.displayId?.startsWith('SAAI') ? rawData.displayId : null) ||
     '—';
+  const formatPatientId = (id?: string | null) => {
+    if (!id || id === '—') return '—';
+    const s = String(id).trim().toUpperCase();
+    const m = s.match(/^SAAI-?(\d{2})-?(\d{2})-?(\d{2,})$/i);
+    if (m) return `SAAI-${m[1]}${m[2]}${m[3]}`;
+    const m2 = s.match(/^SAAI-?(\d{6,})$/i);
+    if (m2) return `SAAI-${m2[1]}`;
+    if (/^SAAI-\d+$/i.test(s)) return s;
+    if (/^SAAI\d+$/i.test(s)) return `SAAI-${s.slice(4)}`;
+    return s;
+  };
+  const patientDisplayId = formatPatientId(rawPatientDisplayId);
   const patientAge = patientInfo.age ?? rawData.age ?? '—';
   const patientGender = patientInfo.gender || rawData.gender || '—';
   const patientPhone = patientInfo.phone || rawData.patientPhone || rawData.phone || '—';
