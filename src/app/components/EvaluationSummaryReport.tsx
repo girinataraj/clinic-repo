@@ -378,6 +378,16 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
     return result;
   }, [rawSpecificProblems]);
 
+  const formatProblemCategory = (rawCat: string) => {
+    if (typeof rawCat !== 'string') return rawCat || 'Problem';
+    const sepIdx = rawCat.indexOf(' - ');
+    if (sepIdx !== -1) {
+      const stripped = rawCat.substring(sepIdx + 3).trim();
+      return stripped || rawCat;
+    }
+    return rawCat;
+  };
+
   const accentColor = isDoctorRole ? 'text-[#262842]' : 'text-teal-700';
 
   const handlePrint = () => {
@@ -647,79 +657,155 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
           </section>
         )}
 
-        {/* Clinician & Patient Summary Header (Original Layout) */}
+        {/* Clinician & Patient Summary Header (Table Layout) */}
         <section className="bg-slate-50/70 dark:bg-slate-900/40 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 text-xs font-semibold w-full min-w-0">
-            <div className="min-w-0">
-              <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Conducting Clinician</span>
-              <span className="text-slate-900 dark:text-white font-black text-sm break-words block">{therapistName}</span>
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Patient Ref</span>
-              <span className="text-slate-900 dark:text-white font-black text-sm break-words block">{patientName}</span>
-              <span className="text-[11px] font-mono text-slate-500 block font-bold">{patientDisplayId}</span>
-            </div>
-            <div>
-              <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Phone / Age / Gender</span>
-              <span className="text-slate-900 dark:text-white font-bold text-xs">{patientPhone}</span>
-              <span className="text-[11px] text-slate-500 block font-medium">{patientAge} yrs / {patientGender}</span>
-            </div>
-            <div>
-              <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Visit / Bill</span>
-              <span className="text-slate-900 dark:text-white font-bold text-xs">{visitType}</span>
-              <span className="text-emerald-700 dark:text-emerald-400 font-black block text-sm">₹{billAmount}</span>
-            </div>
-            <div>
-              <span className="text-[10px] text-slate-400 block mb-0.5 uppercase tracking-wide font-bold">Referred By</span>
-              <span className="text-slate-900 dark:text-white font-black text-sm">{patientReferredBy}</span>
-            </div>
+          <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-2 tracking-wide">Patient & Visit Information</span>
+          <div className="w-full min-w-0 overflow-x-auto">
+            <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+              <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                <tr>
+                  <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Field</th>
+                  <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Value</th>
+                  <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Field</th>
+                  <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Value</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
+                <tr>
+                  <td className="p-2 font-semibold text-slate-600 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800">Conducting Clinician</td>
+                  <td className="p-2 font-bold border-r border-slate-100 dark:border-slate-800">{therapistName}</td>
+                  <td className="p-2 font-semibold text-slate-600 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800">Patient Name</td>
+                  <td className="p-2 font-bold">{patientName} ({patientDisplayId})</td>
+                </tr>
+                <tr>
+                  <td className="p-2 font-semibold text-slate-600 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800">Age / Gender</td>
+                  <td className="p-2 border-r border-slate-100 dark:border-slate-800">{patientAge} yrs / {patientGender}</td>
+                  <td className="p-2 font-semibold text-slate-600 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800">Phone</td>
+                  <td className="p-2">{patientPhone}</td>
+                </tr>
+                <tr>
+                  <td className="p-2 font-semibold text-slate-600 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800">Visit Type / Bill Amount</td>
+                  <td className="p-2 border-r border-slate-100 dark:border-slate-800">{visitType} · ₹{billAmount}</td>
+                  <td className="p-2 font-semibold text-slate-600 dark:text-slate-400 border-r border-slate-100 dark:border-slate-800">Referred By</td>
+                  <td className="p-2 font-semibold">{patientReferredBy}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
-        {/* Vital Signs (Original Cards Layout) */}
+        {/* Vital Signs (Table Layout) */}
         {(bp || pr || spo2 || temp || ef || painLevel) && (
           <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
-            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Heart size={16} className="text-rose-500" />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Vital Signs</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 sm:gap-3 text-xs font-semibold w-full min-w-0">
-              {bp && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Blood Pressure</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{bp}</span>
-                </div>
-              )}
-              {pr && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Pulse Rate</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{pr}</span>
-                </div>
-              )}
-              {spo2 && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">SpO₂</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{spo2}</span>
-                </div>
-              )}
-              {temp && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Temperature</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{temp}</span>
-                </div>
-              )}
-              {ef && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Ejection Fraction</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{ef}</span>
-                </div>
-              )}
-              {painLevel && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Pain Rating</span>
-                  <span className="text-rose-600 dark:text-rose-400 font-extrabold text-sm">{painLevel}</span>
-                </div>
-              )}
+            <div className="w-full min-w-0 overflow-x-auto">
+              <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Parameter</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Value / Rating</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {bp && (
+                    <tr>
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Blood Pressure</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{bp}</td>
+                    </tr>
+                  )}
+                  {pr && (
+                    <tr>
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Pulse Rate</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{pr}</td>
+                    </tr>
+                  )}
+                  {spo2 && (
+                    <tr>
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">SpO₂</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{spo2}</td>
+                    </tr>
+                  )}
+                  {temp && (
+                    <tr>
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Temperature</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{temp}</td>
+                    </tr>
+                  )}
+                  {ef && (
+                    <tr>
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Ejection Fraction</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{ef}</td>
+                    </tr>
+                  )}
+                  {painLevel && (
+                    <tr>
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Pain Rating</td>
+                      <td className="p-2 text-rose-600 dark:text-rose-400 font-extrabold">{painLevel}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {/* Anthropometrics Section (Table Layout) */}
+        {anthropometrics && Object.keys(anthropometrics).length > 0 && (
+          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+              <Scale size={16} className={accentColor} />
+              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Anthropometrics</span>
+            </div>
+            <div className="w-full min-w-0 overflow-x-auto">
+              <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Parameter</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Value</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-semibold">
+                  {anthropometrics.height && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Height</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.height} cm</td>
+                    </tr>
+                  )}
+                  {anthropometrics.weight && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Weight</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.weight} kg</td>
+                    </tr>
+                  )}
+                  {anthropometrics.bmi && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">BMI</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.bmi}</td>
+                    </tr>
+                  )}
+                  {anthropometrics.waist && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Waist Circumference</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.waist} cm</td>
+                    </tr>
+                  )}
+                  {anthropometrics.hip && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Hip Circumference</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.hip} cm</td>
+                    </tr>
+                  )}
+                  {anthropometrics.whRatio && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Waist-Hip Ratio (WHR)</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{anthropometrics.whRatio}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </section>
         )}
@@ -731,12 +817,23 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
               <Heart size={16} className="text-rose-500" />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Chief Complaints</span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {chiefComplaintsArray.map((c: any, i: number) => (
-                <span key={i} className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm">
-                  {formatDisplayValue(c)}
-                </span>
-              ))}
+            <div className="w-full min-w-0 overflow-x-auto">
+              <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">#</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Complaint / Details</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {chiefComplaintsArray.map((c: any, i: number) => (
+                    <tr key={i}>
+                      <td className="p-2 font-bold text-slate-500 border-r border-slate-100 dark:border-slate-800">{i + 1}</td>
+                      <td className="p-2 font-semibold text-slate-800 dark:text-slate-200">{formatDisplayValue(c)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         )}
@@ -748,19 +845,23 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
               <ClipboardList size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Specific Problems & Details</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {specificProblemsList.map((item, idx) => (
-                <div key={idx} className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">{item.category}</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {item.details.map((det, dIdx) => (
-                      <span key={dIdx} className="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 text-[11px] font-extrabold border border-indigo-100 dark:border-indigo-900/50">
-                        {det}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <div className="w-full min-w-0 overflow-x-auto">
+              <table className="w-full min-w-[450px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Category / Area</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Specific Findings / Ratings</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {specificProblemsList.map((item, idx) => (
+                    <tr key={idx}>
+                      <td className="p-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">{formatProblemCategory(item.category)}</td>
+                      <td className="p-2 text-slate-800 dark:text-slate-200 font-semibold">{item.details.join(', ')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         )}
@@ -772,31 +873,29 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
               <Activity size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Associated Symptoms & Pain Areas</span>
             </div>
-            <div className="flex flex-col gap-4">
-              {associatedSymptomsList.length > 0 && (
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Symptoms</span>
-                  <div className="flex flex-wrap gap-2">
-                    {associatedSymptomsList.map((s: string, i: number) => (
-                      <span key={i} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {painAreasList.length > 0 && (
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Pain Areas & Radiation</span>
-                  <div className="flex flex-wrap gap-2">
-                    {painAreasList.map((p: string, i: number) => (
-                      <span key={i} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        {p}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="w-full min-w-0 overflow-x-auto">
+              <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Category</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Details</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {associatedSymptomsList.length > 0 && (
+                    <tr>
+                      <td className="p-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Associated Symptoms</td>
+                      <td className="p-2 text-slate-800 dark:text-slate-200 font-semibold">{associatedSymptomsList.join(', ')}</td>
+                    </tr>
+                  )}
+                  {painAreasList.length > 0 && (
+                    <tr>
+                      <td className="p-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Pain Areas & Radiation</td>
+                      <td className="p-2 text-slate-800 dark:text-slate-200 font-semibold">{painAreasList.join(', ')}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </section>
         )}
@@ -808,12 +907,23 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
               <ClipboardList size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Medical History</span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {medicalHistoryList.map((h: string, i: number) => (
-                <span key={i} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm">
-                  {h}
-                </span>
-              ))}
+            <div className="w-full min-w-0 overflow-x-auto">
+              <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">#</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Condition / History Details</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {medicalHistoryList.map((h: string, i: number) => (
+                    <tr key={i}>
+                      <td className="p-2 font-bold text-slate-500 border-r border-slate-100 dark:border-slate-800">{i + 1}</td>
+                      <td className="p-2 font-semibold text-slate-800 dark:text-slate-200">{h}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         )}
@@ -826,78 +936,106 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Clinical Examination & Imaging Findings</span>
             </div>
             <div className="flex flex-col gap-4 text-xs">
-              {/* Special Physical Tests from Array or Object (e.g. Neck Distraction Test) */}
+              {/* Special Physical Tests Table */}
               {((specialPhysicalTestsList.length > 0) || (testsObj && Object.keys(testsObj).length > 0)) && (
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2.5">Special Physical Tests</span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                    {specialPhysicalTestsList.map((t: any, i: number) => {
-                      const testName = t.testName || t.name || `Test ${i + 1}`;
-                      const result = t.result || 'Not Tested';
-                      const isPositive = result === 'Positive';
-                      const isNegative = result === 'Negative';
-                      return (
-                        <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-                          <span className="text-slate-700 dark:text-slate-300 truncate max-w-[160px] font-bold">{testName}</span>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                            isPositive ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/30 dark:text-rose-400' : 
-                            isNegative ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 
-                            'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                          }`}>{result}</span>
-                        </div>
-                      );
-                    })}
-                    {testsObj && Object.entries(testsObj).map(([testKey, testVal]: [string, any]) => {
-                      const testName = testKey.replace(/([A-Z])/g, ' $1').trim();
-                      const result = typeof testVal === 'string' ? testVal : (testVal?.result || 'Not Tested');
-                      const isPositive = result === 'Positive';
-                      const isNegative = result === 'Negative';
-                      return (
-                        <div key={testKey} className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-                          <span className="text-slate-700 dark:text-slate-300 truncate max-w-[160px] font-bold capitalize">{testName}</span>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                            isPositive ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/30 dark:text-rose-400' : 
-                            isNegative ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 
-                            'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                          }`}>{result}</span>
-                        </div>
-                      );
-                    })}
+                  <div className="w-full min-w-0 overflow-x-auto">
+                    <table className="w-full min-w-[450px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                      <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                        <tr>
+                          <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test Name</th>
+                          <th className="p-2 text-center border-b border-slate-200 dark:border-slate-800">Result</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {specialPhysicalTestsList.map((t: any, i: number) => {
+                          const testName = t.testName || t.name || `Test ${i + 1}`;
+                          const result = t.result || 'Not Tested';
+                          const isPositive = result === 'Positive';
+                          const isNegative = result === 'Negative';
+                          return (
+                            <tr key={i}>
+                              <td className="p-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">{testName}</td>
+                              <td className="p-2 text-center">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                                  isPositive ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/30 dark:text-rose-400' : 
+                                  isNegative ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 
+                                  'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                }`}>{result}</span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {testsObj && Object.entries(testsObj).map(([testKey, testVal]: [string, any]) => {
+                          const testName = testKey.replace(/([A-Z])/g, ' $1').trim();
+                          const result = typeof testVal === 'string' ? testVal : (testVal?.result || 'Not Tested');
+                          const isPositive = result === 'Positive';
+                          const isNegative = result === 'Negative';
+                          return (
+                            <tr key={testKey}>
+                              <td className="p-2 font-bold capitalize text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">{testName}</td>
+                              <td className="p-2 text-center">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                                  isPositive ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/30 dark:text-rose-400' : 
+                                  isNegative ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 
+                                  'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                }`}>{result}</span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
 
-              {/* Imaging Findings (X-Ray, MRI, PFT) */}
+              {/* Imaging Findings Table */}
               {(xrayText || mriText || pftText || (clinicalExamination?.imaging && Object.keys(clinicalExamination.imaging).length > 0)) && (
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Imaging Findings (X-Ray / MRI / PFT)</span>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {xrayText && (
-                      <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                        <span className="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400 block mb-0.5">X-Ray Findings</span>
-                        <p className="text-[12px] text-slate-800 dark:text-slate-200 font-medium">{xrayText}</p>
-                      </div>
-                    )}
-                    {mriText && (
-                      <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                        <span className="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400 block mb-0.5">MRI Findings</span>
-                        <p className="text-[12px] text-slate-800 dark:text-slate-200 font-medium">{mriText}</p>
-                      </div>
-                    )}
-                    {pftText && (
-                      <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                        <span className="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400 block mb-0.5">PFT Findings</span>
-                        <p className="text-[12px] text-slate-800 dark:text-slate-200 font-medium">{pftText}</p>
-                      </div>
-                    )}
-                    {clinicalExamination?.imaging && Object.entries(clinicalExamination.imaging).map(([region, findings]: [string, any]) => (
-                      <div key={region} className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                        <span className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200 capitalize block mb-1">{region}</span>
-                        {findings.xray && <p className="text-[11px] text-slate-600 dark:text-slate-400"><strong className="text-slate-700 dark:text-slate-300">X-Ray:</strong> {findings.xray}</p>}
-                        {findings.mri && <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5"><strong className="text-slate-700 dark:text-slate-300">MRI:</strong> {findings.mri}</p>}
-                        {findings.notes && <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5"><strong className="text-slate-700 dark:text-slate-300">Notes:</strong> {findings.notes}</p>}
-                      </div>
-                    ))}
+                  <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">Imaging & Diagnostic Findings</span>
+                  <div className="w-full min-w-0 overflow-x-auto">
+                    <table className="w-full min-w-[450px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                      <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                        <tr>
+                          <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Modality / Area</th>
+                          <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Findings & Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {xrayText && (
+                          <tr>
+                            <td className="p-2 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-800">X-Ray Findings</td>
+                            <td className="p-2 text-slate-800 dark:text-slate-200 font-medium">{xrayText}</td>
+                          </tr>
+                        )}
+                        {mriText && (
+                          <tr>
+                            <td className="p-2 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-800">MRI Findings</td>
+                            <td className="p-2 text-slate-800 dark:text-slate-200 font-medium">{mriText}</td>
+                          </tr>
+                        )}
+                        {pftText && (
+                          <tr>
+                            <td className="p-2 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-800">PFT Findings</td>
+                            <td className="p-2 text-slate-800 dark:text-slate-200 font-medium">{pftText}</td>
+                          </tr>
+                        )}
+                        {clinicalExamination?.imaging && Object.entries(clinicalExamination.imaging).map(([region, findings]: [string, any]) => (
+                          <tr key={region}>
+                            <td className="p-2 font-bold capitalize text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">{region}</td>
+                            <td className="p-2 text-slate-800 dark:text-slate-200 font-medium">
+                              {[
+                                findings.xray ? `X-Ray: ${findings.xray}` : '',
+                                findings.mri ? `MRI: ${findings.mri}` : '',
+                                findings.notes ? `Notes: ${findings.notes}` : ''
+                              ].filter(Boolean).join(' · ')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
@@ -914,80 +1052,56 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
           </section>
         )}
 
-        {/* Anthropometrics Section (Height, Weight, BMI, etc.) */}
-        {anthropometrics && Object.keys(anthropometrics).length > 0 && (
-          <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
-            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-              <Scale size={16} className={accentColor} />
-              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Anthropometrics</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-semibold">
-              {anthropometrics.height && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Height</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{anthropometrics.height} cm</span>
-                </div>
-              )}
-              {anthropometrics.weight && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Weight</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{anthropometrics.weight} kg</span>
-                </div>
-              )}
-              {anthropometrics.bmi && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">BMI</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{anthropometrics.bmi}</span>
-                </div>
-              )}
-              {anthropometrics.waist && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Waist</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{anthropometrics.waist} cm</span>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
 
-        {/* Cardiorespiratory & Borg Scale */}
+
+        {/* Cardiorespiratory & Borg Scale (Table Layout) */}
         {cardioData && (cardioData.borgRating || cardioData.vo2Max || cardioData.sixMinWalk || cardioData.rockportWalk || cardioData.harvardStep) && (
           <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <Activity size={16} className={accentColor} />
-              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Cardiorespiratory & Borg Scale</span>
+              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Cardiorespiratory Assessment</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-semibold">
-              {cardioData.borgRating && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Borg Scale (Perceived Exertion)</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-extrabold text-sm">{cardioData.borgRating}</span>
-                </div>
-              )}
-              {cardioData.vo2Max && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">VO₂ Max</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{cardioData.vo2Max}</span>
-                </div>
-              )}
-              {cardioData.sixMinWalk && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">6 Minute Walk Test</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{cardioData.sixMinWalk}</span>
-                </div>
-              )}
-              {cardioData.rockportWalk && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Rockport Walk Test</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{cardioData.rockportWalk}</span>
-                </div>
-              )}
-              {cardioData.harvardStep && (
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span className="text-[10px] text-slate-400 block mb-1 font-bold">Harvard Step Test</span>
-                  <span className="text-slate-900 dark:text-white font-extrabold text-sm">{cardioData.harvardStep}</span>
-                </div>
-              )}
+            <div className="w-full min-w-0 overflow-x-auto">
+              <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Assessment / Test</th>
+                    <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Value / Rating</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-semibold">
+                  {cardioData.borgRating && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Borg Scale (Perceived Exertion)</td>
+                      <td className="p-2 text-indigo-600 dark:text-indigo-400 font-extrabold">{cardioData.borgRating}</td>
+                    </tr>
+                  )}
+                  {cardioData.vo2Max && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">VO₂ Max</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{cardioData.vo2Max}</td>
+                    </tr>
+                  )}
+                  {cardioData.sixMinWalk && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">6 Minute Walk Test</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{cardioData.sixMinWalk}</td>
+                    </tr>
+                  )}
+                  {cardioData.rockportWalk && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Rockport Walk Test</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{cardioData.rockportWalk}</td>
+                    </tr>
+                  )}
+                  {cardioData.harvardStep && (
+                    <tr>
+                      <td className="p-2 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Harvard Step Test</td>
+                      <td className="p-2 text-slate-900 dark:text-white font-extrabold">{cardioData.harvardStep}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </section>
         )}
@@ -1047,38 +1161,59 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Functional Limitations & Ratings</span>
             </div>
             {functionalScoresObj && (
-              <div className="flex flex-col gap-2">
-                {Object.entries(functionalScoresObj).map(([key, val]: [string, any]) => {
-                  if (key.includes('_')) return null; // skip specific problems
-                  const value = typeof val === 'object' ? val.score : Number(val);
-                  if (isNaN(value)) return null;
-                  const labels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
-                  return (
-                    <div key={key} className="flex items-center justify-between py-2 border-b last:border-0 border-slate-100 dark:border-slate-800/60 font-semibold text-xs">
-                      <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300 capitalize">{key === 'stairs' ? 'Climbing Stairs' : key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                      <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-black border border-slate-200">{value} - {labels[value] || 'Recorded'}</span>
-                    </div>
-                  );
-                })}
+              <div className="w-full min-w-0 overflow-x-auto">
+                <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <tr>
+                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Activity / Task</th>
+                      <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Rating / Score</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {Object.entries(functionalScoresObj).map(([key, val]: [string, any]) => {
+                      if (key.includes('_')) return null; // skip specific problems
+                      const value = typeof val === 'object' ? val.score : Number(val);
+                      if (isNaN(value)) return null;
+                      const labels: Record<number, string> = { 0: 'Normal', 1: 'Mild', 2: 'Moderate', 3: 'Severe', 4: 'Unable' };
+                      return (
+                        <tr key={key}>
+                          <td className="p-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800 capitalize">{key === 'stairs' ? 'Climbing Stairs' : key.replace(/([A-Z])/g, ' $1').trim()}</td>
+                          <td className="p-2 text-slate-800 dark:text-slate-200 font-extrabold">{value} - {labels[value] || 'Recorded'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </section>
         )}
 
-        {/* Diagnoses & ICD-10 Coding */}
+        {/* Diagnosis */}
         {(primaryDiagnoses.length > 0 || diagnosisList.length > 0 || diagnosisText) && (
           <section className="bg-slate-50/40 dark:bg-slate-900/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
               <ClipboardList size={16} className={accentColor} />
-              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Diagnoses & ICD-10 Coding</span>
+              <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Diagnosis</span>
             </div>
-            {diagnosisList.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {diagnosisList.map((d: string, i: number) => (
-                  <span key={i} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm">
-                    {d}
-                  </span>
-                ))}
+            {(diagnosisList.length > 0 || primaryDiagnoses.length > 0) && (
+              <div className="w-full min-w-0 overflow-x-auto mb-3">
+                <table className="w-full min-w-[400px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <tr>
+                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Condition</th>
+                      <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {diagnosisList.map((d: string, i: number) => (
+                      <tr key={i}>
+                        <td className="p-2 font-bold text-slate-500 border-r border-slate-100 dark:border-slate-800">Condition {i + 1}</td>
+                        <td className="p-2 font-bold text-slate-800 dark:text-slate-200">{d}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
             {diagnosisText && (
@@ -1096,73 +1231,78 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
               <Dumbbell size={16} className={accentColor} />
               <span className="text-[12px] font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-200">Treatment Plan Details</span>
             </div>
-            {treatmentPlanModalities.length > 0 && (
-              <div className="mb-3">
-                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-1.5">Modalities / Passive Therapy</span>
-                <div className="flex flex-wrap gap-2">
-                  {treatmentPlanModalities.map((m: string, i: number) => (
-                    <span key={i} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm">
-                      {m}
-                    </span>
-                  ))}
-                </div>
+            
+            {(treatmentPlanModalities.length > 0 || treatmentPlanManual.length > 0 || treatmentPlanRehab.length > 0) && (
+              <div className="w-full min-w-0 overflow-x-auto mb-4">
+                <table className="w-full min-w-[450px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <tr>
+                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Treatment Category</th>
+                      <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {treatmentPlanModalities.length > 0 && (
+                      <tr>
+                        <td className="p-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Modalities / Passive Therapy</td>
+                        <td className="p-2 text-slate-800 dark:text-slate-200 font-semibold">{treatmentPlanModalities.join(', ')}</td>
+                      </tr>
+                    )}
+                    {treatmentPlanManual.length > 0 && (
+                      <tr>
+                        <td className="p-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Manual Therapy</td>
+                        <td className="p-2 text-slate-800 dark:text-slate-200 font-semibold">{treatmentPlanManual.join(', ')}</td>
+                      </tr>
+                    )}
+                    {treatmentPlanRehab.length > 0 && (
+                      <tr>
+                        <td className="p-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Rehabilitation</td>
+                        <td className="p-2 text-slate-800 dark:text-slate-200 font-semibold">{treatmentPlanRehab.join(', ')}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             )}
-            {treatmentPlanManual.length > 0 && (
-              <div className="mb-3">
-                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-1.5">Manual Therapy</span>
-                <div className="flex flex-wrap gap-2">
-                  {treatmentPlanManual.map((m: string, i: number) => (
-                    <span key={i} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm">
-                      {m}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {treatmentPlanRehab.length > 0 && (
-              <div className="mb-3">
-                <span className="text-[10px] text-slate-400 uppercase block font-bold mb-1.5">Rehabilitation</span>
-                <div className="flex flex-wrap gap-2">
-                  {treatmentPlanRehab.map((r: string, i: number) => (
-                    <span key={i} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm">
-                      {r}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+
             {treatmentPlanExercises.length > 0 && (
               <div className="mb-4">
                 <span className="text-[10px] text-slate-400 uppercase block font-bold mb-2">
-                  Prescribed Exercises & Home Programs ({treatmentPlanExercises.length})
+                  Prescribed Home Exercise Programme ({treatmentPlanExercises.length})
                 </span>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full min-w-0">
-                  {treatmentPlanExercises.map((ex: any, idx: number) => {
-                    const exName = ex.exerciseName || ex.name || `Exercise ${idx + 1}`;
-                    const exCategory = ex.category || 'General';
-                    const instructionsText = ex.instructions || ex.notes || ex.description || '';
-                    return (
-                      <div key={ex.id || idx} className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-2.5 w-full min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100 break-words leading-tight flex-1 min-w-0">{exName}</span>
-                          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 uppercase shrink-0">{exCategory}</span>
-                        </div>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-slate-600 dark:text-slate-400 border-y border-slate-100 dark:border-slate-800/80 py-1.5">
-                          {ex.sets && <span><strong className="text-slate-800 dark:text-slate-200">Sets:</strong> {ex.sets}</span>}
-                          {ex.reps && <span><strong className="text-slate-800 dark:text-slate-200">Reps:</strong> {ex.reps}</span>}
-                          {ex.holdTime && <span><strong className="text-slate-800 dark:text-slate-200">Hold:</strong> {ex.holdTime}</span>}
-                          {ex.frequency && <span><strong className="text-slate-800 dark:text-slate-200">Freq:</strong> {ex.frequency}</span>}
-                        </div>
-                        {instructionsText && (
-                          <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800 w-full min-w-0">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Exercise Instructions & Guidance:</span>
-                            <div className="whitespace-pre-wrap font-medium break-words leading-relaxed">{instructionsText}</div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="w-full min-w-0 overflow-x-auto">
+                  <table className="w-full min-w-[600px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                    <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                      <tr>
+                        <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Exercise / Guidance</th>
+                        <th className="p-2 text-center border-b border-r border-slate-200 dark:border-slate-800">Sets</th>
+                        <th className="p-2 text-center border-b border-r border-slate-200 dark:border-slate-800">Reps</th>
+                        <th className="p-2 text-center border-b border-r border-slate-200 dark:border-slate-800">Hold Time</th>
+                        <th className="p-2 text-center border-b border-r border-slate-200 dark:border-slate-800">Frequency</th>
+                        <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Instructions / Precautions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {treatmentPlanExercises.map((ex: any, idx: number) => {
+                        const exName = ex.exerciseName || ex.name || `Exercise ${idx + 1}`;
+                        const exCategory = ex.category || 'General';
+                        const instructionsText = ex.instructions || ex.notes || ex.description || '';
+                        return (
+                          <tr key={ex.id || idx}>
+                            <td className="p-2 font-bold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-800">
+                              <div>{exName}</div>
+                              <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 uppercase inline-block mt-0.5">{exCategory}</span>
+                            </td>
+                            <td className="p-2 text-center font-semibold border-r border-slate-100 dark:border-slate-800">{ex.sets || '—'}</td>
+                            <td className="p-2 text-center font-semibold border-r border-slate-100 dark:border-slate-800">{ex.reps || '—'}</td>
+                            <td className="p-2 text-center font-semibold border-r border-slate-100 dark:border-slate-800">{ex.holdTime || '—'}</td>
+                            <td className="p-2 text-center font-semibold border-r border-slate-100 dark:border-slate-800">{ex.frequency || '—'}</td>
+                            <td className="p-2 text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{instructionsText || '—'}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}

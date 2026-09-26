@@ -91,33 +91,39 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
     <div className="flex flex-col gap-4 text-xs">
       {/* Mental / GCS / MMSE */}
       {(neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m || neuroData.gcs?.e_v_m || neuroData.gcs?.total || neuroData.mmse?.total || (neuroData.mental && Object.values(neuroData.mental).some(Boolean))) && (
-        <div className="flex flex-wrap gap-3">
-          {(neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m || neuroData.gcs?.e_v_m || neuroData.gcs?.total) && (
-            <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">GCS Score:</span>
-              <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">
-                {neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m
-                  ? `E:${neuroData.gcs.e || '-'} V:${neuroData.gcs.v || '-'} M:${neuroData.gcs.m || '-'} (${neuroData.gcs.total || '0'}/15)`
-                  : `EVM = ${neuroData.gcs?.e_v_m || neuroData.gcs?.total} / 15`}
-              </span>
-            </div>
-          )}
-          {neuroData.mmse?.total && (
-            <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">MMSE Total:</span>
-              <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">{neuroData.mmse.total} / 30</span>
-            </div>
-          )}
-          {neuroData.mental && Object.values(neuroData.mental).some(Boolean) && (
-            <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center gap-3">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Mental:</span>
-              {Object.entries(neuroData.mental).map(([k, v]) => v ? (
-                <span key={k} className="text-slate-700 dark:text-slate-300">
-                  <strong className="capitalize">{k}:</strong> {String(v)}
-                </span>
+        <div className="w-full min-w-0 overflow-x-auto">
+          <table className="w-full min-w-[480px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+            <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+              <tr>
+                <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Assessment</th>
+                <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Score / Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m || neuroData.gcs?.e_v_m || neuroData.gcs?.total) && (
+                <tr className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                  <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Glasgow Coma Scale (GCS)</td>
+                  <td className="p-2 text-slate-800 dark:text-slate-200 font-bold">
+                    {neuroData.gcs?.e || neuroData.gcs?.v || neuroData.gcs?.m
+                      ? `Eye: ${neuroData.gcs.e || '-'}, Verbal: ${neuroData.gcs.v || '-'}, Motor: ${neuroData.gcs.m || '-'} (Total: ${neuroData.gcs.total || '0'}/15)`
+                      : `EVM = ${neuroData.gcs?.e_v_m || neuroData.gcs?.total} / 15`}
+                  </td>
+                </tr>
+              )}
+              {neuroData.mmse?.total && (
+                <tr className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                  <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Mini-Mental State Exam (MMSE)</td>
+                  <td className="p-2 text-slate-800 dark:text-slate-200 font-bold">{neuroData.mmse.total} / 30</td>
+                </tr>
+              )}
+              {neuroData.mental && Object.entries(neuroData.mental).map(([k, v]) => v ? (
+                <tr key={k} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                  <td className="p-2 font-semibold capitalize text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">Mental Status - {k}</td>
+                  <td className="p-2 text-slate-800 dark:text-slate-200">{String(v)}</td>
+                </tr>
               ) : null)}
-            </div>
-          )}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -408,40 +414,102 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
         (posture && Object.values(posture).some((v: any) => v && (v.frontal || v.sagittal))) ||
         (gait && Object.values(gait).some(Boolean)) ||
         (handFunction && Object.values(handFunction).some(Boolean))) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
           {balance && Object.values(balance).some(Boolean) && (
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Balance</span>
-              {Object.entries(balance).map(([k, v]) => v ? (
-                <p key={k} className="text-slate-700 dark:text-slate-300"><strong className="capitalize">{k.replace(/([A-Z])/g, ' $1')}:</strong> {String(v)}</p>
-              ) : null)}
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Balance Assessment</span>
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[300px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <tr>
+                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test</th>
+                      <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Result / Grade</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(balance).map(([k, v]) => v ? (
+                      <tr key={k} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                        <td className="p-2 font-semibold capitalize border-r border-slate-100 dark:border-slate-800">{k.replace(/([A-Z])/g, ' $1')}</td>
+                        <td className="p-2 text-slate-800 dark:text-slate-200">{String(v)}</td>
+                      </tr>
+                    ) : null)}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
           {posture && Object.values(posture).some((v: any) => v && (v.frontal || v.sagittal)) && (
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Posture</span>
-              {Object.entries(posture).map(([k, v]: [string, any]) => v && (v.frontal || v.sagittal) ? (
-                <p key={k} className="text-slate-700 dark:text-slate-300"><strong className="capitalize">{k}:</strong> F: {v.frontal || '—'}, S: {v.sagittal || '—'}</p>
-              ) : null)}
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Posture Assessment</span>
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[300px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <tr>
+                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Position</th>
+                      <th className="p-2 text-center border-b border-r border-slate-200 dark:border-slate-800">Frontal</th>
+                      <th className="p-2 text-center border-b border-slate-200 dark:border-slate-800">Sagittal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(posture).map(([k, v]: [string, any]) => v && (v.frontal || v.sagittal) ? (
+                      <tr key={k} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                        <td className="p-2 font-semibold capitalize border-r border-slate-100 dark:border-slate-800">{k}</td>
+                        <td className="p-2 text-center border-r border-slate-100 dark:border-slate-800">{v.frontal || '—'}</td>
+                        <td className="p-2 text-center">{v.sagittal || '—'}</td>
+                      </tr>
+                    ) : null)}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
           {gait && Object.values(gait).some(Boolean) && (
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Gait</span>
-              {Object.entries(gait).map(([k, v]) => v ? (
-                <p key={k} className="text-slate-700 dark:text-slate-300"><strong className="capitalize">{k.replace(/([A-Z])/g, ' $1')}:</strong> {String(v)}</p>
-              ) : null)}
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Gait Analysis</span>
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[300px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <tr>
+                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Parameter</th>
+                      <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Observation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(gait).map(([k, v]) => v ? (
+                      <tr key={k} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                        <td className="p-2 font-semibold capitalize border-r border-slate-100 dark:border-slate-800">{k.replace(/([A-Z])/g, ' $1')}</td>
+                        <td className="p-2 text-slate-800 dark:text-slate-200">{String(v)}</td>
+                      </tr>
+                    ) : null)}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
           {handFunction && Object.values(handFunction).some(Boolean) && (
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Hand Function</span>
-              {Object.entries(handFunction).map(([k, v]) => v ? (
-                <p key={k} className="text-slate-700 dark:text-slate-300"><strong className="capitalize">{k.replace(/([A-Z])/g, ' $1')}:</strong> {String(v)}</p>
-              ) : null)}
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Hand Function</span>
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[300px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <tr>
+                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Function / Test</th>
+                      <th className="p-2 text-left border-b border-slate-200 dark:border-slate-800">Status / Result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(handFunction).map(([k, v]) => v ? (
+                      <tr key={k} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                        <td className="p-2 font-semibold capitalize border-r border-slate-100 dark:border-slate-800">{k.replace(/([A-Z])/g, ' $1')}</td>
+                        <td className="p-2 text-slate-800 dark:text-slate-200">{String(v)}</td>
+                      </tr>
+                    ) : null)}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

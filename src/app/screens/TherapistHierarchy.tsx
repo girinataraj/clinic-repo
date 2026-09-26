@@ -125,6 +125,18 @@ export function TherapistHierarchy() {
   // ── Add therapist ─────────────────────────────────────────────────────────
   const handleAddTherapist = async () => {
     setAddError(null);
+    console.log('[THERAPIST_DEBUG] CREATE_SUBMIT_STARTED');
+    console.log('[THERAPIST_DEBUG] FORM_DATA', {
+      name: newName.trim(),
+      email: newEmail.trim(),
+      role: 'nurse',
+      passwordLength: newPassword?.length ?? 0,
+    });
+    console.log('[THERAPIST_DEBUG] SELECTED_DOCTOR', {
+      doctorId: user?.id,
+      doctorName: user?.name,
+      doctorRole: user?.role,
+    });
     if (!newName.trim()) { setAddError('Name is required.'); return; }
     if (!newEmail.trim() || !newEmail.includes('@')) { setAddError('Valid email is required.'); return; }
     if (!newPassword || newPassword.length < 6) { setAddError('Password must be at least 6 characters.'); return; }
