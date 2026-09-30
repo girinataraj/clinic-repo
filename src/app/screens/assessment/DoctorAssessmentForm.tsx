@@ -3,11 +3,13 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
 import { SearchDropdown } from '../../components/SearchDropdown';
-import { useCreateEvaluation, useLatestEvaluation } from '../../../hooks/useEvaluations';
+import { useCreateEvaluation, useLatestEvaluation, useEvaluation } from '../../../hooks/useEvaluations';
+import { useQueryClient } from '@tanstack/react-query';
 import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } from '../../../hooks/usePatients';
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
 import { useStaffUsers } from '../../../hooks/useStaff';
+import { ENDPOINTS } from '../../../services/endpoints';
 import api from '../../../services/api';
 import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone, RotateCcw, UserCheck, Printer, UserPlus } from 'lucide-react';
 import { EvaluationSummaryReport } from '../../components/EvaluationSummaryReport';
@@ -27,12 +29,19 @@ export function DoctorAssessmentForm() {
   const currentRole = 'doctor';
   const [searchParams] = useSearchParams();
   const isDoctorRole = true;
+  const queryClient = useQueryClient();
+
+  const editingEvaluationId = searchParams.get('evaluationId') || null;
+  const isEditMode = searchParams.get('mode') === 'edit' || Boolean(editingEvaluationId);
+
+  // When editing, fetch the specific evaluation
+  const { data: editingEval, isLoading: editingEvalLoading } = useEvaluation(editingEvaluationId);
 
   // Phone lookup
   const [phoneInput, setPhoneInput] = useState(searchParams.get('phone') ?? '');
   const [phoneToFetch, setPhoneToFetch] = useState(searchParams.get('phone') ?? '');
   const [resolvedPatientId, setResolvedPatientId] = useState(searchParams.get('patientId') ?? '');
-  const [lookupDone, setLookupDone] = useState(Boolean(searchParams.get('patientId') || searchParams.get('phone')));
+  const [lookupDone, setLookupDone] = useState(Boolean(searchParams.get('patientId') || searchParams.get('phone') || editingEvaluationId));
   const [showNewPatientForm, setShowNewPatientForm] = useState(false);
   const [newPatient, setNewPatient] = useState<{name:string;age:string;gender:'Male'|'Female'|'Other';referredBy:string;condition:string}>({name:'',age:'',gender:'Male',referredBy:'',condition:''});
 
@@ -161,7 +170,7 @@ export function DoctorAssessmentForm() {
   // key, so that specific in-progress session correctly restores). Because two
   // distinct fresh intakes can never share a location.key, cross-patient
   // contamination is structurally impossible rather than merely unlikely.
-  const [draftKey] = useState(() => searchParams.get('patientId') || searchParams.get('phone') || `fresh-${location.key}`);
+  const [draftKey] = useState(() => isEditMode ? `edit-${editingEvaluationId || searchParams.get('patientId')}` : (searchParams.get('patientId') || searchParams.get('phone') || `fresh-${location.key}`));
   const hasMountedRef = useRef(false);
 
   // Follow-up
@@ -243,9 +252,9 @@ export function DoctorAssessmentForm() {
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);
 
-  // Fully clear form fields whenever a patient is resolved/looked up
+  // Fully clear form fields whenever a patient is resolved/looked up (only when NOT in edit mode)
   useEffect(() => {
-    if (resolvedPatientId) {
+    if (resolvedPatientId && !isEditMode && !editingEvaluationId) {
       setVitals({ bp_sys: '', bp_dia: '', pr: '', spo2: '', temp: '', ef: '' });
       setChiefComplaints([]);
       setComplaintsText('');
@@ -272,7 +281,228 @@ export function DoctorAssessmentForm() {
       setNeuroData(getEmptyNeuroData());
       setCardioData(getEmptyCardioExam());
     }
-  }, [resolvedPatientId]);
+  }, [resolvedPatientId, isEditMode, editingEvaluationId]);
+
+  // Populate fields when editing an existing evaluation
+  useEffect(() => {
+    if (!editingEval || !isEditMode) return;
+
+    const rawEval: any = (editingEval as any).report ? (editingEval as any).report : editingEval;
+    const pat = rawEval.patient || rawEval.patientInfo || {};
+    const clinician = rawEval.clinician || {};
+    const vitalsObj = rawEval.vitals || rawEval.vitalSigns || {};
+
+    // 1. Patient demographics
+    const patName = pat.name || rawEval.patientName || rawEval.patient_name || patientById?.name || foundPatient?.name || '';
+    const patAge = pat.age ?? rawEval.age ?? patientById?.age ?? foundPatient?.age ?? '';
+    const patGender = pat.gender || rawEval.gender || patientById?.gender || foundPatient?.gender || 'Male';
+    const patPhone = pat.phone || rawEval.patientPhone || rawEval.phone || patientById?.phone || foundPatient?.phone || phoneToFetch || '';
+    const patAddress = pat.city || pat.address || rawEval.city || rawEval.address || patientById?.city || foundPatient?.city || '';
+    const patRef = pat.referredBy || pat.referred_by || rawEval.referredBy || rawEval.referred_by || patientById?.referredBy || foundPatient?.referredBy || '';
+    const patDisplayId = pat.displayId || pat.display_id || pat.patientId || rawEval.patient_display_id || rawEval.patientDisplayId || patientById?.displayId || foundPatient?.displayId || '';
+    const rawCond = pat.condition || rawEval.patientCondition || rawEval.patient_condition || patientById?.condition || foundPatient?.condition || '';
+    const condArray = typeof rawCond === 'string'
+      ? rawCond.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
+      : (Array.isArray(rawCond) ? rawCond : ['Ortho']);
+
+    const resolvedId = rawEval.patientId || rawEval.patient_id || pat.id || searchParams.get('patientId') || '';
+    if (resolvedId) {
+      setResolvedPatientId(resolvedId);
+    }
+    setLookupDone(true);
+    if (patPhone) {
+      setPhoneInput(patPhone);
+      setPhoneToFetch(patPhone);
+    }
+
+    setPatientInfo({
+      name: patName,
+      age: String(patAge || ''),
+      phone: patPhone,
+      gender: patGender as any,
+      address: patAddress,
+      condition: condArray.length > 0 ? condArray : ['Ortho'],
+      referredBy: patRef,
+      patientId: patDisplayId || resolvedId,
+      displayId: patDisplayId,
+    });
+
+    if (clinician.id || rawEval.createdBy?.id || rawEval.therapistId) {
+      setSelectedTherapistId(clinician.id || rawEval.createdBy?.id || rawEval.therapistId);
+    }
+
+    // 2. Vitals
+    let bpSys = '';
+    let bpDia = '';
+    const rawBp = rawEval.bp || rawEval.bloodPressure || vitalsObj.bp || (vitalsObj.bp_sys && vitalsObj.bp_dia ? `${vitalsObj.bp_sys}/${vitalsObj.bp_dia}` : '');
+    if (rawBp && typeof rawBp === 'string' && rawBp.includes('/')) {
+      const [s, d] = rawBp.split('/');
+      bpSys = s ? s.trim() : '';
+      bpDia = d ? d.trim() : '';
+    } else if (vitalsObj.bp_sys || vitalsObj.bp_dia) {
+      bpSys = vitalsObj.bp_sys ? String(vitalsObj.bp_sys) : '';
+      bpDia = vitalsObj.bp_dia ? String(vitalsObj.bp_dia) : '';
+    }
+    const prVal = rawEval.pr || rawEval.pulseRate || vitalsObj.pr || vitalsObj.pulse || vitalsObj.pulse_rate || '';
+    const spo2Val = rawEval.spo2 || rawEval.spO2 || vitalsObj.spo2 || vitalsObj.spO2 || '';
+    const tempVal = rawEval.temperature || rawEval.temp || vitalsObj.temperature || vitalsObj.temp || '';
+    const efVal = rawEval.ef || rawEval.ejectionFraction || vitalsObj.ef || vitalsObj.ejectionFraction || '';
+
+    setVitals({
+      bp_sys: bpSys,
+      bp_dia: bpDia,
+      pr: prVal ? String(prVal) : '',
+      spo2: spo2Val ? String(spo2Val) : '',
+      temp: tempVal ? String(tempVal) : '',
+      ef: efVal ? String(efVal) : '',
+    });
+
+    // 3. Pain level
+    const pLevel = rawEval.painLevel ?? rawEval.pain_level ?? rawEval.painScale ?? vitalsObj.painScale ?? vitalsObj.pain_scale ?? 0;
+    setPainLevel(typeof pLevel === 'number' ? pLevel : (Number(pLevel) || 0));
+
+    // 4. Chief complaints
+    const rawComplaints = rawEval.chiefComplaints || rawEval.chief_complaints || rawEval.complaints;
+    if (Array.isArray(rawComplaints)) {
+      setChiefComplaints(rawComplaints);
+    } else if (typeof rawComplaints === 'string' && rawComplaints.trim()) {
+      setChiefComplaints(rawComplaints.split(';').map((c: string) => c.trim()).filter(Boolean));
+    }
+    const rawAssocPains = rawEval.associatedPains || rawEval.associated_pains;
+    if (Array.isArray(rawAssocPains) && rawAssocPains.length > 0) {
+      setChiefComplaints(prev => Array.from(new Set([...prev, ...rawAssocPains])));
+    }
+
+    // 5. Functional scores / specific problems
+    if (rawEval.functionalScores || rawEval.functional_scores) {
+      setSpecificProblems(rawEval.functionalScores || rawEval.functional_scores || {});
+    }
+
+    // 6. Associated symptoms
+    const rawSymptoms = rawEval.associatedSymptoms || rawEval.associated_symptoms;
+    if (Array.isArray(rawSymptoms)) {
+      setAssociatedSymptoms(rawSymptoms.filter((s: any) => typeof s === 'string' && !s.startsWith('Visit Type:')));
+    }
+
+    // 7. Medical history
+    const rawHist = rawEval.medicalHistory || rawEval.medical_history;
+    if (Array.isArray(rawHist)) {
+      const standardList: string[] = [];
+      let otherVal = '';
+      rawHist.forEach((item: any) => {
+        const str = typeof item === 'string' ? item : String(item);
+        if (str.startsWith('Other: ')) {
+          otherVal = str.replace('Other: ', '').trim();
+        } else {
+          standardList.push(str);
+        }
+      });
+      setSelectedMedicalHistory(standardList);
+      if (otherVal) {
+        setOtherMedicalHistory(otherVal);
+        setShowOtherMedicalHistory(true);
+      }
+    }
+
+    // 8. Range of motion / muscle power
+    const rawRom = rawEval.musclePowerRom || rawEval.muscle_power_rom || rawEval.rangeOfMotion || rawEval.range_of_motion || {};
+    if (rawRom && typeof rawRom === 'object') {
+      setRomData(rawRom);
+    }
+
+    // 9. Anthropometrics
+    if (rawEval.anthropometrics && typeof rawEval.anthropometrics === 'object') {
+      setAnthropometrics({
+        height: rawEval.anthropometrics.height ? String(rawEval.anthropometrics.height) : '',
+        weight: rawEval.anthropometrics.weight ? String(rawEval.anthropometrics.weight) : '',
+        bmi: rawEval.anthropometrics.bmi ? String(rawEval.anthropometrics.bmi) : '',
+        excessWeight: rawEval.anthropometrics.excessWeight ? String(rawEval.anthropometrics.excessWeight) : '',
+        excessCalorie: rawEval.anthropometrics.excessCalorie ? String(rawEval.anthropometrics.excessCalorie) : '',
+        duration: rawEval.anthropometrics.duration ? String(rawEval.anthropometrics.duration) : '',
+        waist: rawEval.anthropometrics.waist ? String(rawEval.anthropometrics.waist) : '',
+        hip: rawEval.anthropometrics.hip ? String(rawEval.anthropometrics.hip) : '',
+        whRatio: rawEval.anthropometrics.whRatio ? String(rawEval.anthropometrics.whRatio) : '',
+      });
+    }
+
+    // 10. Clinical examination
+    const ce = rawEval.clinicalExamination || rawEval.clinical_examination;
+    if (ce && typeof ce === 'object') {
+      setClinicalExamData({
+        tests: ce.tests || {},
+        imaging: ce.imaging || {},
+      });
+      setExaminationNotes(ce.examinationNotes || ce.examination_notes || rawEval.management || '');
+    } else if (rawEval.management) {
+      setExaminationNotes(rawEval.management);
+    }
+
+    // 11. Neuro & Cardio
+    if (rawEval.neuroData || rawEval.neuro_data || rawEval.neurologicalExamination) {
+      setNeuroData(rawEval.neuroData || rawEval.neuro_data || rawEval.neurologicalExamination);
+    }
+    if (rawEval.cardioData || rawEval.cardio_data) {
+      setCardioData(rawEval.cardioData || rawEval.cardio_data);
+    }
+
+    // 12. Diagnosis
+    const rawDiagList = rawEval.diagnosisList || rawEval.diagnosis_list;
+    if (Array.isArray(rawDiagList)) {
+      setSelectedDiagnoses(rawDiagList);
+    }
+    const rawDiag = rawEval.diagnosis;
+    if (typeof rawDiag === 'string') {
+      setDiagnosisNotes(rawDiag);
+    } else if (rawDiag && typeof rawDiag === 'object' && rawDiag.notes) {
+      setDiagnosisNotes(rawDiag.notes);
+    }
+
+    // 13. Treatment Plan
+    const tp = rawEval.treatmentPlan || rawEval.treatment_plan;
+    if (tp && typeof tp === 'object') {
+      setTreatmentPlanData({
+        modalities: Array.isArray(tp.modalities) ? tp.modalities : [],
+        manualTherapy: Array.isArray(tp.manualTherapy) ? tp.manualTherapy : [],
+        rehabilitation: Array.isArray(tp.rehabilitation) ? tp.rehabilitation : [],
+        exercises: Array.isArray(tp.exercises) ? tp.exercises : [],
+        visitsRequired: tp.visitsRequired ? String(tp.visitsRequired) : '',
+        frequencyGapDays: tp.frequencyGapDays ? String(tp.frequencyGapDays) : '',
+        suggestedStartDate: tp.suggestedStartDate || '',
+        followUpNotes: tp.followUpNotes || rawEval.followUpPlan || '',
+        notes: tp.notes || '',
+        xrayFindings: tp.xrayFindings || rawEval.xrayFindings || rawEval.xray_findings || '',
+        mriFindings: tp.mriFindings || rawEval.mriFindings || rawEval.mri_findings || '',
+        pftFindings: tp.pftFindings || rawEval.pftFindings || rawEval.pft_findings || '',
+      });
+    } else {
+      setTreatmentPlanData(prev => ({
+        ...prev,
+        followUpNotes: rawEval.followUpPlan || prev.followUpNotes,
+        xrayFindings: rawEval.xrayFindings || rawEval.xray_findings || prev.xrayFindings,
+        mriFindings: rawEval.mriFindings || rawEval.mri_findings || prev.mriFindings,
+        pftFindings: rawEval.pftFindings || rawEval.pft_findings || prev.pftFindings,
+      }));
+    }
+    if (rawEval.plan) {
+      setTreatmentNotes(rawEval.plan);
+    }
+
+    // 14. Billing
+    const pMode = rawEval.paymentMode || rawEval.payment_mode || '';
+    if (pMode === 'Cash' || pMode === 'UPI') {
+      setPaymentMode(pMode);
+    }
+    const bAmt = rawEval.billAmount != null ? rawEval.billAmount : rawEval.bill_amount;
+    if (bAmt != null) {
+      setBillAmount(Number(bAmt));
+      setBillAmountInput(String(bAmt));
+      setIsManualBillEdit(true);
+    }
+    const vType = rawEval.visitType || rawEval.visit_type || 'Clinic';
+    if (['Clinic', 'Home Visit', 'IP', 'Day Care'].includes(vType)) {
+      setVisitType(vType as any);
+    }
+  }, [editingEval, isEditMode, patientById, foundPatient, phoneToFetch, searchParams]);
 
   // Restore an in-progress draft for this same patient/phone context (e.g. after
   // the Android back gesture unmounted this screen) so returning to it doesn't
@@ -280,6 +510,7 @@ export function DoctorAssessmentForm() {
   // "clear fields on resolvedPatientId" effect above so a restored value wins
   // over that effect's blank defaults during the same mount pass.
   useEffect(() => {
+    if (isEditMode) return;
     const draft = loadDoctorIntakeDraft(draftKey);
     if (!draft) return;
     setStep(draft.step);
@@ -317,7 +548,7 @@ export function DoctorAssessmentForm() {
     setNeuroData(draft.neuroData);
     setCardioData(draft.cardioData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isEditMode, draftKey]);
 
   // Keep the draft current so a later remount of this same session can restore
   // it. Skips the mount commit (hasMountedRef starts false) so it never saves
@@ -569,8 +800,8 @@ export function DoctorAssessmentForm() {
         referredBy: patientInfo.referredBy || undefined,
       });
 
-      // 2. Create the evaluation record
-      await createEvaluation.mutateAsync({
+      // 2. Create or Update the evaluation record
+      const evaluationPayload = {
         patientId: resolvedPatientId,
         vitals: Object.keys(vitalsPayload).length > 0 ? (vitalsPayload as any) : undefined,
         painLevel,
@@ -592,7 +823,7 @@ export function DoctorAssessmentForm() {
           followUpNotes: treatmentPlanData.followUpNotes || undefined,
         } : undefined,
         management: examinationNotes.trim() || undefined,
-        status: 'submitted',
+        status: 'submitted' as const,
         paymentMode,
         billAmount: finalBillAmount,
         visitType,
@@ -610,10 +841,21 @@ export function DoctorAssessmentForm() {
         xrayFindings: treatmentPlanData.xrayFindings || undefined,
         mriFindings: treatmentPlanData.mriFindings || undefined,
         pftFindings: treatmentPlanData.pftFindings || undefined,
-      });
+      };
+
+      if (editingEvaluationId) {
+        await api.put(ENDPOINTS.EVALUATIONS.UPDATE(editingEvaluationId), evaluationPayload);
+        queryClient.invalidateQueries({ queryKey: ['evaluations'] });
+        queryClient.invalidateQueries({ queryKey: ['evaluation', editingEvaluationId] });
+      } else {
+        await createEvaluation.mutateAsync(evaluationPayload);
+      }
 
       if (resolvedPatientId) {
         await updatePatient.mutateAsync({ id: resolvedPatientId, status: 'completed' });
+        queryClient.invalidateQueries({ queryKey: ['patient', resolvedPatientId] });
+        queryClient.invalidateQueries({ queryKey: ['evaluations', 'latest', resolvedPatientId] });
+        queryClient.invalidateQueries({ queryKey: ['patients'] });
       }
       clearDoctorIntakeDraft();
       setSaved(true);
@@ -739,7 +981,16 @@ export function DoctorAssessmentForm() {
               <ArrowLeft size={18} className="text-white" />
             </button>
             <div>
-              <h1 className="text-[17px] font-black text-white tracking-tight">Assessment Form</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-[17px] font-black text-white tracking-tight">
+                  {isEditMode ? 'Edit Assessment' : 'Assessment Form'}
+                </h1>
+                {isEditMode && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200 text-[10px] font-bold border border-amber-400/30">
+                    Edit Mode
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} - {stepsList[step]?.label}</p>
             </div>
           </div>

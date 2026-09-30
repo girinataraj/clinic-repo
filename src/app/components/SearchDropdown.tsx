@@ -40,6 +40,7 @@ export function SearchDropdown({
   placeholder = 'Search...',
   className = '',
   disabled = false,
+  onEnter,
 }: SearchDropdownProps) {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

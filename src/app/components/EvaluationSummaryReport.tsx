@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react';
 import { ROM_CONFIG } from '../screens/assessment/clinicalConfig';
 import { 
   Activity, Scale, Stethoscope, CheckSquare, Dumbbell, ClipboardList,
-  Heart, StickyNote, Brain, Building2, Printer, Download, Share2, ArrowLeft, ShieldCheck, Loader2, FileText
+  Heart, StickyNote, Brain, Building2, Printer, Download, Share2, ArrowLeft, ShieldCheck, Loader2, FileText, Edit3
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { useAuth } from '../contexts/AuthContext';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { NeuroSummaryView } from './NeuroSummaryView';
@@ -57,6 +58,8 @@ function formatDisplayValue(val: any): string {
 
 export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBack }: EvaluationSummaryReportProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isDoctorUser = isDoctorRole || user?.role === 'doctor' || user?.role === 'admin';
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -572,6 +575,20 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
     }
   };
 
+  const handleEdit = () => {
+    const evalId = rawData.id || rawData.evaluationId || rawData.evaluation_id || evaluation?.id;
+    const patId = patientInfo.id || rawData.patientId || rawData.patient_id || evaluation?.patientId || evaluation?.patient?.id;
+    const patPhone = patientInfo.phone || rawData.patientPhone || rawData.phone || patientPhone;
+
+    const params = new URLSearchParams();
+    if (patId && patId !== '—') params.set('patientId', String(patId));
+    if (evalId) params.set('evaluationId', String(evalId));
+    if (patPhone && patPhone !== '—') params.set('phone', String(patPhone));
+    params.set('mode', 'edit');
+
+    navigate(`/doctor/intake?${params.toString()}`);
+  };
+
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -623,13 +640,24 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
               </>
             )}
           </button>
-          <button
-            onClick={handlePrint}
-            className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs sm:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md"
-          >
-            <Printer size={16} />
-            <span>Print</span>
-          </button>
+          {isDoctorUser ? (
+            <button
+              onClick={handleEdit}
+              className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs sm:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md"
+              title="Edit Assessment"
+            >
+              <Edit3 size={16} />
+              <span>Edit</span>
+            </button>
+          ) : (
+            <button
+              onClick={handlePrint}
+              className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs sm:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md"
+            >
+              <Printer size={16} />
+              <span>Print</span>
+            </button>
+          )}
           <button
             onClick={handleShare}
             className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs sm:text-sm border border-white/15 backdrop-blur-md transition-all active:scale-95 shadow-md"
