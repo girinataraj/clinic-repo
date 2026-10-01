@@ -76,7 +76,7 @@ export function PatientRecords() {
       <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans print:bg-white">
         {/* Detail View Header */}
         <div
-          className="px-6 pt-8 pb-6 shrink-0 relative overflow-hidden print:hidden bg-gradient-to-br from-blue-900 to-blue-600 dark:from-slate-900 dark:to-slate-800"
+          className="px-6 pt-safe-top-5 pb-6 shrink-0 relative overflow-hidden print:hidden bg-gradient-to-br from-blue-900 to-blue-600 dark:from-slate-900 dark:to-slate-800"
         >
           <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
           <div className="max-w-5xl mx-auto relative z-10 flex items-center justify-between">
@@ -210,7 +210,7 @@ export function PatientRecords() {
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Header */}
       <div
-        className="px-6 pt-8 pb-10 shrink-0 relative overflow-hidden bg-gradient-to-br from-blue-900 to-blue-600 dark:from-slate-900 dark:to-slate-800"
+        className="px-6 pt-safe-top-5 pb-10 shrink-0 relative overflow-hidden bg-gradient-to-br from-blue-900 to-blue-600 dark:from-slate-900 dark:to-slate-800"
       >
         <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="max-w-5xl mx-auto relative z-10">

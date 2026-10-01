@@ -161,7 +161,7 @@ export function ClinicalExamination({
                     <div className="p-4 flex flex-col gap-4">
                       {/* Clinical Tests */}
                       <div className="flex flex-col gap-3">
-                        {group.tests.map(test => {
+                        {group.tests.map((test: { name: string }) => {
                           const currentResult = getTestResult(group.region, test.name);
                           return (
                             <div

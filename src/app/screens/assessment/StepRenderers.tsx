@@ -14,6 +14,18 @@ export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selecte
   const iconColor = isDoctorRole ? 'text-[#262842]' : 'text-teal-700';
   const btnActive = isDoctorRole ? 'border-[#262842] bg-indigo-50 dark:bg-indigo-900/30 text-[#262842]' : 'border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-700';
 
+  // The intake forms assign the patient to the logged-in clinician, except when
+  // an already-registered patient carries a different therapist. Reflect whichever
+  // of those is actually in effect — this is display only, assignment is unchanged.
+  const assignedToOther =
+    selectedTherapistId && user?.id && selectedTherapistId !== user.id
+      ? therapistsList?.find((t: any) => t.id === selectedTherapistId)
+      : undefined;
+  const selfRoleLabel = isDoctorRole ? 'Doctor' : 'Therapist';
+  const assignedTherapistLabel = assignedToOther
+    ? `Therapist: ${assignedToOther.name}`
+    : `Self (${selfRoleLabel}: ${user?.name || selfRoleLabel})`;
+
   return (
     <SectionCard icon={<User size={18} className={`${iconColor} dark:text-indigo-400`} />} title="Patient Information" subtitle="Demographics & assignment" accent={accent}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0">
@@ -40,7 +52,7 @@ export function StepPatient({ patientInfo, setPatientInfo, isDoctorRole, selecte
         <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 opacity-90 cursor-not-allowed">
           <UserCog size={15} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
           <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
-            Self (Doctor: {user?.name || 'Doctor'})
+            {assignedTherapistLabel}
           </span>
         </div>
       </FormField>
@@ -122,8 +134,8 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
   const dynamicOptions = chiefComplaints.filter((c: string) => c !== 'Another');
 
   return (
-    <div className="flex flex-col gap-4">
-      <SectionCard icon={<CheckSquare size={18} className={`${iconColor1} dark:text-fuchsia-400`} />} title="Chief Complaints" subtitle="Select affected body parts" accent={accent1}>
+    <div className="flex flex-col gap-0 shadow-sm rounded-xl">
+      <SectionCard className="rounded-b-none border-b-0 shadow-none" icon={<CheckSquare size={18} className={`${iconColor1} dark:text-fuchsia-400`} />} title="Chief Complaints" subtitle="Select affected body parts" accent={accent1}>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
           {(chiefComplaintsList || []).map((item: string) => (
             <ToggleChip key={item} label={item} checked={chiefComplaints.includes(item)} onChange={() => toggleCC(item)} accent={accent1} />
@@ -174,7 +186,7 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
           : 'border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-500/10';
 
         return (
-          <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Specific Problems" subtitle="Provide details about complaints" accent={accent2}>
+          <SectionCard className="rounded-none border-b-0 shadow-none" icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Specific Problems" subtitle="Provide details about complaints" accent={accent2}>
             <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-left">
@@ -259,7 +271,7 @@ export function StepComplaints({ chiefComplaints, setChiefComplaints, associated
         );
       })()}
 
-      <SectionCard icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Associated Symptoms" subtitle="Select all that apply" accent={accent2}>
+      <SectionCard className="rounded-t-none shadow-none" icon={<ClipboardList size={18} className={`${iconColor2} dark:text-blue-400`} />} title="Associated Symptoms" subtitle="Select all that apply" accent={accent2}>
         <MultiSelectDropdown options={associatedSymptomsList || []} selected={associatedSymptoms} onChange={setAssociatedSymptoms} placeholder="Search symptoms…" accent={accent2} />
       </SectionCard>
     </div>

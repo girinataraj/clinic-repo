@@ -157,13 +157,15 @@ export function DoctorRevenue() {
       <div
         style={{
           background: 'linear-gradient(135deg, #262842 0%, #3B3E66 100%)',
-          padding: '24px 24px 24px 24px',
+          paddingTop: 'calc(1.25rem + var(--sa-top))',
+          paddingBottom: '24px',
+          paddingLeft: '24px',
+          paddingRight: '24px',
           flexShrink: 0,
         }}
       >
         <div
-          className="max-w-4xl mx-auto flex items-center justify-between"
-          style={{ gap: '12px' }}
+          className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 w-full min-w-0"
         >
           {/* Title */}
           <div>
@@ -176,7 +178,7 @@ export function DoctorRevenue() {
           </div>
 
           {/* Controls Header */}
-          <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end min-w-0">
             {/* Therapist Filter */}
             <select
               value={selectedTherapistId}
@@ -248,7 +250,7 @@ export function DoctorRevenue() {
       </div>
 
       {/* ── Scrollable Content ─────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
         <div
           className="max-w-4xl mx-auto w-full"
           style={{ padding: '24px 20px 32px' }}

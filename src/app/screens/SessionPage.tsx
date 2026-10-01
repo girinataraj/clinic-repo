@@ -129,7 +129,7 @@ export function SessionPage() {
   return (
     <div className="flex flex-col h-full bg-slate-50/50 font-sans">
       {/* Header */}
-      <div className="px-5 pt-5 pb-5 shrink-0 bg-gradient-to-br from-teal-700 to-teal-600">
+      <div className="px-5 pt-safe-top-4 pb-5 shrink-0 bg-gradient-to-br from-teal-700 to-teal-600">
         <div className="flex items-center gap-3 mb-1">
           <button
             onClick={() => navigate(`/${currentRole}`)}

@@ -15,10 +15,10 @@ function NeuroAccordionSection({ title, isOpen, onToggle, children }: NeuroSecti
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3.5 bg-slate-50 dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
+        className="w-full flex items-center justify-between px-4 py-3.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-left"
       >
-        <span className="text-[13px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">{title}</span>
-        <ChevronDown size={16} className={`text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        <span className="text-[13px] font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">{title}</span>
+        <ChevronDown size={16} className={`text-slate-500 dark:text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50">{children}</div>}
     </div>
@@ -174,7 +174,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
   };
 
   const tableInputClass = "w-full text-center px-2 py-1 text-xs border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500";
-  const commentInputClass = "w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-slate-900 dark:text-white placeholder:text-slate-450 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+  const commentInputClass = "w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500";
   const tableSelectClass = "w-full text-center px-1.5 py-1 text-xs border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer font-semibold";
 
   const handleGCSChange = (field: 'e' | 'v' | 'm', val: string) => {
@@ -272,7 +272,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                         value={neuroData.gcs?.e ?? ''}
                         placeholder="1-4"
                         onChange={(e) => handleGCSChange('e', e.target.value)}
-                        className="w-16 text-center px-2 py-1.5 border border-slate-250 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="w-16 text-center px-2 py-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
                       />
                     </div>
 
@@ -285,7 +285,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                         value={neuroData.gcs?.v ?? ''}
                         placeholder="1-5"
                         onChange={(e) => handleGCSChange('v', e.target.value)}
-                        className="w-16 text-center px-2 py-1.5 border border-slate-250 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="w-16 text-center px-2 py-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
                       />
                     </div>
 
@@ -298,7 +298,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                         value={neuroData.gcs?.m ?? ''}
                         placeholder="1-6"
                         onChange={(e) => handleGCSChange('m', e.target.value)}
-                        className="w-16 text-center px-2 py-1.5 border border-slate-250 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="w-16 text-center px-2 py-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg text-sm text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
                       />
                     </div>
 
@@ -319,10 +319,10 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'mmse'}
                 onToggle={() => setOpenSec(openSec === 'mmse' ? '' : 'mmse')}
               >
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                <div className="w-full min-w-0 overflow-x-auto">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
+                      <tr className="bg-slate-50 dark:bg-slate-800 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-24 text-center uppercase tracking-wider">Max Score</th>
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-28 text-center uppercase tracking-wider">Patient's Score</th>
                         <th className="p-3 uppercase tracking-wider">Questions</th>
@@ -365,12 +365,12 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                               placeholder={`0-${item.max}`}
                             />
                           </td>
-                          <td className="p-2.5 font-semibold text-slate-700 dark:text-slate-350">{item.q}</td>
+                          <td className="p-2.5 font-semibold text-slate-700 dark:text-slate-300">{item.q}</td>
                         </tr>
                       ))}
-                      <tr className="bg-slate-50 dark:bg-slate-850/50 font-black border-t-2 border-slate-200 dark:border-slate-800">
+                      <tr className="bg-slate-50 dark:bg-slate-800/50 font-black border-t-2 border-slate-200 dark:border-slate-800">
                         <td className="p-3 border-r border-slate-200 dark:border-slate-800 text-center text-sm">30</td>
-                        <td className="p-2 border-r border-slate-200 dark:border-slate-800 text-center text-sm text-indigo-650 dark:text-teal-400">
+                        <td className="p-2 border-r border-slate-200 dark:border-slate-800 text-center text-sm text-indigo-600 dark:text-teal-400">
                           {neuroData.mmse?.total || '0'}
                         </td>
                         <td className="p-3 text-sm uppercase tracking-wider">TOTAL</td>
@@ -386,10 +386,10 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'nerves'}
                 onToggle={() => setOpenSec(openSec === 'nerves' ? '' : 'nerves')}
               >
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                <div className="w-full min-w-0 overflow-x-auto">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
+                      <tr className="bg-slate-50 dark:bg-slate-800 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-1/4 uppercase tracking-wider">Nerves</th>
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-1/4 uppercase tracking-wider">Status</th>
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-1/4 uppercase tracking-wider">Nerves</th>
@@ -449,26 +449,26 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 onToggle={() => setOpenSec(openSec === 'sensory' ? '' : 'sensory')}
               >
                 <div className="flex flex-col gap-4">
-                  <div className="overflow-x-auto">
+                  <div className="w-full min-w-0 overflow-x-auto">
                     <table
-                      className="w-full text-[11px] text-slate-800 dark:text-slate-200 text-left border border-slate-200 dark:border-slate-800"
+                      className="w-full min-w-[500px] text-[11px] text-slate-800 dark:text-slate-200 text-left border border-slate-200 dark:border-slate-800"
                       style={{ tableLayout: 'auto', borderCollapse: 'collapse', width: '100%' }}
                     >
                       <thead>
                         <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-black">
-                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550" style={{ verticalAlign: 'middle', padding: '6px 8px' }}>Sensation</th>
-                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550 text-center" colSpan={2} style={{ verticalAlign: 'middle', padding: '6px 4px' }}>Upper Extremity</th>
-                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550 text-center" colSpan={2} style={{ verticalAlign: 'middle', padding: '6px 4px' }}>Lower Extremity</th>
-                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-550 text-center" colSpan={2} style={{ verticalAlign: 'middle', padding: '6px 4px' }}>Trunk</th>
-                          <th className="uppercase text-slate-550" style={{ verticalAlign: 'middle', padding: '6px 8px' }}>Comments</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-500" style={{ verticalAlign: 'middle', padding: '6px 8px' }}>Sensation</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-500 text-center" colSpan={2} style={{ verticalAlign: 'middle', padding: '6px 4px' }}>Upper Extremity</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-500 text-center" colSpan={2} style={{ verticalAlign: 'middle', padding: '6px 4px' }}>Lower Extremity</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 uppercase text-slate-500 text-center" colSpan={2} style={{ verticalAlign: 'middle', padding: '6px 4px' }}>Trunk</th>
+                          <th className="uppercase text-slate-500" style={{ verticalAlign: 'middle', padding: '6px 8px' }}>Comments</th>
                         </tr>
                         <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 font-bold">
                           <th className="border-r border-slate-200 dark:border-slate-800" style={{ verticalAlign: 'middle', padding: '6px 8px' }}>Location</th>
-                          <th className="border-r border-slate-200 dark:border-slate-850 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Rt</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Rt</th>
                           <th className="border-r border-slate-200 dark:border-slate-800 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Lt</th>
-                          <th className="border-r border-slate-200 dark:border-slate-850 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Rt</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Rt</th>
                           <th className="border-r border-slate-200 dark:border-slate-800 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Lt</th>
-                          <th className="border-r border-slate-200 dark:border-slate-850 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Rt</th>
+                          <th className="border-r border-slate-200 dark:border-slate-800 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Rt</th>
                           <th className="border-r border-slate-200 dark:border-slate-800 text-center" style={{ verticalAlign: 'middle', padding: '6px 4px', textAlign: 'center' }}>Lt</th>
                           <th className="font-black" style={{ verticalAlign: 'middle', padding: '6px 8px' }}></th>
                         </tr>
@@ -497,9 +497,9 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                           ]}
                         ].map((section) => (
                           <React.Fragment key={section.cat}>
-                            <tr className="bg-slate-100/60 dark:bg-slate-850/40 font-black">
+                            <tr className="bg-slate-100/60 dark:bg-slate-800/40 font-black">
                               <td
-                                className="border-r border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-350"
+                                className="border-r border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300"
                                 colSpan={8}
                                 style={{
                                   paddingTop: '12px',
@@ -515,7 +515,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                               </td>
                             </tr>
                             {section.rows.map((r) => (
-                              <tr key={r.key} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/30 dark:hover:bg-slate-850/5">
+                              <tr key={r.key} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/30 dark:hover:bg-slate-800/5">
                                 <td
                                   className="border-r border-slate-200 dark:border-slate-800 font-medium pl-3"
                                   style={{ verticalAlign: 'middle', padding: '5px 8px' }}
@@ -525,7 +525,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                                 {['ueRt', 'ueLt', 'leRt', 'leLt', 'tRt', 'tLt'].map((side) => (
                                   <td
                                     key={side}
-                                    className="border-r border-slate-200 dark:border-slate-850 text-center"
+                                    className="border-r border-slate-200 dark:border-slate-800 text-center"
                                     style={{ verticalAlign: 'middle', padding: '3px 2px', textAlign: 'center' }}
                                   >
                                     <select
@@ -606,9 +606,10 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                   {/* Muscle Girth */}
                   <div>
                     <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Muscle Girth</h4>
-                    <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                    <div className="w-full min-w-0 overflow-x-auto">
+  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                       <thead>
-                        <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
+                        <tr className="bg-slate-50 dark:bg-slate-800 font-black border-b border-slate-200 dark:border-slate-800">
                           <th className="p-3 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider">Area</th>
                           <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-24 text-center uppercase tracking-wider">Rt.(cm.)</th>
                           <th className="p-3 w-24 text-center uppercase tracking-wider">Lt.(cm.)</th>
@@ -651,14 +652,16 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                         ))}
                       </tbody>
                     </table>
+</div>
                   </div>
 
                   {/* Voluntary Control */}
                   <div>
                     <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Voluntary Control</h4>
-                    <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                    <div className="w-full min-w-0 overflow-x-auto">
+  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                       <thead>
-                        <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
+                        <tr className="bg-slate-50 dark:bg-slate-800 font-black border-b border-slate-200 dark:border-slate-800">
                           <th className="p-3 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider">Side</th>
                           <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-28 text-center uppercase tracking-wider">Rt.</th>
                           <th className="p-3 w-28 text-center uppercase tracking-wider">Lt.</th>
@@ -697,6 +700,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                         ))}
                       </tbody>
                     </table>
+</div>
                   </div>
                 </div>
               </NeuroAccordionSection>
@@ -708,10 +712,10 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 onToggle={() => setOpenSec(openSec === 'reflexes' ? '' : 'reflexes')}
               >
                 <div className="flex flex-col gap-4">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                  <div className="w-full min-w-0 overflow-x-auto">
+                    <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                       <thead>
-                        <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
+                        <tr className="bg-slate-50 dark:bg-slate-800 font-black border-b border-slate-200 dark:border-slate-800">
                           <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-40 uppercase tracking-wider">Category</th>
                           <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-48 uppercase tracking-wider">Reflex</th>
                           <th className="p-3 border-r border-slate-200 dark:border-slate-800 text-center w-28 uppercase tracking-wider">Left</th>
@@ -728,7 +732,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                           { cat: 'DEEP', isFirst: false, key: 'knee', name: 'Knee' },
                           { cat: 'DEEP', isFirst: false, key: 'ankle', name: 'Ankle' }
                         ].map((row, idx) => (
-                          <tr key={idx} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/30 dark:hover:bg-slate-850/5">
+                          <tr key={idx} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/30 dark:hover:bg-slate-800/5">
                             {row.isFirst && (
                               <td
                                 className="p-3 border-r border-slate-200 dark:border-slate-800 font-black bg-slate-50/40 dark:bg-slate-900/10 uppercase tracking-wider text-slate-500"
@@ -765,7 +769,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                   </div>
 
                   <div className="flex items-center gap-3 text-xs">
-                    <span className="font-extrabold w-28 text-slate-650 dark:text-slate-400 uppercase tracking-wider">Pathological :</span>
+                    <span className="font-extrabold w-28 text-slate-600 dark:text-slate-400 uppercase tracking-wider">Pathological :</span>
                     <input
                       type="text"
                       value={neuroData.reflexes?.pathological || ''}
@@ -793,9 +797,10 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                     {/* Non Equilibrium Tests */}
                     <div>
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Non Equilibrium Tests</h4>
-                      <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                      <div className="w-full min-w-0 overflow-x-auto">
+  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                         <thead>
-                          <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
+                          <tr className="bg-slate-50 dark:bg-slate-800 font-black border-b border-slate-200 dark:border-slate-800">
                             <th className="p-3 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider">Non Equilibrium Tests</th>
                             <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-24 text-center uppercase tracking-wider">Rt.</th>
                             <th className="p-3 w-24 text-center uppercase tracking-wider">Lt.</th>
@@ -842,14 +847,16 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                           ))}
                         </tbody>
                       </table>
+</div>
                     </div>
 
                     {/* Equilibrium Tests */}
                     <div>
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-3.5 uppercase tracking-wide">Equilibrium tests</h4>
-                      <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                      <div className="w-full min-w-0 overflow-x-auto">
+  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                         <thead>
-                          <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
+                          <tr className="bg-slate-50 dark:bg-slate-800 font-black border-b border-slate-200 dark:border-slate-800">
                             <th className="p-3 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider">Equilibrium tests</th>
                             <th className="p-3 w-40 text-center uppercase tracking-wider">Grade</th>
                           </tr>
@@ -885,11 +892,12 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                           ))}
                         </tbody>
                       </table>
+</div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 text-xs mt-2 border-t border-slate-200 dark:border-slate-800 pt-3">
-                    <span className="font-extrabold w-44 text-slate-650 dark:text-slate-400 uppercase tracking-wider">Involuntary Movements :</span>
+                    <span className="font-extrabold w-44 text-slate-600 dark:text-slate-400 uppercase tracking-wider">Involuntary Movements :</span>
                     <select
                       value={neuroData.coordination?.involuntaryMovements || ''}
                       onChange={(e) => updateNested(['coordination', 'involuntaryMovements'], e.target.value)}
@@ -909,10 +917,10 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'balance'}
                 onToggle={() => setOpenSec(openSec === 'balance' ? '' : 'balance')}
               >
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                <div className="w-full min-w-0 overflow-x-auto">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
+                      <tr className="bg-slate-50 dark:bg-slate-800 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-36 uppercase tracking-wider">Category</th>
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-1/2 uppercase tracking-wider">Test</th>
                         <th className="p-3 uppercase tracking-wider">Comments</th>
@@ -929,7 +937,7 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                         <tr key={idx} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/20">
                           {row.isFirst && (
                             <td
-                              className="p-3 border-r border-slate-200 dark:border-slate-800 font-black bg-slate-50/40 dark:bg-slate-900/10 uppercase tracking-wider text-slate-550"
+                              className="p-3 border-r border-slate-200 dark:border-slate-800 font-black bg-slate-50/40 dark:bg-slate-900/10 uppercase tracking-wider text-slate-500"
                               rowSpan={row.rowSpan}
                             >
                               {row.cat}
@@ -958,10 +966,10 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'posture'}
                 onToggle={() => setOpenSec(openSec === 'posture' ? '' : 'posture')}
               >
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                <div className="w-full min-w-0 overflow-x-auto">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
+                      <tr className="bg-slate-50 dark:bg-slate-800 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider">Position</th>
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-5/12 uppercase tracking-wider">Frontal View</th>
                         <th className="p-3 w-5/12 uppercase tracking-wider">Sagittal View</th>
@@ -1011,8 +1019,8 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'gait'}
                 onToggle={() => setOpenSec(openSec === 'gait' ? '' : 'gait')}
               >
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                <div className="w-full min-w-0 overflow-x-auto">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <tbody>
                       {[
                         { leftLabel: 'Stance Phase:', leftKey: 'stancePhase', rightLabel: 'Base Width:', rightKey: 'baseWidth' },
@@ -1058,10 +1066,10 @@ export function StepNeuroExam({ data, onChange, isDoctorRole, page = 1 }: any) {
                 isOpen={openSec === 'hand'}
                 onToggle={() => setOpenSec(openSec === 'hand' ? '' : 'hand')}
               >
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
+                <div className="w-full min-w-0 overflow-x-auto">
+                  <table className="w-full min-w-[500px] text-xs text-left border border-slate-200 dark:border-slate-800 border-collapse">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-850 font-black border-b border-slate-200 dark:border-slate-800">
+                      <tr className="bg-slate-50 dark:bg-slate-800 font-black border-b border-slate-200 dark:border-slate-800">
                         <th className="p-3 border-r border-slate-200 dark:border-slate-800 w-44 uppercase tracking-wider">Hand Function</th>
                         <th className="p-3 uppercase tracking-wider">Comments / Details</th>
                       </tr>

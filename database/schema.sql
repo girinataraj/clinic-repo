@@ -258,7 +258,7 @@ new_nurse AS (
     display_id, role, name, email, password_hash
   ) VALUES (
     'USR-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('user_display_id_seq')::text, 3, '0'),
-    'nurse', 'Yokesh', 'yokesh@saai.com', crypt('Password@123', gen_salt('bf'))
+    'nurse', 'Yokesh', 'yokesh@saai.com', crypt('YOKESHPT@2503', gen_salt('bf'))
   )
   RETURNING id
 ),
@@ -267,7 +267,7 @@ new_nurse_2 AS (
     display_id, role, name, email, password_hash
   ) VALUES (
     'USR-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('user_display_id_seq')::text, 3, '0'),
-    'nurse', 'Rahul', 'rahul@saai.com', crypt('Password@123', gen_salt('bf'))
+    'nurse', 'Raghul', 'raghul@saai.com', crypt('@TN36bt5522', gen_salt('bf'))
   )
   RETURNING id
 ),

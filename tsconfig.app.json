@@ -18,11 +18,31 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    /*
+     * Unused locals/parameters are style rules, not type-safety rules, and
+     * tseslint's recommended config (eslint.config.js) already reports them.
+     * They are off here so `npm run typecheck` is a correctness gate that fails
+     * only on real type errors — 160+ pre-existing unused-symbol warnings would
+     * otherwise make the gate permanently red and therefore ignored. Clearing
+     * them is a separate cleanup; re-enable these once that is done.
+     */
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  /*
+   * Dead screens, superseded and no longer imported or routed anywhere. Both
+   * contain pre-existing syntax errors (ReportGeneration.tsx was flattened to a
+   * single line by one of the old repo-root fix_*.cjs scripts), so they cannot
+   * be parsed. Excluding them only drops them as type-check entry points — if
+   * either is ever imported again it is checked normally. Delete when confirmed
+   * obsolete.
+   */
+  "exclude": [
+    "src/app/screens/ReportGeneration.tsx",
+    "src/app/screens/NurseIntakeForm.tsx"
+  ]
 }

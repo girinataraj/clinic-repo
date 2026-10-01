@@ -136,7 +136,7 @@ export function DoctorProfile() {
 
   return (
     <div className="flex flex-col h-full font-sans bg-[#E8E9F1] dark:bg-slate-950 relative">
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-24 md:pb-6">
         {/* Header */}
         <div
           className="relative rounded-b-3xl bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-[0_4px_24px_rgba(38,40,66,0.15)] dark:shadow-none"
@@ -147,7 +147,7 @@ export function DoctorProfile() {
           </div>
 
           {/* Top bar */}
-          <div className="flex items-center justify-between px-6 pb-2 pt-8 relative z-50">
+          <div className="flex items-center justify-between px-6 pb-2 pt-safe-top-4 relative z-50">
             <button
               onClick={() => navigate('/doctor')}
               className="flex items-center justify-center rounded-2xl transition-colors hover:bg-white/20 w-11 h-11 bg-white/15"
@@ -350,7 +350,6 @@ export function DoctorProfile() {
                   </div>
                   <div className="flex-1">
                     <p className="text-[14px] font-semibold text-slate-900 dark:text-white">{edu.degree}</p>
-                    <p className="text-[12px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">Need to get info from client</p>
                   </div>
                   <Award size={18} className="text-slate-600 dark:text-slate-400" />
                 </div>
@@ -386,7 +385,7 @@ export function DoctorProfile() {
           </button>
 
           <p className="text-center text-[12px] text-slate-600 dark:text-slate-400 mt-2">
-            SAAI Physiotherapy v2.0 · Secure Health Platform
+            © {new Date().getFullYear()} SAAI Physiotherapy Clinic · Secure Health Platform
           </p>
         </div>
       </div>

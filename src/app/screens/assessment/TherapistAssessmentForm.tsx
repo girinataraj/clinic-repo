@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+﻿import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
@@ -30,7 +30,7 @@ export function TherapistAssessmentForm() {
   const [resolvedPatientId, setResolvedPatientId] = useState(searchParams.get('patientId') ?? '');
   const [lookupDone, setLookupDone] = useState(Boolean(searchParams.get('patientId') || searchParams.get('phone')));
   const [showNewPatientForm, setShowNewPatientForm] = useState(false);
-  const [newPatient, setNewPatient] = useState<{name:string;age:string;gender:'Male'|'Female'|'Other';condition:string}>({name:'',age:'',gender:'Male',condition:''});
+  const [newPatient, setNewPatient] = useState<{name:string;age:string;gender:'Male'|'Female'|'Other';referredBy:string;condition:string}>({name:'',age:'',gender:'Male',referredBy:'',condition:''});
 
   const { data: foundPatient, isLoading: lookingUp } = usePatientByPhone(phoneToFetch.trim().length >= 7 ? phoneToFetch.trim() : null);
   const createPatientMutation = useCreatePatient();
@@ -182,46 +182,104 @@ export function TherapistAssessmentForm() {
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to create patient.'); }
   };
 
+  // Resolves the patient for Step 1 "Next"/"Skip": if a patient was already found/selected
+  // via search, reuse it. Otherwise treat the Patient Information fields typed directly into
+  // the form as a new-patient draft and create that patient now, so navigation never blocks
+  // on the separate phone-search widget.
+  const resolvePatientForStep = async (): Promise<string | null> => {
+    if (resolvedPatientId) return resolvedPatientId;
+    if (!patientInfo.name || patientInfo.name.trim().length < 2) {
+      setSubmitError('Please enter the patient\'s full name (at least 2 characters).');
+      return null;
+    }
+    if (!patientInfo.age || isNaN(Number(patientInfo.age)) || Number(patientInfo.age) < 0 || Number(patientInfo.age) > 120) {
+      setSubmitError('Please enter a valid age (0-120).');
+      return null;
+    }
+    const cleanPhone = (patientInfo.phone || phoneInput || '').replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      setSubmitError('Please enter a valid 10-digit phone number.');
+      return null;
+    }
+    if (!patientInfo.condition || patientInfo.condition.length === 0) {
+      setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
+      return null;
+    }
+    try {
+      const created = await createPatientMutation.mutateAsync({
+        name: patientInfo.name.trim(),
+        age: Number(patientInfo.age),
+        gender: patientInfo.gender || 'Male',
+        phone: cleanPhone,
+        city: patientInfo.address || undefined,
+        condition: patientInfo.condition.join(', '),
+        referredBy: patientInfo.referredBy || undefined,
+        therapistId: user?.id || undefined,
+      });
+      setResolvedPatientId(created.id);
+      setPatientInfo(p => ({ ...p, phone: created.phone ?? cleanPhone }));
+      return created.id;
+    } catch (err: any) {
+      const code = err?.response?.data?.code;
+      setSubmitError(
+        code === 'DUPLICATE_RESOURCE'
+          ? 'A patient with this phone number is already registered. Search for them above instead of entering new details.'
+          : (err?.response?.data?.message ?? 'Failed to create patient.')
+      );
+      return null;
+    }
+  };
+
   const formatRupees = (n:number) => new Intl.NumberFormat('en-IN').format(n);
 
   const handleBillAmountChange = (v:string) => { setSubmitError(null); setIsManualBillEdit(true); const d=v.replace(/[^\d]/g,''); if (!d) { setBillAmount(0); setBillAmountInput(''); return; } const n=Number(d); setBillAmount(n); setBillAmountInput(String(n)); };
 
   const handleSave = async () => {
     setSubmitError(null);
-    if (!resolvedPatientId) { setSubmitError('No patient resolved.'); return; }
-    if (!paymentMode || billTotal <= 0) { setSubmitError('Please select treatments and a payment mode.'); return; }
+    if (!resolvedPatientId) { setSubmitError('Please resolve or select a patient.'); return; }
+    if (!patientInfo.name || patientInfo.name.trim().length < 2) { setSubmitError('Patient name must be at least 2 characters.'); return; }
+    if (!patientInfo.age || isNaN(Number(patientInfo.age))) { setSubmitError('Please enter a valid patient age.'); return; }
+    if (!patientInfo.condition || patientInfo.condition.length === 0) { setSubmitError('Please select at least one clinical condition (Ortho, Neuro, or Cardio).'); return; }
+    if (!paymentMode) { setSubmitError('Please select a payment mode (Cash or UPI).'); return; }
+    
+    const finalBillAmount = billAmount !== null ? Math.max(0, Number(billAmount)) : Math.max(0, Number(billTotal));
+
     const vitalsPayload: Record<string,unknown> = {};
-    if (vitals.bp_sys&&vitals.bp_dia) vitalsPayload.bp=`${vitals.bp_sys}/${vitals.bp_dia}`;
-    if (vitals.pr) vitalsPayload.pr=Number(vitals.pr);
-    if (vitals.spo2) vitalsPayload.spo2=Number(vitals.spo2);
-    if (vitals.temp) vitalsPayload.temperature=Number(vitals.temp);
-    if (vitals.ef) vitalsPayload.ef=Number(vitals.ef);
+    if (vitals.bp_sys && vitals.bp_dia) vitalsPayload.bp = `${vitals.bp_sys}/${vitals.bp_dia}`;
+    if (vitals.pr && !isNaN(Number(vitals.pr))) vitalsPayload.pr = Number(vitals.pr);
+    if (vitals.spo2 && !isNaN(Number(vitals.spo2))) vitalsPayload.spo2 = Number(vitals.spo2);
+    if (vitals.temp && !isNaN(Number(vitals.temp))) vitalsPayload.temperature = Number(vitals.temp);
+    if (vitals.ef && !isNaN(Number(vitals.ef))) vitalsPayload.ef = Number(vitals.ef);
+
+    const cleanPhone = (patientInfo.phone || phoneInput || '').replace(/\D/g, '').slice(-10);
+
     try {
-      const finalHistory=[...selectedMedicalHistory]; if (otherMedicalHistory.trim()) finalHistory.push(`Other: ${otherMedicalHistory.trim()}`);
+      const finalHistory = [...selectedMedicalHistory]; 
+      if (otherMedicalHistory.trim()) finalHistory.push(`Other: ${otherMedicalHistory.trim()}`);
       const allComplaints = [...chiefComplaints, complaintsText.trim()].filter(Boolean).join('; ');
       const hasRomData = Object.keys(romData).length > 0;
       const hasAnthro = Object.values(anthropometrics).some(v => v !== '');
-
+      
       // 1. Update patient demographics if they changed
       await updatePatientMutation.mutateAsync({
         id: resolvedPatientId,
-        name: patientInfo.name,
+        name: patientInfo.name.trim(),
         age: Number(patientInfo.age),
-        gender: patientInfo.gender,
-        phone: patientInfo.phone,
-        city: patientInfo.address,
-        condition: patientInfo.condition && patientInfo.condition.length > 0 ? patientInfo.condition.join(', ') : '',
+        gender: patientInfo.gender || 'Male',
+        phone: cleanPhone.length === 10 ? cleanPhone : undefined,
+        city: patientInfo.address || undefined,
+        condition: patientInfo.condition && patientInfo.condition.length > 0 ? patientInfo.condition.join(', ') : undefined,
         referredBy: patientInfo.referredBy || undefined,
       });
 
       // 2. Create the evaluation record
       await createEvaluation.mutateAsync({
         patientId: resolvedPatientId,
-        vitals: Object.keys(vitalsPayload).length>0 ? (vitalsPayload as any) : undefined,
+        vitals: Object.keys(vitalsPayload).length > 0 ? (vitalsPayload as any) : undefined,
         painLevel,
         chiefComplaints: allComplaints || undefined,
-        associatedSymptoms: associatedSymptoms.length>0 ? associatedSymptoms : undefined,
-        medicalHistory: finalHistory.length>0 ? finalHistory : undefined,
+        associatedSymptoms: associatedSymptoms.length > 0 ? associatedSymptoms : undefined,
+        medicalHistory: finalHistory.length > 0 ? finalHistory : undefined,
         diagnosis: diagnosisNotes.trim() || undefined,
         diagnosisList: selectedDiagnoses.length > 0 ? selectedDiagnoses : undefined,
         plan: treatmentNotes.trim() || undefined,
@@ -238,9 +296,11 @@ export function TherapistAssessmentForm() {
         } : undefined,
         management: examinationNotes.trim() || undefined,
         status: 'submitted',
-        paymentMode, billAmount: billAmount !== null ? billAmount : billTotal, visitType,
+        paymentMode,
+        billAmount: finalBillAmount,
+        visitType,
         referredBy: patientInfo.referredBy || undefined,
-        associatedPains: chiefComplaints.length>0 ? chiefComplaints : undefined,
+        associatedPains: chiefComplaints.length > 0 ? chiefComplaints : undefined,
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
         anthropometrics: hasAnthro ? anthropometrics : undefined,
@@ -254,6 +314,7 @@ export function TherapistAssessmentForm() {
         mriFindings: treatmentPlanData.mriFindings || undefined,
         pftFindings: treatmentPlanData.pftFindings || undefined,
       });
+
       if (resolvedPatientId) {
         await updatePatient.mutateAsync({ id: resolvedPatientId, status: 'completed' });
       }
@@ -265,7 +326,15 @@ export function TherapistAssessmentForm() {
           navigate(`/${currentRole}`);
         }
       }, 1500);
-    } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to save.'); }
+    } catch (err: any) {
+      const errDetails = err?.response?.data?.error?.details || err?.response?.data?.details;
+      if (Array.isArray(errDetails) && errDetails.length > 0) {
+        const msg = errDetails.map((d: any) => d.message || d.path?.join('.')).filter(Boolean).join('; ');
+        setSubmitError(`Validation error: ${msg}`);
+      } else {
+        setSubmitError(err?.response?.data?.message || err?.response?.data?.error?.message || err?.message || 'Failed to save.');
+      }
+    }
   };
 
   const hasNeuro = patientInfo.condition?.includes('Neuro');
@@ -328,32 +397,24 @@ export function TherapistAssessmentForm() {
     };
 
     return (
-      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-y-auto p-4 md:p-8">
-        <div className="max-w-4xl mx-auto w-full bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col gap-6">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <Check className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-y-auto px-2.5 pb-4 pt-safe-top-3 sm:px-4 md:p-6">
+        <div className="max-w-5xl mx-auto w-full flex flex-col gap-3.5">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-md flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+                <Check className="w-5 h-5 text-teal-600 dark:text-teal-400" />
               </div>
-              <div>
-                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Clinical Assessment Summary</h2>
-                <p className="text-xs text-slate-500 font-medium">Successfully saved clinical evaluation & assessment.</p>
+              <div className="min-w-0">
+                <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">Assessment Saved</h2>
+                <p className="text-[11px] text-slate-500 font-medium truncate">Successfully saved clinical evaluation & assessment.</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => window.print()}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
-              >
-                <Printer size={14} /> Print Report
-              </button>
-              <button
-                onClick={() => navigate(`/${currentRole}`)}
-                className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-sm"
-              >
-                Back to Dashboard <ChevronRight size={14} />
-              </button>
-            </div>
+            <button
+              onClick={() => navigate(`/${currentRole}`)}
+              className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm shrink-0"
+            >
+              Dashboard <ChevronRight size={14} />
+            </button>
           </div>
 
           <EvaluationSummaryReport evaluation={summaryData} isDoctorRole={isDoctorRole} />
@@ -365,8 +426,15 @@ export function TherapistAssessmentForm() {
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden">
       <div className="flex-1 overflow-y-auto flex flex-col overflow-x-hidden">
-      {/* Header — Design based on Dashboard Gradient */}
-      <div className={`px-5 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-5 pb-4 rounded-b-[2rem]' : 'py-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#134e4a] to-[#0d9488] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden`}>
+      {/* Header - Design based on Dashboard Gradient */}
+      {/*
+        Top padding comes from the shared safe-area utilities (pt-safe-top-*),
+        which resolve to base spacing + var(--sa-top). Without them this header
+        sat flush at y=0 and the Android status bar overlapped the back button,
+        title and step indicator. Mirrors DoctorAssessmentForm, which already
+        used the safe-area variants.
+      */}
+      <div className={`px-5 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-safe-top-5 pb-4 rounded-b-[2rem]' : 'pt-safe-top-3.5 pb-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#134e4a] to-[#0d9488] dark:from-slate-900 dark:to-slate-800 shadow-lg shadow-teal-900/10 z-10 relative overflow-hidden`}>
         <div className="absolute right-0 top-0 w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className={`flex items-center justify-between relative z-10 ${isHeaderExpanded ? 'mb-3' : ''}`}>
           <div className="flex items-center gap-3">
@@ -375,7 +443,7 @@ export function TherapistAssessmentForm() {
             </button>
             <div>
               <h1 className="text-[16px] font-black text-white tracking-tight">Assessment Form</h1>
-              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} — {stepsList[step]?.label}</p>
+              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} - {stepsList[step]?.label}</p>
             </div>
           </div>
           <button 
@@ -404,38 +472,40 @@ export function TherapistAssessmentForm() {
 
       {/* Phone Lookup */}
       <div className="px-4 pt-4 pb-2 bg-slate-50 dark:bg-slate-950 shrink-0 z-0 -mt-2">
-        <div className="flex gap-2 items-center bg-white dark:bg-slate-900 p-2 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
-          <SearchDropdown
-            module="patients"
-            searchFields={['name', 'mobile']}
-            apiEndpoint="/patients/search"
-            value={phoneInput}
-            onChange={setPhoneInput}
-            onSelect={(patient: any) => {
-              setPhoneInput(patient.mobile);
-              setPhoneToFetch(patient.mobile);
-              setLookupDone(true);
-              setShowNewPatientForm(false);
-            }}
-            renderItem={(patient: any, highlightText: any) => (
-              <div className="flex flex-col">
-                <span className="font-bold text-slate-800 dark:text-slate-100">
-                  {highlightText(patient.name)}
-                </span>
-                <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                  <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
-                </span>
-              </div>
-            )}
-            placeholder="Patient mobile number..."
-            className="flex-1"
-          />
-          <button onClick={handlePhoneLookup} disabled={phoneInput.trim().length<7} className="px-4 md:px-5 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-50 transition-transform active:scale-95 shadow-md shadow-teal-500/20 bg-teal-600 hover:bg-teal-700 flex items-center justify-center shrink-0">
-            <Search className="w-4 h-4 md:hidden" />
-            <span className="hidden md:inline">Lookup</span>
-          </button>
-        </div>
-        {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-3 px-3 py-2 bg-white dark:bg-slate-900 rounded-xl"><Loader2 size={16} className="animate-spin text-teal-600 dark:text-teal-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory…</span></div>}
+        {!resolvedPatientId && (
+          <div className="flex gap-2 items-center bg-white dark:bg-slate-900 p-2 rounded-[20px] shadow-sm border border-slate-100 dark:border-slate-800">
+            <SearchDropdown
+              module="patients"
+              searchFields={['name', 'mobile']}
+              apiEndpoint="/patients/search"
+              value={phoneInput}
+              onChange={setPhoneInput}
+              onSelect={(patient: any) => {
+                setPhoneInput(patient.mobile);
+                setPhoneToFetch(patient.mobile);
+                setLookupDone(true);
+                setShowNewPatientForm(false);
+              }}
+              renderItem={(patient: any, highlightText: any) => (
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-800 dark:text-slate-100">
+                    {highlightText(patient.name)}
+                  </span>
+                  <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                    <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
+                  </span>
+                </div>
+              )}
+              placeholder="Search mobile number..."
+              className="flex-1"
+            />
+            <button onClick={handlePhoneLookup} disabled={phoneInput.trim().length<7} className="px-4 md:px-5 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-50 transition-transform active:scale-95 shadow-md shadow-teal-500/20 bg-teal-600 hover:bg-teal-700 flex items-center justify-center shrink-0">
+              <Search className="w-4 h-4 md:hidden" />
+              <span className="hidden md:inline">Lookup</span>
+            </button>
+          </div>
+        )}
+        {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-3 px-3 py-2 bg-white dark:bg-slate-900 rounded-xl"><Loader2 size={16} className="animate-spin text-teal-600 dark:text-teal-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory...</span></div>}
         {lookupDone&&!lookingUp&&foundPatient&&!resolvedPatientId&&(
           <div className="mt-3 p-4 rounded-[18px] bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-between shadow-sm">
             <div><p className="text-[14px] font-black text-emerald-900 dark:text-emerald-100">{foundPatient.name}</p><p className="text-[12px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">{foundPatient.phone} · {foundPatient.gender} · Age {foundPatient.age}</p></div>
@@ -451,7 +521,7 @@ export function TherapistAssessmentForm() {
         )}
         {showNewPatientForm&&(
           <div className="mt-3 p-5 rounded-[22px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex flex-col gap-4 shadow-sm">
-            <p className="text-[14px] font-black text-slate-800 dark:text-white">Register Patient — <span className="text-teal-600 dark:text-teal-400">{phoneInput}</span></p>
+            <p className="text-[14px] font-black text-slate-800 dark:text-white">Register Patient - <span className="text-teal-600 dark:text-teal-400">{phoneInput}</span></p>
             <div className="grid grid-cols-2 gap-3">
               <input placeholder="Full Name *" value={newPatient.name} onChange={e=>setNewPatient(p=>({...p,name:e.target.value}))} className="col-span-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[14px] font-medium outline-none text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors" />
               <input placeholder="Age *" type="number" value={newPatient.age} onChange={e=>setNewPatient(p=>({...p,age:e.target.value}))} className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[14px] font-medium outline-none text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors" />
@@ -460,7 +530,7 @@ export function TherapistAssessmentForm() {
             </div>
             <div className="flex gap-3 mt-1">
               <button onClick={()=>setShowNewPatientForm(false)} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-[13px] font-extrabold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancel</button>
-              <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-60 bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creating…':'Save & Continue'}</button>
+              <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3 rounded-xl text-white text-[13px] font-extrabold disabled:opacity-60 bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creating...':'Save & Continue'}</button>
             </div>
           </div>
         )}
@@ -494,11 +564,11 @@ export function TherapistAssessmentForm() {
                   <div className="grid grid-cols-2 gap-2">{['Clinic','Home Visit','IP','Day Care'].map(v=><button key={v} onClick={()=>setVisitType(v as any)} className={`py-3 rounded-[14px] text-[13px] font-black border-2 transition-all active:scale-95 ${visitType===v?'border-teal-600 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300':'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>{v}</button>)}</div>
                 </FormField>
                 <div className="flex flex-col gap-0 mt-2 bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-1 border border-slate-100 dark:border-slate-800">{[
-                  {l:'Patient',v:patientInfo.name||'—'},{l:'Age',v:patientInfo.age||'—'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'—'},
-                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'—'},
-                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : '—'; })()},
-                  {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : '—')},
-                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : '—'},
+                  {l:'Patient',v:patientInfo.name||'-'},{l:'Age',v:patientInfo.age||'-'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'-'},
+                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'-'},
+                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : '-'; })()},
+                  {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : '-')},
+                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : '-'},
                 ].map(r=><div key={r.l} className="flex items-center justify-between py-3 px-3 border-b border-slate-100 dark:border-slate-800/50 last:border-0"><span className="text-[13px] text-slate-500 dark:text-slate-400 font-bold">{r.l}</span><span className="text-[13px] text-slate-900 dark:text-white font-extrabold">{r.v}</span></div>)}</div>
               </SectionCard>
               <SectionCard icon={<CreditCard size={20} className="text-amber-600 dark:text-amber-400" />} title="Payment Details" subtitle="Required to submit" accent="amber">
@@ -574,7 +644,7 @@ export function TherapistAssessmentForm() {
               </SectionCard>
 
               <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-4 rounded-[18px] flex items-center justify-center gap-2 text-white text-[15px] font-black shadow-lg shadow-teal-600/20 disabled:opacity-60 bg-teal-600 hover:bg-teal-700 transition-transform active:scale-[0.98]">
-                {createEvaluation.isPending?<><Loader2 size={20} className="animate-spin" /> Submitting…</>:<><Save size={20} /> Finalize & Start Session</>}
+                {createEvaluation.isPending?<><Loader2 size={20} className="animate-spin" /> Submitting...</>:<><Save size={20} /> Finalize & Start Session</>}
               </button>
             </div>
           )}
@@ -585,65 +655,72 @@ export function TherapistAssessmentForm() {
       </div>
       </div>
 
-      {/* Navigation Buttons (Fixed Bottom) */}
-      <div className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)] relative z-20">
-        <div className="max-w-2xl mx-auto w-full flex flex-col gap-3">
-          {submitError && (
-            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2 shadow-sm">
-              <AlertTriangle size={16} className="shrink-0" />
-              {submitError}
-            </div>
+      {/* Navigation Buttons (Floating Bottom Right) */}
+      <div 
+      className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 pt-3 z-40 flex flex-col gap-2"
+      style={{ paddingBottom: 'calc(0.875rem + var(--safe-bottom))' }}
+    >
+        {submitError && (
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2.5 shadow-sm">
+            <AlertTriangle size={16} className="shrink-0" />
+            {submitError}
+          </div>
+        )}
+        <div className="flex gap-2 justify-between items-center w-full">
+          {step > 0 ? (
+            <button
+              onClick={() => { setSubmitError(null); setStep(step - 1); }}
+              className="flex items-center justify-center gap-1 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-black border border-slate-200 dark:border-slate-700 transition-all active:scale-95"
+            >
+              <ChevronLeft size={16} strokeWidth={3} />
+              Back
+            </button>
+          ) : (
+            <div className="w-[80px]" />
           )}
-          <div className="flex gap-3">
-            {step > 0 && (
+
+          <div className="flex gap-2 items-center">
+            {step < totalSteps - 1 && (
               <button
-                onClick={() => { setSubmitError(null); setStep(step - 1); }}
-                className="flex items-center justify-center gap-1.5 px-5 py-3.5 rounded-[16px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[14px] font-black transition-transform active:scale-95"
+                onClick={async () => {
+                  setSubmitError(null);
+                  if (step === 0) {
+                    const pid = await resolvePatientForStep();
+                    if (!pid) return;
+                  }
+                  setStep(totalSteps - 1);
+                }}
+                disabled={createPatientMutation.isPending}
+                className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs font-extrabold shadow-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-60"
               >
-                <ChevronLeft size={18} strokeWidth={3} />
-                Back
+                Skip
               </button>
             )}
             {step < totalSteps - 1 && (
               <button
-                onClick={() => { 
-                  if (step === 0 && !resolvedPatientId) {
-                    setSubmitError('Please resolve a patient before continuing.');
-                    return;
+                onClick={async () => {
+                  setSubmitError(null);
+                  if (step === 0) {
+                    const pid = await resolvePatientForStep();
+                    if (!pid) return;
+                    if (!patientInfo.condition || patientInfo.condition.length === 0) {
+                      setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
+                      return;
+                    }
                   }
-                  setSubmitError(null); 
-                  setStep(totalSteps - 1); 
+                  setStep(step + 1);
                 }}
-                className="px-4 py-3.5 rounded-[16px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-[13px] font-extrabold transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
+                disabled={createPatientMutation.isPending}
+                className="flex items-center justify-center gap-1 px-6 py-3 rounded-xl text-white text-xs font-black shadow-md bg-teal-600 hover:bg-teal-700 transition-all active:scale-[0.98] disabled:opacity-60"
               >
-                Skip to End
-              </button>
-            )}
-            {step < totalSteps - 1 && (
-              <button
-                onClick={() => { 
-                  if (step === 0 && !resolvedPatientId) {
-                    setSubmitError('Please resolve a patient before continuing.');
-                    return;
-                  }
-                  if (step === 0 && (!patientInfo.condition || patientInfo.condition.length === 0)) {
-                    setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
-                    return;
-                  }
-                  setSubmitError(null); 
-                  setStep(step + 1); 
-                }}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[16px] text-white text-[14px] font-black shadow-lg shadow-teal-900/10 bg-teal-600 hover:bg-teal-700 transition-all active:scale-[0.98]"
-              >
-                Next Step
-                <ChevronRight size={18} strokeWidth={3} />
+                {createPatientMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <>Next<ChevronRight size={16} strokeWidth={3} /></>}
               </button>
             )}
           </div>
         </div>
       </div>
 
-      <div className="md:hidden"><BottomNav role={currentRole} /></div>
     </div>
   );
 }
+

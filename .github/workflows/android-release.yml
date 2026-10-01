@@ -1,0 +1,107 @@
+name: Android Release Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: 'Android versionCode (must be greater than previous Play Store upload)'
+        required: true
+        default: '1'
+        type: string
+      version_name:
+        description: 'Android versionName (semantic version e.g. 1.0.0)'
+        required: true
+        default: '1.0.0'
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build Web App
+      run: npm run build
+
+    - name: Verify no localhost in production build
+      run: |
+        if grep -r "localhost" dist/ --include="*.js" --include="*.html" | grep -v "node_modules"; then
+          echo "ERROR: localhost found in production build"
+          exit 1
+        fi
+        echo "OK: No localhost references in production build"
+
+    - name: Sync Capacitor
+      run: npx cap sync android
+
+    - name: Decode and verify keystore
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/saai-release-key-v2.keystore
+        if [ ! -f android/app/saai-release-key-v2.keystore ]; then
+          echo "ERROR: Keystore file was not created"
+          exit 1
+        fi
+        FILESIZE=$(stat -c%s android/app/saai-release-key-v2.keystore)
+        if [ "$FILESIZE" -lt 100 ]; then
+          echo "ERROR: Keystore file is too small ($FILESIZE bytes) - likely corrupted"
+          exit 1
+        fi
+        echo "OK: Keystore restored ($FILESIZE bytes)"
+
+    - name: Build Signed Release AAB
+      env:
+        STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        VERSION_CODE: ${{ inputs.version_code || '1' }}
+        VERSION_NAME: ${{ inputs.version_name || '1.0.0' }}
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew bundleRelease
+
+    - name: Verify AAB exists
+      run: |
+        AAB_PATH="android/app/build/outputs/bundle/release/app-release.aab"
+        if [ ! -f "$AAB_PATH" ]; then
+          echo "ERROR: AAB not found at $AAB_PATH"
+          exit 1
+        fi
+        FILESIZE=$(stat -c%s "$AAB_PATH")
+        echo "OK: AAB built successfully ($FILESIZE bytes)"
+
+    - name: Upload Release AAB Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release-v${{ inputs.version_code || '1' }}
+        path: android/app/build/outputs/bundle/release/app-release.aab
+
+    - name: Upload to Google Play Internal Testing
+      uses: r0adkll/upload-google-play@v1
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        packageName: com.saai.physiotherapy
+        releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+        track: internal
+        status: completed
+        releaseName: v${{ inputs.version_name || '1.0.0' }} (${{ inputs.version_code || '1' }})

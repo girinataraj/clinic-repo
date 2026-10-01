@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+﻿import { useState, useCallback, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { BottomNav } from '../../components/BottomNav';
 import { SearchDropdown } from '../../components/SearchDropdown';
@@ -8,7 +8,7 @@ import { usePatientByPhone, useCreatePatient, usePatient, useUpdatePatient } fro
 import { useTreatments } from '../../../hooks/useTreatments';
 import { useClinicalConfig } from '../../../hooks/useAppConfig';
 import { useStaffUsers } from '../../../hooks/useStaff';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone, RotateCcw, UserCheck, Printer } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, AlertTriangle, Save, CreditCard, Search, ChevronDown, ChevronUp, Phone, RotateCcw, UserCheck, Printer, UserPlus } from 'lucide-react';
 import { EvaluationSummaryReport } from '../../components/EvaluationSummaryReport';
 import { ASSESSMENT_STEPS, type RomData, type Anthropometrics, type ClinicalExamData, getEmptyClinicalExam, type TreatmentPlanData, getEmptyTreatmentPlan, getTreatmentSelectionCount, type CardioExamData, getEmptyCardioExam } from './clinicalConfig';
 import { SectionCard, FormField, doctorInputClass } from './FormComponents';
@@ -17,9 +17,11 @@ import { StepNeuroExam, getEmptyNeuroData } from './StepNeuroExam';
 import { StepCardioExam } from './StepCardioExam';
 
 import { AnthropometricSection } from './AnthropometricSection';
+import { loadDoctorIntakeDraft, saveDoctorIntakeDraft, clearDoctorIntakeDraft } from './doctorIntakeDraft';
 
 export function DoctorAssessmentForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const currentRole = 'doctor';
   const [searchParams] = useSearchParams();
@@ -81,6 +83,31 @@ export function DoctorAssessmentForm() {
   const [neuroData, setNeuroData] = useState<any>(getEmptyNeuroData());
   const [cardioData, setCardioData] = useState<CardioExamData>(getEmptyCardioExam());
 
+  // Identifies "the same navigation/session flow" for draft restoration.
+  //
+  // Patient-specific entries (opened with ?patientId=/?phone=, e.g. from a
+  // patient list) are keyed by that patient, so the SAME patient's draft
+  // survives any number of back-gesture-then-reopen cycles.
+  //
+  // A fresh walk-in intake (opened bare from BottomNav/SideNav's "Intake" tab,
+  // no patientId/phone yet) has no patient identity to key on. Falling back to
+  // a fixed literal here previously caused a real bug: every fresh walk-in
+  // collapsed onto the SAME key, so an abandoned draft for one patient could
+  // silently populate a completely different patient's brand new intake.
+  //
+  // The fix uses React Router's location.key instead: it is generated fresh by
+  // the router itself on every PUSH navigation (tapping "Intake" always pushes
+  // a new history entry, so two separate walk-ins always get two different
+  // keys — no possible collision) and is preserved unchanged when the router
+  // POPs back to that exact entry (e.g. the doctor taps "Add Patient" from
+  // within intake, pushing /doctor/patient-form on top, then backs out of
+  // THAT — the router returns to intake's original entry with its original
+  // key, so that specific in-progress session correctly restores). Because two
+  // distinct fresh intakes can never share a location.key, cross-patient
+  // contamination is structurally impossible rather than merely unlikely.
+  const [draftKey] = useState(() => searchParams.get('patientId') || searchParams.get('phone') || `fresh-${location.key}`);
+  const hasMountedRef = useRef(false);
+
   // Follow-up
   const { data: previousEval } = useLatestEvaluation(resolvedPatientId || null);
   const isFollowUp = Boolean(previousEval);
@@ -124,7 +151,7 @@ export function DoctorAssessmentForm() {
       const cond = patientById.condition
         ? patientById.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
         : [];
-      setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??'',condition:cond});
+      setPatientInfo({name:patientById.name??'',age:patientById.age?String(patientById.age):'',phone:patientById.phone??phoneToFetch,gender:(patientById.gender as any)??'Male',address:patientById.city??'',condition:cond,referredBy:patientById.referredBy??patientById.referred_by??''});
       setPhoneInput(patientById.phone??phoneToFetch);
       if (patientById.therapistId) setSelectedTherapistId(patientById.therapistId);
     }
@@ -135,7 +162,7 @@ export function DoctorAssessmentForm() {
       const cond = foundPatient.condition
         ? foundPatient.condition.split(',').map((x: string) => x.trim()).filter((x: string) => ['Ortho', 'Neuro', 'Cardio'].includes(x))
         : [];
-      setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??'',condition:cond});
+      setPatientInfo({name:foundPatient.name??'',age:foundPatient.age?String(foundPatient.age):'',phone:foundPatient.phone??phoneToFetch,gender:(foundPatient.gender as any)??'Male',address:foundPatient.city??'',condition:cond,referredBy:foundPatient.referredBy??foundPatient.referred_by??''});
       if (foundPatient.therapistId) setSelectedTherapistId(foundPatient.therapistId);
     }
   }, [foundPatient, resolvedPatientId, phoneToFetch]);
@@ -170,6 +197,78 @@ export function DoctorAssessmentForm() {
       setCardioData(getEmptyCardioExam());
     }
   }, [resolvedPatientId]);
+
+  // Restore an in-progress draft for this same patient/phone context (e.g. after
+  // the Android back gesture unmounted this screen) so returning to it doesn't
+  // lose already-entered data. Runs once on mount; declared after the
+  // "clear fields on resolvedPatientId" effect above so a restored value wins
+  // over that effect's blank defaults during the same mount pass.
+  useEffect(() => {
+    const draft = loadDoctorIntakeDraft(draftKey);
+    if (!draft) return;
+    setStep(draft.step);
+    setPhoneInput(draft.phoneInput);
+    setPhoneToFetch(draft.phoneToFetch);
+    setLookupDone(draft.lookupDone);
+    setShowNewPatientForm(draft.showNewPatientForm);
+    setNewPatient(draft.newPatient);
+    setSelectedTherapistId(draft.selectedTherapistId);
+    setResolvedPatientId(draft.resolvedPatientId);
+    setPatientInfo(draft.patientInfo);
+    setVitals(draft.vitals);
+    setChiefComplaints(draft.chiefComplaints);
+    setComplaintsText(draft.complaintsText);
+    setSpecificProblems(draft.specificProblems);
+    setAssociatedSymptoms(draft.associatedSymptoms);
+    setSelectedMedicalHistory(draft.selectedMedicalHistory);
+    setOtherMedicalHistory(draft.otherMedicalHistory);
+    setShowOtherMedicalHistory(draft.showOtherMedicalHistory);
+    setPainLevel(draft.painLevel);
+    setExaminationNotes(draft.examinationNotes);
+    setDiagnosisNotes(draft.diagnosisNotes);
+    setSelectedDiagnoses(draft.selectedDiagnoses);
+    setTreatmentNotes(draft.treatmentNotes);
+    setTreatmentPlanData(draft.treatmentPlanData);
+    setFuncRatings(draft.funcRatings);
+    setRomData(draft.romData);
+    setAnthropometrics(draft.anthropometrics);
+    setClinicalExamData(draft.clinicalExamData);
+    setPaymentMode(draft.paymentMode);
+    setBillAmount(draft.billAmount);
+    setBillAmountInput(draft.billAmountInput);
+    setIsManualBillEdit(draft.isManualBillEdit);
+    setVisitType(draft.visitType);
+    setNeuroData(draft.neuroData);
+    setCardioData(draft.cardioData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep the draft current so a later remount of this same session can restore
+  // it. Skips the mount commit (hasMountedRef starts false) so it never saves
+  // pre-hydration values over the draft the effect above just restored.
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    saveDoctorIntakeDraft(draftKey, {
+      step, phoneInput, phoneToFetch, lookupDone, showNewPatientForm, newPatient,
+      selectedTherapistId, resolvedPatientId, patientInfo, vitals, chiefComplaints,
+      complaintsText, specificProblems, associatedSymptoms, selectedMedicalHistory,
+      otherMedicalHistory, showOtherMedicalHistory, painLevel, examinationNotes,
+      diagnosisNotes, selectedDiagnoses, treatmentNotes, treatmentPlanData, funcRatings,
+      romData, anthropometrics, clinicalExamData, paymentMode, billAmount,
+      billAmountInput, isManualBillEdit, visitType, neuroData, cardioData,
+    });
+  }, [
+    draftKey, step, phoneInput, phoneToFetch, lookupDone, showNewPatientForm, newPatient,
+    selectedTherapistId, resolvedPatientId, patientInfo, vitals, chiefComplaints,
+    complaintsText, specificProblems, associatedSymptoms, selectedMedicalHistory,
+    otherMedicalHistory, showOtherMedicalHistory, painLevel, examinationNotes,
+    diagnosisNotes, selectedDiagnoses, treatmentNotes, treatmentPlanData, funcRatings,
+    romData, anthropometrics, clinicalExamData, paymentMode, billAmount,
+    billAmountInput, isManualBillEdit, visitType, neuroData, cardioData,
+  ]);
 
   const formatRupees = (n: number) => new Intl.NumberFormat('en-IN').format(n);
 
@@ -212,19 +311,78 @@ export function DoctorAssessmentForm() {
     } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to create patient.'); }
   };
 
+  // Resolves the patient for Step 1 "Next": if a patient was already found/selected via
+  // search, reuse it. Otherwise treat the Patient Information fields the clinician typed
+  // directly into the form as a new-patient draft and create that patient now, so "Next"
+  // never blocks on the separate phone-search widget.
+  const resolvePatientForStep = async (): Promise<string | null> => {
+    if (resolvedPatientId) return resolvedPatientId;
+    if (!patientInfo.name || patientInfo.name.trim().length < 2) {
+      setSubmitError('Please enter the patient\'s full name (at least 2 characters).');
+      return null;
+    }
+    if (!patientInfo.age || isNaN(Number(patientInfo.age)) || Number(patientInfo.age) < 0 || Number(patientInfo.age) > 120) {
+      setSubmitError('Please enter a valid age (0-120).');
+      return null;
+    }
+    const cleanPhone = (patientInfo.phone || phoneInput || '').replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      setSubmitError('Please enter a valid 10-digit phone number.');
+      return null;
+    }
+    if (!patientInfo.condition || patientInfo.condition.length === 0) {
+      setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
+      return null;
+    }
+    try {
+      const created = await createPatientMutation.mutateAsync({
+        name: patientInfo.name.trim(),
+        age: Number(patientInfo.age),
+        gender: patientInfo.gender || 'Male',
+        phone: cleanPhone,
+        city: patientInfo.address || undefined,
+        condition: patientInfo.condition.join(', '),
+        referredBy: patientInfo.referredBy || undefined,
+        therapistId: selectedTherapistId || undefined,
+      });
+      setResolvedPatientId(created.id);
+      setPatientInfo(p => ({ ...p, phone: created.phone ?? cleanPhone }));
+      return created.id;
+    } catch (err: any) {
+      const code = err?.response?.data?.code;
+      setSubmitError(
+        code === 'DUPLICATE_RESOURCE'
+          ? 'A patient with this phone number is already registered. Search for them above instead of entering new details.'
+          : (err?.response?.data?.message ?? 'Failed to create patient.')
+      );
+      return null;
+    }
+  };
+
   const handleSave = async () => {
     setSubmitError(null);
-    if (!resolvedPatientId) { setSubmitError('No patient resolved.'); return; }
-    if (!patientInfo.condition || patientInfo.condition.length === 0) { setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio).'); return; }
-    if (!paymentMode || billTotal <= 0) { setSubmitError('Please select treatments and a payment mode.'); return; }
+    if (!resolvedPatientId) { setSubmitError('Please resolve or select a patient.'); return; }
+    if (!patientInfo.name || patientInfo.name.trim().length < 2) { setSubmitError('Patient name must be at least 2 characters.'); return; }
+    if (!patientInfo.age || isNaN(Number(patientInfo.age))) { setSubmitError('Please enter a valid patient age.'); return; }
+    if (!patientInfo.condition || patientInfo.condition.length === 0) { setSubmitError('Please select at least one clinical condition (Ortho, Neuro, or Cardio).'); return; }
+    if (!paymentMode) { setSubmitError('Please select a payment mode (Cash or UPI).'); return; }
+    
+    const finalBillAmount = isManualBillEdit 
+      ? (billAmount !== null ? Math.max(0, Number(billAmount)) : 0) 
+      : (billAmount !== null ? Math.max(0, Number(billAmount)) : Math.max(0, Number(billTotal)));
+
     const vitalsPayload: Record<string,unknown> = {};
-    if (vitals.bp_sys&&vitals.bp_dia) vitalsPayload.bp=`${vitals.bp_sys}/${vitals.bp_dia}`;
-    if (vitals.pr) vitalsPayload.pr=Number(vitals.pr);
-    if (vitals.spo2) vitalsPayload.spo2=Number(vitals.spo2);
-    if (vitals.temp) vitalsPayload.temperature=Number(vitals.temp);
-    if (vitals.ef) vitalsPayload.ef=Number(vitals.ef);
+    if (vitals.bp_sys && vitals.bp_dia) vitalsPayload.bp = `${vitals.bp_sys}/${vitals.bp_dia}`;
+    if (vitals.pr && !isNaN(Number(vitals.pr))) vitalsPayload.pr = Number(vitals.pr);
+    if (vitals.spo2 && !isNaN(Number(vitals.spo2))) vitalsPayload.spo2 = Number(vitals.spo2);
+    if (vitals.temp && !isNaN(Number(vitals.temp))) vitalsPayload.temperature = Number(vitals.temp);
+    if (vitals.ef && !isNaN(Number(vitals.ef))) vitalsPayload.ef = Number(vitals.ef);
+
+    const cleanPhone = (patientInfo.phone || phoneInput || '').replace(/\D/g, '').slice(-10);
+
     try {
-      const finalHistory=[...selectedMedicalHistory]; if (otherMedicalHistory.trim()) finalHistory.push(`Other: ${otherMedicalHistory.trim()}`);
+      const finalHistory = [...selectedMedicalHistory]; 
+      if (otherMedicalHistory.trim()) finalHistory.push(`Other: ${otherMedicalHistory.trim()}`);
       const allComplaints = [...chiefComplaints, complaintsText.trim()].filter(Boolean).join('; ');
       const hasRomData = Object.keys(romData).length > 0;
       const hasAnthro = Object.values(anthropometrics).some(v => v !== '');
@@ -232,23 +390,23 @@ export function DoctorAssessmentForm() {
       // 1. Update patient demographics if they changed
       await updatePatientMutation.mutateAsync({
         id: resolvedPatientId,
-        name: patientInfo.name,
+        name: patientInfo.name.trim(),
         age: Number(patientInfo.age),
-        gender: patientInfo.gender,
-        phone: patientInfo.phone,
-        city: patientInfo.address,
-        condition: patientInfo.condition && patientInfo.condition.length > 0 ? patientInfo.condition.join(', ') : '',
+        gender: patientInfo.gender || 'Male',
+        phone: cleanPhone.length === 10 ? cleanPhone : undefined,
+        city: patientInfo.address || undefined,
+        condition: patientInfo.condition && patientInfo.condition.length > 0 ? patientInfo.condition.join(', ') : undefined,
         referredBy: patientInfo.referredBy || undefined,
       });
 
       // 2. Create the evaluation record
       await createEvaluation.mutateAsync({
         patientId: resolvedPatientId,
-        vitals: Object.keys(vitalsPayload).length>0 ? (vitalsPayload as any) : undefined,
+        vitals: Object.keys(vitalsPayload).length > 0 ? (vitalsPayload as any) : undefined,
         painLevel,
         chiefComplaints: allComplaints || undefined,
-        associatedSymptoms: associatedSymptoms.length>0 ? associatedSymptoms : undefined,
-        medicalHistory: finalHistory.length>0 ? finalHistory : undefined,
+        associatedSymptoms: associatedSymptoms.length > 0 ? associatedSymptoms : undefined,
+        medicalHistory: finalHistory.length > 0 ? finalHistory : undefined,
         diagnosis: diagnosisNotes.trim() || undefined,
         diagnosisList: selectedDiagnoses.length > 0 ? selectedDiagnoses : undefined,
         plan: treatmentNotes.trim() || undefined,
@@ -265,10 +423,11 @@ export function DoctorAssessmentForm() {
         } : undefined,
         management: examinationNotes.trim() || undefined,
         status: 'submitted',
-        paymentMode, billAmount: isManualBillEdit ? (billAmount !== null ? billAmount : 0) : (billAmount !== null ? billAmount : billTotal),
+        paymentMode,
+        billAmount: finalBillAmount,
         visitType,
         referredBy: patientInfo.referredBy || undefined,
-        associatedPains: chiefComplaints.length>0 ? chiefComplaints : undefined,
+        associatedPains: chiefComplaints.length > 0 ? chiefComplaints : undefined,
         functionalScores: Object.keys(specificProblems).length > 0 ? specificProblems : undefined,
         musclePowerRom: hasRomData ? romData : undefined,
         anthropometrics: hasAnthro ? anthropometrics : undefined,
@@ -282,9 +441,11 @@ export function DoctorAssessmentForm() {
         mriFindings: treatmentPlanData.mriFindings || undefined,
         pftFindings: treatmentPlanData.pftFindings || undefined,
       });
+
       if (resolvedPatientId) {
         await updatePatient.mutateAsync({ id: resolvedPatientId, status: 'completed' });
       }
+      clearDoctorIntakeDraft();
       setSaved(true);
       setTimeout(() => {
         if (resolvedPatientId) {
@@ -293,7 +454,15 @@ export function DoctorAssessmentForm() {
           navigate(`/${currentRole}`);
         }
       }, 1500);
-    } catch (err:any) { setSubmitError(err?.response?.data?.message??'Failed to save.'); }
+    } catch (err: any) {
+      const errDetails = err?.response?.data?.error?.details || err?.response?.data?.details;
+      if (Array.isArray(errDetails) && errDetails.length > 0) {
+        const msg = errDetails.map((d: any) => d.message || d.path?.join('.')).filter(Boolean).join('; ');
+        setSubmitError(`Validation error: ${msg}`);
+      } else {
+        setSubmitError(err?.response?.data?.message || err?.response?.data?.error?.message || err?.message || 'Failed to save.');
+      }
+    }
   };
 
   const hasNeuro = patientInfo.condition?.includes('Neuro');
@@ -355,32 +524,24 @@ export function DoctorAssessmentForm() {
     };
 
     return (
-      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-y-auto p-4 md:p-8">
-        <div className="max-w-4xl mx-auto w-full bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col gap-6">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                <Check className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-sans overflow-y-auto px-2.5 pb-4 pt-safe-top-3 sm:px-4 md:p-6">
+        <div className="max-w-5xl mx-auto w-full flex flex-col gap-3.5">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-md flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+                <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <div>
-                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Doctor Clinical Assessment Summary</h2>
-                <p className="text-xs text-slate-500 font-medium">Successfully saved clinical evaluation & assessment.</p>
+              <div className="min-w-0">
+                <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">Assessment Saved</h2>
+                <p className="text-[11px] text-slate-500 font-medium truncate">Successfully saved clinical evaluation & assessment.</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => window.print()}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
-              >
-                <Printer size={14} /> Print Report
-              </button>
-              <button
-                onClick={() => navigate(`/${currentRole}`)}
-                className="px-5 py-2.5 rounded-xl bg-[#262842] hover:bg-[#3B3E66] text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-sm"
-              >
-                Back to Dashboard <ChevronRight size={14} />
-              </button>
-            </div>
+            <button
+              onClick={() => navigate(`/${currentRole}`)}
+              className="px-3.5 py-2 rounded-xl bg-[#262842] hover:bg-[#3B3E66] text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm shrink-0"
+            >
+              Dashboard <ChevronRight size={14} />
+            </button>
           </div>
 
           <EvaluationSummaryReport evaluation={summaryData} isDoctorRole={true} />
@@ -392,8 +553,8 @@ export function DoctorAssessmentForm() {
   return (
     <div className="flex flex-col h-full bg-[#E8E9F1] dark:bg-slate-950 font-sans overflow-hidden">
       <div className="flex-1 overflow-y-auto flex flex-col overflow-x-hidden">
-      {/* Header — Design based on user image with Doctor Gradient */}
-      <div className={`px-6 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-5 pb-5 rounded-b-[2rem]' : 'py-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-xl shadow-indigo-950/20 z-10 relative overflow-hidden`}>
+      {/* Header - Design based on user image with Doctor Gradient */}
+      <div className={`px-6 shrink-0 transition-all duration-300 ${isHeaderExpanded ? 'pt-safe-top-5 pb-5 rounded-b-[2rem]' : 'pt-safe-top-3.5 pb-3.5 rounded-b-2xl'} bg-gradient-to-br from-[#262842] to-[#3B3E66] dark:from-slate-900 dark:to-slate-800 shadow-xl shadow-indigo-950/20 z-10 relative overflow-hidden`}>
         {/* Abstract background shapes for premium feel */}
         <div className="absolute right-0 top-0 w-80 h-80 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="absolute left-0 bottom-0 w-40 h-40 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
@@ -408,16 +569,25 @@ export function DoctorAssessmentForm() {
             </button>
             <div>
               <h1 className="text-[17px] font-black text-white tracking-tight">Assessment Form</h1>
-              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} — {stepsList[step]?.label}</p>
+              <p className="text-[11px] font-bold text-white/70 mt-0.5">Step {step+1} of {totalSteps} - {stepsList[step]?.label}</p>
             </div>
           </div>
-          <button 
-            onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
-            className="flex items-center justify-center rounded-full w-9.5 h-9.5 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-md border border-white/20 text-white active:scale-90"
-            title={isHeaderExpanded ? "Minimize progress details" : "Show progress details"}
-          >
-            {isHeaderExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/doctor/patient-form')}
+              className="flex items-center justify-center rounded-full w-9.5 h-9.5 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-md border border-white/20 text-white active:scale-90"
+              title="Add Patient"
+            >
+              <UserPlus size={16} />
+            </button>
+            <button
+              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+              className="flex items-center justify-center rounded-full w-9.5 h-9.5 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-md border border-white/20 text-white active:scale-90"
+              title={isHeaderExpanded ? "Minimize progress details" : "Show progress details"}
+            >
+              {isHeaderExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+          </div>
         </div>
 
         {isHeaderExpanded && (
@@ -447,47 +617,49 @@ export function DoctorAssessmentForm() {
         )}
       </div>
 
-      {/* Phone Lookup — Match layout from image */}
+      {/* Phone Lookup - Match layout from image */}
       <div className="px-6 pt-6 pb-2 shrink-0 z-0">
-        <div className="max-w-3xl mx-auto flex gap-3 items-center bg-white dark:bg-slate-900 p-2.5 rounded-[24px] shadow-lg shadow-indigo-900/5 border border-slate-100 dark:border-slate-800">
-          <SearchDropdown
-            module="patients"
-            searchFields={['name', 'mobile']}
-            apiEndpoint="/patients/search"
-            value={phoneInput}
-            onChange={setPhoneInput}
-            onSelect={(patient: any) => {
-              setPhoneInput(patient.mobile);
-              setPhoneToFetch(patient.mobile);
-              setLookupDone(true);
-              setShowNewPatientForm(false);
-            }}
-            renderItem={(patient: any, highlightText: any) => (
-              <div className="flex flex-col">
-                <span className="font-bold text-slate-800 dark:text-slate-100">
-                  {highlightText(patient.name)}
-                </span>
-                <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                  <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
-                </span>
-              </div>
-            )}
-            placeholder="Patient mobile number..."
-            className="flex-1"
-          />
-          <button 
-            onClick={handlePhoneLookup} 
-            disabled={phoneInput.trim().length<7} 
-            className="px-5 md:px-7 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-indigo-500/20 bg-[#262842] hover:bg-[#3B3E66] flex items-center justify-center shrink-0"
-          >
-            <Search className="w-5 h-5 md:hidden" />
-            <span className="hidden md:inline">Lookup</span>
-          </button>
-        </div>
+        {!resolvedPatientId && (
+          <div className="max-w-3xl mx-auto flex gap-3 items-center bg-white dark:bg-slate-900 p-2.5 rounded-[24px] shadow-lg shadow-indigo-900/5 border border-slate-100 dark:border-slate-800">
+            <SearchDropdown
+              module="patients"
+              searchFields={['name', 'mobile']}
+              apiEndpoint="/patients/search"
+              value={phoneInput}
+              onChange={setPhoneInput}
+              onSelect={(patient: any) => {
+                setPhoneInput(patient.mobile);
+                setPhoneToFetch(patient.mobile);
+                setLookupDone(true);
+                setShowNewPatientForm(false);
+              }}
+              renderItem={(patient: any, highlightText: any) => (
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-800 dark:text-slate-100">
+                    {highlightText(patient.name)}
+                  </span>
+                  <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                    <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
+                  </span>
+                </div>
+              )}
+              placeholder="Search mobile number..."
+              className="flex-1"
+            />
+            <button 
+              onClick={handlePhoneLookup} 
+              disabled={phoneInput.trim().length<7} 
+              className="px-5 md:px-7 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-indigo-500/20 bg-[#262842] hover:bg-[#3B3E66] flex items-center justify-center shrink-0"
+            >
+              <Search className="w-5 h-5 md:hidden" />
+              <span className="hidden md:inline">Lookup</span>
+            </button>
+          </div>
+        )}
 
         {/* Lookup States */}
         <div className="max-w-3xl mx-auto">
-          {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-4 px-4 py-2 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800"><Loader2 size={16} className="animate-spin text-[#262842] dark:text-indigo-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory…</span></div>}
+          {lookupDone&&lookingUp&&<div className="flex items-center gap-2 mt-4 px-4 py-2 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800"><Loader2 size={16} className="animate-spin text-[#262842] dark:text-indigo-400" /><span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">Searching directory...</span></div>}
           {lookupDone&&!lookingUp&&foundPatient&&!resolvedPatientId&&(
             <div className="mt-4 p-5 rounded-[22px] bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2">
               <div><p className="text-[15px] font-black text-[#262842] dark:text-indigo-100">{foundPatient.name}</p><p className="text-[12px] font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5">{foundPatient.phone} · {foundPatient.gender} · Age {foundPatient.age}</p></div>
@@ -503,7 +675,7 @@ export function DoctorAssessmentForm() {
           )}
           {showNewPatientForm&&(
             <div className="mt-4 p-6 rounded-[28px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex flex-col gap-5 shadow-xl animate-in zoom-in-95 duration-200">
-              <p className="text-[16px] font-black text-slate-800 dark:text-white">New Patient Registration — <span className="text-indigo-600 dark:text-indigo-400">{phoneInput}</span></p>
+              <p className="text-[16px] font-black text-slate-800 dark:text-white">New Patient Registration - <span className="text-indigo-600 dark:text-indigo-400">{phoneInput}</span></p>
               <div className="grid grid-cols-2 gap-4">
                 <input placeholder="Full Name *" value={newPatient.name} onChange={e=>setNewPatient(p=>({...p,name:e.target.value}))} className="col-span-2 px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
                 <input placeholder="Age *" type="number" value={newPatient.age} onChange={e=>setNewPatient(p=>({...p,age:e.target.value}))} className="px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[15px] font-medium outline-none focus:border-[#262842] focus:ring-1 focus:ring-[#262842] transition-colors" />
@@ -511,7 +683,7 @@ export function DoctorAssessmentForm() {
               </div>
               <div className="flex gap-4 mt-2">
                 <button onClick={()=>setShowNewPatientForm(false)} className="flex-1 py-3.5 rounded-2xl border border-slate-200 text-[14px] font-black text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-                <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] shadow-lg shadow-indigo-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creating…':'Save & Continue'}</button>
+                <button onClick={handleCreateNewPatient} disabled={createPatientMutation.isPending||!newPatient.name||!newPatient.age} className="flex-1 py-3.5 rounded-2xl text-white text-[14px] font-black disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] shadow-lg shadow-indigo-500/20 transition-transform active:scale-95">{createPatientMutation.isPending?'Creating...':'Save & Continue'}</button>
               </div>
             </div>
           )}
@@ -546,11 +718,11 @@ export function DoctorAssessmentForm() {
                   <div className="grid grid-cols-2 gap-3">{['Clinic','Home Visit','IP','Day Care'].map(v=><button key={v} onClick={()=>setVisitType(v as any)} className={`py-4 rounded-[18px] text-[14px] font-black border-2 transition-all active:scale-95 ${visitType===v?'border-[#262842] bg-indigo-50 dark:bg-indigo-900/20 text-[#262842] dark:text-indigo-300':'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>{v}</button>)}</div>
                 </FormField>
                 <div className="flex flex-col gap-0 mt-3 bg-slate-50 dark:bg-slate-800/50 rounded-[20px] p-2 border border-slate-100 dark:border-slate-800">{[
-                  {l:'Patient',v:patientInfo.name||'—'},{l:'Age',v:patientInfo.age||'—'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'—'},
-                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'—'},
-                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : '—'; })()},
-                  {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : '—')},
-                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : '—'},
+                  {l:'Patient',v:patientInfo.name||'-'},{l:'Age',v:patientInfo.age||'-'},{l:'BP',v:vitals.bp_sys&&vitals.bp_dia?`${vitals.bp_sys}/${vitals.bp_dia}`:'-'},
+                  {l:'Pain',v:`${painLevel}/10`},{l:'Complaints',v:chiefComplaints.length>0?`${chiefComplaints.length} selected`:'-'},
+                  {l:'Clinical Tests',v:(() => { const count = Object.values(clinicalExamData.tests).filter(t => t.result !== 'Not Tested').length; return count > 0 ? `${count} recorded` : '-'; })()},
+                  {l:'Diagnosis',v:selectedDiagnoses.length > 0 ? `${selectedDiagnoses.length} selected` : (diagnosisNotes ? (diagnosisNotes.length > 20 ? diagnosisNotes.substring(0, 20) + '...' : diagnosisNotes) : '-')},
+                  {l:'Treatment',v:getTreatmentSelectionCount(treatmentPlanData) > 0 ? `${getTreatmentSelectionCount(treatmentPlanData)} items` : '-'},
                 ].map(r=><div key={r.l} className="flex items-center justify-between py-4 px-4 border-b border-slate-100 dark:border-slate-800/50 last:border-0"><span className="text-[14px] text-slate-500 dark:text-slate-400 font-bold">{r.l}</span><span className="text-[14px] text-slate-900 dark:text-white font-extrabold">{r.v}</span></div>)}</div>
               </SectionCard>
               <SectionCard icon={<CreditCard size={20} className="text-amber-600 dark:text-amber-400" />} title="Payment Details" subtitle="Required to submit" accent="amber">
@@ -616,7 +788,7 @@ export function DoctorAssessmentForm() {
               </SectionCard>
 
               <button onClick={handleSave} disabled={createEvaluation.isPending} className="w-full mt-2 py-5 rounded-[22px] flex items-center justify-center gap-3 text-white text-[16px] font-black shadow-xl shadow-indigo-600/30 disabled:opacity-60 bg-[#262842] hover:bg-[#3B3E66] transition-all active:scale-[0.98]">
-                {createEvaluation.isPending?<><Loader2 size={22} className="animate-spin" /> Submitting…</>:<><Save size={22} /> Finalize & Start Session</>}
+                {createEvaluation.isPending?<><Loader2 size={22} className="animate-spin" /> Submitting...</>:<><Save size={22} /> Finalize & Start Session</>}
               </button>
             </div>
           )}
@@ -627,50 +799,56 @@ export function DoctorAssessmentForm() {
       </div>
       </div>
 
-      {/* Navigation Buttons (Fixed Bottom) */}
-      <div className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)] relative z-20">
-        <div className="max-w-2xl mx-auto w-full flex flex-col gap-4">
-          {submitError && (
-            <div className="p-4 rounded-[18px] bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[14px] text-red-700 dark:text-red-400 font-bold flex items-center gap-3 shadow-sm animate-in fade-in slide-in-from-left-2">
-              <AlertTriangle size={18} className="shrink-0" />
-              {submitError}
-            </div>
+      {/* Navigation Buttons (Floating Bottom Right) */}
+      <div 
+      className="shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 pt-3 z-40 flex flex-col gap-2"
+      style={{ paddingBottom: 'calc(0.875rem + var(--safe-bottom))' }}
+    >
+        {submitError && (
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-[13px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2.5 shadow-sm">
+            <AlertTriangle size={16} className="shrink-0" />
+            {submitError}
+          </div>
+        )}
+        <div className="flex gap-2 justify-between items-center w-full">
+          {step > 0 ? (
+            <button
+              onClick={() => { setSubmitError(null); setStep(step - 1); }}
+              className="flex items-center justify-center gap-1 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-black border border-slate-200 dark:border-slate-700 transition-all active:scale-95"
+            >
+              <ChevronLeft size={16} strokeWidth={3} />
+              Back
+            </button>
+          ) : (
+            <div className="w-[80px]" />
           )}
-          <div className="flex gap-4">
-            {step > 0 && (
-              <button
-                onClick={() => { setSubmitError(null); setStep(step - 1); }}
-                className="flex items-center justify-center gap-2 px-8 py-4 rounded-[20px] bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[15px] font-black shadow-lg shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 transition-all active:scale-95"
-              >
-                <ChevronLeft size={20} strokeWidth={3} />
-                Back
-              </button>
-            )}
+
+          <div className="flex gap-2 items-center">
             {step < totalSteps - 1 && (
               <button
-                onClick={() => { 
-                  if (step === 0 && !resolvedPatientId) {
-                    setSubmitError('Please resolve a patient before continuing.');
-                    return;
+                onClick={async () => {
+                  setSubmitError(null);
+                  if (step === 0) {
+                    const pid = await resolvePatientForStep();
+                    if (!pid) return;
+                    if (!patientInfo.condition || patientInfo.condition.length === 0) {
+                      setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
+                      return;
+                    }
                   }
-                  if (step === 0 && (!patientInfo.condition || patientInfo.condition.length === 0)) {
-                    setSubmitError('Please select at least one condition (Ortho, Neuro, or Cardio) before proceeding.');
-                    return;
-                  }
-                  setSubmitError(null); 
-                  setStep(step + 1); 
+                  setStep(step + 1);
                 }}
-                className="flex-1 flex items-center justify-center gap-2 py-4 rounded-[20px] text-white text-[15px] font-black shadow-xl shadow-indigo-900/10 bg-[#262842] hover:bg-[#3B3E66] transition-all active:scale-[0.98]"
+                disabled={createPatientMutation.isPending}
+                className="flex items-center justify-center gap-1 px-6 py-3 rounded-xl text-white text-xs font-black shadow-md bg-[#262842] hover:bg-[#343759] transition-all active:scale-[0.98] disabled:opacity-60"
               >
-                Next Step
-                <ChevronRight size={20} strokeWidth={3} />
+                {createPatientMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <>Next<ChevronRight size={16} strokeWidth={3} /></>}
               </button>
             )}
           </div>
         </div>
       </div>
 
-      <div className="md:hidden"><BottomNav role={currentRole} /></div>
     </div>
   );
 }
+

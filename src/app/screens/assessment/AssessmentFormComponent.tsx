@@ -26,6 +26,10 @@ const SYMPTOM_LABELS: Record<string, string> = {
 
 const SYMPTOM_KEYS = Object.keys(SYMPTOM_LABELS);
 
+// ROM/measurement inputs are blank until filled, so they hold '' rather than a
+// number. The explicit return type keeps that union from widening to `string`.
+const toRomValue = (raw: string): number | '' => (raw ? parseInt(raw, 10) : '');
+
 interface FormData {
   basicInfo: {
     fullName: string;
@@ -424,7 +428,7 @@ export function AssessmentFormComponent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 pt-safe-top-6 pb-safe-bottom font-sans">
       <div className="max-w-5xl mx-auto flex flex-col gap-6">
         
         {/* Back and Autosave Header */}
@@ -432,7 +436,7 @@ export function AssessmentFormComponent() {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => navigate(-1)}
-              className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 hover:bg-slate-50 text-slate-700 dark:text-slate-200 transition-colors shadow-sm">
+              className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 transition-colors shadow-sm">
               <ChevronLeft size={16} />
             </button>
             <div>
@@ -447,7 +451,7 @@ export function AssessmentFormComponent() {
 
           <div className="flex items-center gap-3">
             {autosaveStatus && (
-              <span className="text-[11px] text-slate-400 font-bold bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-250/30 flex items-center gap-1.5 animate-fade-in">
+              <span className="text-[11px] text-slate-400 font-bold bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200/30 flex items-center gap-1.5 animate-fade-in">
                 <RefreshCw size={11} className="animate-spin text-slate-500" />
                 {autosaveStatus}
               </span>
@@ -476,7 +480,7 @@ export function AssessmentFormComponent() {
                     className={`flex items-center justify-center w-8 h-8 rounded-full font-bold transition-all text-xs border ${
                       isCompleted ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/20' : 
                       isActive ? 'bg-[#262842] text-white border-[#262842] dark:bg-slate-800 dark:border-slate-700 shadow-lg' : 
-                      'bg-slate-50 text-slate-400 dark:bg-slate-950 border-slate-200 dark:border-slate-850'
+                      'bg-slate-50 text-slate-400 dark:bg-slate-950 border-slate-200 dark:border-slate-800'
                     }`}>
                     {isCompleted ? <Check size={14} /> : idx + 1}
                   </button>
@@ -494,7 +498,7 @@ export function AssessmentFormComponent() {
 
         {/* Errors Alert Banner */}
         {errors.api && (
-          <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 rounded-2xl flex items-center gap-3 text-rose-700 dark:text-rose-450 text-xs font-bold shadow-sm">
+          <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 rounded-2xl flex items-center gap-3 text-rose-700 dark:text-rose-400 text-xs font-bold shadow-sm">
             <AlertCircle size={16} />
             {errors.api}
           </div>
@@ -519,7 +523,7 @@ export function AssessmentFormComponent() {
               </button>
               <button 
                 onClick={handleExportJSON}
-                className="px-3.5 py-2 text-xs font-extrabold bg-slate-700 text-white rounded-xl hover:bg-slate-850 border border-transparent shadow-md flex items-center gap-2 transition-all">
+                className="px-3.5 py-2 text-xs font-extrabold bg-slate-700 text-white rounded-xl hover:bg-slate-800 border border-transparent shadow-md flex items-center gap-2 transition-all">
                 <FileText size={13} />
                 Export JSON
               </button>
@@ -528,7 +532,7 @@ export function AssessmentFormComponent() {
             {/* Document Preview container for html2canvas */}
             <div 
               id="assessment-preview-container" 
-              className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 shadow-md flex flex-col gap-8 text-slate-800 dark:text-slate-250">
+              className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 shadow-md flex flex-col gap-8 text-slate-800 dark:text-slate-200">
               
               <div className="text-center border-b border-slate-100 dark:border-slate-800 pb-6">
                 <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">SAAI Physiotherapy Clinic</h2>
@@ -713,7 +717,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.basicInfo.age}
-                      onChange={(e) => setFormData(prev => ({ ...prev, basicInfo: { ...prev.basicInfo, age: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, basicInfo: { ...prev.basicInfo, age: toRomValue(e.target.value) } }))}
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     />
                     {errors.age && <span className="text-[10px] text-rose-600 font-bold">{errors.age}</span>}
@@ -745,7 +749,7 @@ export function AssessmentFormComponent() {
                       {['Ortho', 'Neuro', 'Cardio'].map((c) => {
                         const isChecked = formData.basicInfo.condition?.includes(c) || false;
                         return (
-                          <label key={c} className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-350 cursor-pointer">
+                          <label key={c} className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
                             <input
                               type="checkbox"
                               checked={isChecked}
@@ -794,7 +798,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.vitalSigns.pulseRate}
-                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, pulseRate: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, pulseRate: toRomValue(e.target.value) } }))}
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     />
                   </div>
@@ -803,7 +807,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.vitalSigns.spo2}
-                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, spo2: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, spo2: toRomValue(e.target.value) } }))}
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     />
                   </div>
@@ -822,7 +826,7 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.vitalSigns.ejectionFraction}
-                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, ejectionFraction: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, vitalSigns: { ...prev.vitalSigns, ejectionFraction: toRomValue(e.target.value) } }))}
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     />
                   </div>
@@ -907,7 +911,7 @@ export function AssessmentFormComponent() {
                           onChange={(e) => setFormData(prev => ({ ...prev, chiefComplaint: { ...prev.chiefComplaint, painScale: parseInt(e.target.value, 10) } }))}
                           className="flex-1 accent-pink-600 cursor-pointer"
                         />
-                        <span className="w-12 text-center text-sm font-black border border-slate-200 dark:border-slate-800 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-850 dark:text-white">
+                        <span className="w-12 text-center text-sm font-black border border-slate-200 dark:border-slate-800 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white">
                           {formData.chiefComplaint.painScale}
                         </span>
                       </div>
@@ -931,7 +935,7 @@ export function AssessmentFormComponent() {
                     {dynamicSymptomKeys.map((key) => {
                       const item = formData.chiefComplaint.symptoms[key] || { value: false, notes: '' };
                       return (
-                        <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 dark:bg-slate-850/30 rounded-2xl border border-slate-150/40 dark:border-slate-850">
+                        <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100/40 dark:border-slate-800">
                           <div className="flex items-center gap-3">
                             <input 
                               type="checkbox"
@@ -946,7 +950,7 @@ export function AssessmentFormComponent() {
                               }}
                               className="w-4.5 h-4.5 rounded accent-indigo-650"
                             />
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-350">{dynamicSymptomLabels[key] || key}</span>
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{dynamicSymptomLabels[key] || key}</span>
                           </div>
                           {item.value && (
                             <input 
@@ -983,7 +987,7 @@ export function AssessmentFormComponent() {
                 <div className="mb-4">
                   <span className="text-xs font-extrabold text-slate-500 block mb-2.5 uppercase">Muscle Power Grades (0 - 5)</span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-bold">
-                    <div className="p-3 bg-slate-50 dark:bg-slate-850/30 rounded-2xl border border-slate-150/40 dark:border-slate-850 flex flex-col gap-1.5">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100/40 dark:border-slate-800 flex flex-col gap-1.5">
                       <span>Right Upper Limb</span>
                       <input 
                         type="number"
@@ -994,10 +998,10 @@ export function AssessmentFormComponent() {
                           const mp = { ...prev.clinicalExamination.musclePower, rightUpper: parseInt(e.target.value, 10) || 5 };
                           return { ...prev, clinicalExamination: { ...prev.clinicalExamination, musclePower: mp } };
                         })}
-                        className="p-2 border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 rounded text-center focus:outline-none"
+                        className="p-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-center focus:outline-none"
                       />
                     </div>
-                    <div className="p-3 bg-slate-50 dark:bg-slate-850/30 rounded-2xl border border-slate-150/40 dark:border-slate-850 flex flex-col gap-1.5">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100/40 dark:border-slate-800 flex flex-col gap-1.5">
                       <span>Left Upper Limb</span>
                       <input 
                         type="number"
@@ -1008,10 +1012,10 @@ export function AssessmentFormComponent() {
                           const mp = { ...prev.clinicalExamination.musclePower, leftUpper: parseInt(e.target.value, 10) || 5 };
                           return { ...prev, clinicalExamination: { ...prev.clinicalExamination, musclePower: mp } };
                         })}
-                        className="p-2 border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 rounded text-center focus:outline-none"
+                        className="p-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-center focus:outline-none"
                       />
                     </div>
-                    <div className="p-3 bg-slate-50 dark:bg-slate-850/30 rounded-2xl border border-slate-150/40 dark:border-slate-850 flex flex-col gap-1.5">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100/40 dark:border-slate-800 flex flex-col gap-1.5">
                       <span>Right Lower Limb</span>
                       <input 
                         type="number"
@@ -1022,10 +1026,10 @@ export function AssessmentFormComponent() {
                           const mp = { ...prev.clinicalExamination.musclePower, rightLower: parseInt(e.target.value, 10) || 5 };
                           return { ...prev, clinicalExamination: { ...prev.clinicalExamination, musclePower: mp } };
                         })}
-                        className="p-2 border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 rounded text-center focus:outline-none"
+                        className="p-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-center focus:outline-none"
                       />
                     </div>
-                    <div className="p-3 bg-slate-50 dark:bg-slate-850/30 rounded-2xl border border-slate-150/40 dark:border-slate-850 flex flex-col gap-1.5">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100/40 dark:border-slate-800 flex flex-col gap-1.5">
                       <span>Left Lower Limb</span>
                       <input 
                         type="number"
@@ -1036,7 +1040,7 @@ export function AssessmentFormComponent() {
                           const mp = { ...prev.clinicalExamination.musclePower, leftLower: parseInt(e.target.value, 10) || 5 };
                           return { ...prev, clinicalExamination: { ...prev.clinicalExamination, musclePower: mp } };
                         })}
-                        className="p-2 border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 rounded text-center focus:outline-none"
+                        className="p-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded text-center focus:outline-none"
                       />
                     </div>
                   </div>
@@ -1064,7 +1068,7 @@ export function AssessmentFormComponent() {
                   </div>
 
                   {/* Render ROM fields based on selector */}
-                  <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-850 flex flex-col gap-4 text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 text-xs font-bold text-slate-700 dark:text-slate-300">
                     {romJointSelection === 'cervical' && (
                       <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
@@ -1073,11 +1077,11 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.cervical.flexion}
                             onChange={(e) => setFormData(prev => {
-                              const cervical = { ...prev.clinicalExamination.rom.cervical, flexion: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const cervical = { ...prev.clinicalExamination.rom.cervical, flexion: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, cervical };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
-                            className="p-3 border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
+                            className="p-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
                           />
                         </div>
                         <div className="flex flex-col gap-1.5">
@@ -1086,11 +1090,11 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.cervical.extension}
                             onChange={(e) => setFormData(prev => {
-                              const cervical = { ...prev.clinicalExamination.rom.cervical, extension: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const cervical = { ...prev.clinicalExamination.rom.cervical, extension: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, cervical };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
-                            className="p-3 border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
+                            className="p-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1104,11 +1108,11 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.lumbar.flexion}
                             onChange={(e) => setFormData(prev => {
-                              const lumbar = { ...prev.clinicalExamination.rom.lumbar, flexion: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const lumbar = { ...prev.clinicalExamination.rom.lumbar, flexion: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, lumbar };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
-                            className="p-3 border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
+                            className="p-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
                           />
                         </div>
                         <div className="flex flex-col gap-1.5">
@@ -1117,11 +1121,11 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.lumbar.extension}
                             onChange={(e) => setFormData(prev => {
-                              const lumbar = { ...prev.clinicalExamination.rom.lumbar, extension: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const lumbar = { ...prev.clinicalExamination.rom.lumbar, extension: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, lumbar };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
-                            className="p-3 border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
+                            className="p-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1135,11 +1139,11 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.shoulder.abduction}
                             onChange={(e) => setFormData(prev => {
-                              const shoulder = { ...prev.clinicalExamination.rom.shoulder, abduction: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const shoulder = { ...prev.clinicalExamination.rom.shoulder, abduction: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, shoulder };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
-                            className="p-3 border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
+                            className="p-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
                           />
                         </div>
                         <div className="flex flex-col gap-1.5">
@@ -1148,11 +1152,11 @@ export function AssessmentFormComponent() {
                             type="number"
                             value={formData.clinicalExamination.rom.shoulder.rotation}
                             onChange={(e) => setFormData(prev => {
-                              const shoulder = { ...prev.clinicalExamination.rom.shoulder, rotation: e.target.value ? parseInt(e.target.value, 10) : '' };
+                              const shoulder = { ...prev.clinicalExamination.rom.shoulder, rotation: toRomValue(e.target.value) };
                               const rom = { ...prev.clinicalExamination.rom, shoulder };
                               return { ...prev, clinicalExamination: { ...prev.clinicalExamination, rom } };
                             })}
-                            className="p-3 border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
+                            className="p-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl font-medium focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1345,8 +1349,8 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.payment.sessionFee}
-                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, sessionFee: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
-                      className="p-3 border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950 rounded-xl focus:outline-none text-slate-900 dark:text-white font-extrabold"
+                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, sessionFee: toRomValue(e.target.value) } }))}
+                      className="p-3 border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 rounded-xl focus:outline-none text-slate-900 dark:text-white font-extrabold"
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -1354,8 +1358,8 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.payment.totalSessions}
-                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, totalSessions: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
-                      className="p-3 border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950 rounded-xl focus:outline-none text-slate-900 dark:text-white font-extrabold"
+                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, totalSessions: toRomValue(e.target.value) } }))}
+                      className="p-3 border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 rounded-xl focus:outline-none text-slate-900 dark:text-white font-extrabold"
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -1363,8 +1367,8 @@ export function AssessmentFormComponent() {
                     <input 
                       type="number"
                       value={formData.payment.paidSessions}
-                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, paidSessions: e.target.value ? parseInt(e.target.value, 10) : '' } }))}
-                      className="p-3 border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950 rounded-xl focus:outline-none text-slate-900 dark:text-white font-extrabold"
+                      onChange={(e) => setFormData(prev => ({ ...prev, payment: { ...prev.payment, paidSessions: toRomValue(e.target.value) } }))}
+                      className="p-3 border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 rounded-xl focus:outline-none text-slate-900 dark:text-white font-extrabold"
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -1373,7 +1377,7 @@ export function AssessmentFormComponent() {
                       type="text"
                       disabled
                       value={`₹ ${formData.payment.balance}`}
-                      className="p-3 border border-slate-200 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 rounded-xl text-emerald-700 dark:text-emerald-400 font-black cursor-not-allowed"
+                      className="p-3 border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 rounded-xl text-emerald-700 dark:text-emerald-400 font-black cursor-not-allowed"
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -1382,7 +1386,7 @@ export function AssessmentFormComponent() {
                       type="text"
                       disabled
                       value={formData.payment.paymentStatus}
-                      className="p-3 border border-slate-200 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 rounded-xl text-slate-700 dark:text-slate-300 font-extrabold cursor-not-allowed"
+                      className="p-3 border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 rounded-xl text-slate-700 dark:text-slate-300 font-extrabold cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -1404,7 +1408,7 @@ export function AssessmentFormComponent() {
                   type="button"
                   onClick={() => handleSave(false)}
                   disabled={saving}
-                  className="px-4 py-2.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 text-slate-700 dark:text-slate-350 shadow-sm transition-colors flex items-center gap-2">
+                  className="px-4 py-2.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 text-slate-700 dark:text-slate-300 shadow-sm transition-colors flex items-center gap-2">
                   <Save size={13} />
                   Save Draft
                 </button>

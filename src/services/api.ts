@@ -1,14 +1,30 @@
+import { Preferences } from '@capacitor/preferences';
 import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
   type AxiosResponse,
 } from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://clinic-api.saaiphysioclinic.com/api';
 
 // ─── In-memory token store ─────────────────────────────────────────────────────
 let _accessToken: string | null = null;
 let _refreshToken: string | null = null;
+let _cachedRefreshToken: string | null = null;
+
+// Capacitor Preferences is the single persistent store for the refresh token:
+// native-backed on Android, and the plugin supplies its own web implementation.
+// The token is deliberately NOT mirrored into localStorage — see CLAUDE.md.
+export const initTokenStorage = async (): Promise<string | null> => {
+  try {
+    const { value } = await Preferences.get({ key: 'refreshToken' });
+    _cachedRefreshToken = value;
+    return value;
+  } catch {
+    _cachedRefreshToken = null;
+    return null;
+  }
+};
 
 export const setAccessToken = (token: string | null): void => {
   _accessToken = token;
@@ -16,17 +32,20 @@ export const setAccessToken = (token: string | null): void => {
 
 export const setRefreshToken = (token: string | null): void => {
   _refreshToken = token;
+  _cachedRefreshToken = token;
   if (token) {
-    localStorage.setItem('refreshToken', token);
+    Preferences.set({ key: 'refreshToken', value: token }).catch(() => { });
   } else {
-    localStorage.removeItem('refreshToken');
+    Preferences.remove({ key: 'refreshToken' }).catch(() => { });
   }
 };
 
 export const getAccessToken = (): string | null => _accessToken;
 
+// Synchronous by contract; reads the in-memory cache that initTokenStorage()
+// primes on startup and that setRefreshToken() keeps current.
 export const getRefreshToken = (): string | null => {
-  return _refreshToken || localStorage.getItem('refreshToken');
+  return _refreshToken || _cachedRefreshToken;
 };
 
 // ─── Axios instance ────────────────────────────────────────────────────────────

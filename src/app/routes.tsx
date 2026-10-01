@@ -26,6 +26,7 @@ import { TherapistHierarchy } from './screens/TherapistHierarchy';
 import { TherapistDetailPage } from './screens/TherapistDetailPage';
 import { FollowUpPage } from './screens/FollowUpPage';
 import { AssignPatientPage } from './screens/AssignPatientPage';
+import { PrivacyPolicy } from './screens/PrivacyPolicy';
 
 // ── Session Loader: waits for auth initialization before routing ─────────────
 function SessionLoader({ children }: { children: React.ReactNode }) {
@@ -43,13 +44,21 @@ function SessionLoader({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+import { CapacitorHardwareBackButton } from './components/CapacitorHardwareBackButton';
+import { Outlet } from 'react-router';
+
 export const router = createBrowserRouter([
   {
     path: '/',
+    element: <><CapacitorHardwareBackButton /><Outlet /></>,
     children: [
       // ── Public routes ─────────────────────────────────────────────────
       { index: true, Component: LoginScreen },
       { path: 'login', Component: LoginScreen },
+      // Publicly reachable without a session — this is the URL submitted to the
+      // Google Play Console as the app's privacy policy, so it must never sit
+      // behind RoleGuard or WebLayout.
+      { path: 'privacy-policy', Component: PrivacyPolicy },
 
       // ── Authenticated routes — wrapped with WebLayout (sidebar) ──────
       {
@@ -123,3 +132,4 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+

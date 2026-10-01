@@ -700,42 +700,44 @@ export function NurseIntakeForm() {
 
       {/* ── Phone Lookup Banner ─────────────────────────────────────────── */}
       <div className="px-4 pt-3 pb-1 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shrink-0">
-        <div className="flex gap-2 items-center">
-          <SearchDropdown
-            module="patients"
-            searchFields={['name', 'mobile']}
-            apiEndpoint="/patients/search"
-            value={phoneInput}
-            onChange={setPhoneInput}
-            onSelect={(patient: any) => {
-              setPhoneInput(patient.mobile);
-              setPhoneToFetch(patient.mobile);
-              setLookupDone(true);
-              setShowNewPatientForm(false);
-            }}
-            renderItem={(patient: any, highlightText: any) => (
-              <div className="flex flex-col">
-                <span className="font-bold text-slate-800 dark:text-slate-100">
-                  {highlightText(patient.name)}
-                </span>
-                <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                  <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
-                </span>
-              </div>
-            )}
-            placeholder="Enter patient mobile number..."
-            className="flex-1"
-          />
-          <button
-            onClick={handlePhoneLookup}
-            disabled={phoneInput.trim().length < 7}
-            className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-white text-[13px] font-bold disabled:opacity-50 transition-opacity shrink-0"
-            style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}
-          >
-            <Search size={14} />
-            Lookup
-          </button>
-        </div>
+        {!resolvedPatientId && (
+          <div className="flex gap-2 items-center">
+            <SearchDropdown
+              module="patients"
+              searchFields={['name', 'mobile']}
+              apiEndpoint="/patients/search"
+              value={phoneInput}
+              onChange={setPhoneInput}
+              onSelect={(patient: any) => {
+                setPhoneInput(patient.mobile);
+                setPhoneToFetch(patient.mobile);
+                setLookupDone(true);
+                setShowNewPatientForm(false);
+              }}
+              renderItem={(patient: any, highlightText: any) => (
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-800 dark:text-slate-100">
+                    {highlightText(patient.name)}
+                  </span>
+                  <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                    <Phone className="w-3 h-3 text-[#3B3E66] dark:text-teal-400" /> {highlightText(patient.mobile)}
+                  </span>
+                </div>
+              )}
+              placeholder="Enter patient mobile number..."
+              className="flex-1"
+            />
+            <button
+              onClick={handlePhoneLookup}
+              disabled={phoneInput.trim().length < 7}
+              className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-white text-[13px] font-bold disabled:opacity-50 transition-opacity shrink-0"
+              style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}
+            >
+              <Search size={14} />
+              Lookup
+            </button>
+          </div>
+        )}
 
         {/* Lookup results */}
         {lookupDone && lookingUp && (
@@ -1615,24 +1617,24 @@ export function NurseIntakeForm() {
         )}
       </div>
 
-      {/* Navigation buttons */}
-      <div className="px-4 py-3 shrink-0 flex flex-col gap-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
+      {/* Navigation buttons (Floating Bottom Right) */}
+      <div className="fixed bottom-20 right-6 md:bottom-10 md:right-10 z-50 pointer-events-none flex flex-col gap-4 items-end">
         {submitError && (
-          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-[12px] text-red-700 dark:text-red-400 font-bold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
-            <AlertTriangle size={14} />
+          <div className="p-4 rounded-[18px] bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-[14px] text-red-700 dark:text-red-400 font-bold flex items-center gap-3 shadow-lg pointer-events-auto max-w-sm animate-in fade-in slide-in-from-right-4">
+            <AlertTriangle size={18} className="shrink-0" />
             {submitError}
           </div>
         )}
-        <div className="flex gap-3">
+        <div className="flex gap-3 pointer-events-auto">
           {step > 0 && (
             <button
               onClick={() => {
                 setSubmitError(null);
                 setStep(step - 1);
               }}
-              className="flex items-center justify-center gap-2 px-5 py-3 rounded-[14px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-extrabold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              className="flex items-center justify-center gap-2 px-6 py-4 rounded-[20px] bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[15px] font-black shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={20} strokeWidth={3} />
               Back
             </button>
           )}
@@ -1642,7 +1644,7 @@ export function NurseIntakeForm() {
                 setSubmitError(null);
                 setStep(steps.length - 1);
               }}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-[14px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-extrabold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="px-6 py-4 rounded-[20px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[15px] font-extrabold shadow-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               Skip to Payment
             </button>
@@ -1650,11 +1652,11 @@ export function NurseIntakeForm() {
           {step < steps.length - 1 && (
             <button
               onClick={handleNext}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[14px] text-white text-sm font-extrabold hover:opacity-90 transition-opacity"
-              style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)' }}
+              className="flex items-center justify-center gap-2 px-8 py-4 rounded-[20px] text-white text-[15px] font-black shadow-2xl hover:opacity-90 transition-all active:scale-[0.98]"
+              style={{ background: 'linear-gradient(135deg, #262842, #3B3E66)', boxShadow: '0 10px 25px -5px rgba(38, 40, 66, 0.4)' }}
             >
               Next Step
-              <ChevronRight size={16} />
+              <ChevronRight size={20} strokeWidth={3} />
             </button>
           )}
         </div>

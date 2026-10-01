@@ -34,8 +34,18 @@ export interface Patient {
   checkOutTime?: string;
   sessionCount?: number;
   referredBy?: string;
+  /** Timestamp of the most recent session; returned by the patients endpoints. */
+  lastSession?: string;
+  /** Evaluation count, included by the patient list endpoint. */
+  evaluations_count?: number;
   createdAt: string;
   updatedAt?: string;
+  /**
+   * Legacy snake_case aliases. The API normalises to camelCase, but several
+   * screens still read these as a defensive fallback for older payloads.
+   */
+  display_id?: string;
+  referred_by?: string;
 }
 
 export interface PatientsListResponse {
@@ -103,6 +113,9 @@ export interface Evaluation {
   updatedBy?: EvaluationCreatedBy;
   createdAt: string;
   updatedAt: string;
+  /** Joined patient columns, present when evaluations are listed across patients. */
+  patient_name?: string;
+  patient_display_id?: string;
 }
 
 export interface EvaluationsListResponse {

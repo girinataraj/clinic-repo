@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router';
 import type { UserRole } from '../contexts/AuthContext';
-import { Home, Calendar, FileText, User, Users, ClipboardList, BarChart2, Activity, FileSearch, UserPlus } from 'lucide-react';
+import { Home, Calendar, FileText, User, Users, ClipboardList, BarChart2, Activity, FileSearch, UserPlus, RefreshCw } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -19,6 +19,7 @@ const navConfig: Record<string, NavItem[]> = {
     { label: 'Home', Icon: Home, path: '/nurse' },
     { label: 'Intake', Icon: ClipboardList, path: '/nurse/intake' },
     { label: 'Add', Icon: UserPlus, path: '/nurse/patient-form' },
+    { label: 'Follow Ups', Icon: RefreshCw, path: '/nurse/follow-up' },
     { label: 'History', Icon: FileSearch, path: '/nurse/patient-history' },
     { label: 'Profile', Icon: User, path: '/nurse/profile' },
   ],
@@ -26,6 +27,7 @@ const navConfig: Record<string, NavItem[]> = {
     { label: 'Home', Icon: Home, path: '/doctor' },
     { label: 'Therapists', Icon: Users, path: '/doctor/therapists' },
     { label: 'Intake', Icon: ClipboardList, path: '/doctor/intake' },
+    { label: 'Follow Ups', Icon: RefreshCw, path: '/doctor/follow-up' },
     { label: 'History', Icon: FileSearch, path: '/doctor/patient-history' },
     { label: 'Profile', Icon: User, path: '/doctor/profile' },
   ],
@@ -49,8 +51,8 @@ export function BottomNav({ role }: BottomNavProps) {
 
   return (
     <div
-      className="shrink-0 flex items-center bg-white dark:bg-slate-900 relative border-t border-slate-100 dark:border-slate-800 shadow-[0_-8px_24px_rgba(0,0,0,0.07)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.2)]"
-      style={{ height: '68px' }}
+      className="shrink-0 flex bg-white dark:bg-slate-900 relative border-t border-slate-100 dark:border-slate-800 shadow-[0_-8px_24px_rgba(0,0,0,0.07)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.2)]"
+      style={{ height: 'calc(62px + var(--safe-bottom))', paddingBottom: 'var(--safe-bottom)' }}
     >
       {items.map((item) => {
         const isDoctorPatientDetail =

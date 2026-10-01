@@ -30,18 +30,20 @@ export function NurseDashboard() {
   // Filter Modal states
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<string>('');
-  const [daysFilter, setDaysFilter] = useState<string>('all');
+  // pastDaysFilter: backward-looking "Last N days" window ('' = no filter)
+  const [pastDaysFilter, setPastDaysFilter] = useState<string>('');
 
   // Temporary Modal edit states
   const [tempDateFilter, setTempDateFilter] = useState<string>('');
-  const [tempDaysFilter, setTempDaysFilter] = useState<string>('all');
+  const [tempPastDaysFilter, setTempPastDaysFilter] = useState<string>('');
 
   // ── Live data from backend ─────────────────────────────────────────────────
   // Therapist (nurse role) sees patients assigned to them (filtered by backend query)
   const { data: patientsData, isLoading, isError } = usePatients({
     search: search.trim() || undefined,
     date: dateFilter || undefined,
-    days: daysFilter !== 'all' ? daysFilter : undefined,
+    // pastDays = backward-looking "Last N days" (NurseDashboard semantics)
+    pastDays: pastDaysFilter || undefined,
     limit: 50,
   }, true); // 10s polling for live queue updates
 
@@ -118,16 +120,16 @@ export function NurseDashboard() {
             <div className="absolute -right-16 -top-16 rounded-full opacity-10 bg-white/10 w-[200px] h-[200px]" />
             <div className="absolute right-10 top-20 rounded-full opacity-20 bg-white/20 w-[80px] h-[80px]" />
           </div>
-          <div className="px-6 pb-12 pt-8 relative z-30 max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
+          <div className="px-4 pb-4 pt-safe-top-4 md:px-6 md:pb-6 md:pt-5 relative z-30 max-w-6xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-[13px] text-teal-100/90 font-medium tracking-[0.5px] uppercase">
                   {today}
                 </p>
-                <h1 className="text-[26px] font-extrabold text-white mt-1 tracking-tight">
+                <h1 className="text-[20px] md:text-[26px] font-extrabold text-white mt-1 tracking-tight">
                   Hello, {firstName}! 👋
                 </h1>
-                <p className="text-sm text-teal-100/80 mt-0.5 font-normal">
+                <p className="text-xs md:text-sm text-teal-100/80 mt-0.5 font-normal">
                   Therapist Dashboard · SAAI Clinic
                 </p>
               </div>
@@ -242,18 +244,18 @@ export function NurseDashboard() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search patients by name, display ID, or phone..."
-                  className="flex-1 outline-none bg-transparent py-3 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  placeholder="Search by name, ID, phone..."
+                  className="flex-1 w-full min-w-0 outline-none bg-transparent py-3 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
               <button
                 onClick={() => {
                   setTempDateFilter(dateFilter);
-                  setTempDaysFilter(daysFilter);
+                  setTempPastDaysFilter(pastDaysFilter);
                   setIsFilterModalOpen(true);
                 }}
-                className={`flex items-center justify-center p-3 border rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-750 transition-all ${
-                  dateFilter !== '' || daysFilter !== 'all'
+                className={`flex items-center justify-center p-3 border rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all ${
+                  dateFilter !== '' || pastDaysFilter !== ''
                     ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-500 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold'
                     : 'bg-slate-50/80 dark:bg-slate-900 border-slate-200/80 dark:border-slate-700 text-slate-500 dark:text-slate-400'
                 }`}
@@ -441,7 +443,7 @@ export function NurseDashboard() {
                   value={tempDateFilter}
                   onChange={(e) => {
                     setTempDateFilter(e.target.value);
-                    if (e.target.value) setTempDaysFilter('all');
+                    if (e.target.value) setTempPastDaysFilter('');
                   }}
                   className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-teal-500 transition-colors"
                 />
@@ -451,20 +453,20 @@ export function NurseDashboard() {
                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                   Timeframe
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full min-w-0">
                   {[
-                    { key: 'all', label: 'All Time' },
+                    { key: '', label: 'All Time' },
                     { key: '1', label: 'Last 24h' },
                     { key: '7', label: 'Last 7 Days' },
                   ].map((opt) => (
                     <button
-                      key={opt.key}
+                      key={opt.key || 'all'}
                       onClick={() => {
-                        setTempDaysFilter(opt.key);
-                        if (opt.key !== 'all') setTempDateFilter('');
+                        setTempPastDaysFilter(opt.key);
+                        if (opt.key) setTempDateFilter('');
                       }}
-                      className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all ${
-                        tempDaysFilter === opt.key
+                      className={`py-2 px-1.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold border transition-all text-center truncate ${
+                        tempPastDaysFilter === opt.key
                           ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
                           : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
                       }`}
@@ -480,9 +482,9 @@ export function NurseDashboard() {
               <button
                 onClick={() => {
                   setTempDateFilter('');
-                  setTempDaysFilter('all');
+                  setTempPastDaysFilter('');
                   setDateFilter('');
-                  setDaysFilter('all');
+                  setPastDaysFilter('');
                   setIsFilterModalOpen(false);
                 }}
                 className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
@@ -492,7 +494,7 @@ export function NurseDashboard() {
               <button
                 onClick={() => {
                   setDateFilter(tempDateFilter);
-                  setDaysFilter(tempDaysFilter);
+                  setPastDaysFilter(tempPastDaysFilter);
                   setIsFilterModalOpen(false);
                 }}
                 className="flex-1 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-md shadow-teal-600/20 transition-all"

@@ -222,8 +222,8 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       {cranial && Object.values(cranial).some(Boolean) && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Cranial Nerves</span>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+          <div className="w-full min-w-0 overflow-x-auto">
+            <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
               <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                 <tr>
                   <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Nerve</th>
@@ -235,8 +235,8 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
                   const val = cranial[key];
                   if (!val) return null;
                   return (
-                    <tr key={key} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
-                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800">{label}</td>
+                    <tr key={key} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">{label}</td>
                       <td className="p-2 text-slate-800 dark:text-slate-200">{String(val)}</td>
                     </tr>
                   );
@@ -254,8 +254,8 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       ) && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Sensory Assessment</span>
-          <div className="overflow-x-auto">
-            <table className="w-full text-[11px] border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+          <div className="w-full min-w-0 overflow-x-auto">
+            <table className="w-full min-w-[500px] text-[11px] border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
               <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                 <tr>
                   <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800" rowSpan={2}>Sensation</th>
@@ -280,22 +280,22 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
 
                   if (typeof item !== 'object') {
                     return (
-                      <tr key={key} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
-                        <td className="p-1.5 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800">{label}</td>
+                      <tr key={key} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                        <td className="p-1.5 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">{label}</td>
                         <td className="p-1.5 text-slate-800 dark:text-slate-200" colSpan={7}>{String(item)}</td>
                       </tr>
                     );
                   }
 
                   return (
-                    <tr key={key} className="border-b last:border-0 border-slate-150 dark:border-slate-800 hover:bg-slate-50/50">
-                      <td className="p-1.5 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800">{label}</td>
-                      <td className="p-1 text-center border-r border-slate-150 dark:border-slate-800">{item.ueRt || '—'}</td>
-                      <td className="p-1 text-center border-r border-slate-150 dark:border-slate-800">{item.ueLt || '—'}</td>
-                      <td className="p-1 text-center border-r border-slate-150 dark:border-slate-800">{item.leRt || '—'}</td>
-                      <td className="p-1 text-center border-r border-slate-150 dark:border-slate-800">{item.leLt || '—'}</td>
-                      <td className="p-1 text-center border-r border-slate-150 dark:border-slate-800">{item.tRt || '—'}</td>
-                      <td className="p-1 text-center border-r border-slate-150 dark:border-slate-800">{item.tLt || '—'}</td>
+                    <tr key={key} className="border-b last:border-0 border-slate-100 dark:border-slate-800 hover:bg-slate-50/50">
+                      <td className="p-1.5 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">{label}</td>
+                      <td className="p-1 text-center border-r border-slate-100 dark:border-slate-800">{item.ueRt || '—'}</td>
+                      <td className="p-1 text-center border-r border-slate-100 dark:border-slate-800">{item.ueLt || '—'}</td>
+                      <td className="p-1 text-center border-r border-slate-100 dark:border-slate-800">{item.leRt || '—'}</td>
+                      <td className="p-1 text-center border-r border-slate-100 dark:border-slate-800">{item.leLt || '—'}</td>
+                      <td className="p-1 text-center border-r border-slate-100 dark:border-slate-800">{item.tRt || '—'}</td>
+                      <td className="p-1 text-center border-r border-slate-100 dark:border-slate-800">{item.tLt || '—'}</td>
                       <td className="p-1.5 text-slate-800 dark:text-slate-200">{item.comments || '—'}</td>
                     </tr>
                   );
@@ -315,11 +315,12 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       {/* Muscle Girth & Voluntary Control */}
       {((muscleGirth && Object.values(muscleGirth).some((v: any) => v && (v.rt || v.lt))) ||
         (voluntaryControl && Object.values(voluntaryControl).some((v: any) => v && (v.rt || v.lt)))) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full min-w-0">
           {muscleGirth && Object.values(muscleGirth).some((v: any) => v && (v.rt || v.lt)) && (
             <div>
               <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Muscle Girth (cm)</span>
-              <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
                 <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                   <tr>
                     <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Area</th>
@@ -332,22 +333,24 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
                     const val = muscleGirth[area];
                     if (!val || (!val.rt && !val.lt)) return null;
                     return (
-                      <tr key={area} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
-                        <td className="p-2 font-semibold capitalize border-r border-slate-150 dark:border-slate-800">{area}</td>
-                        <td className="p-2 text-center border-r border-slate-150 dark:border-slate-800">{val.rt || '—'}</td>
+                      <tr key={area} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                        <td className="p-2 font-semibold capitalize border-r border-slate-100 dark:border-slate-800">{area}</td>
+                        <td className="p-2 text-center border-r border-slate-100 dark:border-slate-800">{val.rt || '—'}</td>
                         <td className="p-2 text-center">{val.lt || '—'}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
+</div>
             </div>
           )}
 
           {voluntaryControl && Object.values(voluntaryControl).some((v: any) => v && (v.rt || v.lt)) && (
             <div>
               <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Voluntary Control</span>
-              <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
                 <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
                   <tr>
                     <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Side</th>
@@ -363,15 +366,16 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
                     const val = voluntaryControl[key];
                     if (!val || (!val.rt && !val.lt)) return null;
                     return (
-                      <tr key={key} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
-                        <td className="p-2 font-semibold border-r border-slate-150 dark:border-slate-800">{label}</td>
-                        <td className="p-2 text-center border-r border-slate-150 dark:border-slate-800">{val.rt || '—'}</td>
+                      <tr key={key} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                        <td className="p-2 font-semibold border-r border-slate-100 dark:border-slate-800">{label}</td>
+                        <td className="p-2 text-center border-r border-slate-100 dark:border-slate-800">{val.rt || '—'}</td>
                         <td className="p-2 text-center">{val.lt || '—'}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
+</div>
             </div>
           )}
         </div>
@@ -384,7 +388,8 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       ) && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Reflexes</span>
-          <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+          <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
             <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
               <tr>
                 <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Category</th>
@@ -398,16 +403,17 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
                 const val = reflexes[key];
                 if (!val || (!val.rt && !val.lt)) return null;
                 return (
-                  <tr key={key} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
-                    <td className="p-2 font-bold uppercase text-[10px] text-slate-400 border-r border-slate-150 dark:border-slate-800">{cat}</td>
-                    <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800">{name}</td>
-                    <td className="p-2 text-center border-r border-slate-150 dark:border-slate-800">{val.lt || '—'}</td>
+                  <tr key={key} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                    <td className="p-2 font-bold uppercase text-[10px] text-slate-400 border-r border-slate-100 dark:border-slate-800">{cat}</td>
+                    <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">{name}</td>
+                    <td className="p-2 text-center border-r border-slate-100 dark:border-slate-800">{val.lt || '—'}</td>
                     <td className="p-2 text-center">{val.rt || '—'}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+</div>
           {reflexes.pathological && (
             <p className="mt-2 text-xs text-slate-700 dark:text-slate-300">
               <strong>Pathological Reflexes:</strong> {reflexes.pathological}
@@ -420,30 +426,66 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       {coordination && Array.isArray(coordination) && coordination.length > 0 && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Coordination & Balance</span>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
-              <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
-                <tr>
-                  <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test</th>
-                  <th className="p-2 text-center border-b border-r border-slate-200 dark:border-slate-800">Right</th>
-                  <th className="p-2 text-center border-b border-slate-200 dark:border-slate-800">Left</th>
-                </tr>
-              </thead>
-              <tbody>
-                {coordination.map((c: any, i: number) => {
-                  if (!c) return null;
-                  const testLabel = typeof c.test === 'string' ? c.test.replace(/([A-Z])/g, ' $1').trim() : 'Test';
-                  
-                  return (
-                    <tr key={i} className="border-b last:border-0 border-slate-150 dark:border-slate-800">
-                      <td className="p-2 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-150 dark:border-slate-800 capitalize">{testLabel}</td>
-                      <td className="p-2 text-center border-r border-slate-150 dark:border-slate-800 text-slate-800 dark:text-slate-200">{c.right || (typeof c.result === 'string' ? c.result : '—')}</td>
-                      <td className="p-2 text-center text-slate-800 dark:text-slate-200">{c.left || '—'}</td>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full min-w-0">
+            {/* Non Equilibrium */}
+            {Object.keys(NON_EQUILIBRIUM_LABELS).some(k => coordination[k] && (coordination[k].rt || coordination[k].lt)) && (
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Non-Equilibrium Tests</span>
+                <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <tr>
+                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test</th>
+                      <th className="p-2 text-center border-b border-r border-slate-200 dark:border-slate-800">Right</th>
+                      <th className="p-2 text-center border-b border-slate-200 dark:border-slate-800">Left</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {Object.entries(NON_EQUILIBRIUM_LABELS).map(([key, label]) => {
+                      const val = coordination[key];
+                      if (!val || (!val.rt && !val.lt)) return null;
+                      return (
+                        <tr key={key} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                          <td className="p-2 font-semibold border-r border-slate-100 dark:border-slate-800">{label}</td>
+                          <td className="p-2 text-center border-r border-slate-100 dark:border-slate-800">{val.rt || '—'}</td>
+                          <td className="p-2 text-center">{val.lt || '—'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+</div>
+              </div>
+            )}
+
+            {/* Equilibrium */}
+            {Object.keys(EQUILIBRIUM_LABELS).some(k => coordination[k]) && (
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Equilibrium Tests</span>
+                <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[500px] text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                  <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                    <tr>
+                      <th className="p-2 text-left border-b border-r border-slate-200 dark:border-slate-800">Test</th>
+                      <th className="p-2 text-center border-b border-slate-200 dark:border-slate-800">Grade / Comments</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(EQUILIBRIUM_LABELS).map(([key, label]) => {
+                      const val = coordination[key];
+                      if (!val) return null;
+                      return (
+                        <tr key={key} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
+                          <td className="p-2 font-semibold border-r border-slate-100 dark:border-slate-800">{label}</td>
+                          <td className="p-2 text-center">{String(val)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+</div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -554,3 +596,5 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
     </div>
   );
 }
+
+
