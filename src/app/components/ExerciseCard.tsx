@@ -4,6 +4,7 @@ import {
   Info, ExternalLink, Image as ImageIcon
 } from 'lucide-react';
 import type { PatientExercise } from '../../hooks/useExercises';
+import { ExerciseImageGallery } from './ExerciseImageGallery';
 
 interface ExerciseCardProps {
   exercise: PatientExercise;
@@ -99,7 +100,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
         )}
 
         {/* Media Attachments */}
-        <div className="flex items-center gap-3 text-xs mb-3">
+        <div className="flex flex-col gap-3 text-xs mb-3">
           {videoUrl && (
             <a
               href={videoUrl}
@@ -110,11 +111,10 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
               <Video className="w-3.5 h-3.5" /> Video Demo <ExternalLink className="w-3 h-3" />
             </a>
           )}
-          {images.length > 0 && (
-            <span className="inline-flex items-center gap-1 text-slate-500 text-[11px]">
-              <ImageIcon className="w-3.5 h-3.5" /> {images.length} Image(s)
-            </span>
-          )}
+          
+          <div className="mt-1">
+            <ExerciseImageGallery category={bodyPart} exerciseName={name} />
+          </div>
         </div>
       </div>
 
