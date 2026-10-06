@@ -19,7 +19,7 @@ import type {
   TreatmentPlanExerciseItem,
   TreatmentPlanExerciseAttachment,
 } from './clinicalConfig';
-
+import { ExerciseImageGallery } from '../../components/ExerciseImageGallery';
 interface TreatmentExerciseModuleProps {
   treatmentPlan: TreatmentPlanData;
   setTreatmentPlan: (plan: TreatmentPlanData) => void;
@@ -245,6 +245,8 @@ export function TreatmentExerciseModule({
     e.preventDefault();
     if (!exerciseName.trim()) return;
 
+    let finalAttachments = [...attachments];
+
     const newItem: TreatmentPlanExerciseItem = {
       id: editingId || `ex-tp-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       exerciseName: exerciseName.trim(),
@@ -255,7 +257,7 @@ export function TreatmentExerciseModule({
       frequency,
       notes: notes.trim(),
       instructions: notes.trim(),
-      attachments,
+      attachments: finalAttachments,
     };
 
     let updatedExercises: TreatmentPlanExerciseItem[];
@@ -381,6 +383,10 @@ export function TreatmentExerciseModule({
                         &quot;{item.notes}&quot;
                       </p>
                     )}
+                    
+                    <div className="mt-3">
+                      <ExerciseImageGallery category={item.category} exerciseName={item.exerciseName} />
+                    </div>
                   </div>
 
                   {/* Attachments preview row */}
@@ -581,6 +587,7 @@ export function TreatmentExerciseModule({
                             setHoldTime(prog.holdTime);
                             setFrequency(prog.frequency);
                             setNotes(prog.instructions);
+                            setAttachments([]);
                           }}
                           className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                             isLoaded
@@ -608,6 +615,16 @@ export function TreatmentExerciseModule({
                     })}
                   </div>
                 </div>
+
+                {/* Live Image Preview in Modal */}
+                {exerciseName && (
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-2">
+                      Exercise Images
+                    </label>
+                    <ExerciseImageGallery category={category} exerciseName={exerciseName} />
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">

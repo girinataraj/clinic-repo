@@ -6,7 +6,6 @@ import { useExerciseTemplates } from '../../hooks/useExerciseLibrary';
 import type { ExerciseTemplate } from '../../hooks/useExerciseLibrary';
 import { ExerciseCard } from './ExerciseCard';
 import { ExerciseModal } from './ExerciseModal';
-
 interface ExerciseSectionProps {
   patientId: string | null;
   assessmentId?: string | null;
@@ -66,9 +65,12 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
         await updateExercise({ exerciseId: selectedExercise.id, payload });
         showToast('Exercise Updated Successfully', 'success');
       } else {
-        await createExercise(payload);
+        await createExercise({
+          ...payload,
+        });
         showToast('Exercise Added Successfully', 'success');
       }
+      setIsModalOpen(false);
     } catch (err: any) {
       showToast(err?.message || 'Unable to Save Exercise', 'error');
     }
@@ -101,21 +103,23 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({
     if (selectedTemplateIds.length === 0 || !templates) return;
     const selectedTemplates = templates.filter(t => selectedTemplateIds.includes(t.id));
     try {
-      const payloadItems = selectedTemplates.map(tmpl => ({
-        exercise_name: tmpl.name,
-        exerciseName: tmpl.name,
-        category: tmpl.category || 'General',
-        body_part: tmpl.category || 'General',
-        bodyPart: tmpl.category || 'General',
-        sets: tmpl.sets || 3,
-        repetitions: tmpl.reps ? String(tmpl.reps) : '10-15',
-        reps: tmpl.reps ? String(tmpl.reps) : '10-15',
-        frequency: 'Once daily',
-        difficulty_level: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
-        difficultyLevel: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
-        description: tmpl.instructions || '',
-        video_url: tmpl.videoUrl || '',
-      }));
+      const payloadItems = selectedTemplates.map(tmpl => {
+        return {
+          exercise_name: tmpl.name,
+          exerciseName: tmpl.name,
+          category: tmpl.category || 'General',
+          body_part: tmpl.category || 'General',
+          bodyPart: tmpl.category || 'General',
+          sets: tmpl.sets || 3,
+          repetitions: tmpl.reps ? String(tmpl.reps) : '10-15',
+          reps: tmpl.reps ? String(tmpl.reps) : '10-15',
+          frequency: 'Once daily',
+          difficulty_level: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
+          difficultyLevel: (tmpl.difficulty === 'Medium' ? 'Moderate' : tmpl.difficulty) as any,
+          description: tmpl.instructions || '',
+          video_url: tmpl.videoUrl || '',
+        };
+      });
       await importBatchExercises(payloadItems);
       setSelectedTemplateIds([]);
       setIsLibraryOpen(false);
