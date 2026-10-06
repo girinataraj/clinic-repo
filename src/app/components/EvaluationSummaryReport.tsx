@@ -352,6 +352,7 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
       // Intake reports must use the exact selected assessment/evaluation ID
       const assessmentId = rawData.assessmentId || rawData.assessment_id ||
         rawData.id || evaluation.id;
+      const evalId = assessmentId;
       const patId = rawData.patientId || rawData.patient_id || report.patient.id;
 
       if (!assessmentId || !patId) {

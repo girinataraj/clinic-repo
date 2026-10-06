@@ -160,7 +160,26 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
   const muscleGirth = neuroData.muscleGirth;
   const voluntaryControl = neuroData.voluntaryControl;
   const reflexes = neuroData.reflexes;
-  const coordination = neuroData.coordination;
+  const rawCoord = neuroData.coordination;
+  const coordination: any = React.useMemo(() => {
+    if (!rawCoord) return null;
+    if (Array.isArray(rawCoord)) {
+      const map: Record<string, any> = {};
+      rawCoord.forEach((item: any) => {
+        if (item && item.test) {
+          map[item.test] = {
+            rt: item.right || item.rt || '',
+            lt: item.left || item.lt || '',
+          };
+          if (!map[item.test].rt && !map[item.test].lt && item.result) {
+            map[item.test] = item.result;
+          }
+        }
+      });
+      return map;
+    }
+    return typeof rawCoord === 'object' ? rawCoord : null;
+  }, [rawCoord]);
   const balance = neuroData.balance;
   const posture = neuroData.posture;
   const gait = neuroData.gait;
@@ -423,7 +442,7 @@ export function NeuroSummaryView({ neuroData }: NeuroSummaryViewProps) {
       )}
 
       {/* Coordination */}
-      {coordination && Array.isArray(coordination) && coordination.length > 0 && (
+      {coordination && typeof coordination === 'object' && Object.keys(coordination).length > 0 && (
         <div>
           <span className="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase block mb-1.5">Coordination & Balance</span>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full min-w-0">

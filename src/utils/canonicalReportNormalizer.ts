@@ -401,7 +401,7 @@ export const normalizeEvaluationForReport = (rawInput: any): CanonicalReport => 
   const clinicalExamination = parseJsonSafely(raw.clinical_examination || raw.clinicalExamination) || {};
   const musclePowerRom = parseJsonSafely(raw.muscle_power_rom || raw.musclePowerRom) || {};
   const anthropometrics = parseJsonSafely(raw.anthropometrics) || {};
-  const neurological = parseNeuroData(raw.neuro_data || raw.neuroData);
+  const neurological = parseNeuroData(raw.neuro_data || raw.neuroData || raw.neurological_examination || raw.neurologicalExamination || raw.neurological);
   const cardio = parseCardioData(raw.cardio_data || raw.cardioData);
 
   const rawTp = raw.treatment_plan || raw.treatmentPlan;
