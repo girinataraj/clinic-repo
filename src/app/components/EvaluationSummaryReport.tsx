@@ -1151,18 +1151,29 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
                     const exName = ex.exerciseName || ex.name || `Exercise ${idx + 1}`;
                     const exCategory = ex.category || 'General';
                     const instructionsText = ex.instructions || ex.notes || ex.description || '';
+                    const isValidImageUrl = (url: unknown) =>
+                      typeof url === 'string' &&
+                      (url.startsWith('data:image/') ||
+                        /\.(avif|bmp|gif|ico|jpe?g|png|svg|webp)(\?.*)?(#.*)?$/i.test(url));
 
                     // Collect explicit attachment image URLs or mapped folder images (deduplicated)
                     const attImagesSet = new Set<string>();
                     if (Array.isArray(ex.attachments)) {
                       ex.attachments.forEach((att: any) => {
                         const url = att.dataUrl || att.imageUrl;
-                        if (url && !url.includes('/pdf_images/')) attImagesSet.add(url);
+                        const type = typeof att?.type === 'string' ? att.type : '';
+                        if (
+                          typeof url === 'string' &&
+                          (type.startsWith('image/') || isValidImageUrl(url)) &&
+                          !url.includes('/pdf_images/')
+                        ) {
+                          attImagesSet.add(url);
+                        }
                       });
                     }
                     if (Array.isArray(ex.images)) {
                       ex.images.forEach((imgUrl: string) => {
-                        if (imgUrl && !imgUrl.includes('/pdf_images/')) attImagesSet.add(imgUrl);
+                        if (isValidImageUrl(imgUrl) && !imgUrl.includes('/pdf_images/')) attImagesSet.add(imgUrl);
                       });
                     }
 
@@ -1326,4 +1337,3 @@ export function EvaluationSummaryReport({ evaluation, isDoctorRole = false, onBa
     </div>
   );
 }
-

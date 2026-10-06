@@ -5,19 +5,33 @@ import { getExerciseImages } from '../../utils/exerciseImageMapper';
 interface ExerciseImageGalleryProps {
   exerciseName?: string;
   category?: string;
+  images?: string[];
   className?: string;
 }
 
 export const ExerciseImageGallery: React.FC<ExerciseImageGalleryProps> = ({
   exerciseName,
   category,
+  images = [],
   className = '',
 }) => {
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
-  const images = getExerciseImages(category, exerciseName);
+  const mappedImages = getExerciseImages(category, exerciseName);
+  const allImages = Array.from(
+    new Set(
+      [...images, ...mappedImages].filter((url) => {
+        if (typeof url !== 'string') return false;
+        const trimmedUrl = url.trim();
+        return (
+          trimmedUrl.startsWith('data:image/') ||
+          /\.(avif|bmp|gif|ico|jpe?g|png|svg|webp)(\?.*)?(#.*)?$/i.test(trimmedUrl)
+        );
+      })
+    )
+  );
 
-  if (images.length === 0) {
+  if (allImages.length === 0) {
     return (
       <div className={`flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 ${className}`}>
         <span className="text-xs font-semibold text-slate-400 flex items-center gap-2">
@@ -32,14 +46,15 @@ export const ExerciseImageGallery: React.FC<ExerciseImageGalleryProps> = ({
     <div className={`space-y-2 ${className}`}>
       <div
         className={`grid gap-2 ${
-          images.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'
+          allImages.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'
         }`}
       >
-        {images.map((imgUrl, idx) => (
-          <div
-            key={idx}
+        {allImages.map((imgUrl, idx) => (
+          <button
+            type="button"
+            key={`${imgUrl}-${idx}`}
             onClick={() => setExpandedImage(imgUrl)}
-            className="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 aspect-video"
+            className="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 aspect-video text-left p-0"
           >
             <img
               src={imgUrl}
@@ -47,7 +62,7 @@ export const ExerciseImageGallery: React.FC<ExerciseImageGalleryProps> = ({
               className="w-full h-full object-contain p-1 transition-transform duration-300 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-          </div>
+          </button>
         ))}
       </div>
 

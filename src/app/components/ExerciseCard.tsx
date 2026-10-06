@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Edit2, Copy, Trash2, Video, ArrowUp, ArrowDown,
-  Info, ExternalLink, Image as ImageIcon
+  Info, ExternalLink
 } from 'lucide-react';
 import type { PatientExercise } from '../../hooks/useExercises';
 import { ExerciseImageGallery } from './ExerciseImageGallery';
@@ -113,7 +113,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
           )}
           
           <div className="mt-1">
-            <ExerciseImageGallery category={bodyPart} exerciseName={name} />
+            <ExerciseImageGallery category={bodyPart} exerciseName={name} images={images} />
           </div>
         </div>
       </div>
